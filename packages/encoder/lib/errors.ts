@@ -4,7 +4,9 @@
  */
 export class NoInternalInfoError extends Error {
   constructor() {
-    super("No compilations provided, but userDefinedTypes or allocations is missing");
+    super(
+      "No compilations provided, but userDefinedTypes or allocations is missing"
+    );
     this.name = "NoInternalInfoError";
   }
 }
@@ -25,14 +27,14 @@ export class NoCompilationsForSpawnerError extends Error {
  * @protected
  */
 export class NoFunctionByThatNameError extends Error {
-  public functionName: string;
+  public functionNameOrSig: string;
   public contractName: string | undefined;
-  constructor(functionName: string, contractName: string) {
+  constructor(functionNameOrSig: string, contractName: string) {
     const message = contractName
-      ? `Contract ${contractName} has no function named ${functionName}`
-      : `This contract has no function named ${functionName}`
+      ? `Contract ${contractName} has no function with name or signature ${functionNameOrSig}`
+      : `This contract has no function with name or signature ${functionNameOrSig}`;
     super(message);
-    this.functionName = functionName;
+    this.functionNameOrSig = functionNameOrSig;
     this.contractName = contractName;
     this.name = "NoFunctionByThatNameError";
   }
@@ -64,13 +66,8 @@ export class InvalidAddressError extends Error {
 export class UnlinkedContractError extends Error {
   public contractName: string | undefined;
   public bytecode: string | undefined;
-  constructor(
-    contractName: string | undefined,
-    bytecode: string | undefined,
-  ) {
-    const nameString = contractName !== undefined
-      ? contractName + " "
-      : "";
+  constructor(contractName: string | undefined, bytecode: string | undefined) {
+    const nameString = contractName !== undefined ? contractName + " " : "";
     super(`Contract ${nameString}has not had all its libraries linked`);
     this.contractName = contractName;
     this.bytecode = bytecode;
@@ -86,14 +83,11 @@ export class UnlinkedContractError extends Error {
 export class ContractNotDeployedError extends Error {
   public contractName: string | undefined;
   public networkId: number;
-  constructor(
-    contractName: string | undefined,
-    networkId: number
-  ) {
-    const nameString = contractName !== undefined
-      ? contractName + " "
-      : "";
-    super(`Contract ${nameString}has not been deployed to network ${networkId} with deployer; address must be given explicitly`);
+  constructor(contractName: string | undefined, networkId: number) {
+    const nameString = contractName !== undefined ? contractName + " " : "";
+    super(
+      `Contract ${nameString}has not been deployed to network ${networkId} with deployer; address must be given explicitly`
+    );
     this.contractName = contractName;
     this.name = "ContractNotDeployedError";
   }
@@ -106,12 +100,8 @@ export class ContractNotDeployedError extends Error {
  */
 export class NoBytecodeError extends Error {
   public contractName: string | undefined;
-  constructor(
-    contractName: string | undefined,
-  ) {
-    const nameString = contractName !== undefined
-      ? contractName + " "
-      : "";
+  constructor(contractName: string | undefined) {
+    const nameString = contractName !== undefined ? contractName + " " : "";
     super(`Contract ${nameString}has missing or empty constructor bytecode`);
     this.contractName = contractName;
     this.name = "NoBytecodeError";

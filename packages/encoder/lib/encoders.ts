@@ -892,10 +892,10 @@ export class ContractEncoder {
    * select an overload by other means.  For enums you may also specify the
    * enum type as documented in [[encodeTransaction]].
    *
-   * @param abisOrName The ABI entries for the overloads, or the name of the
-   *   function.  Note that if you are inputting ABI entries, they must be
-   *   for functions, not constructors.  The entries must be ones associated
-   *   with this contract.
+   * @param abisOrNameOrSig The ABI entries for the overloads, or the name or
+   *   full signature of the function.  Note that if you are inputting ABI
+   *   entries, they must be for functions, not constructors.  The entries must
+   *   be ones associated with this contract.
    * @param inputs An array of the inputs to the transaction.  May include a
    *   transaction options argument on the end if the `allowOptions` flag is
    *   set.
@@ -904,11 +904,11 @@ export class ContractEncoder {
    *   [[Resolution]] object.
    */
   public async resolveAndWrap(
-    abisOrName: Abi.FunctionEntry[] | string,
+    abisOrNameOrSig: Abi.FunctionEntry[] | string,
     inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
-    const abis = this.getAbis(abisOrName);
+    const abis = this.getAbis(abisOrNameOrSig);
     const methods = abis.map(abi => this.getMethod(abi));
     //note we can't just write abis.map(this.getMethod)
     //because this would be undefined inside of it... I could
@@ -1251,10 +1251,10 @@ export class ContractEncoder {
    * In addition, input may also be given as a
    * [[Format.Values.OptionsValue|OptionsValue]].
    *
-   * @param abisOrName The ABI entries for the overloads, or the name of the
-   *   function.  Note that if you are inputting ABI entries, they must be
-   *   for functions, not constructors.  The entries must be ones associated
-   *   with this contract.
+   * @param abisOrNameOrSig The ABI entries for the overloads, or the name
+   *   or full signature of the function.  Note that if you are inputting ABI
+   *   entries, they must be for functions, not constructors.  The entries must
+   *   be ones associated with this contract.
    * @param input The value to be interpreted.  This can take a number of
    *   forms depending on the data type, as documented above.
    * @return An object with a `tx` field, holding the transaction options,
@@ -1262,11 +1262,11 @@ export class ContractEncoder {
    *   ABI entry was used for encoding.
    */
   public async encodeTransaction(
-    abisOrName: Abi.FunctionEntry[] | string,
+    abisOrNameOrSig: Abi.FunctionEntry[] | string,
     inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Types.TxAndAbi> {
-    const abis = this.getAbis(abisOrName);
+    const abis = this.getAbis(abisOrNameOrSig);
     const methods = abis.map(abi => this.getMethod(abi));
     //note we can't just write abis.map(this.getMethod)
     //because this would be undefined inside of it... I could
@@ -1307,21 +1307,23 @@ export class ContractEncoder {
   }
 
   private getAbis(
-    abisOrName: Abi.FunctionEntry[] | string
+    abisOrNameOrSig: Abi.FunctionEntry[] | string
   ): Abi.FunctionEntry[] {
     const abis: Abi.FunctionEntry[] =
-      typeof abisOrName === "string"
+      typeof abisOrNameOrSig === "string"
         ? this.abi.filter(
             (abi): abi is Abi.FunctionEntry =>
-              abi.type === "function" && abi.name === abisOrName
+              abi.type === "function" &&
+              (abi.name === abisOrNameOrSig ||
+                Codec.AbiData.Utils.abiSignature(abi) === abisOrNameOrSig)
           )
-        : abisOrName;
-    if (typeof abisOrName === "string" && abis.length === 0) {
+        : abisOrNameOrSig;
+    if (typeof abisOrNameOrSig === "string" && abis.length === 0) {
       //we don't throw this if the input was an empty list of ABIs
       //rather than a name... the user knew what they were doing if they
       //did that :P
       throw new NoFunctionByThatNameError(
-        abisOrName,
+        abisOrNameOrSig,
         this.contract.contractName
       );
     }
@@ -1513,12 +1515,12 @@ export class ContractInstanceEncoder {
    * transaction option, it will be recognized but ignored.
    */
   public async encodeTransaction(
-    abisOrName: Abi.FunctionEntry[] | string,
+    abisOrNameOrSig: Abi.FunctionEntry[] | string,
     inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Types.TxAndAbi> {
     const encoded = await this.contractEncoder.encodeTransaction(
-      abisOrName,
+      abisOrNameOrSig,
       inputs,
       options
     );
