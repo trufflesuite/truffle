@@ -26,7 +26,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
 
-  console.debug({ state });
+  window.devLog({ state });
   useEffect(() => {
     async function init() {
       // This obviates the need for a cleanup callback
@@ -35,13 +35,13 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       }
       initCalled.current = true;
 
-      console.debug("Initializing message bus client");
+      window.devLog("Initializing message bus client");
       // Create message bus client
       const { host, port } = state;
       const client = new DashboardMessageBusClient({ host, port });
       await client.ready();
       dispatch({ type: "set-client", data: client });
-      console.debug(`Connected to message bus at ws://${host}:${port}`);
+      window.devLog(`Connected to message bus at ws://${host}:${port}`);
 
       // Client subscribes to and handles messages
       const subscription = client.subscribe({});
