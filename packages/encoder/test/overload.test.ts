@@ -787,4 +787,31 @@ describe("Overload resolution", () => {
       );
     });
   });
+
+  describe("Manual overload resolution by signature", () => {
+    it("Allows specifying functions by signature", async () => {
+      const { abi, tx } = await encoder.encodeTransaction("overloaded(bool)", [
+        1
+      ]);
+      assert.lengthOf(abi.inputs, 1);
+      assert.strictEqual(abi.inputs[0].type, "bool");
+      const selector = Codec.AbiData.Utils.abiSelector(abi);
+      assert.strictEqual(
+        tx.data,
+        selector +
+          "0000000000000000000000000000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Rejects when no overload matches specified signature", async () => {
+      try {
+        await encoder.encodeTransaction("overloaded(uint192)", [1]);
+        assert.fail("Should reject when specified signature does not exist");
+      } catch (error) {
+        if (error.name !== "NoFunctionByThatNameError") {
+          throw error;
+        }
+      }
+    });
+  });
 });
