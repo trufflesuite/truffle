@@ -1,4 +1,4 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
 import type { PluginConstructorOptions, PluginDefinition } from "./types";

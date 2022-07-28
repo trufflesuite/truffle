@@ -1,5 +1,5 @@
 module.exports = async options => {
-  const TruffleError = require("@truffle/error");
+  const { TruffleError } = require("@truffle/error");
   const { Plugins } = require("@truffle/plugins");
   const { getConfig, constructRecipes } = require("./plugins");
   const { preserve, ConsoleReporter } = require("@truffle/preserve");

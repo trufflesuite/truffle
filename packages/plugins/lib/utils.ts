@@ -1,6 +1,6 @@
 import type { PluginConfig, RawPluginConfig } from "./types";
 
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const originalRequire = require("original-require");
 
 /**

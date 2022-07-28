@@ -1,8 +1,8 @@
-var colors = require("colors");
-var TruffleError = require("@truffle/error");
+const colors = require("colors");
+const { TruffleError } = require("@truffle/error");
 
 class DeployError extends TruffleError {
-  constructor(message, contract_name) {
+  constructor(message, contract_name, options) {
     message =
       "Error deploying " +
       contract_name +
@@ -10,7 +10,7 @@ class DeployError extends TruffleError {
       message +
       "\n\n" +
       colors.red("Deploy failed. See above.");
-    super(message);
+    super(message, options);
   }
 }
 

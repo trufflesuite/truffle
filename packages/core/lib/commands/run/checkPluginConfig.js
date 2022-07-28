@@ -1,4 +1,4 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 
 const checkPluginConfig = ({ plugins }) => {
   if (!plugins) {

@@ -1,4 +1,4 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
 import type { PluginConfig, PluginDefinitions, TruffleConfig } from "./types";
@@ -40,8 +40,8 @@ export class Plugins {
   static listAllCommandPlugins(config: TruffleConfig): Plugin[] {
     const allPlugins = Plugins.listAll(config);
 
-    const pluginsWithCommands = allPlugins.filter(plugin =>
-      plugin.commands.length > 0
+    const pluginsWithCommands = allPlugins.filter(
+      plugin => plugin.commands.length > 0
     );
 
     return pluginsWithCommands;

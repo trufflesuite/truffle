@@ -7,7 +7,7 @@ const {
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");

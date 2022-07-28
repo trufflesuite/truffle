@@ -1,5 +1,5 @@
 const { Plugins } = require("@truffle/plugins");
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 
 const Run = {
   // executes command or throws user helpful error

@@ -3,7 +3,7 @@ module.exports = {
   description:
     "Save data to decentralized storage platforms like IPFS and Filecoin",
   help: options => {
-    const TruffleError = require("@truffle/error");
+    const { TruffleError } = require("@truffle/error");
     const { Plugins } = require("@truffle/plugins");
     const { getConfig } = require("./plugins");
     const semver = require("semver");

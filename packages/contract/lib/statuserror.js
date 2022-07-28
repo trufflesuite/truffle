@@ -1,10 +1,10 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const utils = require("./utils");
 
 const defaultGas = 90000;
 
 class StatusError extends TruffleError {
-  constructor(args, tx, receipt, reason) {
+  constructor(args, tx, receipt, reason, options) {
     let message;
     const gasLimit = args.gas || defaultGas;
     let reasonString = "";
@@ -28,7 +28,7 @@ class StatusError extends TruffleError {
         "     - does not trigger a Solidity `revert` statement.\n";
     }
 
-    super(message);
+    super(message, options);
     this.tx = tx;
     this.receipt = receipt;
     this.reason = reason;

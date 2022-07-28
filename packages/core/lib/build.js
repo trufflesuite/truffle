@@ -2,7 +2,7 @@ const fse = require("fs-extra");
 const del = require("del");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
-const {spawn} = require("child_process");
+const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("@truffle/expect");
@@ -95,8 +95,17 @@ const Build = {
     await WorkflowCompile.compileAndSave(options);
     if (builder) {
       builder.build(options, function (err) {
-        if (typeof err === "string") {
-          throw new BuildError(err);
+        if (err) {
+          if (typeof err === "string") {
+            throw new BuildError(err);
+          }
+          if (err.message) {
+            throw new BuildError(err.message, { cause: err });
+          }
+
+          throw new BuildError(`Unknown error: ${err.toString()}`, {
+            cause: err
+          });
         }
       });
     }

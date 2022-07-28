@@ -1,6 +1,6 @@
 module.exports = function (options) {
   const Config = require("@truffle/config");
-  const TruffleError = require("@truffle/error");
+  const { TruffleError } = require("@truffle/error");
   const mergeConfigNetwork = require("./mergeConfigNetwork");
 
   let config;

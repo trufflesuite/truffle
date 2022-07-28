@@ -2,14 +2,15 @@
   "name": "@truffle/error",
   "version": "0.1.1",
   "description": "Simple module that allows native Error objects to be extended",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "test": "jest --verbose"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,10 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/node": "~12.12.0",
+    "jest": "28.1.3",
+    "ts-jest": "28.0.7",
     "typescript": "^4.7.4"
   }
 }

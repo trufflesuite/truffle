@@ -3,7 +3,6 @@ const Ganache = require("ganache");
 const Provider = require("../index");
 const Web3 = require("web3");
 const promisify = require("util").promisify;
-const ProviderError = require("../error");
 
 describe("Provider", function () {
   let server;
@@ -188,8 +187,11 @@ describe("Provider", function () {
         assert.deepStrictEqual(payload, _stubbedPayload);
 
         assert.deepStrictEqual(error, err);
+
         const _stubbedRawError = _stubbedFailedResult(payload);
-        assert.deepStrictEqual(error, new ProviderError(_stubbedRawError.error.message, { underlyingError: _stubbedRawError.error }));
+
+        assert.strictEqual(error.message, _stubbedRawError.error.message);
+        assert.deepStrictEqual(error.cause, _stubbedRawError.error);
 
         assert.strictEqual(result, undefined);
       }

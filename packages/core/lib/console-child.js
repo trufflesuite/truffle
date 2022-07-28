@@ -1,4 +1,4 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const Config = require("@truffle/config");
 const yargs = require("yargs");
 const { deriveConfigEnvironment } = require("./command-utils");

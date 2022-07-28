@@ -15,12 +15,6 @@ const debug = Debug("require:typescript");
 const _tsExtensionExpr = /^\.(cts|tsx?)$/i;
 
 let tsNode: typeof TSNode | null = null;
-try {
-  // We use `originalRequire` here to ensure that we use ts-node from the
-  // user's environment rather than resolving our own (should we
-  // accidentally bundle ts-node)
-  tsNode = originalRequire("ts-node");
-} catch {}
 
 /**
  * @param conf the instance of `@truffle/config` for the user's project
@@ -68,8 +62,15 @@ function _getOrCreateCompilationService(
   conf: TruffleConfig,
   sourceFilePath: string
 ): TSNode.Service {
-  if (!tsNode) {
-    throw new TsNodeDependencyError(sourceFilePath);
+  if (tsNode === null) {
+    try {
+      // We use `originalRequire` here to ensure that we use ts-node from the
+      // user's environment rather than resolving our own (should we
+      // accidentally bundle ts-node)
+      tsNode = originalRequire("ts-node") as typeof TSNode;
+    } catch (err) {
+      throw new TsNodeDependencyError(sourceFilePath, { cause: err });
+    }
   }
 
   // we get away with this here because the instance of `process` that we pass

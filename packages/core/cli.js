@@ -2,7 +2,7 @@
 require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");

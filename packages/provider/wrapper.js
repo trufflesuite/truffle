@@ -75,7 +75,7 @@ module.exports = {
       if (error) {
         error = new ProviderError(error.message, {
           ...options,
-          underlyingError: error
+          cause: error
         });
       }
 

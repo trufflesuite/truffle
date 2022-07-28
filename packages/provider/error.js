@@ -1,4 +1,4 @@
-const TruffleError = require("@truffle/error");
+const { TruffleError } = require("@truffle/error");
 
 // HACK: string comparison seems to be only way to identify being unable to
 // connect to RPC node.
@@ -9,17 +9,7 @@ class ProviderError extends TruffleError {
     if (message === NOT_CONNECTED_MESSAGE) {
       message = buildMessage(options);
     }
-    super(message);
-
-    // important fields from RPC error responses, should be retained
-    // see: https://www.jsonrpc.org/specification#error_object
-    if (options && options.underlyingError && options.underlyingError.code !== undefined) {
-      this.code = options.underlyingError.code;
-    }
-
-    if (options && options.underlyingError && options.underlyingError.data) {
-      this.data = options.underlyingError.data;
-    }
+    super(message, options);
   }
 }
 

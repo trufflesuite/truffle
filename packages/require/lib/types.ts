@@ -1,6 +1,6 @@
 import type TruffleConfig from "@truffle/config";
 import type Resolver from "@truffle/resolver";
-import TruffleError from "@truffle/error";
+import { TruffleError, ErrorOptions } from "@truffle/error";
 
 import type { provider as Provider } from "web3-core/types";
 export type { provider as Provider } from "web3-core/types";
@@ -73,10 +73,11 @@ export interface ExecOptions extends TruffleConfig {
  * `ts-node` and/or one of ts-node's required peer dependencies.
  */
 export class TsNodeDependencyError extends TruffleError {
-  constructor(sourceFilePath: string) {
+  constructor(sourceFilePath: string, options?: ErrorOptions) {
     super(
       `Attempted to execute module at path ${sourceFilePath}, but the ` +
-        "'ts-node' module, or one of its required peers has not been installed."
+        "'ts-node' module, or one of its required peers has not been installed.",
+      options
     );
   }
 }
