@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.28",
+  "version": "6.0.29",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
