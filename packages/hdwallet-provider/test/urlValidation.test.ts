@@ -21,7 +21,7 @@ describe("HD Wallet Provider Validator", () => {
     try {
       new WalletProvider(mnemonic, badUrl, 0, 100);
       assert.fail("did not throw!");
-    } catch (e: any) {
+    } catch (e) {
       const expectedMessage = [
         `No provider or an invalid provider was specified: '${badUrl}'`,
         "Please specify a valid provider or URL, using the http, https, ws, or wss protocol.",
@@ -36,7 +36,7 @@ describe("HD Wallet Provider Validator", () => {
     try {
       new WalletProvider(mnemonic, badUrl, 0, 100);
       assert.fail("did not throw!");
-    } catch (e: any) {
+    } catch (e) {
       const expectedMessage = [
         `No provider or an invalid provider was specified: '${badUrl}'`,
         "Please specify a valid provider or URL, using the http, https, ws, or wss protocol.",

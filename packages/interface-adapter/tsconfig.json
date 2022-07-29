@@ -11,7 +11,10 @@
     "baseUrl": ".",
     "lib": ["es2019"],
     "rootDir": "lib",
-    "types": ["node", "mocha"]
+    "typeRoots": [
+      "../../node_modules/@types/bn.js",
+      "../../node_modules/@types/mocha"
+    ]
   },
   "include": [
     "./lib/**/*.ts"

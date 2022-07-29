@@ -17,7 +17,12 @@
       ]
     },
     "rootDir": ".",
-    "types": ["node", "mocha"]
+    "typeRoots": [
+      "./typings",
+      "node_modules/@types",
+      "../../node_modules/@types/mocha",
+      "../../node_modules/@types/node"
+    ]
   },
   "include": [
     "./src/**/*.ts",

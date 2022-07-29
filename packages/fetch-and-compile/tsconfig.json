@@ -16,6 +16,10 @@
     "paths": {
     },
     "rootDir": "lib",
+    "typeRoots": [
+      "./typings",
+      "../../**/node_modules/@types/debug"
+    ],
     "types": ["node"]
   },
   "include": [
