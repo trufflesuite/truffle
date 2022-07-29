@@ -12,6 +12,11 @@
     ],
     "outDir": "dist",
     "baseUrl": ".",
+    "typeRoots": [
+      "../../node_modules/@types/mocha",
+      "../../node_modules/@types/node",
+      "../../node_modules/@types/web3-provider-engine",
+    ],
     "types": [ "node", "mocha" ]
   },
   "include": [

@@ -12,7 +12,6 @@
     "baseUrl": ".",
     "lib": ["es2019", "dom"],
     "rootDir": "./src",
-    "types": ["node", "mocha"],
     "typeRoots": [
       "./typings",
       "node_modules/@types/node",

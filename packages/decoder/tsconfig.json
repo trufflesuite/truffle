@@ -18,7 +18,17 @@
         "../../node_modules/@types/web3/index"
       ]
     },
-    "types": ["node", "mocha"]
+    "typeRoots": [
+      "./typings",
+      "../../**/node_modules/@types/bn.js",
+      "../../**/node_modules/@types/debug",
+      "../../**/node_modules/@types/lodash",
+      "../../**/node_modules/@types/lodash.clonedeep",
+      "../../**/node_modules/@types/lodash.isequal",
+      "../../**/node_modules/@types/lodash.merge",
+      "../../**/node_modules/@types/web3"
+    ]
+
   },
   "include": [
     "./lib/**/*.ts",
