@@ -227,7 +227,7 @@ export class ProjectEncoder {
     return await this.driveGenerator(
       Codec.Wrap.wrapForMethod(method, inputs, {
         userDefinedTypes: this.userDefinedTypes,
-        allowOptions: Boolean(options.allowOptions)
+        ...options
       })
     );
   }
@@ -243,7 +243,7 @@ export class ProjectEncoder {
     return await this.driveGenerator(
       Codec.Wrap.resolveAndWrap(methods, inputs, {
         userDefinedTypes: this.userDefinedTypes,
-        allowOptions: Boolean(options.allowOptions)
+        ...options
       })
     );
   }

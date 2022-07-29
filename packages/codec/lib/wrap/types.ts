@@ -1,7 +1,7 @@
 import type * as Format from "@truffle/codec/format";
 import type * as Abi from "@truffle/abi-utils";
 import type * as Common from "@truffle/codec/common";
-import type { WrapRequest, WrapResponse } from "../types";
+import type { WrapResponse } from "../types";
 
 /**
  * @Category Interfaces
@@ -43,16 +43,22 @@ export interface WrapOptions {
   loose?: boolean;
   oldOptionsBehavior?: boolean; //to not break Truffle Contract
   specificityFloor?: number; //raise all specificities to at least this much... should *not* propagate!
+  allowJson?: boolean;
+  strictBooleans?: boolean;
 }
 
 export interface ResolveOptions {
   userDefinedTypes?: Format.Types.TypesById;
   allowOptions?: boolean;
+  allowJson?: boolean;
+  strictBooleans?: boolean;
 }
 
-export type Case<TypeType, ValueType, RequestType> =
-  (dataType: TypeType, input: unknown, options: WrapOptions)
-    => Generator<RequestType, ValueType, WrapResponse>;
+export type Case<TypeType, ValueType, RequestType> = (
+  dataType: TypeType,
+  input: unknown,
+  options: WrapOptions
+) => Generator<RequestType, ValueType, WrapResponse>;
 
 export interface ContractInput {
   address: string;

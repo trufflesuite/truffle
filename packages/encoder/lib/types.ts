@@ -17,6 +17,17 @@ export interface ResolveOptions {
    * argument after the other arguments.
    */
   allowOptions?: boolean;
+  /**
+   * This field, if set to true, allows JSON strings to be used for structs,
+   * tuples, and arrays.  Note that this does *not* allow JSON to be used for
+   * elementary types like strings!
+   */
+  allowJson?: boolean;
+  /**
+   * This field, if set to true, disallows accepting arbitrary input as
+   * booleans.
+   */
+  strictBooleans?: boolean;
 }
 
 /**

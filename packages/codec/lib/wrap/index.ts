@@ -84,7 +84,7 @@ function wrappingToResolution(
 function* wrapForMethodRaw(
   method: Method,
   inputs: unknown[],
-  { userDefinedTypes, allowOptions }: ResolveOptions,
+  { userDefinedTypes, allowOptions, allowJson, strictBooleans }: ResolveOptions,
   loose: boolean = false
 ): Generator<WrapRequest, Format.Values.Value[], WrapResponse> {
   debug("wrapping for method");
@@ -95,7 +95,9 @@ function* wrapForMethodRaw(
       userDefinedTypes,
       oldOptionsBehavior: true, //HACK
       loose,
-      name: "<arguments>"
+      name: "<arguments>",
+      allowJson,
+      strictBooleans
     });
   } else if (allowOptions && method.inputs.length === inputs.length - 1) {
     //options case
@@ -108,7 +110,9 @@ function* wrapForMethodRaw(
       userDefinedTypes,
       oldOptionsBehavior: true, //HACK
       loose,
-      name: "<arguments>"
+      name: "<arguments>",
+      allowJson,
+      strictBooleans
     });
   } else {
     //invalid length case
@@ -128,7 +132,7 @@ function* wrapForMethodRaw(
 export function* resolveAndWrap(
   methods: Method[],
   inputs: unknown[],
-  { userDefinedTypes, allowOptions }: ResolveOptions
+  { userDefinedTypes, allowOptions, allowJson, strictBooleans }: ResolveOptions
 ): Generator<WrapRequest, Resolution, WrapResponse> {
   //despite us having a good system for overload resolution, we want to
   //use it as little as possible!  That's because using it means we don't
@@ -140,7 +144,9 @@ export function* resolveAndWrap(
     //this is important for good error messages in this case
     return yield* wrapForMethod(methods[0], inputs, {
       userDefinedTypes,
-      allowOptions
+      allowOptions,
+      allowJson,
+      strictBooleans
     });
   }
   //OK, so, there are multiple possibilities then.  let's try to filter things down by length.
@@ -162,7 +168,9 @@ export function* resolveAndWrap(
           name: "<options>",
           loose: true,
           oldOptionsBehavior: true, //HACK
-          userDefinedTypes
+          userDefinedTypes,
+          allowJson,
+          strictBooleans
         })
       );
       possibleOptions = wrappedOptions.value;
@@ -192,7 +200,9 @@ export function* resolveAndWrap(
       arguments: yield* wrapMultiple(method.inputs, inputs, {
         userDefinedTypes,
         loose: true,
-        name: "<arguments>"
+        name: "<arguments>",
+        allowJson,
+        strictBooleans
       }),
       options: {}
     };
@@ -209,7 +219,9 @@ export function* resolveAndWrap(
       arguments: yield* wrapMultiple(method.inputs, inputs, {
         userDefinedTypes,
         loose: true,
-        name: "<arguments>"
+        name: "<arguments>",
+        allowJson,
+        strictBooleans
       }),
       options: possibleOptions
     };
@@ -233,7 +245,9 @@ export function* resolveAndWrap(
       //although yes this means options will be re-wrapped, oh well
       wrapped = yield* wrapForMethodRaw(method, inputs, {
         userDefinedTypes,
-        allowOptions
+        allowOptions,
+        allowJson,
+        strictBooleans
       });
     } catch (error) {
       //if there's an error, don't add it
