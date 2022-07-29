@@ -1149,11 +1149,14 @@ export class ContractEncoder {
    * [[Format.Values.ContractValue|ContractValue]]; the specific type
    * does not matter.
    *
-   * **Booleans**: Almost any input is accepted (as long as it's not type/value
-   * input for a different type), but how it is interpreted depends on the
-   * input.  A boolean will be interpreted in the obvious way, and a `Boolean`
-   * will be unwrapped.  A string will be considered true unless it is falsy or
-   * is equal (ignoring case) to the string `"false"`.  A `String` will be
+   * **Booleans**: Unless the `strictBooleans` option is passed, almost any
+   * input is accepted (as long as it's not type/value input for a different
+   * type), but how it is interpreted depends on the input.  A boolean will be
+   * interpreted in the obvious way, and a `Boolean` will be unwrapped.  A
+   * string will be considered true unless it is falsy or is equal (ignoring
+   * case) to the string `"false"`; however, if `strictBooleans` is passed, then
+   * only strings that are (ignoring case) equal to `"true"` or `"false"` will
+   * be accepted.  A `String` will be
    * considered true if and only if the underlying string is.  A number will be
    * considered true so long as it is truthy, and a `Number` will be considered
    * true if and only if the underlying number is.  A
@@ -1172,7 +1175,8 @@ export class ContractEncoder {
    * [[Format.Values.BoolValue|BoolValues]] or a
    * [[Format.Values.UserDefinedTypeValue|UserDefinedTypeValue]] on top of one,
    * will be rejected.  All other inputs will be considered true so long as
-   * they are truthy.
+   * they are truthy, unless `strictBooleans` is passed, in which case they will
+   * be rejected.
    *
    * **Decimal fixed-point types**: Input for fixed-point decimal types is
    * similar to input for integer types.  The differences are as follows:
@@ -1198,12 +1202,16 @@ export class ContractEncoder {
    * **Arrays**: The input may be an array, or it may be a
    * [[Format.Values.ArrayValue|ArrayValue]].  In the latter case,
    * whether it is static-length or dynamic-length does not need to match
-   * (unless strict checking is on, see [[resolveAndWrap]]).
+   * (unless strict checking is on, see [[resolveAndWrap]]).  If the `allowJson`
+   * option is passed, the array may also be a JSON string.  Note that any allowed
+   * format is allowed for the individual elements.
    *
    * **Structs and tuples**: The input can be given either as an array or as an
-   * object.  If given as an array, the elements should be the members of the
-   * struct/tuple, in order.  If given as an object, it should be keyed by the
-   * struct or tuple's field names; if any of the elements of the tuple are
+   * object; if the `allowJson` option is passed, it may also be given as a
+   * JSON string for one of these (any format is allowed for the individual
+   * elements).  If given as an array, the elements should be the members of
+   * the struct/tuple, in order.  If given as an object, it should be keyed by
+   * the struct or tuple's field names; if any of the elements of the tuple are
    * unnamed, then input cannot be given as an object.  Additional keys are
    * also allowed unless strict checking is on.  Input may also be given as a
    * [[Format.Values.StructValue|StructValue]] or
