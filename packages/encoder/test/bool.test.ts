@@ -91,7 +91,9 @@ describe("Encoding", () => {
     });
 
     it("Encodes booleans (true)", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, [true]);
+      const { data } = await encoder.encodeTxNoResolution(abi, [true], {
+        strictBooleans: true
+      });
       assert.strictEqual(
         data,
         selector +
@@ -100,7 +102,9 @@ describe("Encoding", () => {
     });
 
     it("Encodes booleans (false)", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, [false]);
+      const { data } = await encoder.encodeTxNoResolution(abi, [false], {
+        strictBooleans: true
+      });
       assert.strictEqual(
         data,
         selector +
@@ -109,13 +113,26 @@ describe("Encoding", () => {
     });
 
     it("Encodes boxed booleans", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, [
-        new Boolean(false)
-      ]);
+      const { data } = await encoder.encodeTxNoResolution(
+        abi,
+        [new Boolean(false)],
+        { strictBooleans: true }
+      );
       assert.strictEqual(
         data,
         selector +
           "0000000000000000000000000000000000000000000000000000000000000000"
+      );
+    });
+
+    it("Encodes variations of 'true' as true", async () => {
+      const { data } = await encoder.encodeTxNoResolution(abi, ["tRue"], {
+        strictBooleans: true
+      });
+      assert.strictEqual(
+        data,
+        selector +
+          "0000000000000000000000000000000000000000000000000000000000000001"
       );
     });
 
@@ -138,7 +155,9 @@ describe("Encoding", () => {
     });
 
     it("Encodes variations of 'false' as false", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, ["FaLsE"]);
+      const { data } = await encoder.encodeTxNoResolution(abi, ["FaLsE"], {
+        strictBooleans: true
+      });
       assert.strictEqual(
         data,
         selector +
@@ -158,9 +177,11 @@ describe("Encoding", () => {
     });
 
     it("Encodes boxed variations of 'false' as false", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, [
-        new String("FaLsE")
-      ]);
+      const { data } = await encoder.encodeTxNoResolution(
+        abi,
+        [new String("FaLsE")],
+        { strictBooleans: true }
+      );
       assert.strictEqual(
         data,
         selector +
@@ -412,6 +433,19 @@ describe("Encoding", () => {
         assert.fail(
           "Error result (of general sort) for UDVT got encoded as bool"
         );
+      } catch (error) {
+        if (error.name !== "TypeMismatchError") {
+          throw error;
+        }
+      }
+    });
+
+    it("Rejects general strings with strictBooleans turned on", async () => {
+      try {
+        await encoder.encodeTxNoResolution(abi, ["moobytooble"], {
+          strictBooleans: true
+        });
+        assert.fail("General string got encoded as bool despite strict option");
       } catch (error) {
         if (error.name !== "TypeMismatchError") {
           throw error;

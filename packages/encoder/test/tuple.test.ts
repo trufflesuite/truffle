@@ -135,6 +135,32 @@ describe("Encoding", () => {
         );
       });
 
+      it("Encodes JSON arrays when enabled", async () => {
+        const { data } = await encoder.encodeTxNoResolution(
+          abi,
+          ['["0xff", 1]'],
+          { allowJson: true }
+        );
+        assert.strictEqual(
+          data,
+          selector +
+            "ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+        );
+      });
+
+      it("Encodes JSON objects when enabled", async () => {
+        const { data } = await encoder.encodeTxNoResolution(
+          abi,
+          ['{"x": "0xff", "y": 1}'],
+          { allowJson: true }
+        );
+        assert.strictEqual(
+          data,
+          selector +
+            "ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+        );
+      });
+
       it("Encodes type/value pairs (struct)", async () => {
         const { data } = await encoder.encodeTxNoResolution(abi, [
           {
@@ -250,6 +276,56 @@ describe("Encoding", () => {
         try {
           await encoder.encodeTxNoResolution(abi, [{ x: 255, y: 1 }]);
           assert.fail("Error in element should cause error");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects JSON when not enabled", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ['{"x": "0xff", "y": 1 }']);
+          assert.fail("JSON should be rejected unless explicitly enabled");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects invalid JSON", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ['{"x": "0xff", "y": 1'], {
+            allowJson: true
+          });
+          assert.fail("Invalid JSON should be rejected");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects array JSON that doesn't match", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ['["0xff", 1, 107]'], {
+            allowJson: true
+          });
+          assert.fail("JSON of wrong length got encoded");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects object JSON that doesn't match", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ['{"z": 107, "w": 683}'], {
+            allowJson: true
+          });
+          assert.fail("JSON with wrong keys got encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
             throw error;
