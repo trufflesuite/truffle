@@ -6,9 +6,7 @@ const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
-const Config = require("@truffle/config");
 const Web3 = require("web3");
-const yargs = require("yargs");
 
 const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
@@ -226,12 +224,7 @@ const getConfiguredNetworkUrl = function (customConfig, isDashboardNetwork) {
   return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}${urlSuffix}`;
 };
 
-const deriveNetworkEnvironment = function (input) {
-  //detect config so we can get the provider and resolver without having to serialize
-  //and deserialize them
-  const { network, config, url } = yargs(input[0]).argv;
-  const detectedConfig = Config.detect({ network, config });
-
+const deriveConfigEnvironment = function (detectedConfig, network, url) {
   let configuredNetwork;
 
   const configDefinesProvider =
@@ -299,5 +292,5 @@ module.exports = {
   prepareOptions,
   runCommand,
   getConfiguredNetworkUrl,
-  deriveNetworkEnvironment
+  deriveConfigEnvironment
 };

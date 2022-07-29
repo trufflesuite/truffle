@@ -1,4 +1,6 @@
 const TruffleError = require("@truffle/error");
+const Config = require("@truffle/config");
+const yargs = require("yargs");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
@@ -11,19 +13,24 @@ global.crypto = {
   getRandomValues: require("get-random-values")
 };
 
+//detect config so we can get the provider and resolver without having to serialize
+//and deserialize them
+const { network, config, url } = yargs(input[0]).argv;
+const detectedConfig = Config.detect({ network, config });
+
 function main() {
   const {
     getCommand,
     prepareOptions,
     runCommand,
-    deriveNetworkEnvironment
+    deriveConfigEnvironment
   } = require("./command-utils");
-  const configuredNetwork = deriveNetworkEnvironment(input);
+  const derivedConfig = deriveConfigEnvironment(detectedConfig, network, url);
   const command = getCommand({ inputStrings, options: {}, noAliases: false });
   const options = prepareOptions({
     command,
     inputStrings,
-    options: configuredNetwork
+    options: derivedConfig
   });
 
   runCommand(command, options)
@@ -41,5 +48,3 @@ function main() {
 }
 
 main();
-
-module.exports = { main };
