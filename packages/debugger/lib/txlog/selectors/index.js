@@ -437,6 +437,49 @@ let txlog = createSelectorTree({
             }
           : node;
       return tie(log[""]); //"" is always the root node
+    }),
+
+    /**
+     * txlog.views.flattedEvents
+     */
+    flattedEvents: createLeaf(["./transactionLog"], log => {
+      const getFlattedEvents = (node, address, codeAddress, status) => {
+        switch (node.type) {
+          case "transaction":
+            return node.actions.flatMap(subNode =>
+              getFlattedEvents(subNode, node.origin, node.origin, status)
+            );
+          case "callexternal":
+            const subNodeStatus = ["return", "selfdestruct"].includes(
+              node.returnKind
+            );
+            return node.actions.flatMap(subNode =>
+              getFlattedEvents(
+                subNode,
+                node.isDelegate ? address : node.address,
+                node.address,
+                status && subNodeStatus
+              )
+            );
+          case "callinternal":
+            return node.actions.flatMap(subNode =>
+              getFlattedEvents(subNode, address, codeAddress, status)
+            );
+          case "event":
+            return [
+              {
+                decoding: node.decoding,
+                raw: node.raw,
+                address,
+                codeAddress,
+                status
+              }
+            ];
+          default:
+            return [];
+        }
+      };
+      return getFlattedEvents(log, null, null, true);
     })
   }
 });
