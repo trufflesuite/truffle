@@ -43,6 +43,9 @@ const Develop = {
     const debugServer = debug("develop:ipc:server");
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
+    // make the `develop:ganache` debug prefix orange
+    // 215 is Xterm number for "SandyBrown" (#ffaf5f)
+    debugRPC.color = 215;
 
     options.retry = options.retry || false;
     options.log = options.log || false;
