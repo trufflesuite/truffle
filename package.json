@@ -12,7 +12,8 @@
     "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "solc-bump": "node ./scripts/solc-bump.js",
     "update": "lernaupdate",
-    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test  -- --missing ."
+    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test  -- --missing .",
+    "check-truffle-namespace-dependency-versions": "node ./scripts/check-truffle-namespace-dependency-versions.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.6.0",
@@ -37,6 +38,7 @@
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": "eslint --fix",
-    "*.{js,ts,jsx,tsx,css,md}": "prettier --write"
+    "*.{js,ts,jsx,tsx,css,md}": "prettier --write",
+    "packages/*/package.json": "./scripts/check-truffle-namespace-dependency-versions.js"
   }
 }
