@@ -39,6 +39,6 @@
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": "eslint --fix",
     "*.{js,ts,jsx,tsx,css,md}": "prettier --write",
-    "packages/*/package.json": "./scripts/check-truffle-namespace-dependency-versions.js"
+    "packages/*/package.json": "node ./scripts/check-truffle-namespace-dependency-versions.js"
   }
 }
