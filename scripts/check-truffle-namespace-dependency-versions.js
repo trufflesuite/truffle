@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const chalk = require("chalk");
+
 const { Range } = require("semver");
 
 const debug = require("debug")("check-package-versions");
@@ -8,6 +10,7 @@ const debug = require("debug")("check-package-versions");
 function main() {
   const packages = readPackages();
   const errors = [];
+  const warnings = [];
 
   for (const candidateName in packages) {
     for (const dependencyName in packages) {
@@ -19,15 +22,38 @@ function main() {
       } catch (err) {
         errors.push(err.message);
       }
+      try {
+        checkDependencyVersionRange(
+          packages[candidateName],
+          packages[dependencyName]
+        );
+      } catch (err) {
+        warnings.push(err.message);
+      }
     }
   }
 
-  if (errors.length > 0) {
-    console.error(errors.join("\n"));
-    process.exit(1);
+  for (const error of errors) {
+    console.error(chalk.red("Error:"), error);
+  }
+  for (const warning of warnings) {
+    console.error(chalk.yellow("Warning:"), warning);
   }
 
-  console.log("No errors found");
+  const doneColor =
+    errors.length > 0
+      ? chalk.red
+      : warnings.length > 0
+      ? chalk.yellow
+      : chalk.green;
+  console.error(
+    doneColor("Done."),
+    `${errors.length} errors, ${warnings.length} warnings found for @truffle namespace version dependencies.`
+  );
+
+  if (errors.length > 0) {
+    process.exit(1);
+  }
 }
 
 function getPackageNames() {
@@ -69,6 +95,34 @@ function checkDependencyVersion(candidate, dependency) {
       } else {
         debug(
           `${candidate.name} requires ${name}@${version} (${version} in range ${deps[name]})`
+        );
+      }
+    } else {
+      debug(`${candidate.name} does not require ${name}`);
+    }
+  }
+}
+
+function checkDependencyVersionRange(candidate, dependency) {
+  const name = dependency.name;
+  const version = dependency.version;
+
+  for (const depType of [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies"
+  ]) {
+    const deps = candidate[depType];
+    if (deps && deps[name]) {
+      const rawRange = deps[name];
+
+      if (rawRange !== `^${version}`) {
+        throw new Error(
+          `Package "${candidate.name}" depends on "${name}@${rawRange}", but range has not been updated for version ${version}`
+        );
+      } else {
+        debug(
+          `${candidate.name} requires ${name}@${version} (${rawRange} is up-to-date for version ${version})`
         );
       }
     } else {
