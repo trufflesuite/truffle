@@ -5,28 +5,41 @@ const { Range } = require("semver");
 
 const debug = require("debug")("check-package-versions");
 
-function getPackageNames() {
-  if (!process.env["TRUFFLE_ROOT"]) {
-    throw new Error(
-      "Must define TRUFFLE_ROOT environment variable with a value set to the path of the root of your local truffle repository"
-    );
+function main() {
+  const packages = readPackages();
+  const errors = [];
+
+  for (const candidateName in packages) {
+    for (const dependencyName in packages) {
+      try {
+        checkDependencyVersion(
+          packages[candidateName],
+          packages[dependencyName]
+        );
+      } catch (err) {
+        errors.push(err.message);
+      }
+    }
   }
-  return fs.readdirSync(path.join(process.env["TRUFFLE_ROOT"], "packages"));
+
+  if (errors.length > 0) {
+    console.error(errors.join("\n"));
+    process.exit(1);
+  }
+
+  console.log("No errors found");
+}
+
+function getPackageNames() {
+  return fs.readdirSync(path.join(__dirname, "..", "packages"));
 }
 
 function readPackages() {
-  if (!process.env["TRUFFLE_ROOT"]) {
-    throw new Error(
-      "Must define TRUFFLE_ROOT environment variable with a value set to the path of the root of your local truffle repository"
-    );
-  }
   const packages = getPackageNames();
   const packageSpecs = {};
   for (const packageName of packages) {
     const packageFilePath = path.join(
-      process.env["TRUFFLE_ROOT"],
-      "packages",
-      packageName,
+      path.resolve(__dirname, "..", "packages", packageName),
       "package.json"
     );
     const rawJson = fs.readFileSync(packageFilePath, { encoding: "utf8" });
@@ -62,31 +75,6 @@ function checkDependencyVersion(candidate, dependency) {
       debug(`${candidate.name} does not require ${name}`);
     }
   }
-}
-
-function main() {
-  const packages = readPackages();
-  const errors = [];
-
-  for (const candidateName in packages) {
-    for (const dependencyName in packages) {
-      try {
-        checkDependencyVersion(
-          packages[candidateName],
-          packages[dependencyName]
-        );
-      } catch (err) {
-        errors.push(err.message);
-      }
-    }
-  }
-
-  if (errors.length > 0) {
-    console.error(errors.join("\n"));
-    process.exit(1);
-  }
-
-  console.log("No errors found");
 }
 
 if (require.main === module) {
