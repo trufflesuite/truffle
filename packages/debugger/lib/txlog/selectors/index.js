@@ -450,7 +450,7 @@ let txlog = createSelectorTree({
               getFlattedEvents(subNode, node.origin, node.origin, status)
             );
           case "callexternal":
-            const subNodeStatus = ["return", "selfdestruct"].includes(
+            const subNodeStatus = !["revert", "unwind"].includes(
               node.returnKind
             );
             return node.actions.flatMap(subNode =>
