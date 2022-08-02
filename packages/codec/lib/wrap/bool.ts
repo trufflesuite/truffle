@@ -70,18 +70,18 @@ function* boolFromString(
   const lowerCasedInput = input.toLowerCase();
   if (
     wrapOptions.strictBooleans &&
-    !["true", "false"].includes(lowerCasedInput)
+    !["true", "false", "1", "0"].includes(lowerCasedInput)
   ) {
     throw new TypeMismatchError(
       dataType,
       input,
       wrapOptions.name,
       5,
-      "Input was neither 'true' nor 'false'"
+      "Input was not 'true', 'false', '1', or '0'"
     );
   }
-  //strings are true unless they're falsy or the case-insensitive string "false"
-  const asBoolean = Boolean(input) && input.toLowerCase() !== "false";
+  //strings are true unless they're falsy or the case-insensitive strings "false" or "0"
+  const asBoolean = Boolean(input) && !["false", "0"].includes(lowerCasedInput);
   return {
     type: dataType,
     kind: "value" as const,
