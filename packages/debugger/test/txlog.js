@@ -30,6 +30,8 @@ contract VizTest is Nothing {
   event TakesArgs(uint indexed x, uint y);
   event Confusing(uint a, bytes32 indexed b, uint c);
 
+  Tertiary tert;
+
   function testCall(uint x) public returns (uint y) {
     return called(x);
   }
@@ -70,7 +72,16 @@ contract VizTest is Nothing {
     VizLibrary.confuse();
   }
 
-  constructor() payable {
+  constructor(Tertiary _tert) payable {
+    tert = _tert;
+  }
+
+  function testFlatEvents() public {
+    testCall(1);
+    try tert.noisyFail() {
+    } catch (bytes memory) {
+    }
+    testCall(1);
   }
 }
 
@@ -97,6 +108,17 @@ contract Secondary {
   }
 }
 
+contract Tertiary {
+
+  event Tert();
+
+  function noisyFail() public {
+    emit Tert();
+    VizLibrary.loudIncrement(1);
+    revert();
+  }
+}
+
 library VizLibrary {
   event Noise();
   event Confusing(uint x, bytes32 y, uint indexed z);
@@ -117,13 +139,17 @@ let sources = {
 };
 
 const __MIGRATION = `
-let VizTest = artifacts.require("VizTest");
-let VizLibrary = artifacts.require("VizLibrary");
+const VizTest = artifacts.require("VizTest");
+const VizLibrary = artifacts.require("VizLibrary");
+const Tertiary = artifacts.require("Tertiary");
 
-module.exports = function(deployer) {
-  deployer.deploy(VizLibrary);
-  deployer.link(VizLibrary, VizTest);
-  deployer.deploy(VizTest, { value: 100 });
+module.exports = async function(deployer) {
+  await deployer.deploy(VizLibrary);
+  await deployer.link(VizLibrary, Tertiary);
+  await deployer.deploy(Tertiary);
+  const tert = await Tertiary.deployed();
+  await deployer.link(VizLibrary, VizTest);
+  await deployer.deploy(VizTest, tert.address, { value: 100 });
 };
 `;
 
@@ -622,6 +648,49 @@ describe("Transaction log (visualizer)", function () {
         raw.data,
         "0x00000000000000000000000000000000000000000000000000000000000002ab"
       ); //683 in hex
+    });
+
+    it("Correctly flattens events", async function () {
+      this.timeout(12000);
+      const instance = await abstractions.VizTest.deployed();
+      const tertInstance = await abstractions.Tertiary.deployed();
+      const libInstance = await abstractions.VizLibrary.deployed();
+      const receipt = await instance.testFlatEvents();
+      const txHash = receipt.tx;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations
+      });
+
+      await bugger.runToEnd();
+
+      const flattedEvents = bugger.view(txlog.views.flattedEvents);
+      assert.lengthOf(flattedEvents, 4);
+      //event #0: Dummy()
+      let event = flattedEvents[0];
+      assert.strictEqual(event.decoding.abi.name, "Dummy");
+      assert.strictEqual(event.address, instance.address);
+      assert.strictEqual(event.codeAddress, instance.address);
+      assert.isTrue(event.status);
+      //event #1: Tert()
+      event = flattedEvents[1];
+      assert.strictEqual(event.decoding.abi.name, "Tert");
+      assert.strictEqual(event.address, tertInstance.address);
+      assert.strictEqual(event.codeAddress, tertInstance.address);
+      assert.isFalse(event.status);
+      //event #2: Noise()
+      event = flattedEvents[2];
+      assert.strictEqual(event.decoding.abi.name, "Noise");
+      assert.strictEqual(event.address, tertInstance.address);
+      assert.strictEqual(event.codeAddress, libInstance.address);
+      assert.isFalse(event.status);
+      //event #3: Dummy()
+      event = flattedEvents[3];
+      assert.strictEqual(event.decoding.abi.name, "Dummy");
+      assert.strictEqual(event.address, instance.address);
+      assert.strictEqual(event.codeAddress, instance.address);
+      assert.isTrue(event.status);
     });
 
     it("Correctly logs an event inside a library", async function () {
