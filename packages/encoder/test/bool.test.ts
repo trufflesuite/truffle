@@ -165,6 +165,28 @@ describe("Encoding", () => {
       );
     });
 
+    it("Encodes '1' as true", async () => {
+      const { data } = await encoder.encodeTxNoResolution(abi, ["1"], {
+        strictBooleans: true
+      });
+      assert.strictEqual(
+        data,
+        selector +
+          "0000000000000000000000000000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Encodes '0' as false", async () => {
+      const { data } = await encoder.encodeTxNoResolution(abi, ["0"], {
+        strictBooleans: true
+      });
+      assert.strictEqual(
+        data,
+        selector +
+          "0000000000000000000000000000000000000000000000000000000000000000"
+      );
+    });
+
     it("Encodes boxed empty strings as false", async () => {
       const { data } = await encoder.encodeTxNoResolution(abi, [
         new String("")
