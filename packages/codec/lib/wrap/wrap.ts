@@ -263,13 +263,13 @@ function* arrayFromJson(
   let parsedInput: unknown;
   try {
     parsedInput = JSON.parse(input);
-  } catch {
+  } catch (error) {
     throw new TypeMismatchError(
       dataType,
       input,
       wrapOptions.name,
       5,
-      "Input was not valid JSON"
+      `Input was not valid JSON: ${error.message}`
     );
   }
   return yield* arrayFromArray(dataType, parsedInput, wrapOptions);
@@ -502,13 +502,13 @@ function* tupleFromJson(
   let parsedInput: unknown;
   try {
     parsedInput = JSON.parse(input);
-  } catch {
+  } catch (error) {
     throw new TypeMismatchError(
       dataType,
       input,
       wrapOptions.name,
       5,
-      "Input was not valid JSON"
+      `Input was not valid JSON: ${error.message}`
     );
   }
   debug("input is JSON");
