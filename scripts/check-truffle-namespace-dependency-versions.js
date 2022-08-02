@@ -58,7 +58,8 @@ const depTypes = [
   "devDependencies",
   "peerDependencies",
   "optionalDependencies",
-  "bundleDependencies"
+  "bundleDependencies", // may be bool. may be spelled "bundleDependencies"
+  "bundledDependencies" // may be bool, may be spelled "bundleDependencies"
 ];
 
 function* checkDependencyVersionRange(candidate, dependency) {
@@ -67,7 +68,7 @@ function* checkDependencyVersionRange(candidate, dependency) {
 
   for (const depType of depTypes) {
     const deps = candidate[depType];
-    if (deps && deps[name]) {
+    if (typeof deps === "object" && deps[name]) {
       const rawRange = deps[name];
 
       if (rawRange !== `^${version}`) {
