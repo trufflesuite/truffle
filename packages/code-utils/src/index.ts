@@ -33,12 +33,26 @@ export function parseCode(
   if (stripMetadata && code.length >= 2) {
     // Remove the contract metadata; last two bytes encode its length (not
     // including those two bytes)
+    let foundMetadata = false;
     const metadataLength = (code[code.length - 2] << 8) + code[code.length - 1];
     //check: is this actually valid CBOR?
     if (metadataLength + 2 <= code.length) {
       const metadata = code.subarray(-(metadataLength + 2), -2);
       if (isValidCBOR(metadata)) {
         code = code.subarray(0, -(metadataLength + 2));
+        foundMetadata = true;
+      }
+    }
+    if (!foundMetadata) {
+      const vyper034MetadataLength = 11; //vyper 0.3.4 (that version specifically;
+      //this will be corrected in 0.3.5, and earlier vyper versions do not include
+      //metadata) has metadata on the end but with no length information supplied
+      //afterward; instead it has a fixed length of 11
+      if (vyper034MetadataLength <= code.length) {
+        const metadata = code.subarray(-vyper034MetadataLength);
+        if (isValidCBOR(metadata)) {
+          code = code.subarray(0, -vyper034MetadataLength);
+        }
       }
     }
   }
