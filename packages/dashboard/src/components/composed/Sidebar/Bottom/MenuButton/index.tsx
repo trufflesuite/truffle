@@ -2,7 +2,7 @@ import { Menu, Text, createStyles } from "@mantine/core";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "@wagmi/core";
 import { Slash } from "react-feather";
-import { useDash } from "src/hooks";
+import { useDash, useSavedColorScheme } from "src/hooks";
 import Button from "src/components/composed/Sidebar/Bottom/MenuButton/Button";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
@@ -29,6 +29,7 @@ function MenuButton(): JSX.Element {
   const {
     state: { chainInfo }
   } = useDash()!;
+  const [colorScheme] = useSavedColorScheme();
   const { classes } = useStyles();
 
   if (!isConnected) {
@@ -53,7 +54,7 @@ function MenuButton(): JSX.Element {
           <Menu.Item
             onClick={() => void disconnect()}
             icon={<Slash />}
-            color="pink"
+            color={colorScheme === "dark" ? "pink" : "orange"}
           >
             Disconnect
           </Menu.Item>

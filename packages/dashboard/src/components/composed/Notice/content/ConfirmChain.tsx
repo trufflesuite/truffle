@@ -9,7 +9,7 @@ import {
   createStyles
 } from "@mantine/core";
 import { Info } from "react-feather";
-import { useDash } from "src/hooks";
+import { useDash, useSavedColorScheme } from "src/hooks";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
@@ -30,6 +30,7 @@ function ConfirmChain(): JSX.Element {
     state: { chainInfo },
     operations: { toggleNotice }
   } = useDash()!;
+  const [colorScheme] = useSavedColorScheme();
   const { classes } = useStyles();
 
   const title = (
@@ -44,7 +45,7 @@ function ConfirmChain(): JSX.Element {
       Confirm&nbsp;
       <Badge
         size="md"
-        color="pink"
+        color={colorScheme === "dark" ? "pink" : "orange"}
         leftSection={<ChainIcon chainID={chainInfo.id!} height={11} />}
         pl={5}
         pr={6}
