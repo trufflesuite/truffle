@@ -34,33 +34,33 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
       width: "80%"
     }
   },
-  confirmBtnRightIcon: {
+  confirmButtonRightIcon: {
     marginLeft: 4,
     marginRight: 6
   }
 }));
 
-type TxModalProps = {
+type RPCModalProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   opened: boolean;
   close: () => void;
 };
 
-function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
+function RPCModal({ lifecycle, opened, close }: RPCModalProps): JSX.Element {
   const { method, params } = lifecycle.message.payload;
   const paramsStringified = JSON.stringify(params, null, 2);
   const paramsNumLines = (paramsStringified.match(/\n/g)?.length || 0) + 1;
   const {
     state: { chainInfo },
-    ops: { userConfirmMessage, userRejectMessage }
+    operations: { userConfirmMessage, userRejectMessage }
   } = useDash()!;
   const { classes } = useStyles();
   const title = <Title order={4}>Review RPC method call details</Title>;
 
-  const onConfirmBtnClick = async () => {
+  const onClickConfirm = async () => {
     await userConfirmMessage(lifecycle);
   };
-  const onRejectBtnClick = () => void userRejectMessage(lifecycle);
+  const onClickReject = () => void userRejectMessage(lifecycle);
 
   return (
     <Modal
@@ -106,13 +106,13 @@ function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
       </Table>
 
       <Group position="right" mt="lg" mr="xs">
-        <Button onClick={onRejectBtnClick} color="truffle-beige">
+        <Button onClick={onClickReject} color="truffle-beige">
           Reject
         </Button>
         <Button
-          onClick={onConfirmBtnClick}
+          onClick={onClickConfirm}
           rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
-          classNames={{ rightIcon: classes.confirmBtnRightIcon }}
+          classNames={{ rightIcon: classes.confirmButtonRightIcon }}
         >
           Confirm
         </Button>
@@ -121,4 +121,4 @@ function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
   );
 }
 
-export default TxModal;
+export default RPCModal;

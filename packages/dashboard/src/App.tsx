@@ -7,7 +7,7 @@ import { DashProvider } from "src/contexts/DashContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Components
 import Layout from "src/components/composed/Layout";
-import Txs from "src/components/composed/Txs";
+import RPCs from "src/components/composed/RPCs";
 import Palette from "src/components/composed/Palette";
 import MantineGlobal from "src/components/MantineGlobal";
 
@@ -22,8 +22,8 @@ function App(): JSX.Element {
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Layout />}>
-                    <Route index element={<Navigate to="/txs" replace />} />
-                    <Route path="txs" element={<Txs />} />
+                    <Route index element={<Navigate to="/rpcs" replace />} />
+                    <Route path="rpcs" element={<RPCs />} />
                   </Route>
                   {process.env.NODE_ENV === "development" && (
                     <Route path="colors" element={<Palette />} />

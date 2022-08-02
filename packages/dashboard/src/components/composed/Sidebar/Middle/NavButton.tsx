@@ -4,7 +4,7 @@ import { UnstyledButton, Group, Text, createStyles } from "@mantine/core";
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius, fn } = theme;
   return {
-    btn: {
+    button: {
       display: "block",
       borderRadius: radius.sm
     },
@@ -27,7 +27,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
   };
 });
 
-type NavBtnProps = {
+type NavButtonProps = {
   to: string;
   label?: string;
   icon?: React.ReactNode;
@@ -35,13 +35,13 @@ type NavBtnProps = {
   disabled?: boolean;
 };
 
-function NavBtn({
+function NavButton({
   to,
   label,
   icon,
   badge,
   disabled
-}: NavBtnProps): JSX.Element {
+}: NavButtonProps): JSX.Element {
   const { classes } = useStyles();
 
   return (
@@ -50,7 +50,7 @@ function NavBtn({
       to={to}
       px="lg"
       py="md"
-      className={`${classes.btn} ${
+      className={`${classes.button} ${
         disabled ? classes.disabled : classes.enabled
       }`}
     >
@@ -65,4 +65,4 @@ function NavBtn({
   );
 }
 
-export default NavBtn;
+export default NavButton;

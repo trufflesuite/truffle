@@ -4,7 +4,7 @@ import { Moon, Sun } from "react-feather";
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme } = theme;
   return {
-    btn: {
+    actionIcon: {
       color: colorScheme === "dark" ? colors.yellow[4] : colors.blue[6],
       backgroundColor:
         colorScheme === "dark"
@@ -28,7 +28,7 @@ function ColorSchemeToggle(): JSX.Element {
   const handleClick = () => void toggleColorScheme();
 
   return (
-    <ActionIcon onClick={handleClick} size="lg" className={classes.btn}>
+    <ActionIcon onClick={handleClick} size="lg" className={classes.actionIcon}>
       {colorScheme === "dark" ? (
         <Sun {...featherIconProps} />
       ) : (

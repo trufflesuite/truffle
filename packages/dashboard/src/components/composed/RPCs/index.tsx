@@ -1,7 +1,7 @@
 import { Stack, Space, Text, Anchor, createStyles } from "@mantine/core";
 import { ExternalLink } from "react-feather";
 import { useDash } from "src/hooks";
-import Tx from "src/components/composed/Txs/Tx";
+import RPC from "src/components/composed/RPCs/RPC";
 import LogoImg from "src/components/common/LogoImg";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
@@ -15,14 +15,14 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
   }
 }));
 
-function Txs(): JSX.Element {
+function RPCs(): JSX.Element {
   const { state } = useDash()!;
   const { classes } = useStyles();
 
   const content = Array.from(
     state.providerMessages,
     ([lifecycleMessageID, lifecycle]) => (
-      <Tx key={lifecycleMessageID} lifecycle={lifecycle} />
+      <RPC key={lifecycleMessageID} lifecycle={lifecycle} />
     )
   );
 
@@ -60,4 +60,4 @@ function Txs(): JSX.Element {
   }
 }
 
-export default Txs;
+export default RPCs;

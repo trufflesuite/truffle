@@ -3,7 +3,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { ChevronRight } from "react-feather";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import TxModal from "src/components/composed/Txs/Tx/TxModal";
+import RPCModal from "src/components/composed/RPCs/RPC/RPCModal";
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   root: {
@@ -22,18 +22,18 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   }
 }));
 
-type TxProps = {
+type RPCProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
 };
 
-function Tx({ lifecycle }: TxProps): JSX.Element {
+function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { method } = lifecycle.message.payload;
   const [modalOpened, modalHandlers] = useDisclosure(false);
   const { classes } = useStyles();
 
   return (
     <>
-      <TxModal
+      <RPCModal
         lifecycle={lifecycle}
         opened={modalOpened}
         close={modalHandlers.close}
@@ -57,4 +57,4 @@ function Tx({ lifecycle }: TxProps): JSX.Element {
   );
 }
 
-export default Tx;
+export default RPC;

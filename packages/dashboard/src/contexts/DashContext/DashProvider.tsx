@@ -87,7 +87,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     updateChangeInfo();
   }, [chain]);
 
-  const ops = {
+  const operations = {
     userConfirmMessage: async (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => await confirmMessage(lifecycle, provider),
@@ -99,7 +99,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   };
 
   return (
-    <DashContext.Provider value={{ state, ops }}>
+    <DashContext.Provider value={{ state, operations }}>
       {children}
     </DashContext.Provider>
   );

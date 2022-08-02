@@ -28,7 +28,7 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
 function ConfirmChain(): JSX.Element {
   const {
     state: { chainInfo },
-    ops: { toggleNotice }
+    operations: { toggleNotice }
   } = useDash()!;
   const { classes } = useStyles();
 

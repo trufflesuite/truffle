@@ -1,6 +1,6 @@
 import { Navbar, Badge } from "@mantine/core";
 import { Zap, Archive, Aperture } from "react-feather";
-import NavBtn from "src/components/composed/Sidebar/Middle/NavBtn";
+import NavButton from "src/components/composed/Sidebar/Middle/NavButton";
 
 function Middle(): JSX.Element {
   const featherIconProps = { size: 18 };
@@ -17,12 +17,12 @@ function Middle(): JSX.Element {
 
   return (
     <Navbar.Section grow py="sm">
-      <NavBtn
+      <NavButton
         label="Transactions / Calls"
-        to="/txs"
+        to="/rpcs"
         icon={<Zap {...featherIconProps} />}
       />
-      <NavBtn
+      <NavButton
         label="Contracts"
         to="/contracts"
         icon={<Archive {...featherIconProps} />}
@@ -30,7 +30,7 @@ function Middle(): JSX.Element {
         disabled={true}
       />
       {process.env.NODE_ENV === "development" && (
-        <NavBtn
+        <NavButton
           label="Colors"
           to="/colors"
           icon={<Aperture {...featherIconProps} />}

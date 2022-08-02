@@ -5,8 +5,7 @@ import type { State, Action } from "src/contexts/DashContext";
 
 export interface ContextValue {
   state: State;
-  dispatch?: React.Dispatch<Action>;
-  ops: {
+  operations: {
     userConfirmMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => Promise<any>;
@@ -15,6 +14,7 @@ export interface ContextValue {
     ) => any;
     toggleNotice: () => void;
   };
+  dispatch?: React.Dispatch<Action>;
 }
 
 const DashContext = createContext<ContextValue | null>(null);

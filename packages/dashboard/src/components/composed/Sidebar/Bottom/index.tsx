@@ -1,10 +1,10 @@
 import { Navbar } from "@mantine/core";
-import MenuBtn from "src/components/composed/Sidebar/Bottom/MenuBtn";
+import MenuButton from "src/components/composed/Sidebar/Bottom/MenuButton";
 
 function Bottom(): JSX.Element {
   return (
     <Navbar.Section py="xl">
-      <MenuBtn />
+      <MenuButton />
     </Navbar.Section>
   );
 }

@@ -1,13 +1,13 @@
 import React from "react";
-import { Button, createStyles } from "@mantine/core";
+import { Button as MantineButton, createStyles } from "@mantine/core";
 import { useAccount } from "wagmi";
-import ConnectedContent from "src/components/composed/Sidebar/Bottom/MenuBtn/Btn/ConnectedContent";
-import DisconnectedContent from "src/components/composed/Sidebar/Bottom/MenuBtn/Btn/DisconnectedContent";
+import ConnectedContent from "src/components/composed/Sidebar/Bottom/MenuButton/Button/ConnectedContent";
+import DisconnectedContent from "src/components/composed/Sidebar/Bottom/MenuButton/Button/DisconnectedContent";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius } = theme;
   return {
-    btnRoot: {
+    root: {
       width: "100%",
       border: "none",
       borderRadius: radius.sm,
@@ -26,29 +26,29 @@ const useStyles = createStyles((theme, _params, _getRef) => {
   };
 });
 
-type BtnProps = {
+type ButtonProps = {
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
-const Btn = React.forwardRef<HTMLButtonElement, BtnProps>(
-  ({ onClick, ...args }: BtnProps, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ onClick, ...args }: ButtonProps, ref) => {
     const { isConnected } = useAccount();
     const { classes } = useStyles();
 
     return (
-      <Button
+      <MantineButton
         ref={ref}
         onClick={onClick}
         px="xl"
         py="md"
         unstyled
-        classNames={{ root: classes.btnRoot }}
+        classNames={{ root: classes.root }}
         {...args}
       >
         {isConnected ? <ConnectedContent /> : <DisconnectedContent />}
-      </Button>
+      </MantineButton>
     );
   }
 );
 
-export default Btn;
+export default Button;

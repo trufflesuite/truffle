@@ -3,7 +3,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "@wagmi/core";
 import { Slash } from "react-feather";
 import { useDash } from "src/hooks";
-import Btn from "src/components/composed/Sidebar/Bottom/MenuBtn/Btn";
+import Button from "src/components/composed/Sidebar/Bottom/MenuButton/Button";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, fn } = theme;
@@ -22,7 +22,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
   };
 });
 
-function MenuBtn(): JSX.Element {
+function MenuButton(): JSX.Element {
   const { connect } = useConnect({ connector: new InjectedConnector() });
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
@@ -32,7 +32,7 @@ function MenuBtn(): JSX.Element {
   const { classes } = useStyles();
 
   if (!isConnected) {
-    return <Btn onClick={() => void connect()} />;
+    return <Button onClick={() => void connect()} />;
   } else {
     return (
       <Menu
@@ -41,7 +41,7 @@ function MenuBtn(): JSX.Element {
         classNames={{ dropdown: classes.menuDropdown }}
       >
         <Menu.Target>
-          <Btn />
+          <Button />
         </Menu.Target>
 
         <Menu.Dropdown>
@@ -63,4 +63,4 @@ function MenuBtn(): JSX.Element {
   }
 }
 
-export default MenuBtn;
+export default MenuButton;
