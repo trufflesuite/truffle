@@ -8,7 +8,7 @@ import type {
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
 import { DashContext, reducer, initialState } from "src/contexts/DashContext";
-import type { stateType } from "src/contexts/DashContext";
+import type { State } from "src/contexts/DashContext";
 import {
   confirmMessage,
   rejectMessage,
@@ -65,7 +65,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
   useEffect(() => {
     const updateChangeInfo = () => {
-      const data: stateType["chainInfo"] = { id: null, name: null };
+      const data: State["chainInfo"] = { id: null, name: null };
 
       if (chain) {
         const { id, name } = chain;

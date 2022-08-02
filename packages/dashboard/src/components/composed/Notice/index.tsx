@@ -2,10 +2,10 @@ import { Center } from "@mantine/core";
 import Loading from "src/components/composed/Notice/content/Loading";
 import Connect from "src/components/composed/Notice/content/Connect";
 import ConfirmChain from "src/components/composed/Notice/content/ConfirmChain";
-import type noticeContentType from "src/components/composed/Notice/noticeContentType";
+import type { NoticeContent } from "src/components/composed/Notice/content/types";
 
 type NoticeProps = {
-  contentType: noticeContentType;
+  contentType: NoticeContent;
 };
 
 function Notice({ contentType }: NoticeProps): JSX.Element {

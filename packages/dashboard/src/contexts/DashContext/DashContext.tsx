@@ -1,11 +1,11 @@
 import { createContext } from "react";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import { stateType, actionType } from "src/contexts/DashContext";
+import type { State, Action } from "src/contexts/DashContext";
 
-type contextValue = {
-  state: stateType;
-  dispatch?: React.Dispatch<actionType>;
+export interface ContextValue {
+  state: State;
+  dispatch?: React.Dispatch<Action>;
   ops: {
     userConfirmMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
@@ -15,8 +15,8 @@ type contextValue = {
     ) => any;
     toggleNotice: () => void;
   };
-};
+}
 
-const DashContext = createContext<contextValue | null>(null);
+const DashContext = createContext<ContextValue | null>(null);
 
 export default DashContext;

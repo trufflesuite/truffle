@@ -1,57 +1,20 @@
-import type { providers } from "ethers";
-import type {
-  DashboardMessageBusClient,
-  ReceivedMessageLifecycle
-} from "@truffle/dashboard-message-bus-client";
+import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
   isInvalidateMessage,
   isLogMessage,
   isDebugMessage
 } from "@truffle/dashboard-message-bus-common";
-import type {
-  Message,
-  DashboardProviderMessage
-} from "@truffle/dashboard-message-bus-common";
+import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
   messageNeedsInteraction,
   messageIsUnsupported,
   rejectMessage,
   confirmMessage
 } from "src/utils/dash";
-import type noticeContentType from "src/components/composed/Notice/noticeContentType";
+import type { State, Action } from "src/contexts/DashContext";
 
-type actionType =
-  | { type: "set-client"; data: DashboardMessageBusClient }
-  | { type: "set-chain-info"; data: stateType["chainInfo"] }
-  | { type: "set-notice"; data: Partial<stateType["notice"]> }
-  | {
-      type: "handle-message";
-      data: {
-        lifecycle: ReceivedMessageLifecycle<Message>;
-        provider: providers.JsonRpcProvider;
-      };
-    };
-
-type stateType = {
-  host: string;
-  port: number;
-  client: DashboardMessageBusClient | null;
-  providerMessages: Map<
-    number,
-    ReceivedMessageLifecycle<DashboardProviderMessage>
-  >;
-  chainInfo: {
-    id: number | null;
-    name: string | null;
-  };
-  notice: {
-    show: boolean;
-    type: noticeContentType | null;
-  };
-};
-
-const initialState: stateType = {
+export const initialState: State = {
   host: window.location.hostname,
   port:
     process.env.NODE_ENV === "development"
@@ -69,7 +32,7 @@ const initialState: stateType = {
   }
 };
 
-const reducer = (state: stateType, action: actionType): stateType => {
+export const reducer = (state: State, action: Action): State => {
   const { type, data } = action;
   switch (type) {
     case "set-client":
@@ -117,6 +80,3 @@ const reducer = (state: stateType, action: actionType): stateType => {
       throw new Error("Undefined reducer action type");
   }
 };
-
-export { initialState, reducer };
-export type { actionType, stateType };
