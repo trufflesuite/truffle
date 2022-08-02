@@ -27,7 +27,12 @@ const arrayCasesBasic: Case<
   Format.Types.ArrayType,
   Format.Values.ArrayValue,
   WrapRequest
->[] = [arrayFromArray, arrayFromCodecArrayValue, arrayFailureCase];
+>[] = [
+  arrayFromArray,
+  arrayFromCodecArrayValue,
+  arrayFromJson,
+  arrayFailureCase
+];
 
 export const arrayCases: Case<
   Format.Types.ArrayType,
@@ -39,6 +44,7 @@ const tupleCasesBasic: Case<TupleLikeType, TupleLikeValue, WrapRequest>[] = [
   tupleFromArray,
   tupleFromCodecTupleLikeValue,
   tupleFromObject,
+  tupleFromJson,
   tupleFailureCase
 ];
 
@@ -229,6 +235,44 @@ function* arrayFromCodecArrayValue(
   //where the type is not the same but is compatible
   const value = (<Format.Values.ArrayValue>input).value;
   return yield* arrayFromArray(dataType, value, wrapOptions);
+}
+
+function* arrayFromJson(
+  dataType: Format.Types.ArrayType,
+  input: unknown,
+  wrapOptions: WrapOptions
+): Generator<WrapRequest, Format.Values.ArrayValue, WrapResponse> {
+  if (!wrapOptions.allowJson) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      1,
+      "JSON input must be explicitly enabled"
+    );
+  }
+  if (typeof input !== "string") {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      1,
+      "Input was not a string"
+    );
+  }
+  let parsedInput: unknown;
+  try {
+    parsedInput = JSON.parse(input);
+  } catch (error) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      5,
+      `Input was not valid JSON: ${error.message}`
+    );
+  }
+  return yield* arrayFromArray(dataType, parsedInput, wrapOptions);
 }
 
 function* arrayFromTypeValueInput(
@@ -430,6 +474,49 @@ function* tupleFromObject(
     kind: "value" as const,
     value
   };
+}
+
+function* tupleFromJson(
+  dataType: TupleLikeType,
+  input: unknown,
+  wrapOptions: WrapOptions
+): Generator<WrapRequest, TupleLikeValue, WrapResponse> {
+  if (!wrapOptions.allowJson) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      1,
+      "JSON input must be explicitly enabled"
+    );
+  }
+  if (typeof input !== "string") {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      1,
+      "Input was not a string"
+    );
+  }
+  let parsedInput: unknown;
+  try {
+    parsedInput = JSON.parse(input);
+  } catch (error) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      5,
+      `Input was not valid JSON: ${error.message}`
+    );
+  }
+  debug("input is JSON");
+  debug("parses to: %O", parsedInput);
+  return yield* wrapWithCases(dataType, parsedInput, wrapOptions, [
+    tupleFromObject,
+    tupleFromArray
+  ]);
 }
 
 function* tupleFromCodecTupleLikeValue(

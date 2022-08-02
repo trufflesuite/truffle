@@ -14,6 +14,7 @@ const boolCasesBasic: Case<
   Format.Values.BoolValue,
   never
 >[] = [
+  boolFromBoolean, //needed due to strictBooleans mode
   boolFromString,
   boolFromBoxedPrimitive,
   boolFromCodecBoolValue,
@@ -27,10 +28,30 @@ export const boolCases: Case<
   Format.Types.BoolType,
   Format.Values.BoolValue,
   never
->[] = [
-  boolFromTypeValueInput,
-  ...boolCasesBasic
-];
+>[] = [boolFromTypeValueInput, ...boolCasesBasic];
+
+function* boolFromBoolean(
+  dataType: Format.Types.BoolType,
+  input: unknown,
+  wrapOptions: WrapOptions
+): Generator<never, Format.Values.BoolValue, WrapResponse> {
+  if (typeof input !== "boolean") {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      1,
+      "Input was not a boolean"
+    );
+  }
+  return {
+    type: dataType,
+    kind: "value" as const,
+    value: {
+      asBoolean: input
+    }
+  };
+}
 
 function* boolFromString(
   dataType: Format.Types.BoolType,
@@ -46,8 +67,21 @@ function* boolFromString(
       "Input was not a string"
     );
   }
-  //strings are true unless they're falsy or the case-insensitive string "false"
-  const asBoolean = Boolean(input) && input.toLowerCase() !== "false";
+  const lowerCasedInput = input.toLowerCase();
+  if (
+    wrapOptions.strictBooleans &&
+    !["true", "false", "1", "0"].includes(lowerCasedInput)
+  ) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      5,
+      "Input was not 'true', 'false', '1', or '0'"
+    );
+  }
+  //strings are true unless they're falsy or the case-insensitive strings "false" or "0"
+  const asBoolean = Boolean(input) && !["false", "0"].includes(lowerCasedInput);
   return {
     type: dataType,
     kind: "value" as const,
@@ -72,7 +106,12 @@ function* boolFromBoxedPrimitive(
     );
   }
   //unbox and try again
-  return yield* wrapWithCases(dataType, input.valueOf(), wrapOptions, boolCases);
+  return yield* wrapWithCases(
+    dataType,
+    input.valueOf(),
+    wrapOptions,
+    boolCases
+  );
 }
 
 function* boolFromCodecBoolValue(
@@ -215,9 +254,7 @@ function* boolFromCodecUdvtValue(
       "Input was not a wrapped result"
     );
   }
-  if (
-    input.type.typeClass !== "userDefinedValueType"
-  ) {
+  if (input.type.typeClass !== "userDefinedValueType") {
     throw new TypeMismatchError(
       dataType,
       input,
@@ -252,9 +289,7 @@ function* boolFromCodecUdvtError(
       "Input was not a wrapped result"
     );
   }
-  if (
-    input.type.typeClass !== "userDefinedValueType"
-  ) {
+  if (input.type.typeClass !== "userDefinedValueType") {
     throw new TypeMismatchError(
       dataType,
       input,
@@ -282,7 +317,11 @@ function* boolFromCodecUdvtError(
       Messages.errorResultMessage
     );
   }
-  return yield* boolFromCodecBoolError(dataType, input.error.error, wrapOptions);
+  return yield* boolFromCodecBoolError(
+    dataType,
+    input.error.error,
+    wrapOptions
+  );
 }
 
 function* boolFromOther(
@@ -313,6 +352,16 @@ function* boolFromOther(
       wrapOptions.name,
       1,
       "Input was a type/value pair"
+    );
+  }
+  //...and also we don't do this case if strictBooleans is turned on
+  if (wrapOptions.strictBooleans) {
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      2,
+      "Input was neither a boolean nor a boolean string"
     );
   }
   const asBoolean = Boolean(input);

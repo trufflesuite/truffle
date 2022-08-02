@@ -101,6 +101,17 @@ describe("Encoding", () => {
         );
       });
 
+      it("Encodes JSON when enabled", async () => {
+        const { data } = await encoder.encodeTxNoResolution(abi, ['[1, "2"]'], {
+          allowJson: true
+        });
+        assert.strictEqual(
+          data,
+          selector +
+            "00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
+        );
+      });
+
       it("Encodes type/value pairs", async () => {
         const { data } = await encoder.encodeTxNoResolution(abi, [
           {
@@ -196,6 +207,43 @@ describe("Encoding", () => {
         try {
           await encoder.encodeTxNoResolution(abi, [[1]]);
           assert.fail("Short array got encoded");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects JSON when not enabled", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ["[1,2]"]);
+          assert.fail("JSON should not be accepted unless explicitly enabled");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects invalid JSON", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ["[1,2"], {
+            allowJson: true
+          });
+          assert.fail("Bad JSON was accepted");
+        } catch (error) {
+          if (error.name !== "TypeMismatchError") {
+            throw error;
+          }
+        }
+      });
+
+      it("Rejects JSON that doesn't match", async () => {
+        try {
+          await encoder.encodeTxNoResolution(abi, ["[1,2,3]"], {
+            allowJson: true
+          });
+          assert.fail("JSON of wrong length was accepted");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
             throw error;
