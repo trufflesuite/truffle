@@ -258,24 +258,19 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
       customConfig,
       isDashboardNetwork
     );
-    const defaultPort = isDashboardNetwork
-      ? managedDashboardDefaultPort
-      : managedGanacheDefaultPort;
     const defaultNetworkId = isDashboardNetwork
       ? "*"
       : managedGanacheDefaultNetworkId;
 
     configuredNetwork = {
-      // customConfig will spread only when it is defined and ignored when undefined
-      ...customConfig,
-      host: customConfig.host || defaultHost,
-      port: customConfig.port || defaultPort,
       network_id: customConfig.network_id || defaultNetworkId,
       provider: function () {
         return new Web3.providers.HttpProvider(configuredNetworkUrl, {
           keepAlive: false
         });
-      }
+      },
+      // customConfig will spread only when it is defined and ignored when undefined
+      ...customConfig
     };
   }
 
