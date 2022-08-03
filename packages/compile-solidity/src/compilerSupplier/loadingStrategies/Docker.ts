@@ -6,7 +6,7 @@ import { execSync } from "child_process";
 import semver from "semver";
 import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
-import { NoVersionError, NoRequestError } from "../errors";
+import { NoVersionError, FailedRequestError } from "../errors";
 import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
 
 export class Docker {
@@ -197,7 +197,7 @@ export class Docker {
 
           nextUrl = next;
         } catch (error) {
-          throw new NoRequestError(dockerTagsUrl, error);
+          throw new FailedRequestError(dockerTagsUrl, error);
         }
       } while (nextUrl);
     })();

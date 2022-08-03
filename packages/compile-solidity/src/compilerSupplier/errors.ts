@@ -17,3 +17,13 @@ export class CompilerFetchingError extends Error {
     super(message);
   }
 }
+
+export class FailedRequestError extends Error {
+  constructor(input, error) {
+    const message =
+      `Failed to complete request to: ${input}. Are you connected to ` +
+      `the internet?\n\n` +
+      error;
+    super(message);
+  }
+}
