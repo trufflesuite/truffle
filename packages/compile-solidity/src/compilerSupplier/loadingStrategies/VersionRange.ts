@@ -56,8 +56,8 @@ export class VersionRange {
     if (index >= this.config.compilerRoots.length) {
       throw new Error(
         `Failed to fetch the list of Solidity compilers from the following ` +
-        `sources: ${this.config.compilerRoots}. Make sure you are connected ` +
-        `to the internet.`
+          `sources: ${this.config.compilerRoots}. Make sure you are connected ` +
+          `to the internet.`
       );
     }
     let data;
@@ -138,9 +138,8 @@ export class VersionRange {
   getMostRecentVersionOfCompiler(versions) {
     return versions.reduce((mostRecentVersionFileName, fileName) => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
-      const mostRecentVersionMatch = mostRecentVersionFileName.match(
-        /v\d+\.\d+\.\d+.*/
-      );
+      const mostRecentVersionMatch =
+        mostRecentVersionFileName.match(/v\d+\.\d+\.\d+.*/);
       return semver.gtr(match[0], mostRecentVersionMatch[0])
         ? fileName
         : mostRecentVersionFileName;
@@ -156,10 +155,7 @@ export class VersionRange {
 
   async getAndCacheSolcByUrl(fileName: string, index: number) {
     const { events, compilerRoots } = this.config;
-    const url = `${compilerRoots[index].replace(
-      /\/+$/,
-      ""
-    )}/${fileName}`;
+    const url = `${compilerRoots[index].replace(/\/+$/, "")}/${fileName}`;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
@@ -181,7 +177,7 @@ export class VersionRange {
     // go through all sources (compilerRoots) trying to locate a
     // suitable version of the Solidity compiler
     const { compilerRoots, events } = this.config;
-    if (index >= compilerRoots.length - 1) {
+    if (index > compilerRoots.length - 1) {
       throw new CompilerFetchingError(compilerRoots);
     }
     if (!compilerRoots || compilerRoots.length < 1) {
@@ -193,11 +189,13 @@ export class VersionRange {
     try {
       allVersionsForSource = await this.getSolcVersionsForSource(index);
       const isVersionRange = !semver.valid(versionConstraint);
-
       versionToUse = isVersionRange
         ? this.findNewestValidVersion(versionConstraint, allVersionsForSource)
         : versionConstraint;
-      const fileName = this.getSolcVersionFileName(versionToUse, allVersionsForSource);
+      const fileName = this.getSolcVersionFileName(
+        versionToUse,
+        allVersionsForSource
+      );
 
       if (!fileName) throw new NoVersionError(versionToUse);
 
@@ -254,10 +252,12 @@ export class VersionRange {
 
   versionIsCached(version) {
     const cachedCompilerFileNames = this.cache.list();
-    const cachedVersions = cachedCompilerFileNames.map(fileName => {
-      const match = fileName.match(/v\d+\.\d+\.\d+.*/);
-      if (match) return match[0];
-    }).filter((version): version is string => !!version);
+    const cachedVersions = cachedCompilerFileNames
+      .map(fileName => {
+        const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+        if (match) return match[0];
+      })
+      .filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
     );

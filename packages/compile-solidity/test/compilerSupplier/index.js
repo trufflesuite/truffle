@@ -87,7 +87,7 @@ describe("CompilerSupplier", () => {
         Native.prototype.load.restore();
       });
 
-      it("calls load on the Native strategy", async function() {
+      it("calls load on the Native strategy", async function () {
         const { solc } = await supplier.load();
         assert(solc === "called Native");
       });
@@ -97,7 +97,8 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: undefined };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(VersionRange.prototype, "load")
+        sinon
+          .stub(VersionRange.prototype, "load")
           .returns("called VersionRange");
       });
       afterEach(() => {
@@ -140,11 +141,13 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         sinon.stub(Cache.prototype, "add");
         sinon.stub(Cache.prototype, "has").returns(false);
-        sinon.stub(VersionRange.prototype, "getSolcVersions")
+        sinon
+          .stub(VersionRange.prototype, "getSolcVersionsForSource")
           .returns(allVersions);
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
         sinon.stub(VersionRange.prototype, "compilerFromString");
-        sinon.stub(axios, "get")
+        sinon
+          .stub(axios, "get")
           .withArgs(
             "https://ethereum.github.io/solc-bin/bin/soljson-v0.5.1+commit.c8a2cb62.js"
           )
@@ -153,7 +156,7 @@ describe("CompilerSupplier", () => {
       afterEach(() => {
         Cache.prototype.add.restore();
         Cache.prototype.has.restore();
-        VersionRange.prototype.getSolcVersions.restore();
+        VersionRange.prototype.getSolcVersionsForSource.restore();
         VersionRange.prototype.versionIsCached.restore();
         VersionRange.prototype.compilerFromString.restore();
         axios.get.restore();
@@ -173,23 +176,19 @@ describe("CompilerSupplier", () => {
         );
       }).timeout(30000);
 
-      it("throws an error on incorrect user url", done => {
+      it("throws an error on incorrect user url", async function () {
         supplierOptions.solcConfig = {
           version: "0.5.6",
           compilerRoots: ["https://f00dbabe"]
         };
         supplier = new CompilerSupplier(supplierOptions);
-        supplier
-          .load()
-          .then(() => {
-            assert(false);
-            done();
-          })
-          .catch(error => {
-            let expectedMessageSnippet = "Could not find a compiler version";
-            assert(error.message.includes(expectedMessageSnippet));
-            done();
-          });
+        try {
+          await supplier.load();
+          assert.fail();
+        } catch (error) {
+          let expectedMessageSnippet = "Failed to fetch the Solidity compiler";
+          assert(error.message.includes(expectedMessageSnippet));
+        }
       });
     });
 
