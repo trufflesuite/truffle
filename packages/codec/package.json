@@ -47,6 +47,7 @@
     "@types/semver": "^6.0.0",
     "@types/utf8": "^2.1.6",
     "@zerollup/ts-transform-paths": "^1.7.3",
+    "ts-node": "10.7.0",
     "ttypescript": "1.5.13",
     "typedoc": "0.20.37",
     "typedoc-plugin-remove-references": "^0.0.5",
