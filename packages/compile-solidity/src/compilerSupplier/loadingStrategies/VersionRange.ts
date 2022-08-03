@@ -8,7 +8,7 @@ import semver from "semver";
 import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
-import { NoVersionError, NoRequestError } from "../errors";
+import { NoVersionError, CompilerFetchingError } from "../errors";
 
 export class VersionRange {
   private config: {
@@ -52,10 +52,24 @@ export class VersionRange {
     }
   }
 
-  async list() {
-    const data = await this.getSolcVersions();
+  async list(index = 0) {
+    if (index >= this.config.compilerRoots.length) {
+      throw new Error(
+        `Failed to fetch the list of Solidity compilers from the following ` +
+        `sources: ${this.config.compilerRoots}. Make sure you are connected ` +
+        `to the internet.`
+      );
+    }
+    let data;
+    try {
+      data = await this.getSolcVersionsForSource(index);
+    } catch (error) {
+      if (error.message.includes("Failed to fetch compiler list at")) {
+        return await this.getSolcVersionsForSource(index + 1);
+      }
+      throw error;
+    }
     const { latestRelease } = data;
-
     const prereleases = data.builds
       .filter(build => build["prerelease"])
       .map(build => build["longVersion"]);
@@ -80,7 +94,7 @@ export class VersionRange {
     }
   }
 
-  findNewestValidVersion(version, allVersions) {
+  findNewestValidVersion(version: string, allVersions: any) {
     return semver.maxSatisfying(
       Object.keys(allVersions?.releases || {}),
       version
@@ -133,19 +147,19 @@ export class VersionRange {
     }, "-v0.0.0+commit");
   }
 
-  getSatisfyingVersionFromCache(versionRange) {
+  getSatisfyingVersionFromCache(versionRange: string) {
     if (this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
     throw new NoVersionError(versionRange);
   }
 
-  async getAndCacheSolcByUrl(fileName, index = 0) {
-    const url = `${this.config.compilerRoots[index].replace(
+  async getAndCacheSolcByUrl(fileName: string, index: number) {
+    const { events, compilerRoots } = this.config;
+    const url = `${compilerRoots[index].replace(
       /\/+$/,
       ""
     )}/${fileName}`;
-    const { events } = this.config;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
@@ -157,57 +171,61 @@ export class VersionRange {
     } catch (error) {
       events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
-        throw new NoRequestError("compiler URLs", error);
+        throw new CompilerFetchingError(compilerRoots);
       }
       return this.getAndCacheSolcByUrl(fileName, index + 1);
     }
   }
 
-  async getSolcFromCacheOrUrl(versionConstraint) {
-    let allVersions, versionToUse;
-    try {
-      allVersions = await this.getSolcVersions();
-    } catch (error) {
-      throw new NoRequestError(versionConstraint, error);
+  async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
+    // go through all sources (compilerRoots) trying to locate a
+    // suitable version of the Solidity compiler
+    const { compilerRoots, events } = this.config;
+    if (index >= compilerRoots.length - 1) {
+      throw new CompilerFetchingError(compilerRoots);
     }
-    const isVersionRange = !semver.valid(versionConstraint);
-
-    versionToUse = isVersionRange
-      ? this.findNewestValidVersion(versionConstraint, allVersions)
-      : versionConstraint;
-    const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
-
-    if (!fileName) throw new NoVersionError(versionToUse);
-
-    if (this.cache.has(fileName))
-      return this.getCachedSolcByFileName(fileName);
-    return this.getAndCacheSolcByUrl(fileName);
-  }
-
-  getSolcVersions(index = 0) {
-    const { events } = this.config;
-    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
-    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
+    if (!compilerRoots || compilerRoots.length < 1) {
       events.emit("fetchSolcList:fail");
       throw new NoUrlError();
     }
-    const { compilerRoots } = this.config;
+
+    let allVersionsForSource: string[], versionToUse: string | null;
+    try {
+      allVersionsForSource = await this.getSolcVersionsForSource(index);
+      const isVersionRange = !semver.valid(versionConstraint);
+
+      versionToUse = isVersionRange
+        ? this.findNewestValidVersion(versionConstraint, allVersionsForSource)
+        : versionConstraint;
+      const fileName = this.getSolcVersionFileName(versionToUse, allVersionsForSource);
+
+      if (!fileName) throw new NoVersionError(versionToUse);
+
+      if (this.cache.has(fileName))
+        return this.getCachedSolcByFileName(fileName);
+      return await this.getAndCacheSolcByUrl(fileName, index);
+    } catch (error) {
+      if (error.message.includes("Failed to fetch compiler list at")) {
+        return await this.getSolcFromCacheOrUrl(versionConstraint, index + 1);
+      }
+      throw new CompilerFetchingError(compilerRoots);
+    }
+  }
+
+  async getSolcVersionsForSource(index = 0) {
+    const { compilerRoots, events } = this.config;
+    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
 
     // trim trailing slashes from compilerRoot
     const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return axios
-      .get(url, { maxRedirects: 50 })
-      .then(response => {
-        events.emit("fetchSolcList:succeed");
-        return response.data;
-      })
-      .catch(error => {
-        events.emit("fetchSolcList:fail");
-        if (index >= this.config.compilerRoots.length - 1) {
-          throw new NoRequestError("version URLs", error);
-        }
-        return this.getSolcVersions(index + 1);
-      });
+    try {
+      const response = await axios.get(url, { maxRedirects: 50 });
+      return response.data;
+    } catch (error) {
+      // TODO: check for non 200 response before throwing the error below
+      events.emit("fetchSolcList:fail");
+      throw new Error(`Failed to fetch compiler list at ${url}`);
+    }
   }
 
   getSolcVersionFileName(version, allVersions) {
