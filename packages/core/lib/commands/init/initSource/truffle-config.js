@@ -87,7 +87,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.15" // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.15", // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {
@@ -97,7 +97,7 @@ module.exports = {
       //  evmVersion: "byzantium"
       // }
     }
-  }
+  },
 
   // Truffle DB is currently disabled by default; to enable it, change enabled:
   // false to enabled: true. The default storage location can also be
