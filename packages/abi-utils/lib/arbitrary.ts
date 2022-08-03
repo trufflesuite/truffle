@@ -148,7 +148,9 @@ export const ConstructorEntry = () =>
         type: fc.constant("constructor"),
         inputs: fc.array(Parameter(), { maxLength: 10 }).filter(inputs => {
           // names that are not blank should be unique
-          const names = inputs.map(({ name }) => name).filter(name => name !== "");
+          const names = inputs
+            .map(({ name }) => name)
+            .filter(name => name !== "");
           return names.length === new Set(names).size;
         })
       }),
@@ -248,7 +250,7 @@ const Type: fc.Memo<string> = fc.memo(n =>
 
 const ArrayFixed = fc.memo(n =>
   fc
-    .tuple(Type(n - 1), fc.integer(1, 256))
+    .tuple(Type(n - 1), fc.integer({ min: 1, max: 256 }))
     .map(([type, length]) => `${type}[${length}]`)
 );
 
@@ -405,7 +407,7 @@ const fakerToArb = (template: string, transform = camelCase) => {
 };
 
 const ParameterName = () =>
-  fc.frequency(
+  fc.oneof(
     { arbitrary: fakerToArb("{{hacker.noun}}"), weight: 9 },
     { arbitrary: fc.constant(""), weight: 1 }
   );

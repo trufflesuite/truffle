@@ -1,0 +1,11 @@
+{
+  "extends": ["../../.eslintrc.package.json"],
+  "overrides": [
+    {
+      "files": ["./lib/**/*.test.[tj]s"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

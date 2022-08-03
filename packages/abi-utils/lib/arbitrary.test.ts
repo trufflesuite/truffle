@@ -1,4 +1,4 @@
-import { testProp } from "jest-fast-check";
+import { testProp } from "@fast-check/jest";
 import * as abiSchema from "@truffle/contract-schema/spec/abi.spec.json";
 import { matchers } from "jest-json-schema";
 

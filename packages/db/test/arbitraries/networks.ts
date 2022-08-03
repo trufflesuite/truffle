@@ -118,7 +118,7 @@ export const Networks = (): fc.Arbitrary<Model> =>
     .tuple(
       Commands.AddNetwork(),
       fc.array(
-        fc.frequency(
+        fc.oneof(
           {
             arbitrary: Commands.AddNetwork(),
             weight: 1

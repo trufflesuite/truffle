@@ -3772,6 +3772,13 @@
     "@ethersproject/properties" "^5.6.0"
     "@ethersproject/strings" "^5.6.0"
 
+"@fast-check/jest@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@fast-check/jest/-/jest-1.0.1.tgz#125806b40919bcddef71b0b750dea7a2be291111"
+  integrity sha512-2k38LAEawqyKnsXvqNBrCByRKHELXBRGBxZV4Q4hVZsDb9Smf9anYc8zv184PvF4+gtMDzWlKRy6YCWDldf41Q==
+  dependencies:
+    fast-check "^3.0.0"
+
 "@ganache/ethereum-address@0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@ganache/ethereum-address/-/ethereum-address-0.1.5.tgz#4b4994cf3b49b2f79bcd9fa9923f8217e956b99c"
@@ -14534,12 +14541,12 @@ faker@5.5.3:
   resolved "https://registry.yarnpkg.com/faker/-/faker-5.5.3.tgz#c57974ee484431b25205c2c8dc09fda861e51e0e"
   integrity sha512-wLTv2a28wjUyWkbnX7u/ABZBkUkIF2fCd73V6P2oFqEGEktDfzWx4UxrSqtPRw0xPRAcjeAOIiJWqZm3pP4u3g==
 
-fast-check@2.15.1:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-2.15.1.tgz#a60c5ba0d5cba68a1176353c423c3733c02bb603"
-  integrity sha512-eNcOxh7iTLGwebRCRU+F+/Ne+41/7ra4qn1bhljAO+uqvxB9p4Qq/rqNeu3wls/ka9jnu9MvwUE/m1sTWcbGBg==
+fast-check@3.1.1, fast-check@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-3.1.1.tgz#72c5ae7022a4e86504762e773adfb8a5b0b01252"
+  integrity sha512-3vtXinVyuUKCKFKYcwXhGE6NtGWkqF8Yh3rvMZNzmwz8EPrgoc/v4pDdLHyLnCyCI5MZpZZkDEwFyXyEONOxpA==
   dependencies:
-    pure-rand "^4.1.1"
+    pure-rand "^5.0.1"
 
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
@@ -17858,11 +17865,6 @@ jest-extended@^0.11.5:
     expect "^24.1.0"
     jest-get-type "^22.4.3"
     jest-matcher-utils "^22.0.0"
-
-jest-fast-check@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-2.0.0.tgz#f1aae02c397913cce858866a1c13b9fd979cef0d"
-  integrity sha512-krHAj5Sdx4/Ytk/z9sbPU4C/mMSON+mDX6/e9a6LWlugd3+G9tT7aboyaXzUCNsjb/4xfJt2eXrQDPCq7TxdXA==
 
 jest-get-type@^22.4.3:
   version "22.4.3"
@@ -23877,10 +23879,10 @@ pure-color@^1.2.0:
   resolved "https://registry.yarnpkg.com/pure-color/-/pure-color-1.3.0.tgz#1fe064fb0ac851f0de61320a8bf796836422f33e"
   integrity sha1-H+Bk+wrIUfDeYTIKi/eWg2Qi8z4=
 
-pure-rand@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-4.1.1.tgz#9fca2d4af5c4e870bac337ed860977426ed17bf6"
-  integrity sha512-cZw4AL/KI6aDTdqHEbJPe2ZoHM3kSdpJRLJetv8c3tfq9o+PvQDXrHNEpB0AWukAGFx4fmeOerAGwkA4rtUgdA==
+pure-rand@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-5.0.1.tgz#97a287b4b4960b2a3448c0932bf28f2405cac51d"
+  integrity sha512-ksWccjmXOHU2gJBnH0cK1lSYdvSZ0zLoCMSz/nTGh6hDvCSgcRxDyIcOBD6KNxFz3xhMPm/T267Tbe2JRymKEQ==
 
 purgecss@^4.0.3:
   version "4.1.3"
