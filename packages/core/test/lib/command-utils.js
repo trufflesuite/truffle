@@ -46,7 +46,7 @@ describe("command-utils", function () {
       );
     });
 
-    it("returns a config with a url host network object having the url property ", function () {
+    it("returns a config with a network object having the specified url property ", function () {
       const cfg = deriveConfigEnvironment(
         config,
         "anyTimeNetwork",
@@ -88,6 +88,11 @@ describe("command-utils", function () {
         cfg.networks.dashboard.customUserProperty,
         expectedNetworkConfig.customUserProperty
       );
+    });
+
+    it("returns a config with a develop network object having default managed Ganache properties", function () {
+      const cfg = deriveConfigEnvironment(config, "develop", undefined);
+      assert.equal(cfg.networks.develop.network_id, 5777);
     });
   });
 });
