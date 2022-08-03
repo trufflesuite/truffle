@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",
-    "compile": "sh -c \"mkdir -p ./dist\" && browserify --debug ./index.js | exorcist ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+    "compile": "NODE_ENV=production webpack --config ./webpack.config.js && NODE_ENV=development webpack --config ./webpack.config.js",
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next"
   },
@@ -37,9 +37,14 @@
     "web3-utils": "1.7.4"
   },
   "devDependencies": {
-    "browserify": "^17.0.0",
-    "exorcist": "^2.0.0",
-    "uglify-es": "^3.3.9"
+    "buffer": "6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "stream-browserify": "^3.0.0",
+    "vm-browserify": "^1.1.2",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "abstraction",
