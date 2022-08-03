@@ -2,7 +2,7 @@ import { Stack, Space, Text, Anchor, createStyles } from "@mantine/core";
 import { ExternalLink } from "react-feather";
 import { useDash } from "src/hooks";
 import RPC from "src/components/composed/RPCs/RPC";
-import LogoImg from "src/components/common/LogoImg";
+import Logo from "src/components/common/Logo";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
   maxSize: {
@@ -40,7 +40,7 @@ function RPCs(): JSX.Element {
         pb="4%"
         className={classes.maxSize}
       >
-        <LogoImg size={200} variant="dimmed" />
+        <Logo size={200} variant="dimmed" />
         <Text size="sm" color="dimmed">
           Nothing to see for now... Get started with&nbsp;
           <Anchor

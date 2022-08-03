@@ -6,8 +6,8 @@ import Divider from "src/components/composed/Sidebar/Divider";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
   sideBar: {
-    minWidth: 366,
-    maxWidth: 366,
+    minWidth: 370,
+    maxWidth: 370,
     borderRight: "none"
   }
 }));

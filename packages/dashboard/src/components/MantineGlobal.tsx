@@ -1,20 +1,11 @@
 import { Global } from "@mantine/core";
 import openSansSrc from "src/assets/open-sans-variable-wdth-wght.ttf";
-import pacificoSrc from "src/assets/pacifico-regular.ttf";
 
 const fonts = [
   {
     "@font-face": {
       fontFamily: "Open Sans",
       src: `url('${openSansSrc}') format('truetype')`,
-      fontWeight: 400,
-      fontStyle: "normal"
-    }
-  },
-  {
-    "@font-face": {
-      fontFamily: "Pacifico",
-      src: `url('${pacificoSrc}') format('truetype')`,
       fontWeight: 400,
       fontStyle: "normal"
     }
@@ -52,8 +43,8 @@ function MantineGlobal(): JSX.Element {
               transition: "background-color 0.1s"
             },
             ".mantine-Alert-icon": {
-              width: 28,
-              height: "auto",
+              "width": 28,
+              "height": "auto",
               "> svg": {
                 height: 28,
                 width: 28
