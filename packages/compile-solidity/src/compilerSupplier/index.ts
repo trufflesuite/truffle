@@ -23,13 +23,7 @@ export class CompilerSupplier {
   }>;
 
   constructor({ events, solcConfig }) {
-    const {
-      version,
-      docker,
-      compilerRoots,
-      dockerTagsUrl,
-      spawn,
-    } = solcConfig;
+    const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;
     this.events = events;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
@@ -49,10 +43,8 @@ export class CompilerSupplier {
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     const useSpecifiedLocal =
-      userSpecification && (
-        fs.existsSync(userSpecification) ||
-        path.isAbsolute(userSpecification)
-      );
+      userSpecification &&
+      (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
     const isValidVersionRange = semver.validRange(userSpecification);
 
     if (useDocker) {
@@ -86,19 +78,14 @@ export class CompilerSupplier {
   async list() {
     const userSpecification = this.version;
 
-    let strategy;
+    let strategy: Docker | Native | Local | VersionRange | undefined;
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     const useSpecifiedLocal =
-      userSpecification && (
-        fs.existsSync(userSpecification) ||
-        path.isAbsolute(userSpecification)
-      );
+      userSpecification &&
+      (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
     const isValidVersionRange =
-      semver.validRange(userSpecification) ||
-      userSpecification === "pragma"
-      ;
-
+      semver.validRange(userSpecification) || userSpecification === "pragma";
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
     } else if (useNative) {
@@ -113,11 +100,10 @@ export class CompilerSupplier {
       throw new BadInputError(userSpecification);
     }
 
-    if (!strategy.list) {
-      throw new StrategyCannotListVersionsError(strategy.constructor.name);
+    if ("list" in strategy) {
+      return await strategy.list();
     }
-
-    return await strategy.list();
+    throw new StrategyCannotListVersionsError(strategy.constructor.name);
   }
 
   static getDefaultVersion() {
@@ -126,7 +112,7 @@ export class CompilerSupplier {
 }
 
 export class BadInputError extends Error {
-  constructor (input) {
+  constructor(input) {
     const message =
       `Could not find a compiler version matching ${input}. ` +
       `compilers.solc.version option must be a string specifying:\n` +
@@ -139,7 +125,7 @@ export class BadInputError extends Error {
 }
 
 export class StrategyCannotListVersionsError extends Error {
-  constructor (strategyName) {
+  constructor(strategyName) {
     super(`Cannot list versions for strategy ${strategyName}`);
   }
 }
