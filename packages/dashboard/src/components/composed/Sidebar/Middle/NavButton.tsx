@@ -48,8 +48,7 @@ function NavButton({
     <UnstyledButton
       component={Link}
       to={to}
-      px="lg"
-      py="md"
+      p="xl"
       className={`${classes.button} ${
         disabled ? classes.disabled : classes.enabled
       }`}
