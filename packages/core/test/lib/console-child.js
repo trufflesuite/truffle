@@ -31,10 +31,13 @@ describe("console-child", function () {
   describe("deriveConfigEnvironment", function () {
     it("network has provider", function () {
       config.network = "crazyTimeNetwork";
+      const expectedNetworkConfig = config.networks[config.network];
       const cfg = deriveConfigEnvironment(config, config.network, "");
-      const expectedNetworkConfig = config.networks.crazyTimeNetwork;
       assert.equal(cfg.network, config.network);
-      assert.equal(cfg.networks.crazyTimeNetwork, expectedNetworkConfig);
+      assert.equal(
+        cfg.networks[config.network].confirmations,
+        expectedNetworkConfig.confirmations
+      );
     });
 
     it("url is specified instead of network", function () {
@@ -46,23 +49,38 @@ describe("console-child", function () {
       );
       const expectedNetworkConfig = config.networks[config.network];
       assert.equal(cfg.network, config.network);
-      assert.equal(cfg.networks["localhost:5555"], expectedNetworkConfig);
+      assert.equal(cfg.networks[config.network], expectedNetworkConfig);
     });
 
     it("network has host and port", function () {
       config.network = "funTimeNetwork";
+      const expectedNetworkConfig = config.networks[config.network];
       const cfg = deriveConfigEnvironment(config, config.network, "");
-      const expectedNetworkConfig = config.networks.funTimeNetwork;
       assert.equal(cfg.network, config.network);
-      assert.equal(cfg.networks.funTimeNetwork, expectedNetworkConfig);
+      assert.equal(
+        cfg.networks[config.network].host,
+        expectedNetworkConfig.host
+      );
+      assert.equal(
+        cfg.networks[config.network].port,
+        expectedNetworkConfig.port
+      );
+      assert.equal(
+        cfg.networks[config.network].confirmations,
+        expectedNetworkConfig.confirmations
+      );
     });
 
     it("network is dashboard", function () {
       config.network = "dashboard";
+      const expectedNetworkConfig = config.networks[config.network];
       const cfg = deriveConfigEnvironment(config, config.network, "");
-      const expectedNetworkConfig = config.networks.dashboard;
       assert.equal(cfg.network, config.network);
-      assert.equal(cfg.networks.dashboard, expectedNetworkConfig);
+      assert.equal(cfg.networks[config.network].url, expectedNetworkConfig.url);
+      assert.equal(
+        cfg.networks[config.network].confirmations,
+        expectedNetworkConfig.confirmations
+      );
     });
   });
 });

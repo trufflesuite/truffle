@@ -8,8 +8,8 @@ module.exports = {
     },
     crazyTimeNetwork: {
       network_id: "*",
-      confirmations: 2,
-      provider: () => "http://localhost:5555"
+      provider: () => "http://localhost:5555",
+      confirmations: 2
     },
     dashboard: {
       network_id: "*",

@@ -233,11 +233,11 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
 
   if (configDefinesProvider) {
     // Use "provider" specified in the config to connect to the network
-    // along with the other specified network properties
+    // along with the other network properties
     configuredNetwork = {
-      ...detectedConfig.networks[network],
       network_id: "*",
-      provider: detectedConfig.networks[network].provider
+      provider: detectedConfig.networks[network].provider,
+      ...detectedConfig.networks[network]
     };
   } else if (url) {
     // Use "url" to configure network (implies not "develop" and not "dashboard")
