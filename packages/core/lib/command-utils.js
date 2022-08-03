@@ -236,7 +236,6 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
     // along with the other network properties
     configuredNetwork = {
       network_id: "*",
-      provider: detectedConfig.networks[network].provider,
       ...detectedConfig.networks[network]
     };
   } else if (url) {
