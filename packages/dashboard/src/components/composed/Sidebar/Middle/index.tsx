@@ -18,7 +18,7 @@ function Middle(): JSX.Element {
   return (
     <Navbar.Section grow py="sm">
       <NavButton
-        label="Transactions / Calls"
+        label="Signature Requests"
         to="/rpcs"
         icon={<Zap {...featherIconProps} />}
       />
