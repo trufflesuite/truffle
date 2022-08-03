@@ -16,17 +16,16 @@
  * public/private key pairs. If you're publishing your code to GitHub make sure you load this
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
- * If you want to use .env for keeping your secret variables, you'll need to install 'dotenv'
- * (npm install dotenv). To get started with, add .env file in the root directory and declare
- * your Infura MNEMONIC and PROJECT_ID variables.
+ * It is recommended to store your secret variables in a .env file (which you should include in .gitignore).
+ * In your project root, run `$ npm install dotenv`.
+ * Create .env and declare your MNEMONIC and infura PROJECT_ID variables inside.
  * .gitignore is already added with this project with .env in it.
  */
 
 // require('dotenv').config();
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 
-// const mnemonic = process.env.MNEMONIC;
-// const projectId = process.env.PROJECT_ID;
+// const { MNEMONIC, PROJECT_ID } = process.env;
 
 module.exports = {
   /**
@@ -65,9 +64,8 @@ module.exports = {
     // Useful for deploying to a public network.
     // Note: It's important to wrap the provider as a function to ensure truffle uses a new provider every time.
     // goerli: {
-    //   provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/${projectId}`),
+    //   provider: () => new HDWalletProvider(MNEMONIC, `https://goerli.infura.io/v3/${PROJECT_ID}`),
     //   network_id: 5,       // Goerli's id
-    //   gas: 5500000,        // Goerli has a lower block limit than mainnet
     //   confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
     //   timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
     //   skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
