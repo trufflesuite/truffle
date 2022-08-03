@@ -56,7 +56,6 @@ export default class Web3Adapter {
     return await this.web3.eth.getChainId();
   }
 
-  //slot should be given as a 32-byte hex string *w/o* 0x
   async getExistingStorage(address, slot, blockHash, txIndex) {
     debug("slot: %O", slot);
     const provider = this.web3.currentProvider;
