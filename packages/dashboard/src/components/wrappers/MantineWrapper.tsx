@@ -1,5 +1,8 @@
-import { MantineProvider, createEmotionCache } from "@mantine/core";
-import { useSavedColorScheme } from "src/hooks";
+import {
+  MantineProvider,
+  useMantineColorScheme,
+  createEmotionCache
+} from "@mantine/core";
 import theme from "src/utils/theme";
 import { EMOTION_KEY } from "src/utils/constants";
 
@@ -10,7 +13,7 @@ type MantineWrapperProps = {
 };
 
 function MantineWrapper({ children }: MantineWrapperProps): JSX.Element {
-  const [colorScheme] = useSavedColorScheme();
+  const { colorScheme } = useMantineColorScheme();
 
   return (
     <MantineProvider

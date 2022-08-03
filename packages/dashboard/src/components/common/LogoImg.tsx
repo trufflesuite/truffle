@@ -1,6 +1,6 @@
 import { Box } from "@mantine/core";
+import { useMantineColorScheme } from "@mantine/core";
 import type { MantineSize, MantineSizes } from "@mantine/core";
-import { useSavedColorScheme } from "src/hooks";
 
 const sizes: MantineSizes = {
   xs: 30,
@@ -39,7 +39,7 @@ type LogoImgProps = {
 };
 
 function LogoImg({ size, variant }: LogoImgProps): JSX.Element {
-  const [colorScheme] = useSavedColorScheme();
+  const { colorScheme } = useMantineColorScheme();
 
   if (typeof size !== "number") {
     size = sizes[size || "sm"];
