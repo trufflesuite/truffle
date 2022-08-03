@@ -159,18 +159,16 @@ export class VersionRange {
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
+    let response;
     try {
-      const response = await axios.get(url, { maxRedirects: 50 });
-      events.emit("downloadCompiler:succeed");
-      this.cache.add(response.data, fileName);
-      return this.compilerFromString(response.data);
+      response = await axios.get(url, { maxRedirects: 50 });
     } catch (error) {
       events.emit("downloadCompiler:fail");
-      if (index >= this.config.compilerRoots.length - 1) {
-        throw new CompilerFetchingError(compilerRoots);
-      }
-      return this.getAndCacheSolcByUrl(fileName, index + 1);
+      throw error;
     }
+    events.emit("downloadCompiler:succeed");
+    this.cache.add(response.data, fileName);
+    return this.compilerFromString(response.data);
   }
 
   async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
@@ -196,17 +194,13 @@ export class VersionRange {
         versionToUse,
         allVersionsForSource
       );
-
       if (!fileName) throw new NoVersionError(versionToUse);
 
       if (this.cache.has(fileName))
         return this.getCachedSolcByFileName(fileName);
       return await this.getAndCacheSolcByUrl(fileName, index);
     } catch (error) {
-      if (error.message.includes("Failed to fetch compiler list at")) {
-        return await this.getSolcFromCacheOrUrl(versionConstraint, index + 1);
-      }
-      throw new CompilerFetchingError(compilerRoots);
+      return await this.getSolcFromCacheOrUrl(versionConstraint, index + 1);
     }
   }
 
