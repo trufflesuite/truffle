@@ -64,7 +64,7 @@ const helpers = (db: Db, project: Project.Project) => ({
   }
 });
 
-describe("Project.assignNames", () => {
+describe.skip("Project.assignNames", () => {
   let db, project;
 
   beforeAll(async () => {

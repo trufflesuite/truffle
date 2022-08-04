@@ -35,7 +35,7 @@ describe("ABIEncoderV2", function () {
       addUserReceipt = receipt;
     });
 
-    it("should allow structs as transaction arguments", async function () {
+    it.only("should allow structs as transaction arguments", async function () {
       assert.strictEqual(
         addUserReceipt.status,
         BigInt(1),

@@ -13,7 +13,7 @@ const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
-describe("artifactor + require", () => {
+describe.skip("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
   const provider = Ganache.provider({
     miner: {

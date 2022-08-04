@@ -24,7 +24,7 @@ const testConfig = process.env["OVERKILL"]
       numRuns: 50
     };
 
-describe("Network", () => {
+describe.skip("Network", () => {
   describe("for arbitrary batches of blocks from an arbitrary set of arbitrarily forked blockchains", () => {
     jest.setTimeout(testConfig.timeout);
     let run = 0;
