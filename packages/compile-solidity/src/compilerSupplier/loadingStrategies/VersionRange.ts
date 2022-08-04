@@ -10,6 +10,12 @@ import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
 import { NoVersionError, CompilerFetchingError } from "../errors";
 
+type SolidityCompilersList = {
+  builds: object[];
+  latestRelease: string;
+  releases: object;
+};
+
 export class VersionRange {
   private config: {
     events: any; // represents a @truffle/events instance, which lacks types
@@ -60,13 +66,14 @@ export class VersionRange {
           `to the internet.`
       );
     }
-    let data;
+    let data: SolidityCompilersList;
     try {
       const attemptNumber = index + 1;
       data = await this.getSolcVersionsForSource(
         this.config.compilerRoots![index],
         attemptNumber
       );
+      console.log("the keys -- %o", Object.keys(data));
     } catch (error) {
       if (error.message.includes("Failed to fetch compiler list at")) {
         return await this.list(index + 1);
@@ -98,9 +105,9 @@ export class VersionRange {
     }
   }
 
-  findNewestValidVersion(version: string, allVersions: any) {
+  findNewestValidVersion(version: string, allVersions: SolidityCompilersList): string | null {
     return semver.maxSatisfying(
-      Object.keys(allVersions?.releases || {}),
+      Object.keys(allVersions.releases || {}),
       version
     );
   }
@@ -187,7 +194,7 @@ export class VersionRange {
       throw new CompilerFetchingError(compilerRoots);
     }
 
-    let allVersionsForSource: string[], versionToUse: string | null;
+    let allVersionsForSource: SolidityCompilersList, versionToUse: string | null;
     try {
       const attemptNumber = index + 1;
       allVersionsForSource = await this.getSolcVersionsForSource(
@@ -198,6 +205,9 @@ export class VersionRange {
       versionToUse = isVersionRange
         ? this.findNewestValidVersion(versionConstraint, allVersionsForSource)
         : versionConstraint;
+      if (versionToUse === null) {
+        throw new Error("No valid version found for source.");
+      }
       const fileName = this.getSolcVersionFileName(
         versionToUse,
         allVersionsForSource
@@ -214,7 +224,7 @@ export class VersionRange {
     }
   }
 
-  async getSolcVersionsForSource(urlRoot: string, attemptNumber: number) {
+  async getSolcVersionsForSource(urlRoot: string, attemptNumber: number): Promise<SolidityCompilersList> {
     const { events } = this.config;
     events.emit("fetchSolcList:start", { attemptNumber });
 
@@ -229,7 +239,7 @@ export class VersionRange {
     }
   }
 
-  getSolcVersionFileName(version, allVersions) {
+  getSolcVersionFileName(version: string, allVersions: SolidityCompilersList): string | null {
     if (allVersions.releases[version]) return allVersions.releases[version];
 
     const isPrerelease =
@@ -253,7 +263,7 @@ export class VersionRange {
     return null;
   }
 
-  versionIsCached(version) {
+  versionIsCached(version: string) {
     const cachedCompilerFileNames = this.cache.list();
     const cachedVersions = cachedCompilerFileNames
       .map(fileName => {
