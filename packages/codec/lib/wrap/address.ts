@@ -14,7 +14,7 @@ import type {
 import * as Utils from "./utils";
 import * as EvmUtils from "@truffle/codec/evm/utils";
 import * as Messages from "./messages";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 
 //no separate cases for contracts; even with loose turned off,
 //we consider these interchangeable

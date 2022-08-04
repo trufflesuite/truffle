@@ -7,7 +7,7 @@ import type * as Abi from "@truffle/abi-utils";
 
 import * as Import from "@truffle/codec/abi-data/import";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
 import type * as Compiler from "@truffle/codec/compiler";

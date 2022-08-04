@@ -194,7 +194,7 @@
  * <summary>Example usage</summary>
  *
  * ```typescript
- * import type { Provider } from "web3/providers";
+ * import type { Web3BaseProvider as LegacyProvider } from "web3-common";
  * declare const provider: Provider;
  *
  * import { connect, Network } from "@truffle/db";

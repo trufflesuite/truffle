@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:evm:utils");
 
 import BN from "bn.js";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import * as Conversion from "@truffle/codec/conversion";
 import { ShortSelectorSize } from "@truffle/abi-utils";
 

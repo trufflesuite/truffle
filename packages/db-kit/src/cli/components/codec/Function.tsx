@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Newline, Text } from "ink";
 
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import type { FunctionDecoding } from "@truffle/codec";
 
 import { DefinitionList } from "@truffle/db-kit/cli/components/DefinitionList";

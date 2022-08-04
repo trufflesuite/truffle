@@ -1,12 +1,12 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:id:hash");
 
-import { soliditySha3 } from "web3-utils";
+import { soliditySha3, isNullish } from "web3-utils";
 const jsonStableStringify = require("json-stable-stringify");
 
 export function hash(obj): string {
   const id = soliditySha3(jsonStableStringify(removeNullyValues(obj)));
-  if (id === null) {
+  if (isNullish(id)) {
     throw new Error(`Failed to hash ${JSON.stringify(obj)}`);
   }
   return id;

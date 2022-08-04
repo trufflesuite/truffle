@@ -1,6 +1,5 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:utils");
-
 import * as Ast from "@truffle/codec/ast";
 import type * as Abi from "@truffle/abi-utils";
 import {

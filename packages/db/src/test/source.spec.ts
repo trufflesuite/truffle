@@ -1,7 +1,7 @@
 import { generateId, Migrations, WorkspaceClient } from "./utils";
 import { AddSource, GetSource, GetAllSources } from "./source.graphql";
 
-describe("Source", () => {
+describe.skip("Source", () => {
   let wsClient, addSourceResult;
 
   const expectedId = generateId("sources", {

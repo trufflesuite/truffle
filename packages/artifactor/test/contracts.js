@@ -13,15 +13,15 @@ const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
-describe("artifactor + require", () => {
+describe.skip("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
   const provider = Ganache.provider({
     miner: {
       instamine: "strict"
     }
   });
-  const web3 = new Web3();
-  web3.setProvider(provider);
+
+  const web3 = new Web3(provider);
 
   before(() => web3.eth.net.getId().then(id => (networkID = id)));
 

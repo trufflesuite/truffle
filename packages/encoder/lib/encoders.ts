@@ -7,7 +7,7 @@ import * as Codec from "@truffle/codec";
 import * as Abi from "@truffle/abi-utils";
 import * as Types from "./types";
 import Big from "big.js";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import { ProviderAdapter, Provider } from "./adapter";
 import * as Utils from "./utils";
 import {

@@ -1,7 +1,8 @@
 const debug = require("debug")("contract:manual-send");
 const ethers = require("ethers");
 const Utils = require ("./utils");
-const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
+const web3 = require("web3");
+const { formatters } = require("web3-core"); //used for reproducing web3's behavior
 
 //this is less manual now, it uses ethers, whew
 //(it's still more manual than using web3)
@@ -102,7 +103,7 @@ function setUpParameters(params, web3) {
   //also, it insists "from" be kept separate
   const { from } = transaction;
   delete transaction.from;
-  return { transaction, from }
+  return { transaction, from };
 }
 
 //translate the receipt to web3 format by converting BigNumbers
@@ -119,4 +120,4 @@ function translateReceipt(receipt) {
 
 module.exports = {
   sendTransactionManual
-}
+};
