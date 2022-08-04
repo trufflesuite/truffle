@@ -6,6 +6,12 @@ const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
+const Web3 = require("web3");
+
+const defaultHost = "127.0.0.1";
+const managedGanacheDefaultPort = 9545;
+const managedGanacheDefaultNetworkId = 5777;
+const managedDashboardDefaultPort = 24012;
 
 // this function takes an object with an array of input strings, an options
 // object, and a boolean determining whether we allow inexact matches for
@@ -206,9 +212,92 @@ const displayGeneralHelp = () => {
     .showHelp();
 };
 
+/**
+ * This is a function to configure the url from the user specified network settings in the config.
+ * @param {TruffleConfig} customConfig - Default config with user specified settings.
+ * @param {boolean} isDashboardNetwork - Check if the network is dashboard or not.
+ * @returns a string with the configured url
+ */
+const getConfiguredNetworkUrl = function (customConfig, isDashboardNetwork) {
+  const defaultPort = isDashboardNetwork
+    ? managedDashboardDefaultPort
+    : managedGanacheDefaultPort;
+  const configuredNetworkOptions = {
+    host: customConfig.host || defaultHost,
+    port: customConfig.port || defaultPort
+  };
+  const urlSuffix = isDashboardNetwork ? "/rpc" : "";
+  return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}${urlSuffix}`;
+};
+
+/**
+ * This is a function to derive the config environment from the user specified settings.
+ * @param {TruffleConfig} detectedConfig - Default config with user specified settings.
+ * @param {string} network - Network name specified with the `--network` option.
+ * @param {string} url - URL specified with the `--url` option.
+ * @returns a TruffleConfig object with the user specified settings in the config
+ */
+const deriveConfigEnvironment = function (detectedConfig, network, url) {
+  let configuredNetwork;
+
+  const configDefinesProvider =
+    detectedConfig.networks[network] &&
+    detectedConfig.networks[network].provider;
+
+  if (configDefinesProvider) {
+    // Use "provider" specified in the config to connect to the network
+    // along with the other network properties
+    configuredNetwork = {
+      network_id: "*",
+      ...detectedConfig.networks[network]
+    };
+  } else if (url) {
+    // Use "url" to configure network (implies not "develop" and not "dashboard")
+    configuredNetwork = {
+      network_id: "*",
+      url,
+      provider: function () {
+        return new Web3.providers.HttpProvider(url, {
+          keepAlive: false
+        });
+      }
+    };
+  } else {
+    // Otherwise derive network settings
+    const customConfig = detectedConfig.networks[network] || {};
+    const isDashboardNetwork = network === "dashboard";
+    const configuredNetworkUrl = getConfiguredNetworkUrl(
+      customConfig,
+      isDashboardNetwork
+    );
+    const defaultNetworkId = isDashboardNetwork
+      ? "*"
+      : managedGanacheDefaultNetworkId;
+
+    configuredNetwork = {
+      network_id: customConfig.network_id || defaultNetworkId,
+      provider: function () {
+        return new Web3.providers.HttpProvider(configuredNetworkUrl, {
+          keepAlive: false
+        });
+      },
+      // customConfig will spread only when it is defined and ignored when undefined
+      ...customConfig
+    };
+  }
+
+  detectedConfig.networks[network] = {
+    ...configuredNetwork
+  };
+
+  return detectedConfig;
+};
+
 module.exports = {
   displayGeneralHelp,
   getCommand,
   prepareOptions,
-  runCommand
+  runCommand,
+  getConfiguredNetworkUrl,
+  deriveConfigEnvironment
 };
