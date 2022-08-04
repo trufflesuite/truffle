@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import semver from "semver";
-
+import { StrategyOptions } from "./types";
 import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
 const defaultSolcVersion = "0.5.16";
@@ -16,16 +16,7 @@ type CompilerSupplierStrategy =
 export class CompilerSupplier {
   private version: string;
   private docker: boolean;
-  private strategyOptions: Partial<{
-    version: string;
-    docker: boolean;
-    compilerRoots: string[];
-    dockerTagsUrl: string;
-    events: any; // represents a @truffle/events instance, which lacks types
-    spawn: {
-      maxBuffer: number;
-    };
-  }>;
+  private strategyOptions: StrategyOptions;
 
   constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;

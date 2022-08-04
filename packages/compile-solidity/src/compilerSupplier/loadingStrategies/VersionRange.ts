@@ -9,6 +9,7 @@ import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
 import { NoVersionError, CompilerFetchingError } from "../errors";
+import { StrategyOptions } from "./types";
 
 type SolidityCompilersList = {
   builds: object[];
@@ -17,14 +18,10 @@ type SolidityCompilersList = {
 };
 
 export class VersionRange {
-  private config: {
-    events: any; // represents a @truffle/events instance, which lacks types
-    compilerRoots: string[];
-  };
-
+  private config: StrategyOptions;
   private cache: Cache;
 
-  constructor(options: any) {
+  constructor(options: StrategyOptions) {
     const defaultConfig = {
       compilerRoots: [
         // NOTE this relay address exists so that we have a backup option in
@@ -59,7 +56,7 @@ export class VersionRange {
   }
 
   async list(index = 0) {
-    if (index >= this.config.compilerRoots.length) {
+    if (index >= this.config.compilerRoots!.length) {
       throw new Error(
         `Failed to fetch the list of Solidity compilers from the following ` +
           `sources: ${this.config.compilerRoots}. Make sure you are connected ` +
@@ -168,7 +165,7 @@ export class VersionRange {
 
   async getAndCacheSolcByUrl(fileName: string, index: number) {
     const { events, compilerRoots } = this.config;
-    const url = `${compilerRoots[index].replace(/\/+$/, "")}/${fileName}`;
+    const url = `${compilerRoots![index].replace(/\/+$/, "")}/${fileName}`;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });

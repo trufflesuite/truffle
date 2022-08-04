@@ -21,17 +21,17 @@ export class Cache {
     return fs.readdirSync(this.compilerCachePath);
   }
 
-  add(code, fileName) {
+  add(code: string, fileName: string) {
     const filePath = this.resolve(fileName);
     fs.writeFileSync(filePath, code);
   }
 
-  has(fileName) {
+  has(fileName: string) {
     const file = this.resolve(fileName);
     return fs.existsSync(file);
   }
 
-  resolve(fileName) {
+  resolve(fileName: string) {
     return path.resolve(this.compilerCachePath, fileName);
   }
-};
+}
