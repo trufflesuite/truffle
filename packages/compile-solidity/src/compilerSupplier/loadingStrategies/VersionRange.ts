@@ -3,7 +3,7 @@ const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
 import originalRequire from "original-require";
-import axios from "axios";
+import { default as axios, AxiosResponse } from "axios";
 import semver from "semver";
 import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
@@ -24,7 +24,7 @@ export class VersionRange {
 
   private cache: Cache;
 
-  constructor(options) {
+  constructor(options: any) {
     const defaultConfig = {
       compilerRoots: [
         // NOTE this relay address exists so that we have a backup option in
@@ -73,7 +73,6 @@ export class VersionRange {
         this.config.compilerRoots![index],
         attemptNumber
       );
-      console.log("the keys -- %o", Object.keys(data));
     } catch (error) {
       if (error.message.includes("Failed to fetch compiler list at")) {
         return await this.list(index + 1);
@@ -173,7 +172,7 @@ export class VersionRange {
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
-    let response;
+    let response: AxiosResponse;
     try {
       response = await axios.get(url, { maxRedirects: 50 });
     } catch (error) {

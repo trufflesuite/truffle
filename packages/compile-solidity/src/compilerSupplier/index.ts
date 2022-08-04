@@ -6,11 +6,16 @@ import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
 const defaultSolcVersion = "0.5.16";
 
+type CompilerSupplierStrategy =
+  | Docker
+  | Native
+  | Local
+  | VersionRange
+  | undefined;
+
 export class CompilerSupplier {
-  private events: any;
   private version: string;
   private docker: boolean;
-  private compilerRoots: string[];
   private strategyOptions: Partial<{
     version: string;
     docker: boolean;
@@ -24,10 +29,8 @@ export class CompilerSupplier {
 
   constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;
-    this.events = events;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
-    this.compilerRoots = compilerRoots;
     this.strategyOptions = {};
     if (version) this.strategyOptions.version = this.version;
     if (dockerTagsUrl) this.strategyOptions.dockerTagsUrl = dockerTagsUrl;
@@ -39,7 +42,7 @@ export class CompilerSupplier {
   async load() {
     const userSpecification = this.version;
 
-    let strategy;
+    let strategy: CompilerSupplierStrategy;
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     const useSpecifiedLocal =
@@ -112,7 +115,7 @@ export class CompilerSupplier {
 }
 
 export class BadInputError extends Error {
-  constructor(input) {
+  constructor(input: string) {
     const message =
       `Could not find a compiler version matching ${input}. ` +
       `compilers.solc.version option must be a string specifying:\n` +
@@ -125,7 +128,7 @@ export class BadInputError extends Error {
 }
 
 export class StrategyCannotListVersionsError extends Error {
-  constructor(strategyName) {
+  constructor(strategyName: string) {
     super(`Cannot list versions for strategy ${strategyName}`);
   }
 }
