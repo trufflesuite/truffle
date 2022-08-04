@@ -214,7 +214,6 @@ export class VersionRange {
       const response = await axios.get(url, { maxRedirects: 50 });
       return response.data;
     } catch (error) {
-      // TODO: check for non 200 response before throwing the error below
       events.emit("fetchSolcList:fail");
       throw new Error(`Failed to fetch compiler list at ${url}`);
     }
