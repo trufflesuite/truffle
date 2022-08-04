@@ -212,6 +212,12 @@ const displayGeneralHelp = () => {
     .showHelp();
 };
 
+/**
+ * This is a function to configure the url from the user specified network settings in the config.
+ * @param {TruffleConfig} customConfig - Default config with user specified settings.
+ * @param {boolean} isDashboardNetwork - Check if the network is dashboard or not.
+ * @returns a string with the configured url
+ */
 const getConfiguredNetworkUrl = function (customConfig, isDashboardNetwork) {
   const defaultPort = isDashboardNetwork
     ? managedDashboardDefaultPort
@@ -224,6 +230,13 @@ const getConfiguredNetworkUrl = function (customConfig, isDashboardNetwork) {
   return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}${urlSuffix}`;
 };
 
+/**
+ * This is a function to derive the config environment from the user specified settings.
+ * @param {TruffleConfig} detectedConfig - Default config with user specified settings.
+ * @param {string} network - Network name specified with the `--network` option.
+ * @param {string} url - URL specified with the `--url` option.
+ * @returns a TruffleConfig object with the user specified settings in the config
+ */
 const deriveConfigEnvironment = function (detectedConfig, network, url) {
   let configuredNetwork;
 
