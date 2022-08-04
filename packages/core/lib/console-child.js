@@ -14,7 +14,7 @@ global.crypto = {
   getRandomValues: require("get-random-values")
 };
 
-function inheritConfig() {
+function deriveConfig() {
   //detect config so we can get the provider and resolver without having to serialize
   //and deserialize them
   const { network, config, url } = yargs(input[0]).argv;
@@ -24,7 +24,7 @@ function inheritConfig() {
 
 function main() {
   const { getCommand, prepareOptions, runCommand } = require("./command-utils");
-  const config = inheritConfig();
+  const config = deriveConfig();
   const command = getCommand({ inputStrings, options: {}, noAliases: false });
   const options = prepareOptions({
     command,
