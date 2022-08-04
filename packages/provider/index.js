@@ -46,6 +46,9 @@ module.exports = {
     const provider = this.getProvider(options);
     const { host } = provider;
     const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
+
+    console.log(interfaceAdapter);
+
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         let errorMessage =

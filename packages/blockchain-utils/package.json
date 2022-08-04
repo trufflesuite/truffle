@@ -20,11 +20,13 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "types": "./typings/index.d.ts",
+  "dependencies": {
+    "web3-types": "^0.1.0-alpha.0"
+  },
   "devDependencies": {
     "@types/assert": "^1.4.2",
     "@types/mocha": "^5.2.7",
     "@types/node": "~12.12.0",
-    "@types/web3": "1.0.20",
     "mocha": "10.1.0",
     "ts-node": "10.7.0",
     "typescript": "^4.9.5"
