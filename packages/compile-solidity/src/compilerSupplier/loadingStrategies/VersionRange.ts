@@ -95,7 +95,7 @@ export class VersionRange {
     };
   }
 
-  compilerFromString(code) {
+  compilerFromString(code: string) {
     const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
@@ -105,14 +105,17 @@ export class VersionRange {
     }
   }
 
-  findNewestValidVersion(version: string, allVersions: SolidityCompilersList): string | null {
+  findNewestValidVersion(
+    version: string,
+    allVersions: SolidityCompilersList
+  ): string | null {
     return semver.maxSatisfying(
       Object.keys(allVersions.releases || {}),
       version
     );
   }
 
-  getCachedSolcByFileName(fileName) {
+  getCachedSolcByFileName(fileName: string) {
     const listeners = observeListeners();
     try {
       const filePath = this.cache.resolve(fileName);
@@ -125,7 +128,7 @@ export class VersionRange {
   }
 
   // Range can also be a single version specification like "0.5.0"
-  getCachedSolcByVersionRange(version) {
+  getCachedSolcByVersionRange(version: string) {
     const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -139,19 +142,19 @@ export class VersionRange {
     return this.getCachedSolcByFileName(compilerFileName);
   }
 
-  getCachedSolcFileName(commit) {
+  getCachedSolcFileName(commit: string) {
     const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
   }
 
-  getMostRecentVersionOfCompiler(versions) {
+  getMostRecentVersionOfCompiler(versions: string[]) {
     return versions.reduce((mostRecentVersionFileName, fileName) => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       const mostRecentVersionMatch =
         mostRecentVersionFileName.match(/v\d+\.\d+\.\d+.*/);
-      return semver.gtr(match[0], mostRecentVersionMatch[0])
+      return semver.gtr(match![0], mostRecentVersionMatch![0])
         ? fileName
         : mostRecentVersionFileName;
     }, "-v0.0.0+commit");
@@ -194,7 +197,8 @@ export class VersionRange {
       throw new CompilerFetchingError(compilerRoots);
     }
 
-    let allVersionsForSource: SolidityCompilersList, versionToUse: string | null;
+    let allVersionsForSource: SolidityCompilersList,
+      versionToUse: string | null;
     try {
       const attemptNumber = index + 1;
       allVersionsForSource = await this.getSolcVersionsForSource(
@@ -224,7 +228,10 @@ export class VersionRange {
     }
   }
 
-  async getSolcVersionsForSource(urlRoot: string, attemptNumber: number): Promise<SolidityCompilersList> {
+  async getSolcVersionsForSource(
+    urlRoot: string,
+    attemptNumber: number
+  ): Promise<SolidityCompilersList> {
     const { events } = this.config;
     events.emit("fetchSolcList:start", { attemptNumber });
 
@@ -239,7 +246,10 @@ export class VersionRange {
     }
   }
 
-  getSolcVersionFileName(version: string, allVersions: SolidityCompilersList): string | null {
+  getSolcVersionFileName(
+    version: string,
+    allVersions: SolidityCompilersList
+  ): string | null {
     if (allVersions.releases[version]) return allVersions.releases[version];
 
     const isPrerelease =
