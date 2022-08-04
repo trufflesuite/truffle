@@ -185,6 +185,14 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           (kind === "function" || kind === "library") &&
           action.absorbNextInternalCall;
       }
+      //include raw data regardless
+      call.raw = {};
+      if (calldata) {
+        call.raw.calldata = calldata;
+      }
+      if (binary) {
+        call.raw.binary = binary;
+      }
       return {
         byPointer: {
           ...state.byPointer,

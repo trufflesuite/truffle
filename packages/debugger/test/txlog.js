@@ -12,6 +12,7 @@ import {
 } from "./helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
+import Web3 from "web3";
 
 import txlog from "lib/txlog/selectors";
 
@@ -228,6 +229,15 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "testCall");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
+    const expectedSelector = Web3.utils
+      .soliditySha3("testCall(uint256)")
+      .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE);
+    const expectedArgument = Codec.Conversion.toHexString(
+      108,
+      Codec.Evm.Utils.WORD_SIZE
+    ).slice(2);
+    assert.equal(call.raw.calldata, expectedSelector + expectedArgument);
+    assert.notProperty(call.raw, "binary");
     debug("arguments: %O", call.arguments);
     let inputs = Codec.Export.unsafeNativizeVariables(byName(call.arguments));
     debug("nativized: %O", inputs);
@@ -281,6 +291,13 @@ describe("Transaction log (visualizer)", function () {
     assert.isUndefined(call.functionName);
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
+    const expectedBytecode = abstractions.Secondary.binary;
+    const expectedArgument = Codec.Conversion.toHexString(
+      108,
+      Codec.Evm.Utils.WORD_SIZE
+    ).slice(2);
+    assert.equal(call.raw.binary, expectedBytecode + expectedArgument);
+    assert.notProperty(call.raw, "calldata");
     let inputs = Codec.Export.unsafeNativizeVariables(byName(call.arguments));
     assert.deepEqual(inputs, {
       y: 108
