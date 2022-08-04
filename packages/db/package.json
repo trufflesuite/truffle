@@ -46,7 +46,7 @@
     "debug": "^4.3.1",
     "fs-extra": "^9.1.0",
     "graphql": "^15.3.0",
-    "graphql-tag": "^2.11.0",
+    "graphql-tag": "^2.12.6",
     "json-stable-stringify": "^1.0.1",
     "pascal-case": "^2.0.1",
     "pluralize": "^8.0.0",
