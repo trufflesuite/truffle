@@ -44,15 +44,16 @@ describe("command-utils", function () {
         cfg.networks.crazyTimeNetwork.customUserProperty,
         expectedNetworkConfig.customUserProperty
       );
+      assert.equal(
+        cfg.networks.crazyTimeNetwork.provider,
+        expectedNetworkConfig.provider
+      );
     });
 
     it("returns a config with a network object having the specified url property ", function () {
-      const cfg = deriveConfigEnvironment(
-        config,
-        "anyTimeNetwork",
-        "http://localhost:5555"
-      );
-      assert.equal(cfg.networks["anyTimeNetwork"].url, "http://localhost:5555");
+      const testUrl = "http://localhost:5555";
+      const cfg = deriveConfigEnvironment(config, "anyTimeNetwork", testUrl);
+      assert.equal(cfg.networks["anyTimeNetwork"].url, testUrl);
     });
 
     it("returns a config with a network object having user specified properties", function () {
