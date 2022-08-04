@@ -189,13 +189,10 @@ describe("CompilerSupplier", function () {
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
 
-      // atime is not getting updatd on read in CI.
-      if (!process.env.TEST) {
-        assert(
-          initialAccessTime < finalAccessTime,
-          "Should have used cached compiler"
-        );
-      }
+      assert(
+        initialAccessTime < finalAccessTime,
+        "Should have used cached compiler"
+      );
     });
 
     describe("native / docker [ @native ]", function () {
