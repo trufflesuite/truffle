@@ -21731,7 +21731,7 @@ web3-core-subscriptions@1.8.1:
     eventemitter3 "4.0.4"
     web3-core-helpers "1.8.1"
 
-web3-core@1.8.1, web3-core@^4.0.0-alpha.0, web3-core@^4.0.1-alpha.2:
+web3-core@1.8.1, web3-core@^4.0.0-alpha.0, web3-core@^4.0.1-alpha.1, web3-core@^4.0.1-alpha.2:
   version "4.0.0-alpha.0"
   resolved "https://registry.yarnpkg.com/web3-core/-/web3-core-4.0.0-alpha.0.tgz#a94b79b4b8c3a8007746ffc21b82db94c5e2872f"
   integrity sha512-Z84jX3+ylof0sXql0xqUn9CM+q+wZonmP8+mEGDH3ls5swENajIPxk8mcBkgNuvD6msDD9Qq1gk4oDo30S7E9A==
@@ -21752,7 +21752,7 @@ web3-errors@^0.1.0-alpha.0:
   dependencies:
     web3-types "^0.1.0-alpha.0"
 
-web3-errors@^0.1.1-alpha.2:
+web3-errors@^0.1.1-alpha.1, web3-errors@^0.1.1-alpha.2:
   version "0.1.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-errors/-/web3-errors-0.1.1-alpha.2.tgz#44af983ec540a450937a6729b9fbe0295f93bb06"
   integrity sha512-fhGs/PspOSsffkkova3t3WjaKKlILLooYEIDV6b5kFuqTTt7vEkvALts94dDS0GGJK78DZ7Vt9DVphkyYDOpOw==
@@ -21777,7 +21777,7 @@ web3-eth-abi@^4.0.0-alpha.0:
     web3-types "^0.1.0-alpha.0"
     web3-utils "^4.0.0-alpha.1"
 
-web3-eth-abi@^4.0.1-alpha.2:
+web3-eth-abi@^4.0.1-alpha.1, web3-eth-abi@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-abi/-/web3-eth-abi-4.0.1-alpha.2.tgz#1faf02b89af80c9c584415126574ad1dc296055b"
   integrity sha512-4LzZCtdtvTo2YE/YICmH7eV8SYTdo05lOjIHYoAkmiJS2hL9egB9lRpcTNDYQyFAm5v8Km5oZBdyQroT/ePVAQ==
@@ -21804,7 +21804,7 @@ web3-eth-accounts@1.8.1:
     web3-core-method "1.8.1"
     web3-utils "1.8.1"
 
-web3-eth-accounts@^4.0.1-alpha.2:
+web3-eth-accounts@^4.0.1-alpha.1, web3-eth-accounts@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-accounts/-/web3-eth-accounts-4.0.1-alpha.2.tgz#2d10ef9c4248c8d3fcb5cd2132933eb407a30a92"
   integrity sha512-bGQoas3aPYPjfwl4NVeAM9jC9Vw9gAlhUUrCxN6TSPatUr+6w/4U4XRn5Di5xCc4VheC9V8x0/tPQuB7khe7QQ==
@@ -21830,7 +21830,7 @@ web3-eth-contract@1.8.1:
     web3-eth-abi "1.8.1"
     web3-utils "1.8.1"
 
-web3-eth-contract@^4.0.1-alpha.2:
+web3-eth-contract@^4.0.1-alpha.1, web3-eth-contract@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-contract/-/web3-eth-contract-4.0.1-alpha.2.tgz#3d4402f9762d08e396ebc4f1474b412b3bc31a22"
   integrity sha512-RQtwyLXcgZ99spTUQzc6sqtrAzgSUYOh22YoMHptOKZ5BR2dXXhd7Js+ngkAq8MXC6PWXdDoZq37PzYLswcz/g==
@@ -21857,7 +21857,7 @@ web3-eth-ens@1.8.1:
     web3-eth-contract "1.8.1"
     web3-utils "1.8.1"
 
-web3-eth-ens@^4.0.1-alpha.2:
+web3-eth-ens@^4.0.1-alpha.1:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-ens/-/web3-eth-ens-4.0.1-alpha.2.tgz#f3aae19ac5567217172ca6e80b8094cd5183fdc8"
   integrity sha512-g+Wa4zEjV2w+EVnaa3Ubh37/poXJA1cT3o/bdbyEolalXorubgxgUPRwG+s1E4jzVnu87fK7F0ax48M9Bfsm1g==
@@ -21888,7 +21888,7 @@ web3-eth-iban@^4.0.0-alpha.0:
     web3-types "^0.1.0-alpha.0"
     web3-utils "^4.0.0-alpha.1"
 
-web3-eth-iban@^4.0.1-alpha.2:
+web3-eth-iban@^4.0.1-alpha.1:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-iban/-/web3-eth-iban-4.0.1-alpha.2.tgz#a35f6194a2e3ef2994c7080a025bdf44b1de1cac"
   integrity sha512-RjacBGXMGwdmkzn9qcHOGGn9DIU+vD9QbY34R9ye9XRPz03hJj2K9Mf7F2hJFtj4tP7r0tr3fZata2wA+bCRNg==
@@ -21909,7 +21909,7 @@ web3-eth-personal@1.8.1:
     web3-net "1.8.1"
     web3-utils "1.8.1"
 
-web3-eth-personal@^4.0.1-alpha.2:
+web3-eth-personal@^4.0.1-alpha.1:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth-personal/-/web3-eth-personal-4.0.1-alpha.2.tgz#132c09e614a6f378069b2ba4f9f916eba48b2bd9"
   integrity sha512-iaayR6QUzdMPA/BomA09iQTgen83VQp+KlBqh6w+v+8w694U5+JSaRfMlMGU5u07p1CPUTgO1dCbGTmk4a1cKg==
@@ -21939,7 +21939,7 @@ web3-eth@1.8.1:
     web3-net "1.8.1"
     web3-utils "1.8.1"
 
-web3-eth@^4.0.1-alpha.2:
+web3-eth@^4.0.1-alpha.1, web3-eth@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-eth/-/web3-eth-4.0.1-alpha.2.tgz#2c1431e8120e700a7ea47290d49469a6bd59914e"
   integrity sha512-+kysLqr64WDevESy32WHIen9FHDaW92KRxV99VUgC1VAvkui74pDOoMUNZl9gpL5UODhvS4PVBwELxUhvqvyag==
@@ -21966,7 +21966,7 @@ web3-net@1.8.1:
     web3-core-method "1.8.1"
     web3-utils "1.8.1"
 
-web3-net@^4.0.1-alpha.2:
+web3-net@^4.0.1-alpha.1, web3-net@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-net/-/web3-net-4.0.1-alpha.2.tgz#1b0b04b73ad22e9ed18f1c06e38333cef696e4de"
   integrity sha512-UdTEHYRomFz2fo5AsCAx5M5pc+XITGWkXeBWXnXDJtEFulp1gOU8OlQygB9z1oSkxoq/3ijtBHEsTuyTWTQ3+g==
@@ -22072,7 +22072,7 @@ web3-types@^0.1.0-alpha.0:
   resolved "https://registry.yarnpkg.com/web3-types/-/web3-types-0.1.0-alpha.0.tgz#58c6fab693804ed9e4afa4663d52c38681163057"
   integrity sha512-tJhcPOiJGk/D9tXmgI/a3SmAroyBXllRmZneJH0cNNuGlxG4vylyLKdxP0/XX2eFSHTTCkXr7VOhvZrwTZwj+g==
 
-web3-types@^0.1.1-alpha.2:
+web3-types@^0.1.1-alpha.1, web3-types@^0.1.1-alpha.2:
   version "0.1.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-types/-/web3-types-0.1.1-alpha.2.tgz#bcb9b4ae923f93d63f864c51ea74fa7c884f9449"
   integrity sha512-O15b3ZrEzWLgqVhGoN4XOhXBlDKwGUbycWME0KHdQcPCVv6sR7fgDo3YttI0rvv6MuQQ9bAeOor9wMnsnAHs/A==
@@ -22107,7 +22107,7 @@ web3-utils@^4.0.0-alpha.1:
   dependencies:
     ethereumjs-util "^7.0.10"
 
-web3-utils@^4.0.1-alpha.2:
+web3-utils@^4.0.1-alpha.1, web3-utils@^4.0.1-alpha.2:
   version "4.0.1-alpha.2"
   resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-4.0.1-alpha.2.tgz#ad7abfd831e1a181cad80aee9cb7d71d50a3603e"
   integrity sha512-kA3m1x0YdIggX5YY37etzibV4TxB3Q7Zz9t1TC43F7eZwN1WkLoZJs8/IStwV6uCIx72X11XxDKgkHNlvWzBBw==
@@ -22151,22 +22151,22 @@ web3@1.8.1:
     web3-utils "1.8.1"
 
 web3@4.0.0-alpha.1, web3@^4.0.0-alpha.1:
-  version "4.0.1-alpha.2"
-  resolved "https://registry.yarnpkg.com/web3/-/web3-4.0.1-alpha.2.tgz#fbaf0185ce57f33dfc5e45b270c11aaa3c96bc22"
-  integrity sha512-KiFAIye15gFiibBPpziY6X1T09nxv7+lJylNdzo+1EP60vGX0DjdQvKYmoNFxYsWiX2G/E6y9A4anmKAGmvOKQ==
+  version "4.0.1-alpha.1"
+  resolved "https://registry.yarnpkg.com/web3/-/web3-4.0.1-alpha.1.tgz#fdfce30e8ac97950af5159dc2cad091a72a30a43"
+  integrity sha512-+evJlWSNowkVZgbJVGSMDkkX0Fe4hsjbQI/Y2DwaSLLWtz6Vj3of4mHWw5To4HH+2zdQ5CfeIxt8qOnFtz1j6g==
   dependencies:
-    web3-core "^4.0.1-alpha.2"
-    web3-errors "^0.1.1-alpha.2"
-    web3-eth "^4.0.1-alpha.2"
-    web3-eth-abi "^4.0.1-alpha.2"
-    web3-eth-accounts "^4.0.1-alpha.2"
-    web3-eth-contract "^4.0.1-alpha.2"
-    web3-eth-ens "^4.0.1-alpha.2"
-    web3-eth-iban "^4.0.1-alpha.2"
-    web3-eth-personal "^4.0.1-alpha.2"
-    web3-net "^4.0.1-alpha.2"
-    web3-types "^0.1.1-alpha.2"
-    web3-utils "^4.0.1-alpha.2"
+    web3-core "^4.0.1-alpha.1"
+    web3-errors "^0.1.1-alpha.1"
+    web3-eth "^4.0.1-alpha.1"
+    web3-eth-abi "^4.0.1-alpha.1"
+    web3-eth-accounts "^4.0.1-alpha.1"
+    web3-eth-contract "^4.0.1-alpha.1"
+    web3-eth-ens "^4.0.1-alpha.1"
+    web3-eth-iban "^4.0.1-alpha.1"
+    web3-eth-personal "^4.0.1-alpha.1"
+    web3-net "^4.0.1-alpha.1"
+    web3-types "^0.1.1-alpha.1"
+    web3-utils "^4.0.1-alpha.1"
 
 webidl-conversions@^3.0.0:
   version "3.0.1"
