@@ -81,7 +81,7 @@
     "tmp": "^0.2.1",
     "universal-analytics": "^0.4.17",
     "web3": "^4.0.0-alpha.1",
-    "web3-utils": "^4.0.0-alpha.1",
+    "web3-utils": "4.0.0-alpha.1",
     "xregexp": "^4.2.4",
     "yargs": "^13.3.0"
   },

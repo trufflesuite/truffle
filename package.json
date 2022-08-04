@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "yarn exec lerna bootstrap",
+    "build": "yarn exec lerna run build --stream",
     "prepare": "lerna run prepare --stream --concurrency=1 && husky install",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
@@ -41,5 +42,8 @@
     "*.{js,ts,jsx,tsx}": "eslint --fix",
     "*.{js,ts,jsx,tsx,css,md}": "prettier --write",
     "packages/*/package.json": "node ./scripts/check-truffle-namespace-dependency-versions.js"
+  },
+  "resolutions": {
+    "web3-core": "^4.0.0-alpha.0"
   }
 }
