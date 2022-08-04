@@ -62,10 +62,13 @@ export class VersionRange {
     }
     let data;
     try {
-      data = await this.getSolcVersionsForSource(index);
+      data = await this.getSolcVersionsForSource(
+        this.config.compilerRoots[index],
+        index + 1
+      );
     } catch (error) {
       if (error.message.includes("Failed to fetch compiler list at")) {
-        return await this.getSolcVersionsForSource(index + 1);
+        return await this.list(index + 1);
       }
       throw error;
     }
@@ -185,7 +188,10 @@ export class VersionRange {
 
     let allVersionsForSource: string[], versionToUse: string | null;
     try {
-      allVersionsForSource = await this.getSolcVersionsForSource(index);
+      allVersionsForSource = await this.getSolcVersionsForSource(
+        compilerRoots[index],
+        index + 1
+      );
       const isVersionRange = !semver.valid(versionConstraint);
       versionToUse = isVersionRange
         ? this.findNewestValidVersion(versionConstraint, allVersionsForSource)
@@ -196,20 +202,21 @@ export class VersionRange {
       );
       if (!fileName) throw new NoVersionError(versionToUse);
 
-      if (this.cache.has(fileName))
+      if (this.cache.has(fileName)) {
         return this.getCachedSolcByFileName(fileName);
+      }
       return await this.getAndCacheSolcByUrl(fileName, index);
     } catch (error) {
       return await this.getSolcFromCacheOrUrl(versionConstraint, index + 1);
     }
   }
 
-  async getSolcVersionsForSource(index = 0) {
-    const { compilerRoots, events } = this.config;
-    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
+  async getSolcVersionsForSource(urlRoot: string, attemptNumber: number) {
+    const { events } = this.config;
+    events.emit("fetchSolcList:start", { attemptNumber });
 
     // trim trailing slashes from compilerRoot
-    const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
+    const url = `${urlRoot.replace(/\/+$/, "")}/list.json`;
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
       return response.data;
