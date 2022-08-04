@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import type { provider as Provider } from "web3-core/types";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
@@ -59,14 +59,14 @@ export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
   constructor(options?: Web3ShimOptions) {
-    super();
+    super(options.provider);
 
     if (options) {
       this.networkType = options.networkType || "ethereum";
 
-      if (options.provider) {
-        this.setProvider(options.provider);
-      }
+      // if (options.provider) {
+      //   this.setProvider(options.provider);
+      // }
     } else {
       this.networkType = "ethereum";
     }

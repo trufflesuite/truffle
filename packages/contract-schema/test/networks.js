@@ -10,7 +10,7 @@ const MetaCoin = require("./MetaCoin.json");
 const MetaCoinInvalid = require("./MetaCoin-invalid.json");
 
 const validatedMetaCoin = {
-  "69420": {
+  69420: {
     address: "0x1111111111111111111111111111111111111111",
     events: {
       "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
@@ -54,7 +54,7 @@ const prepareContract = (contract, network) => {
     "0x1111111111111111111111111111111111111111111111111111111111111111";
 };
 
-describe("networks", function() {
+describe("networks", function () {
   let MetaCoinContractGood, MetaCoinContractBad;
 
   beforeEach(() => {
@@ -65,13 +65,13 @@ describe("networks", function() {
     prepareContract(MetaCoinContractBad, 69420);
   });
 
-  describe("normalized has correct events ", function() {
-    it("when starting with valid events schema", function() {
+  describe("normalized has correct events ", function () {
+    it("when starting with valid events schema", function () {
       const normalized = Schema.normalize(MetaCoinContractGood);
       assert.deepEqual(normalized.networks, validatedMetaCoin);
     });
 
-    it("when starting with invalid events schema", function() {
+    it("when starting with invalid events schema", function () {
       const normalized = Schema.normalize(MetaCoinContractBad);
       assert.deepEqual(normalized.networks, validatedMetaCoin);
     });

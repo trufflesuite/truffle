@@ -1,9 +1,14 @@
 const debug = require("debug")("contract:promievent");
 const DebugUtils = require("@truffle/debug-utils");
-const Web3PromiEvent = require("web3-core-promievent");
+const { Web3PromiEvent } = require("web3-core");
 
 function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
-  const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
+  let resolve, reject;
+
+  const eventEmitter = new Web3PromiEvent((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
 
   const originalStackTrace = new Error().stack;
 
@@ -29,7 +34,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
       getSolidityStackTrace = async () => undefined;
     }
 
-    getSolidityStackTrace().then((solidityStackTrace) => {
+    getSolidityStackTrace().then(solidityStackTrace => {
       debug("e.stack: %s", e.stack);
       debug("originalStackTrace: %s", originalStackTrace);
       debug("solidityStackTrace: %s", solidityStackTrace);
@@ -46,11 +51,8 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
         );
         if (solidityStackTrace) {
           //let's split the solidity stack trace into first line & rest
-          let [
-            _,
-            solidityFirstLine,
-            solidityRemaining,
-          ] = solidityStackTrace.match(/^(.*?)\r?\n((.|\r|\n)*)$/);
+          let [_, solidityFirstLine, solidityRemaining] =
+            solidityStackTrace.match(/^(.*?)\r?\n((.|\r|\n)*)$/);
 
           stackTrace = stackTrace.replace(
             /^.*/, //note that . does not include \n
@@ -77,8 +79,6 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
     this.debug = true;
   }
 }
-
-PromiEvent.resolve = Web3PromiEvent.resolve;
 
 PromiEvent.prototype.setTransactionHash = function (txHash) {
   debug("setting!");

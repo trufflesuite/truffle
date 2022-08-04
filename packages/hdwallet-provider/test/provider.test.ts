@@ -7,7 +7,7 @@ import { describe, it, before, after, afterEach } from "mocha";
 import type { provider } from "web3-core";
 
 describe("HD Wallet Provider", function () {
-  const web3 = new Web3();
+  let web3: Web3;
   let ganacheProvider: any;
   let hdWalletProvider: HDWalletProvider;
 
@@ -20,6 +20,7 @@ describe("HD Wallet Provider", function () {
         quiet: true
       }
     });
+    web3 = new Web3(ganacheProvider);
   });
 
   after(async () => {
@@ -56,7 +57,7 @@ describe("HD Wallet Provider", function () {
       web3.setProvider(hdWalletProvider as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("throws on invalid mnemonic", () => {
@@ -107,7 +108,7 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a private key", async () => {
@@ -123,7 +124,7 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
   });
 
@@ -155,7 +156,7 @@ describe("HD Wallet Provider", function () {
       web3.setProvider(hdWalletProvider as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a mnemonic passed as a string", async () => {
@@ -183,7 +184,7 @@ describe("HD Wallet Provider", function () {
       web3.setProvider(hdWalletProvider as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a mnemonic with a password", async () => {
@@ -213,7 +214,7 @@ describe("HD Wallet Provider", function () {
       web3.setProvider(hdWalletProvider as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a default polling interval", () => {
@@ -300,7 +301,7 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     describe("instantiation errors", () => {

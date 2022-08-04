@@ -1,6 +1,6 @@
 const debug = require("debug")("reporters:migrations:reporter"); // eslint-disable-line no-unused-vars
-const web3Utils = require("web3-utils");
 const Spinner = require("@truffle/spinners").Spinner;
+const BN = require("bn.js");
 
 const Messages = require("./Messages");
 
@@ -17,9 +17,9 @@ const Messages = require("./Messages");
  */
 class Reporter {
   constructor({ subscriber }) {
-    this.currentGasTotal = new web3Utils.BN(0);
-    this.currentCostTotal = new web3Utils.BN(0);
-    this.finalCostTotal = new web3Utils.BN(0);
+    this.currentGasTotal = new BN(0);
+    this.currentCostTotal = new BN(0);
+    this.finalCostTotal = new BN(0);
     this.deployments = 0;
     this.separator = "\n";
     this.summary = [];
@@ -41,8 +41,8 @@ class Reporter {
     const cost = interfaceAdapter.displayCost(this.currentCostTotal);
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
-    this.currentGasTotal = new web3Utils.BN(0);
-    this.currentCostTotal = new web3Utils.BN(0);
+    this.currentGasTotal = new BN(0);
+    this.currentCostTotal = new BN(0);
 
     return {
       gas,

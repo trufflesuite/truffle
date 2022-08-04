@@ -1,27 +1,31 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:test:mockProvider");
 
-import type { Provider } from "web3/providers";
+import type {
+  Web3BaseProvider,
+  JsonRpcIdentifier,
+  JsonRpcRequest
+} from "web3-types";
 
 import { Batch, Model } from "test/arbitraries/networks";
 
 export const mockProvider = (options: {
   model: Model;
   batch: Batch;
-}): Provider => {
+}): Web3BaseProvider => {
   const { model, batch } = options;
 
   const { networkId, getBlockByNumber } = model.networks[batch.descendantIndex];
 
   return {
     send(payload, callback) {
-      const { jsonrpc, id, method, params } = payload;
+      const { jsonrpc, id, method, params } = payload as JsonRpcRequest<any>;
 
       switch (method) {
         case "eth_getBlockByNumber": {
           const [blockNumber] = params;
 
-          const height = parseInt(blockNumber);
+          const height = parseInt(blockNumber as string);
           debug("intercepting eth_getBlockByNumber %o", height);
 
           const block = getBlockByNumber(height);
@@ -35,9 +39,9 @@ export const mockProvider = (options: {
             : undefined;
 
           return callback(null, {
-            jsonrpc,
+            jsonrpc: jsonrpc as JsonRpcIdentifier,
             id,
-            result
+            result: result as any
           });
         }
         case "net_version": {
@@ -45,12 +49,12 @@ export const mockProvider = (options: {
           debug("result %o", result);
 
           return callback(null, {
-            jsonrpc,
+            jsonrpc: jsonrpc as JsonRpcIdentifier,
             id,
             result
           });
         }
       }
     }
-  };
+  } as Web3BaseProvider;
 };

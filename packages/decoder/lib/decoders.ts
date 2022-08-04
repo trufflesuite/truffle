@@ -30,7 +30,7 @@ import {
 import * as Encoder from "@truffle/encoder";
 import { ProviderAdapter, Provider } from "@truffle/encoder";
 import type * as DecoderTypes from "./types";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import {

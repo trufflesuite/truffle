@@ -14,7 +14,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network");
 
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import * as Process from "@truffle/db/process";
 import {
@@ -96,7 +96,7 @@ export type InitializeOptions = {
  *
  * Example:
  * ```typescript
- * import type { Provider } from "web3/providers";
+ * import type { Web3BaseProvider as Provider } from "web3-common";
  * import { db, Network } from "@truffle/db";
  *
  * declare const provider: Provider; // obtain this somehow

@@ -1,18 +1,18 @@
 import type BN from "bn.js";
 import type {
   Block as EvmBlock,
-  BlockType as EvmBlockType,
-  Tx as EvmTransaction
-} from "web3/eth/types";
-import type { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
-
+  TransactionInfo as EvmTransaction,
+  BlockTags as EvmBlockType,
+  TransactionReceipt as EvmTransactionReceipt
+} from "web3-types";
 export {
   Block as EvmBlock,
-  BlockType as EvmBlockType,
-  Tx as EvmTransaction
-} from "web3/eth/types";
-export { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
-export { provider as Provider } from "web3-core/types";
+  TransactionInfo as EvmTransaction,
+  Web3BaseProvider as Provider,
+  BlockTags as EvmBlockType,
+  TransactionReceipt as EvmTransactionReceipt,
+  Web3BaseProvider
+} from "web3-types";
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
@@ -49,3 +49,6 @@ export interface InterfaceAdapter {
   ): Promise<TransactionCostReport>;
   displayCost(value: BN): string;
 }
+export type Mutable<Type> = {
+  -readonly [K in keyof Type]: Type[K];
+};

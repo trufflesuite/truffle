@@ -3,7 +3,7 @@ import { Box, Text, measureElement } from "ink";
 import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import type { ProjectDecoder } from "@truffle/decoder";
 
 import * as Components from "@truffle/db-kit/cli/components";

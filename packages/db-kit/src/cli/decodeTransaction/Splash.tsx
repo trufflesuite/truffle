@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Resources } from "@truffle/db";
 

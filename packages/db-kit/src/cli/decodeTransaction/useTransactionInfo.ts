@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import Web3 from "web3";
 
 import type TruffleConfig from "@truffle/config";
@@ -66,18 +66,18 @@ function fetchTransactionInfo({
       const addresses: string[] = [];
 
       // include direct `to`
-      if (transaction.to) {
+      if (transaction?.to) {
         addresses.push(transaction.to);
       }
 
       // or the created contract address for create transactions
-      if (receipt.contractAddress) {
+      if (receipt?.contractAddress) {
         addresses.push(receipt.contractAddress);
       }
 
       // and include anything mentioned in receipt logs
-      for (const { address } of receipt.logs) {
-        addresses.push(address);
+      for (const { address } of receipt?.logs ?? []) {
+        addresses.push(address as string);
       }
 
       // filter for uniqueness

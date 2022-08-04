@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project");
 
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider } from "web3-types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type { ContractObject } from "@truffle/contract-schema/spec";
 

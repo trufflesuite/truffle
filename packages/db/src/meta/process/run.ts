@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:process:run");
 
 import { promisify } from "util";
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import type { Collections } from "@truffle/db/meta/collections";
 import type { Db } from "@truffle/db/meta/interface";
