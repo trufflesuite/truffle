@@ -31,6 +31,7 @@
     "@truffle/error": "^0.1.0",
     "@truffle/resolver": "^9.0.0",
     "@types/jest": "^26.0.22",
+    "ajv": "^8.11.0",
     "fse": "^4.0.1",
     "js-yaml": "^4.1.0",
     "path": "^0.12.7",
