@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:bytecodes");
 
 import gql from "graphql-tag";
-import CodeUtils from "@truffle/code-utils";
+import * as CodeUtils from "@truffle/code-utils";
 
 import { Definition } from "./types";
 

@@ -1,18 +1,6 @@
 import parseOpcode from "./opcodes";
-import type {
-  Instruction,
-  OpcodeTable,
-  opcodeObject,
-  opcodes,
-  DisassemblyOptions
-} from "./types";
-export type {
-  Instruction,
-  OpcodeTable,
-  opcodeObject,
-  opcodes,
-  DisassemblyOptions
-};
+import type { Instruction, OpcodeTable, DisassemblyOptions } from "./types";
+export type { Instruction, OpcodeTable, DisassemblyOptions };
 import * as cbor from "cbor";
 
 /**
@@ -106,11 +94,6 @@ export function parseCode(
   }
   return instructions;
 }
-
-export default {
-  //for compatibility
-  parseCode
-};
 
 function isValidCBOR(metadata: Uint8Array) {
   try {
