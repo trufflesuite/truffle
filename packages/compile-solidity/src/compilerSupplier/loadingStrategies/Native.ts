@@ -34,7 +34,7 @@ export class Native {
 }
 
 export class NoNativeError extends Error {
-  constructor(error) {
+  constructor(error: Error) {
     super("Could not execute local solc binary: " + error);
   }
 }

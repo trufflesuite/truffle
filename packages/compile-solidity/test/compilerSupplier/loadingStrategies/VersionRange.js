@@ -190,7 +190,9 @@ describe("VersionRange loading strategy", () => {
       );
     });
     it("returns null when the version is invalid", () => {
-      assert(instance.findNewestValidVersion("garbageInput") === null);
+      assert(
+        instance.findNewestValidVersion("garbageInput", allVersions) === null
+      );
     });
     it("returns null when there are no valid versions", () => {
       assert(instance.findNewestValidVersion("^0.8.0", allVersions) === null);
