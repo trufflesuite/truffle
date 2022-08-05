@@ -252,6 +252,9 @@ interface CborInfo {
   cborSegment: string;
 }
 
+//note: we *don't* bother handling Vyper 0.3.4's idiosyncratic CBOR
+//here, because it's always fixed, so there just isn't any need to;
+//we're OK with just not normalizing that
 function extractCborInfo(binary: string): CborInfo | null {
   debug("extracting cbor segement of %s", binary);
   const lastTwoBytes = binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
