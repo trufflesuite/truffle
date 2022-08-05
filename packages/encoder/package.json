@@ -62,7 +62,7 @@
     "jest": "28.1.3",
     "jest-fast-check": "2.0.0",
     "jest-transform-stealthy-require": "^1.0.0",
-    "ts-jest": "28.0.6",
+    "ts-jest": "28.0.7",
     "typescript": "^4.1.4",
     "utf8": "^3.0.0",
     "web3": "1.7.4"
