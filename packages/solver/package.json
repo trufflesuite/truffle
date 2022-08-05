@@ -18,6 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "copyfiles": "^2.4.1",
+    "json-schema-to-typescript": "^11.0.1",
     "ramda": "^0.28.0",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.3",
