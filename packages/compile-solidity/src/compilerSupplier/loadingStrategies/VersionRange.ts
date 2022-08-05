@@ -178,7 +178,7 @@ export class VersionRange {
     // go through all sources (compilerRoots) trying to locate a
     // suitable version of the Solidity compiler
     const { compilerRoots, events } = this.config;
-    if (index > compilerRoots.length - 1) {
+    if (index >= compilerRoots.length) {
       throw new CompilerFetchingError(compilerRoots);
     }
     if (!compilerRoots || compilerRoots.length < 1) {
