@@ -22,4 +22,4 @@ packages/truffle/$RECYCLE.BIN/
 packages/debugger/.tmp
 
 # @truffle/contract
-packages/contract/dist
+packages/contract/browser-dist
