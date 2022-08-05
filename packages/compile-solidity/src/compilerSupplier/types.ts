@@ -6,5 +6,5 @@ export type StrategyOptions = {
   events?: any; // represents a @truffle/events instance, which lacks types
   spawn?: {
     maxBuffer: number;
-  }
+  };
 };

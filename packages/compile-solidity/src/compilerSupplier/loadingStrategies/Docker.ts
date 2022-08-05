@@ -8,7 +8,7 @@ import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
 import { NoVersionError, FailedRequestError } from "../errors";
 import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
-import { StrategyOptions } from "./types";
+import { StrategyOptions } from "../types";
 
 export class Docker {
   private config: StrategyOptions;
@@ -192,7 +192,7 @@ export class Docker {
 
           nextUrl = next;
         } catch (error) {
-          throw new FailedRequestError(dockerTagsUrl, error);
+          throw new FailedRequestError(dockerTagsUrl!, error);
         }
       } while (nextUrl);
     })();

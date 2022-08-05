@@ -9,7 +9,7 @@ import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
 import { NoVersionError, CompilerFetchingError } from "../errors";
-import { StrategyOptions } from "./types";
+import { StrategyOptions } from "../types";
 
 type SolidityCompilersList = {
   builds: object[];
