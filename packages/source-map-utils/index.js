@@ -96,7 +96,7 @@ var SourceMapUtils = {
   //sources: array of text sources (must be in order!)
   //binary: raw binary to process.  should not have unresolved links.
   //sourceMap: a processed source map as output by getHumanReadableSourceMap above
-  //we... attempt to muddle through.
+  //if missing, we... attempt to muddle through.
   getProcessedInstructionsForBinary: function (sources, binary, sourceMap) {
     if (!sources || !binary) {
       return [];
