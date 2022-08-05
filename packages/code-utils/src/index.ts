@@ -1,36 +1,49 @@
 import parseOpcode from "./opcodes";
-import type { Instruction, OpcodeTable, opcodeObject, opcodes } from "./types";
-export type { Instruction, OpcodeTable, opcodeObject, opcodes };
+import type {
+  Instruction,
+  OpcodeTable,
+  opcodeObject,
+  opcodes,
+  DisassemblyOptions
+} from "./types";
+export type {
+  Instruction,
+  OpcodeTable,
+  opcodeObject,
+  opcodes,
+  DisassemblyOptions
+};
 import * as cbor from "cbor";
 
 /**
  * parseCode - return a list of instructions given a 0x-prefixed code string.
  *
- * If numInstructions is not passed in, we attempt to strip contract
- * metadata.  This won't work very well if the code is for a constructor or a
- * contract that can create other contracts, but it's better than nothing.
+ * The optional second options argument allows two options; both are ways of
+ * attempting to limit the disassembly to only the code section rather than the
+ * data section.  If maxInstructionCount is used, the disassembly will be limited
+ * to the specified number of instructions (one may pass in here the number of
+ * instructions in the corresponding source map).
  *
- * WARNING: Don't invoke the function that way if you're dealing with a
- * constructor with arguments attached!  Then you could get disaster!
+ * If attemptStripMetadata is used, we will attempt to strip the metadata at the
+ * end of the code.  This is not reliable, and should be avoided if better
+ * alternatives are available.  It may be particularly unreliable when dealing with
+ * constructors that have had arguments attached to the end!
  *
- * If you pass in numInstructions (hint: count the semicolons in the source
- * map, then add one) this is used to exclude metadata instead.
+ * These options can be combined, although I'm not sure why you'd want to.
  *
  * @param  {String} hexString Hex string representing the code
  * @return Array               Array of instructions
  */
 export function parseCode(
   hexString: string,
-  numInstructions: number = null
+  { maxInstructionCount, attemptStripMetadata }: DisassemblyOptions = {}
 ): Instruction[] {
   // Convert to an array of bytes
   let code = new Uint8Array(
     (hexString.slice(2).match(/(..?)/g) || []).map(hex => parseInt(hex, 16))
   );
 
-  const stripMetadata = numInstructions === null;
-
-  if (stripMetadata && code.length >= 2) {
+  if (attemptStripMetadata && code.length >= 2) {
     // Remove the contract metadata; last two bytes encode its length (not
     // including those two bytes)
     let foundMetadata = false;
@@ -58,10 +71,14 @@ export function parseCode(
   }
 
   let instructions = [];
+  if (maxInstructionCount === undefined) {
+    //if maxInstructionCount wasn't passed, we'll set it to
+    //Infinity so that we don't limit the number of instructions
+    maxInstructionCount = Infinity;
+  }
   for (
     let pc = 0;
-    pc < code.length &&
-    (stripMetadata || instructions.length < numInstructions);
+    pc < code.length && instructions.length < maxInstructionCount;
     pc++
   ) {
     let opcode: Instruction = {

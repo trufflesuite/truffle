@@ -109,8 +109,10 @@ var SourceMapUtils = {
     }
 
     //because we might be dealing with a constructor with arguments, we do
-    //*not* remove metadata manually
-    let instructions = CodeUtils.parseCode(binary, numInstructions);
+    //*not* pass attemptStripMetadata under any circumstances
+    let instructions = CodeUtils.parseCode(binary, {
+      maxInstructionCount: numInstructions
+    });
 
     if (!sourceMap) {
       // HACK

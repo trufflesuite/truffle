@@ -28,7 +28,9 @@ module.exports = async function (options) {
     bytecode = Contract.bytecode;
     numInstructions = Contract.sourceMap.split(";").length;
   }
-  const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
+  const opcodes = CodeUtils.parseCode(bytecode, {
+    maxInstructionCount: numInstructions
+  });
 
   if (opcodes.length === 0) {
     console.log(

@@ -54,8 +54,11 @@ export const bytecodes: Definition<"bytecodes"> = {
   resolvers: {
     Bytecode: {
       instructions: {
-        async resolve({ bytes }, { count = null }) {
-          const parsed = CodeUtils.parseCode(`0x${bytes}`, count);
+        async resolve({ bytes }, { count }) {
+          const parsed = CodeUtils.parseCode(`0x${bytes}`, {
+            maxInstructionCount: count,
+            attemptStripMetadata: count === undefined
+          });
 
           return parsed.map(
             ({ name: opcode, pc: programCounter, pushData }) => ({
