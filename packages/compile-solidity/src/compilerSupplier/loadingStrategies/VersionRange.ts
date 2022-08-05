@@ -178,12 +178,12 @@ export class VersionRange {
     // go through all sources (compilerRoots) trying to locate a
     // suitable version of the Solidity compiler
     const { compilerRoots, events } = this.config;
-    if (index >= compilerRoots.length) {
-      throw new CompilerFetchingError(compilerRoots);
-    }
     if (!compilerRoots || compilerRoots.length < 1) {
       events.emit("fetchSolcList:fail");
       throw new NoUrlError();
+    }
+    if (index >= compilerRoots.length) {
+      throw new CompilerFetchingError(compilerRoots);
     }
 
     let allVersionsForSource: string[], versionToUse: string | null;
