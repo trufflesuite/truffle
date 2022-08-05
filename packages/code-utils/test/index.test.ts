@@ -19,7 +19,7 @@ describe("CodeUtils.parseCode", function () {
     const parsedCode = CodeUtils.parseCode("[]");
     assert(parsedCode);
     assert(Array.isArray(parsedCode));
-    assert(parsedCode.length === 0);
+    assert.equal(parsedCode.length, 0);
   });
 
   it("doesn't strip invalid metadata", function () {
@@ -29,7 +29,7 @@ describe("CodeUtils.parseCode", function () {
       attemptStripMetadata: true
     });
     assert(parsedCode);
-    assert(parsedCode.length === 172);
+    assert.equal(parsedCode.length, 172);
   });
 
   it("doesn't crash on invalid metadata", function () {
