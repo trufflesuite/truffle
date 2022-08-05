@@ -32,7 +32,7 @@
     "@truffle/contract-sources": "^0.2.0",
     "@truffle/expect": "^0.1.2",
     "@truffle/provisioner": "^0.2.57",
-    "abi-to-sol": "^0.6.2",
+    "abi-to-sol": "^0.6.5",
     "debug": "^4.3.1",
     "detect-installed": "^2.0.4",
     "fs-extra": "^9.1.0",
