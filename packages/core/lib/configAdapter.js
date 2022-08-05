@@ -88,7 +88,7 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     gasPrice,
     time: genesisTime,
     miner: {
-      instamine: "strict"
+      instamine: "eager"
     }
   };
 
