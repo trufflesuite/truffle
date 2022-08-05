@@ -62,9 +62,10 @@ export class VersionRange {
     }
     let data;
     try {
+      const attemptNumber = index + 1;
       data = await this.getSolcVersionsForSource(
-        this.config.compilerRoots[index],
-        index + 1
+        this.config.compilerRoots![index],
+        attemptNumber
       );
     } catch (error) {
       if (error.message.includes("Failed to fetch compiler list at")) {
@@ -188,9 +189,10 @@ export class VersionRange {
 
     let allVersionsForSource: string[], versionToUse: string | null;
     try {
+      const attemptNumber = index + 1;
       allVersionsForSource = await this.getSolcVersionsForSource(
         compilerRoots[index],
-        index + 1
+        attemptNumber
       );
       const isVersionRange = !semver.valid(versionConstraint);
       versionToUse = isVersionRange
@@ -207,7 +209,8 @@ export class VersionRange {
       }
       return await this.getAndCacheSolcByUrl(fileName, index);
     } catch (error) {
-      return await this.getSolcFromCacheOrUrl(versionConstraint, index + 1);
+      const attemptNumber = index + 1;
+      return await this.getSolcFromCacheOrUrl(versionConstraint, attemptNumber);
     }
   }
 
