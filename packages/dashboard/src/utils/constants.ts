@@ -1,7 +1,7 @@
 import chainIDtoNameJson from "src/assets/chainIDtoName.json";
 
 export const EMOTION_KEY = "trfl";
-export const COLOR_SCHEME_KEY = "trfl-dash-color-scheme";
+export const COLOR_SCHEME_KEY = "trfl.dash.color-scheme";
 
 export const INTERACTIVE_RPC_METHODS_ARR = [
   "eth_signTransaction",
