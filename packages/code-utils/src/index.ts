@@ -100,7 +100,10 @@ function isValidCBOR(metadata: Uint8Array) {
     //attempt to decode but discard the value
     //note this *will* throw if there's data left over,
     //which is what we want it to do
-    cbor.decodeFirstSync(metadata);
+    //HACK: this version of cbor doesn't accept Uint8Arrays,
+    //but it does accept Buffers.  (Unfortunately newer versions
+    //cause problems. :-/ )
+    cbor.decodeFirstSync(Buffer.from(metadata));
   } catch {
     return false;
   }
