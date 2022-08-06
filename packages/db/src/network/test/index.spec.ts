@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:test");
 
 import gql from "graphql-tag";
-import { testProp } from "jest-fast-check";
+import { testProp } from "@fast-check/jest";
 import * as fc from "fast-check";
 
 import * as Arbitrary from "test/arbitraries/networks";

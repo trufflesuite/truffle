@@ -12,7 +12,7 @@ import {
 import isNumber from "lodash/isNumber";
 
 import * as fc from "fast-check";
-import { testProp } from "jest-fast-check";
+import { testProp } from "@fast-check/jest";
 import Web3Utils from "web3-utils";
 import utf8 from "utf8";
 

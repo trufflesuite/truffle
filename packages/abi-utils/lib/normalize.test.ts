@@ -1,5 +1,5 @@
 import "jest-extended";
-import { testProp } from "jest-fast-check";
+import { testProp } from "@fast-check/jest";
 
 import * as Arbitrary from "./arbitrary";
 
@@ -48,9 +48,7 @@ describe("normalize", () => {
 
       expect(
         abi.filter(({ type }) => type !== "event" && type !== "error")
-      ).toSatisfyAll(
-        entry => "stateMutability" in entry
-      );
+      ).toSatisfyAll(entry => "stateMutability" in entry);
     }
   );
 
