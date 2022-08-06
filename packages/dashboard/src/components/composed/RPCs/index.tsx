@@ -28,7 +28,7 @@ function RPCs(): JSX.Element {
 
   if (content.length > 0) {
     return (
-      <Stack align="center" pt="16vh" pb="8vh">
+      <Stack spacing={32} align="center" py="12vh">
         {content}
       </Stack>
     );
