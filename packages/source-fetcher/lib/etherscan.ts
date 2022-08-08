@@ -70,7 +70,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "avalanche": "api.snowtrace.io",
       "fuji-avalanche": "api-testnet.snowtrace.io",
       "heco": "api.hecoinfo.com",
-      "testnet-heco": "api-testnet.hecoinfo.com",
       "moonbeam": "api-moonbeam.moonscan.io",
       "moonriver": "api-moonriver.moonscan.io",
       "moonbase-alpha": "api-moonbase.moonscan.io",
