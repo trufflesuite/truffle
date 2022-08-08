@@ -3,22 +3,25 @@ const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
 import originalRequire from "original-require";
-import axios from "axios";
+import { default as axios, AxiosResponse } from "axios";
 import semver from "semver";
 import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
-import { NoVersionError, NoRequestError } from "../errors";
+import { NoVersionError, CompilerFetchingError } from "../errors";
+import { StrategyOptions } from "../types";
+
+type SolidityCompilersList = {
+  builds: object[];
+  latestRelease: string;
+  releases: object;
+};
 
 export class VersionRange {
-  private config: {
-    events: any; // represents a @truffle/events instance, which lacks types
-    compilerRoots: string[];
-  };
-
+  private config: StrategyOptions;
   private cache: Cache;
 
-  constructor(options) {
+  constructor(options: StrategyOptions) {
     const defaultConfig = {
       compilerRoots: [
         // NOTE this relay address exists so that we have a backup option in
@@ -52,10 +55,28 @@ export class VersionRange {
     }
   }
 
-  async list() {
-    const data = await this.getSolcVersions();
+  async list(index = 0) {
+    if (index >= this.config.compilerRoots!.length) {
+      throw new Error(
+        `Failed to fetch the list of Solidity compilers from the following ` +
+          `sources: ${this.config.compilerRoots}. Make sure you are connected ` +
+          `to the internet.`
+      );
+    }
+    let data: SolidityCompilersList;
+    try {
+      const attemptNumber = index + 1;
+      data = await this.getSolcVersionsForSource(
+        this.config.compilerRoots![index],
+        attemptNumber
+      );
+    } catch (error) {
+      if (error.message.includes("Failed to fetch compiler list at")) {
+        return await this.list(index + 1);
+      }
+      throw error;
+    }
     const { latestRelease } = data;
-
     const prereleases = data.builds
       .filter(build => build["prerelease"])
       .map(build => build["longVersion"]);
@@ -70,7 +91,7 @@ export class VersionRange {
     };
   }
 
-  compilerFromString(code) {
+  compilerFromString(code: string) {
     const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
@@ -80,14 +101,17 @@ export class VersionRange {
     }
   }
 
-  findNewestValidVersion(version, allVersions) {
+  findNewestValidVersion(
+    version: string,
+    allVersions: SolidityCompilersList
+  ): string | null {
     return semver.maxSatisfying(
-      Object.keys(allVersions?.releases || {}),
+      Object.keys(allVersions.releases || {}),
       version
     );
   }
 
-  getCachedSolcByFileName(fileName) {
+  getCachedSolcByFileName(fileName: string) {
     const listeners = observeListeners();
     try {
       const filePath = this.cache.resolve(fileName);
@@ -100,7 +124,7 @@ export class VersionRange {
   }
 
   // Range can also be a single version specification like "0.5.0"
-  getCachedSolcByVersionRange(version) {
+  getCachedSolcByVersionRange(version: string) {
     const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -114,103 +138,114 @@ export class VersionRange {
     return this.getCachedSolcByFileName(compilerFileName);
   }
 
-  getCachedSolcFileName(commit) {
+  getCachedSolcFileName(commit: string) {
     const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
   }
 
-  getMostRecentVersionOfCompiler(versions) {
+  getMostRecentVersionOfCompiler(versions: string[]) {
     return versions.reduce((mostRecentVersionFileName, fileName) => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
-      const mostRecentVersionMatch = mostRecentVersionFileName.match(
-        /v\d+\.\d+\.\d+.*/
-      );
-      return semver.gtr(match[0], mostRecentVersionMatch[0])
+      const mostRecentVersionMatch =
+        mostRecentVersionFileName.match(/v\d+\.\d+\.\d+.*/);
+      return semver.gtr(match![0], mostRecentVersionMatch![0])
         ? fileName
         : mostRecentVersionFileName;
     }, "-v0.0.0+commit");
   }
 
-  getSatisfyingVersionFromCache(versionRange) {
+  getSatisfyingVersionFromCache(versionRange: string) {
     if (this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
     throw new NoVersionError(versionRange);
   }
 
-  async getAndCacheSolcByUrl(fileName, index = 0) {
-    const url = `${this.config.compilerRoots[index].replace(
-      /\/+$/,
-      ""
-    )}/${fileName}`;
-    const { events } = this.config;
+  async getAndCacheSolcByUrl(fileName: string, index: number) {
+    const { events, compilerRoots } = this.config;
+    const url = `${compilerRoots![index].replace(/\/+$/, "")}/${fileName}`;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
+    let response: AxiosResponse;
     try {
-      const response = await axios.get(url, { maxRedirects: 50 });
-      events.emit("downloadCompiler:succeed");
-      this.cache.add(response.data, fileName);
-      return this.compilerFromString(response.data);
+      response = await axios.get(url, { maxRedirects: 50 });
     } catch (error) {
       events.emit("downloadCompiler:fail");
-      if (index >= this.config.compilerRoots.length - 1) {
-        throw new NoRequestError("compiler URLs", error);
-      }
-      return this.getAndCacheSolcByUrl(fileName, index + 1);
+      throw error;
     }
+    events.emit("downloadCompiler:succeed");
+    this.cache.add(response.data, fileName);
+    return this.compilerFromString(response.data);
   }
 
-  async getSolcFromCacheOrUrl(versionConstraint) {
-    let allVersions, versionToUse;
-    try {
-      allVersions = await this.getSolcVersions();
-    } catch (error) {
-      throw new NoRequestError(versionConstraint, error);
-    }
-    const isVersionRange = !semver.valid(versionConstraint);
-
-    versionToUse = isVersionRange
-      ? this.findNewestValidVersion(versionConstraint, allVersions)
-      : versionConstraint;
-    const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
-
-    if (!fileName) throw new NoVersionError(versionToUse);
-
-    if (this.cache.has(fileName))
-      return this.getCachedSolcByFileName(fileName);
-    return this.getAndCacheSolcByUrl(fileName);
-  }
-
-  getSolcVersions(index = 0) {
-    const { events } = this.config;
-    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
-    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
+  async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
+    // go through all sources (compilerRoots) trying to locate a
+    // suitable version of the Solidity compiler
+    const { compilerRoots, events } = this.config;
+    if (!compilerRoots || compilerRoots.length === 0) {
       events.emit("fetchSolcList:fail");
       throw new NoUrlError();
     }
-    const { compilerRoots } = this.config;
+    if (index >= compilerRoots.length) {
+      throw new CompilerFetchingError(compilerRoots);
+    }
 
-    // trim trailing slashes from compilerRoot
-    const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return axios
-      .get(url, { maxRedirects: 50 })
-      .then(response => {
-        events.emit("fetchSolcList:succeed");
-        return response.data;
-      })
-      .catch(error => {
-        events.emit("fetchSolcList:fail");
-        if (index >= this.config.compilerRoots.length - 1) {
-          throw new NoRequestError("version URLs", error);
-        }
-        return this.getSolcVersions(index + 1);
-      });
+    let allVersionsForSource: SolidityCompilersList,
+      versionToUse: string | null;
+    try {
+      const attemptNumber = index + 1;
+      allVersionsForSource = await this.getSolcVersionsForSource(
+        compilerRoots[index],
+        attemptNumber
+      );
+      const isVersionRange = !semver.valid(versionConstraint);
+      versionToUse = isVersionRange
+        ? this.findNewestValidVersion(versionConstraint, allVersionsForSource)
+        : versionConstraint;
+      if (versionToUse === null) {
+        throw new Error("No valid version found for source.");
+      }
+      const fileName = this.getSolcVersionFileName(
+        versionToUse,
+        allVersionsForSource
+      );
+      if (!fileName) throw new NoVersionError(versionToUse);
+
+      if (this.cache.has(fileName)) {
+        return this.getCachedSolcByFileName(fileName);
+      }
+      return await this.getAndCacheSolcByUrl(fileName, index);
+    } catch (error) {
+      const attemptNumber = index + 1;
+      return await this.getSolcFromCacheOrUrl(versionConstraint, attemptNumber);
+    }
   }
 
-  getSolcVersionFileName(version, allVersions) {
+  async getSolcVersionsForSource(
+    urlRoot: string,
+    attemptNumber: number
+  ): Promise<SolidityCompilersList> {
+    const { events } = this.config;
+    events.emit("fetchSolcList:start", { attemptNumber });
+
+    // trim trailing slashes from compilerRoot
+    const url = `${urlRoot.replace(/\/+$/, "")}/list.json`;
+    try {
+      const response = await axios.get(url, { maxRedirects: 50 });
+      return response.data;
+    } catch (error) {
+      events.emit("fetchSolcList:fail");
+      throw new Error(`Failed to fetch compiler list at ${url}`);
+    }
+  }
+
+  getSolcVersionFileName(
+    version: string,
+    allVersions: SolidityCompilersList
+  ): string | null {
     if (allVersions.releases[version]) return allVersions.releases[version];
 
     const isPrerelease =
@@ -234,12 +269,14 @@ export class VersionRange {
     return null;
   }
 
-  versionIsCached(version) {
+  versionIsCached(version: string) {
     const cachedCompilerFileNames = this.cache.list();
-    const cachedVersions = cachedCompilerFileNames.map(fileName => {
-      const match = fileName.match(/v\d+\.\d+\.\d+.*/);
-      if (match) return match[0];
-    }).filter((version): version is string => !!version);
+    const cachedVersions = cachedCompilerFileNames
+      .map(fileName => {
+        const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+        if (match) return match[0];
+      })
+      .filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
     );

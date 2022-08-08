@@ -4,14 +4,14 @@ import solcWrap from "solc/wrapper";
 import { observeListeners } from "../observeListeners";
 
 export class Local {
-  load(localPath) {
+  load(localPath: string) {
     const listeners = observeListeners();
     try {
-      let soljson, compilerPath;
-      compilerPath = path.isAbsolute(localPath)
+      const compilerPath = path.isAbsolute(localPath)
         ? localPath
         : path.resolve(process.cwd(), localPath);
 
+      let soljson: any;
       try {
         soljson = originalRequire(compilerPath);
       } catch (error) {
@@ -26,7 +26,7 @@ export class Local {
 }
 
 export class NoPathError extends Error {
-  constructor(input, error) {
+  constructor(input: string, error: Error) {
     const message = `Could not find compiler at: ${input}\n\n` + error;
     super(message);
   }

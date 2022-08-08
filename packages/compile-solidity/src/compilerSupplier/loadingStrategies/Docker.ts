@@ -6,20 +6,15 @@ import { execSync } from "child_process";
 import semver from "semver";
 import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
-import { NoVersionError, NoRequestError } from "../errors";
+import { NoVersionError, FailedRequestError } from "../errors";
 import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
+import { StrategyOptions } from "../types";
 
 export class Docker {
-  private config: {
-    spawn: {
-      maxBuffer: number;
-    };
-    dockerTagsUrl: string;
-    version: string;
-  };
+  private config: StrategyOptions;
   private cache: Cache;
 
-  constructor(options) {
+  constructor(options: StrategyOptions) {
     const defaultConfig = {
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
@@ -189,7 +184,7 @@ export class Docker {
               // next page url
               next
             }
-          } = await client.get(nextUrl, { maxRedirects: 50 });
+          } = await client.get(nextUrl as string, { maxRedirects: 50 });
 
           for (const { name } of results) {
             yield name;
@@ -197,7 +192,7 @@ export class Docker {
 
           nextUrl = next;
         } catch (error) {
-          throw new NoRequestError(dockerTagsUrl, error);
+          throw new FailedRequestError(dockerTagsUrl!, error);
         }
       } while (nextUrl);
     })();

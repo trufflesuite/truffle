@@ -2,7 +2,9 @@ const assert = require("assert");
 const fs = require("fs");
 const axios = require("axios");
 const sinon = require("sinon");
-const { VersionRange } = require("../../../dist/compilerSupplier/loadingStrategies");
+const {
+  VersionRange
+} = require("../../../dist/compilerSupplier/loadingStrategies");
 const Config = require("@truffle/config");
 const config = Config.default();
 let versionRangeOptions = {
@@ -10,7 +12,7 @@ let versionRangeOptions = {
   solcConfig: config.compilers.solc
 };
 const instance = new VersionRange(versionRangeOptions);
-let fileName;
+let fileName, expectedResult;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
   "soljson-v0.4.23+commit.1534a40d.js",
@@ -58,10 +60,10 @@ const allVersions = {
 
 describe("VersionRange loading strategy", () => {
   beforeEach(function () {
-    sinon.stub(instance, "getSolcVersions").returns(allVersions);
+    sinon.stub(instance, "getSolcVersionsForSource").returns(allVersions);
   });
-  afterEach(function ()  {
-    instance.getSolcVersions.restore();
+  afterEach(function () {
+    instance.getSolcVersionsForSource.restore();
   });
 
   describe("async load(versionRange)", () => {
@@ -174,9 +176,7 @@ describe("VersionRange loading strategy", () => {
 
     it("calls add with the response and the file name", async () => {
       const result = await instance.getAndCacheSolcByUrl(fileName, 0);
-      assert(
-        instance.cache.add.calledWith("requestReturn", "someSolcFile")
-      );
+      assert(instance.cache.add.calledWith("requestReturn", "someSolcFile"));
       assert(result === "success");
     });
   });
@@ -190,7 +190,9 @@ describe("VersionRange loading strategy", () => {
       );
     });
     it("returns null when the version is invalid", () => {
-      assert(instance.findNewestValidVersion("garbageInput") === null);
+      assert(
+        instance.findNewestValidVersion("garbageInput", allVersions) === null
+      );
     });
     it("returns null when there are no valid versions", () => {
       assert(instance.findNewestValidVersion("^0.8.0", allVersions) === null);
