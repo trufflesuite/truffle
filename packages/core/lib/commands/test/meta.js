@@ -34,6 +34,13 @@ module.exports = {
       type: "boolean",
       default: false
     },
+    "grep": {
+      alias: "g",
+      type: "string",
+      describe:
+        `Use mocha's "grep" option while running tests. This ` +
+        `option only runs tests that match the supplied regex/string.`
+    },
     "stacktrace": {
       alias: "t",
       describe: "Produce Solidity stacktraces",
