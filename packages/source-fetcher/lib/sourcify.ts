@@ -44,6 +44,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "sepolia",
     "optimistic",
     "kovan-optimistic",
+    "goerli-optimistic",
     "arbitrum",
     "rinkeby-arbitrum",
     "polygon",
