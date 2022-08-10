@@ -1,7 +1,5 @@
 // Compares .sol files to their .sol.js counterparts,
 // determines which .sol files have been updated.
-
-const debug = require("debug")("compile:profiler");
 const { Profiler } = require("@truffle/profiler");
 const { loadParser } = require("./loadParser");
 const { shouldIncludePath } = require("./shouldIncludePath");
