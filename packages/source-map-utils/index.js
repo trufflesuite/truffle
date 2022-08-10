@@ -493,29 +493,31 @@ var SourceMapUtils = {
       const jumpIndex = instructions.findIndex(
         instruction => instruction.pc === jumpAddress
       );
-      if (checkAgainstTemplate(instructions, jumpIndex, newSequence)) {
-        return true;
-      }
-      debug("indirect: %O", instructions.slice(index, index + 4));
-      debug("jumpAddress: %d", jumpAddress);
-      debug("jumpIndex: %d", jumpIndex);
-      debug("instr count: %d", instructions.length);
-      const jumpInstruction = instructions[jumpIndex];
-      const jumpFile = jumpInstruction.file;
-      if (jumpFile !== -1) {
-        const findOverlappingRange = overlapFunctions[jumpFile];
-        const range = SourceMapUtils.getSourceRange(jumpInstruction);
-        const { node: jumpNode } = SourceMapUtils.findRange(
-          findOverlappingRange,
-          range.start,
-          range.length
-        );
-        if (
-          jumpNode &&
-          jumpNode.nodeType === "YulFunctionDefinition" &&
-          jumpNode.name === "panic_error_0x51"
-        ) {
+      if (jumpIndex !== undefined) {
+        if (checkAgainstTemplate(instructions, jumpIndex, newSequence)) {
           return true;
+        }
+        debug("indirect: %O", instructions.slice(index, index + 4));
+        debug("jumpAddress: %d", jumpAddress);
+        debug("jumpIndex: %d", jumpIndex);
+        debug("instr count: %d", instructions.length);
+        const jumpInstruction = instructions[jumpIndex];
+        const jumpFile = jumpInstruction.file;
+        if (jumpFile !== -1) {
+          const findOverlappingRange = overlapFunctions[jumpFile];
+          const range = SourceMapUtils.getSourceRange(jumpInstruction);
+          const { node: jumpNode } = SourceMapUtils.findRange(
+            findOverlappingRange,
+            range.start,
+            range.length
+          );
+          if (
+            jumpNode &&
+            jumpNode.nodeType === "YulFunctionDefinition" &&
+            jumpNode.name === "panic_error_0x51"
+          ) {
+            return true;
+          }
         }
       }
     }
