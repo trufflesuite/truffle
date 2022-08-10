@@ -1,6 +1,7 @@
 import { CompilerSupplier } from "../compilerSupplier";
 import Parser from "../parser";
 import semver, { SemVer } from "semver";
+import type Config from "@truffle/config";
 
 /**
  * Loads solc and wrap it to parse imports rather than performing a full
@@ -13,7 +14,10 @@ import semver, { SemVer } from "semver";
  * up to twice: first time as usual, to get the specific version, then a second
  * time to get the solcjs of that version.
  */
-async function loadParser({ events, compilers: { solc: solcConfig } }) {
+export async function loadParser({
+  events,
+  compilers: { solc: solcConfig }
+}: Config) {
   const { parser } = solcConfig;
 
   const supplier = new CompilerSupplier({ events, solcConfig });
@@ -76,5 +80,3 @@ function makeParseImports(parser: any) {
 
   return parseImports;
 }
-
-module.exports = { loadParser };
