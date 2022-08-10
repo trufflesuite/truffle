@@ -6,6 +6,7 @@ const { CompilerSupplier } = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
 const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
+const Shims = require("./shims");
 const { reportSources } = require("./reportSources");
 const { Compilations } = require("@truffle/compile-common");
 const expect = require("@truffle/expect");
@@ -192,5 +193,6 @@ const Compile = {
 
 module.exports = {
   Compile,
-  CompilerSupplier
+  CompilerSupplier,
+  Shims
 };
