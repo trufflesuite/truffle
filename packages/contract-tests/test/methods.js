@@ -592,7 +592,7 @@ describe("Methods", function () {
   describe("sendTransaction() / send() [ @geth ]", function () {
     it("should trigger the fallback function when calling sendTransaction()", async function () {
       const example = await Example.new(1);
-      const triggered = await example.fallbackTriggered();
+      let triggered = await example.fallbackTriggered();
 
       assert.isFalse(triggered, "Fallback should not have been triggered yet");
 
@@ -606,11 +606,14 @@ describe("Methods", function () {
         web3.utils.toWei("1", "ether"),
         "Balance should be 1 ether"
       );
+
+      triggered = await example.fallbackTriggered();
+      assert.isTrue(triggered, "Fallback should now have been triggered");
     });
 
     it("should trigger the fallback function when calling send() (shorthand notation)", async function () {
       const example = await Example.new(1);
-      const triggered = await example.fallbackTriggered();
+      let triggered = await example.fallbackTriggered();
 
       assert.isFalse(triggered, "Fallback should not have been triggered yet");
 
@@ -618,6 +621,9 @@ describe("Methods", function () {
 
       const balance = await web3.eth.getBalance(example.address);
       assert.strictEqual(balance, web3.utils.toWei("1", "ether"));
+
+      triggered = await example.fallbackTriggered();
+      assert.isTrue(triggered, "Fallback should now have been triggered");
     });
 
     it("should accept tx params (send)", async function () {
