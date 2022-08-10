@@ -12,18 +12,18 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.1.73",
+  "version": "3.1.74",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.7.32",
-    "@truffle/config": "^1.3.34",
+    "@truffle/compile-common": "^0.7.33",
+    "@truffle/config": "^1.3.35",
     "@truffle/contract-sources": "^0.2.0",
-    "@truffle/profiler": "^0.1.26",
-    "@truffle/resolver": "^9.0.11",
+    "@truffle/profiler": "^0.1.27",
+    "@truffle/resolver": "^9.0.12",
     "colors": "1.4.0",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
@@ -31,7 +31,7 @@
     "semver": "7.3.7"
   },
   "devDependencies": {
-    "@truffle/code-utils": "^1.2.34",
+    "@truffle/code-utils": "^2.0.0",
     "mocha": "9.2.2"
   },
   "keywords": [
