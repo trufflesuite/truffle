@@ -23,7 +23,7 @@ function Middle(): JSX.Element {
   return (
     <Navbar.Section grow py="sm">
       <NavButton
-        label="Signature Requests"
+        label="Signature requests"
         to="/rpcs"
         icon={
           <Indicator

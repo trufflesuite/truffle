@@ -38,7 +38,7 @@ function ConfirmChain(): JSX.Element {
     <Title order={4}>
       <Info size={18} />
       <Space w={6} />
-      Confirm Network
+      Confirm network
     </Title>
   );
   const desc = (
