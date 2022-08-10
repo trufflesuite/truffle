@@ -1,12 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const Parser = require("../dist/parser");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
+const { CompilerSupplier, Parser } = require("@truffle/compile-solidity");
 const assert = require("assert");
 
 describe("Parser", () => {
   let source = null;
-  let solc;
+  let solc, supplierOptions;
 
   const expected = [
     "./Dependency.sol",

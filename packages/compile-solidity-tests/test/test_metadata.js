@@ -3,9 +3,8 @@ const tmp = require("tmp");
 tmp.setGracefulCleanup();
 const fs = require("fs");
 const path = require("path");
-const { Compile } = require("@truffle/compile-solidity");
+const { Compile, CompilerSupplier } = require("@truffle/compile-solidity");
 const { Resolver } = require("@truffle/resolver");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
 const solcConfig = {

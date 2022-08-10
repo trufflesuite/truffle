@@ -11,6 +11,11 @@ const { Compilations } = require("@truffle/compile-common");
 const expect = require("@truffle/expect");
 const partition = require("lodash/partition");
 const fs = require("fs-extra");
+const Cache = require("./compilerSupplier/Cache");
+const LoadingStrategies = require("./compilerSupplier/LoadingStrategies");
+const RangeUtils = require("./compilerSupplier/rangeUtils");
+const { shouldIncludePath } = require("./profiler/shouldIncludePath");
+const Parser = require("./parser");
 
 async function compileYulPaths(yulPaths, options) {
   let yulCompilations = [];
@@ -192,5 +197,13 @@ const Compile = {
 
 module.exports = {
   Compile,
-  CompilerSupplier
+  CompilerSupplier,
+  compileWithPragmaAnalysis,
+  Cache,
+  LoadingStrategies,
+  Parser,
+  Profiler,
+  RangeUtils,
+  run,
+  shouldIncludePath
 };

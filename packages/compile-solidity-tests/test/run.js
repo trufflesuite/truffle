@@ -1,6 +1,6 @@
 const Config = require("@truffle/config");
 const { assert } = require("chai");
-const { run } = require("../dist/run");
+const { run } = require("@truffle/compile-solidity");
 let rawSources, options;
 
 describe("async run(rawSources, options)", () => {

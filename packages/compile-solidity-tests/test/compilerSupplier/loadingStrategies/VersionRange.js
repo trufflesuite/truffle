@@ -2,16 +2,14 @@ const assert = require("assert");
 const fs = require("fs");
 const axios = require("axios");
 const sinon = require("sinon");
-const {
-  VersionRange
-} = require("../../../dist/compilerSupplier/loadingStrategies");
+const { LoadingStrategies } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const config = Config.default();
 let versionRangeOptions = {
   events: config.events,
   solcConfig: config.compilers.solc
 };
-const instance = new VersionRange(versionRangeOptions);
+const instance = new LoadingStrategies.VersionRange(versionRangeOptions);
 let fileName, expectedResult;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",

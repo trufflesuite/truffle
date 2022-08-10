@@ -1,11 +1,9 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const { CompilerSupplier } = require("../dist/index");
+const { CompilerSupplier } = require("@truffle/compile-solidity");
 const { Resolver } = require("@truffle/resolver");
 const sinon = require("sinon");
-const {
-  compileWithPragmaAnalysis
-} = require("../dist/compileWithPragmaAnalysis");
+const { compileWithPragmaAnalysis } = require("@truffle/compile-solidity");
 const path = require("path");
 let paths = [];
 

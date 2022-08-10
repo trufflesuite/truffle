@@ -2,14 +2,12 @@ const fs = require("fs");
 const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
-const { CompilerSupplier } = require("../../dist/compilerSupplier");
-const { Cache } = require("../../dist/compilerSupplier/Cache");
 const {
-  Docker,
-  Native,
-  Local,
-  VersionRange
-} = require("../../dist/compilerSupplier/loadingStrategies");
+  CompilerSupplier,
+  Cache,
+  LoadingStrategies
+} = require("@truffle/compile-solidity");
+const { Docker, Native, Local, VersionRange } = LoadingStrategies;
 const Config = require("@truffle/config");
 const config = new Config();
 let supplier;

@@ -1,0 +1,37 @@
+{
+  "private": true,
+  "name": "@truffle/compile-solidity-tests",
+  "description": "Test suite for @truffle/compile-solidity (unpublished)",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-solidity-tests#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/compile-solidity-tests"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0",
+  "scripts": {
+    "prepare": "exit 0",
+    "test": "./scripts/test.sh",
+    "test:debug": "$(yarn bin)/mocha --inspect-brk",
+    "test:trace": "$(yarn bin)/mocha --trace-warnings"
+  },
+  "devDependencies": {
+    "@truffle/compile-solidity": "^6.0.38",
+    "@truffle/config": "^1.3.34",
+    "@truffle/resolver": "^9.0.11",
+    "bignumber.js": "^7.2.1",
+    "chai": "^4.2.0",
+    "debug": "^4.3.1",
+    "ganache": "7.4.0",
+    "mocha": "9.2.2",
+    "sinon": "^9.0.2",
+    "tmp": "^0.2.1",
+    "web3": "1.7.4",
+    "web3-core-promievent": "1.7.4"
+  }
+}

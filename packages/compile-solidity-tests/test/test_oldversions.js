@@ -1,8 +1,6 @@
 const debug = require("debug")("compile:test:test_oldversions");
 const { Compile } = require("@truffle/compile-solidity");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
-const { findOne } = require("./helpers");
 const workingDirectory = "/home/fakename/truffleproject";
 const compileOptions = {
   working_directory: workingDirectory,
@@ -18,13 +16,6 @@ const compileOptions = {
     }
   },
   quiet: true
-};
-
-const supplierOptions = {
-  solcConfig: compileOptions.compilers.solc,
-  events: {
-    emit: () => {}
-  }
 };
 
 //NOTE: do *not* replace this with an actual .sol
@@ -53,19 +44,8 @@ const source = __OLDCONTRACT;
 const sources = { [sourcePath]: source };
 
 describe("Compile - solidity <0.4.20", function () {
-  this.timeout(5000); // solc
-  let solc = null; // gets loaded via supplier
-
-  before("get solc", async function () {
-    this.timeout(40000);
-
-    const supplier = new CompilerSupplier(supplierOptions);
-    ({ solc } = await supplier.load());
-  });
-
   describe("Output repair", function () {
     it("produces contract output correctly", async function () {
-
       const { compilations } = await Compile.sources({
         sources,
         options: compileOptions
