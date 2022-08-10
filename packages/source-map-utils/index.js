@@ -109,7 +109,10 @@ var SourceMapUtils = {
     }
 
     //because we might be dealing with a constructor with arguments, we do
-    //*not* pass attemptStripMetadata under any circumstances
+    //*not* pass attemptStripMetadata under any circumstances as a safety
+    //measure (to prevent accidentally removing some of the *code* as well)
+    //(this is pretty unlikely but I'm going to continue to err on the safe
+    //side here I figure)
     let instructions = CodeUtils.parseCode(binary, {
       maxInstructionCount: numInstructions
     });
