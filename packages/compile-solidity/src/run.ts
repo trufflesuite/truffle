@@ -1,14 +1,21 @@
-const debug = require("debug")("compile:run");
-const OS = require("os");
-const semver = require("semver");
-const Common = require("@truffle/compile-common");
-const { CompilerSupplier } = require("./compilerSupplier");
-const { zeroLinkReferences, formatLinkReferences } = require("./shims");
+import { zeroLinkReferences, formatLinkReferences } from "./shims";
+import debugModule from "debug";
+const debug = debugModule("compile:run");
+import OS = require("os");
+import semver from "semver";
+import Common from "@truffle/compile-common";
+import { CompilerSupplier } from "./compilerSupplier";
+
+type InternalOptions = {
+  language?: string;
+  noTransform?: boolean;
+  solc?: any;
+};
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
-async function run(rawSources, options, internalOptions = {}) {
+async function run(rawSources, options, internalOptions: InternalOptions = {}) {
   if (Object.keys(rawSources).length === 0) {
     return null;
   }
@@ -213,10 +220,23 @@ function prepareOutputSelection({ targets = [] }) {
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
+type CompilerOutput = {
+  contracts: {
+    [key: string]: object;
+  };
+  sources: {
+    [key: string]: object;
+  }
+};
+
 /**
  * Load solc and perform compilation
  */
-async function invokeCompiler({ compilerInput, options, solc }) {
+async function invokeCompiler({ compilerInput, options, solc }):
+Promise<{
+  compilerOutput: CompilerOutput;
+  solcVersion: string;
+}> {
   const supplierOptions = {
     parser: options.parser,
     events: options.events,
@@ -305,6 +325,23 @@ function detectErrors({
   return { warnings, errors, infos };
 }
 
+type Source = {
+  ast: object;
+  id: number;
+  legacyAST?: any;
+};
+
+type processAllSourcesArgs = {
+  sources: any;
+  compilerOutput: {
+    sources: {
+      [key: string]: Source;
+    }
+  };
+  originalSourcePaths: any;
+  language: string;
+};
+
 /**
  * aggregate source information based on compiled output;
  * this can include sources that do not define any contracts
@@ -314,7 +351,7 @@ function processAllSources({
   compilerOutput,
   originalSourcePaths,
   language
-}) {
+}): processAllSourcesArgs {
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
@@ -449,7 +486,11 @@ function processContracts({
   );
 }
 
-function repairOldContracts(contracts) {
+type Contracts = {
+  [key: string]: object;
+};
+
+function repairOldContracts(contracts: Contracts) {
   const contractNames = [].concat(
     ...Object.values(contracts).map(source => Object.keys(source))
   );

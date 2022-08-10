@@ -1,6 +1,6 @@
-const expect = require("@truffle/expect");
+import expect from "@truffle/expect";
 
-const normalizeOptions = options => {
+export const normalizeOptions = options => {
   if (options.logger === undefined) options.logger = console;
 
   expect.options(options, ["contracts_directory", "compilers"]);
@@ -30,8 +30,4 @@ const normalizeOptions = options => {
   }
 
   return options;
-};
-
-module.exports = {
-  normalizeOptions
 };
