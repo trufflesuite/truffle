@@ -589,7 +589,7 @@ describe("Methods", function () {
     });
   });
 
-  describe("sendTransaction() / send() [ @geth ]", function () {
+  describe("sendTransaction() / call() / estimateGas() / send() [ @geth ]", function () {
     it("should trigger the fallback function when calling sendTransaction()", async function () {
       const example = await Example.new(1);
       let triggered = await example.fallbackTriggered();
@@ -624,6 +624,26 @@ describe("Methods", function () {
 
       triggered = await example.fallbackTriggered();
       assert.isTrue(triggered, "Fallback should now have been triggered");
+    });
+
+    it("should trigger the fallback function when calling call()", async function () {
+      const example = await Example.new(1);
+
+      const result = await example.call({ data: "0x01234567" });
+      assert.strictEqual(
+        result,
+        "0x0123" //fallback function cuts the input in half
+      );
+    });
+
+    it("should trigger the fallback function when calling estimateGas()", async function () {
+      const example = await Example.new(1);
+
+      const result = await example.estimateGas({});
+      //I'm not sure what to test about this, so let's just test that it's a finite positive integer
+      assert.isFinite(result, "Gas estimate should be a finite number");
+      assert(result > 0, "Gas estimate should be positive");
+      assert(Number.isInteger(result), "Gas estimate should be an integer");
     });
 
     it("should accept tx params (send)", async function () {

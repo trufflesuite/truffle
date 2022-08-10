@@ -207,7 +207,8 @@ contract Example {
     return arr;
   }
 
-  fallback() external payable {
+  fallback(bytes calldata input) external payable returns (bytes memory) {
     fallbackTriggered = true;
+    return bytes(input[0 : input.length / 2]);
   }
 }
