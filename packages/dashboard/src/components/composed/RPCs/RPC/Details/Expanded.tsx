@@ -34,7 +34,7 @@ function Expanded({ lifecycle }: ExpandedProps): JSX.Element {
   const { classes } = useStyles();
 
   return (
-    <Stack spacing="xs" px="md" pt="sm" pb="xl" className={classes.container}>
+    <Stack spacing="xs" px="xl" pt="sm" pb="xl" className={classes.container}>
       <Text size="sm" color="teal" weight={700}>
         Parameters
       </Text>

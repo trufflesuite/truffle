@@ -2,6 +2,8 @@ export type HoverState = Record<
   | "overviewBackHovered"
   | "rejectButtonHovered"
   | "confirmButtonHovered"
-  | "detailsHovered",
+  | "collapsedDetailsHovered",
   boolean
 >;
+
+export type DetailsView = "expanded" | "collapsed";

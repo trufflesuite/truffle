@@ -33,7 +33,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     useDisclosure(false);
   const [confirmButtonHovered, confirmButtonHoveredHandlers] =
     useDisclosure(false);
-  const [detailsHovered, detailsHoveredHandlers] = useDisclosure(false);
+  const [collapsedDetailsHovered, collapsedDetailsHoveredHandlers] =
+    useDisclosure(false);
   const { classes } = useStyles();
 
   const detailsView = clicked ? "expanded" : "collapsed";
@@ -63,11 +64,11 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
           overviewBackHovered,
           rejectButtonHovered,
           confirmButtonHovered,
-          detailsHovered
+          collapsedDetailsHovered
         }}
-        onCollapsedClick={clickedHandlers.open}
-        onEnter={detailsHoveredHandlers.open}
-        onLeave={detailsHoveredHandlers.close}
+        onCollapsedClick={clickedHandlers.toggle}
+        onCollapsedEnter={collapsedDetailsHoveredHandlers.open}
+        onCollapsedLeave={collapsedDetailsHoveredHandlers.close}
       />
     </div>
   );

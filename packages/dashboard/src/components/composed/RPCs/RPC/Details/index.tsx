@@ -1,8 +1,17 @@
 import React, { Suspense } from "react";
-import { Container, Center, Loader, createStyles } from "@mantine/core";
+import {
+  Container,
+  Center,
+  Divider,
+  Loader,
+  createStyles
+} from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import type { HoverState } from "src/components/composed/RPCs/RPC/Details/types";
+import type {
+  HoverState,
+  DetailsView
+} from "src/components/composed/RPCs/RPC/Details/types";
 import Collapsed from "src/components/composed/RPCs/RPC/Details/Collapsed";
 const Expanded = React.lazy(() =>
   Promise.all([
@@ -12,7 +21,7 @@ const Expanded = React.lazy(() =>
 );
 
 const useStyles = createStyles((theme, _params, _getRef) => {
-  const { colorScheme, colors, radius } = theme;
+  const { colorScheme, colors, radius, fn } = theme;
   return {
     container: {
       backgroundColor:
@@ -27,17 +36,24 @@ const useStyles = createStyles((theme, _params, _getRef) => {
         colorScheme === "dark"
           ? colors["truffle-brown"][9]
           : colors["truffle-beige"][2]
+    },
+    divider: {
+      borderWidth: 0.5,
+      borderColor:
+        colorScheme === "dark"
+          ? fn.rgba(colors["truffle-brown"][5], 0.65)
+          : fn.rgba(colors["truffle-beige"][5], 0.65)
     }
   };
 });
 
 type DetailsProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
-  view: "expanded" | "collapsed";
+  view: DetailsView;
   hoverState: HoverState;
   onCollapsedClick: React.MouseEventHandler<HTMLDivElement>;
-  onEnter: React.MouseEventHandler<HTMLDivElement>;
-  onLeave: React.MouseEventHandler<HTMLDivElement>;
+  onCollapsedEnter: React.MouseEventHandler<HTMLDivElement>;
+  onCollapsedLeave: React.MouseEventHandler<HTMLDivElement>;
 };
 
 function Details({
@@ -45,33 +61,40 @@ function Details({
   view,
   hoverState,
   onCollapsedClick,
-  onEnter,
-  onLeave
+  onCollapsedEnter,
+  onCollapsedLeave
 }: DetailsProps): JSX.Element {
-  const { overviewBackHovered, detailsHovered } = hoverState;
-  const hovered = overviewBackHovered || detailsHovered;
+  const { overviewBackHovered, collapsedDetailsHovered } = hoverState;
+  const hovered = overviewBackHovered || collapsedDetailsHovered;
   const { classes } = useStyles();
 
   return (
     <Container
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
+      px={0}
       className={`${classes.container} ${
         hovered ? classes.containerTinted : ""
       }`}
     >
-      {view === "expanded" ? (
-        <Suspense
-          fallback={
-            <Center p="xl">
-              <Loader size="lg" variant="dots" />
-            </Center>
-          }
-        >
-          <Expanded lifecycle={lifecycle} />
-        </Suspense>
-      ) : (
-        <Collapsed onClick={onCollapsedClick} hoverState={hoverState} />
+      <Collapsed
+        hoverState={hoverState}
+        currentDetailsView={view}
+        onClick={onCollapsedClick}
+        onEnter={onCollapsedEnter}
+        onLeave={onCollapsedLeave}
+      />
+      {view === "expanded" && (
+        <>
+          <Divider className={classes.divider} />
+          <Suspense
+            fallback={
+              <Center p="xl">
+                <Loader size="lg" variant="dots" />
+              </Center>
+            }
+          >
+            <Expanded lifecycle={lifecycle} />
+          </Suspense>
+        </>
       )}
     </Container>
   );
