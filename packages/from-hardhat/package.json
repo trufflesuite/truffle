@@ -1,0 +1,47 @@
+{
+  "name": "@truffle/from-hardhat",
+  "description": "Import Hardhat project information into Truffle-native formats",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/from-hardhat#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/from-hardhat"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0-0",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "build": "ttsc",
+    "prepare": "yarn build",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "@truffle/compile-common": "^0.7.32",
+    "@truffle/compile-solidity": "^6.0.38",
+    "@truffle/config": "^1.3.34",
+    "debug": "^4.3.1",
+    "find-up": "^2.1.0",
+    "semver": "^5.7.1"
+  },
+  "devDependencies": {
+    "@types/find-up": "^2.1.0",
+    "@types/node": "^18.6.5",
+    "hardhat": "^2.10.1",
+    "ttypescript": "1.5.13",
+    "typescript": "^4.3.5",
+    "typescript-transform-paths": "3.3.1"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "truffle",
+    "hardhat"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
