@@ -117,9 +117,12 @@ describe("vyper compiler", function () {
       //we're specifying that it should compile for Petersburg, which was earlier.
       //Therefore, the result should not contain the SELFBALANCE opcode.
       contracts.forEach((contract, index) => {
-        const instructions = CodeUtils.parseCode(contract.bytecode.bytes);
+        const instructions = CodeUtils.parseCode(contract.bytecode.bytes, {
+          attemptStripMetadata: true
+        });
         const deployedInstructions = CodeUtils.parseCode(
-          contract.deployedBytecode.bytes
+          contract.deployedBytecode.bytes,
+          { attemptStripMetadata: true }
         );
         for (const instruction of instructions) {
           assert(

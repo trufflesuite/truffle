@@ -3,7 +3,7 @@ module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
   const WorkflowCompile = require("@truffle/workflow-compile");
   const CodeUtils = require("@truffle/code-utils");
-  const { Conversion } = require("@truffle/codec");
+  const { Conversion, Compilations } = require("@truffle/codec");
 
   if (options._.length === 0) {
     throw new TruffleError("Please specify a contract name.");
@@ -21,14 +21,22 @@ module.exports = async function (options) {
     );
   }
 
-  let bytecode = Contract.deployedBytecode;
-  let numInstructions = Contract.deployedSourceMap.split(";").length;
+  const bytecode = options.creation
+    ? Contract.bytecode
+    : Contract.deployedBytecode;
+  const sourceMap = Compilations.Utils.simpleShimSourceMap(
+    options.creation ? Contract.sourceMap : Contract.deployedSourceMap
+  ); //the shim is in case of an old-style Vyper source map
 
-  if (options.creation) {
-    bytecode = Contract.bytecode;
-    numInstructions = Contract.sourceMap.split(";").length;
+  let numInstructions;
+  if (sourceMap) {
+    numInstructions = sourceMap.split(";").length;
   }
-  const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
+
+  const opcodes = CodeUtils.parseCode(bytecode, {
+    maxInstructionCount: numInstructions,
+    attemptStripMetadata: sourceMap === undefined
+  });
 
   if (opcodes.length === 0) {
     console.log(

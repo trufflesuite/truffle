@@ -21,7 +21,7 @@
   },
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "cbor": "^5.1.0"
+    "cbor": "^5.2.0"
   },
   "devDependencies": {
     "@types/cbor": "^5.0.1",

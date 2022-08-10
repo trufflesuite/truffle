@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:bytecodes");
 
 import gql from "graphql-tag";
-import CodeUtils from "@truffle/code-utils";
+import * as CodeUtils from "@truffle/code-utils";
 
 import { Definition } from "./types";
 
@@ -54,8 +54,11 @@ export const bytecodes: Definition<"bytecodes"> = {
   resolvers: {
     Bytecode: {
       instructions: {
-        async resolve({ bytes }, { count = null }) {
-          const parsed = CodeUtils.parseCode(`0x${bytes}`, count);
+        async resolve({ bytes }, { count }) {
+          const parsed = CodeUtils.parseCode(`0x${bytes}`, {
+            maxInstructionCount: count,
+            attemptStripMetadata: count === undefined
+          });
 
           return parsed.map(
             ({ name: opcode, pc: programCounter, pushData }) => ({

@@ -96,7 +96,7 @@ var SourceMapUtils = {
   //sources: array of text sources (must be in order!)
   //binary: raw binary to process.  should not have unresolved links.
   //sourceMap: a processed source map as output by getHumanReadableSourceMap above
-  //we... attempt to muddle through.
+  //if missing, we... attempt to muddle through.
   getProcessedInstructionsForBinary: function (sources, binary, sourceMap) {
     if (!sources || !binary) {
       return [];
@@ -109,8 +109,13 @@ var SourceMapUtils = {
     }
 
     //because we might be dealing with a constructor with arguments, we do
-    //*not* remove metadata manually
-    let instructions = CodeUtils.parseCode(binary, numInstructions);
+    //*not* pass attemptStripMetadata under any circumstances as a safety
+    //measure (to prevent accidentally removing some of the *code* as well)
+    //(this is pretty unlikely but I'm going to continue to err on the safe
+    //side here I figure)
+    let instructions = CodeUtils.parseCode(binary, {
+      maxInstructionCount: numInstructions
+    });
 
     if (!sourceMap) {
       // HACK
