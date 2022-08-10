@@ -7,19 +7,33 @@
  * More information about configuration can be found at:
  *
  * https://trufflesuite.com/docs/truffle/reference/configuration
+ * 
+ * Hands-off deployment with Infura
+ * --------------------------------
+ *
+ * Is your application complex and requires lots of transactions to deploy?
+ * Use this appproach to make deployment a breeze 🏖️:
  *
  * To deploy via Infura you'll need a wallet provider (like @truffle/hdwallet-provider)
  * to sign your transactions before they're sent to a remote public node. Infura accounts
- * are available for free at: infura.io/register.
+ * are available for free at 🔍: https://infura.io/register
  *
  * You'll also need a mnemonic - the twelve word phrase the wallet uses to generate
- * public/private key pairs. If you're publishing your code to GitHub make sure you load this
- * phrase from a file you've .gitignored so it doesn't accidentally become public.
- *
- * It is recommended to store your secret variables in a .env file (which you should include in .gitignore).
- * In your project root, run `$ npm install dotenv`.
- * Create .env and declare your MNEMONIC and infura PROJECT_ID variables inside.
- * .gitignore is already added with this project with .env in it.
+ * public/private key pairs. You can store your secret 🤐 variables in a .env file. In your 
+ * project root, run `$ npm install dotenv`. Create .env (which should be .gitignored) 
+ * and declare your MNEMONIC and infura PROJECT_ID variables inside.
+ * 
+ * PLEASE NOTE 🗒️: This is an insecure workflow! It is possible through human error to leak 
+ * your mnemonic on Github. 
+ * 
+ * Deployment with Truffle Dashboard
+ * ---------------------------------
+ * 
+ * Are you concerned about the security 🤔? Use this approach to get rid of this hassle 🤦‍♀️:
+ * 
+ * A more secure 🔒 workflow is to use truffle dashboard which leverages
+ * Metamask for signing your transactions and does not require you to reveal your mnemonic to Truffle.
+ * Please see this link for more details 🔎: https://trufflesuite.com/docs/truffle/getting-started/using-the-truffle-dashboard/
  */
 
 // require('dotenv').config();
@@ -73,7 +87,7 @@ module.exports = {
     //
     // Useful for private networks
     // private: {
-    //   provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
+    //   provider: () => new HDWalletProvider(MNEMONIC, `https://network.io`),
     //   network_id: 2111,   // This network is yours, in the cloud.
     //   production: true    // Treats this network as if it was a public net. (default: false)
     // }
