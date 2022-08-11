@@ -163,17 +163,13 @@ const execute = {
 
           params.to = address;
 
-          if (methodABI) {
-            //note: in the future there should also be an event for non-method
-            //case, but that applies to all of these!
-            promiEvent.eventEmitter.emit("execute:call:method", {
-              fn: fn,
-              args: args,
-              address: address,
-              abi: methodABI,
-              contract: constructor
-            });
-          }
+          promiEvent.eventEmitter.emit("execute:call:method", {
+            fn: fn,
+            args: args,
+            address: address,
+            abi: methodABI,
+            contract: constructor
+          });
 
           result = fn //null fn is used for instance.call()
             ? await fn(...args).call(params, defaultBlock)
