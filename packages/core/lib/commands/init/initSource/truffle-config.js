@@ -15,20 +15,23 @@
  * Use this appproach to make deployment a breeze 🏖️:
  *
  * To deploy via Infura you'll need a wallet provider (like @truffle/hdwallet-provider)
- * to sign your transactions before they're sent to a remote public node. Infura accounts
- * are available for free at 🔍: https://infura.io/register
+ * to sign your transactions before they're sent to a remote public node. 
+ * Infura accounts are available for free at 🔍: https://infura.io/register
  *
  * You'll also need a mnemonic - the twelve word phrase the wallet uses to generate
- * public/private key pairs. You can store your secret 🤐 variables in a .env file. In your 
- * project root, run `$ npm install dotenv`. Create .env (which should be .gitignored) 
- * and declare your MNEMONIC and infura PROJECT_ID variables inside.
+ * public/private key pairs. You can store your secret 🤐 variables in a .env file. 
+ * In your project root, run `$ npm install dotenv`. 
+ * Create .env (which should be .gitignored) and declare your MNEMONIC 
+ * and Infura PROJECT_ID variables inside.
  * 
  * Deployment with Truffle Dashboard
  * ---------------------------------
  * 
- * Are you concerned about the security 🤔? Truffle dashboard lets you review transactions in detail, 
- * and leverages MetaMask for signing, so there's no need to copy-paste your mnemonic.
- * Please see this link for more details 🔎: https://trufflesuite.com/docs/truffle/getting-started/using-the-truffle-dashboard/
+ * Are you concerned about security 🤔? Truffle Dashboard lets you review 
+ * transactions in detail, and leverages MetaMask for signing, so there's 
+ * no need to copy-paste your mnemonic. Please see this link for more details 🔎: 
+ * 
+ * https://trufflesuite.com/docs/truffle/getting-started/using-the-truffle-dashboard/
  */
 
 // require('dotenv').config();
