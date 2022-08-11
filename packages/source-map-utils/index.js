@@ -493,7 +493,7 @@ var SourceMapUtils = {
       const jumpIndex = instructions.findIndex(
         instruction => instruction.pc === jumpAddress
       );
-      if (jumpIndex !== undefined) {
+      if (jumpIndex !== -1) {
         if (checkAgainstTemplate(instructions, jumpIndex, newSequence)) {
           return true;
         }
