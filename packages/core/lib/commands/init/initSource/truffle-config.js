@@ -23,16 +23,11 @@
  * project root, run `$ npm install dotenv`. Create .env (which should be .gitignored) 
  * and declare your MNEMONIC and infura PROJECT_ID variables inside.
  * 
- * PLEASE NOTE 🗒️: This is an insecure workflow! It is possible through human error to leak 
- * your mnemonic on Github. 
- * 
  * Deployment with Truffle Dashboard
  * ---------------------------------
  * 
- * Are you concerned about the security 🤔? Use this approach to get rid of this hassle 🤦‍♀️:
- * 
- * A more secure 🔒 workflow is to use truffle dashboard which leverages
- * Metamask for signing your transactions and does not require you to reveal your mnemonic to Truffle.
+ * Are you concerned about the security 🤔? Truffle dashboard lets you review transactions in detail, 
+ * and leverages MetaMask for signing, so there's no need to copy-paste your mnemonic.
  * Please see this link for more details 🔎: https://trufflesuite.com/docs/truffle/getting-started/using-the-truffle-dashboard/
  */
 
