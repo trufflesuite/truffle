@@ -25,39 +25,39 @@ export type ProcessorRunner<C extends Collections> = <
   ...args: A
 ) => Promise<T>;
 
-export const runForDefinitions = <C extends Collections>(
-  _definitions: Definitions<C> // this is only used for type inference
-) => (
-  db: Db<C>
-): {
-  forProvider(
-    provider: Provider
+export const runForDefinitions =
+  <C extends Collections>(
+    _definitions: Definitions<C> // this is only used for type inference
+  ) =>
+  (
+    db: Db<C>
   ): {
+    forProvider(provider: Provider): {
+      run: ProcessorRunner<C>;
+    };
     run: ProcessorRunner<C>;
-  };
-  run: ProcessorRunner<C>;
-} => {
-  const connections = {
-    db
-  };
+  } => {
+    const connections = {
+      db
+    };
 
-  return {
-    run(processor, ...args) {
-      return run(connections, processor, ...args);
-    },
+    return {
+      run(processor, ...args) {
+        return run(connections, processor, ...args);
+      },
 
-    forProvider(provider) {
-      const connections = {
-        db,
-        provider
-      };
+      forProvider(provider) {
+        const connections = {
+          db,
+          provider
+        };
 
-      return {
-        run: (processor, ...args) => run(connections, processor, ...args)
-      };
-    }
+        return {
+          run: (processor, ...args) => run(connections, processor, ...args)
+        };
+      }
+    };
   };
-};
 
 const run = async <
   C extends Collections,
@@ -107,7 +107,9 @@ const run = async <
         break;
       }
       default: {
-        throw new Error(`Unknown request type ${loadRequest.type}`);
+        throw new Error(
+          `Unknown request type ${(loadRequest as { type: any }).type}`
+        );
       }
     }
   }

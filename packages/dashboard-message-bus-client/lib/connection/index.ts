@@ -1,4 +1,7 @@
 import WebSocket from "isomorphic-ws";
+
+// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
+import "../polyfill";
 import axios from "axios";
 import {
   base64ToJson,

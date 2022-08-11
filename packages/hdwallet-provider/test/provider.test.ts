@@ -65,7 +65,7 @@ describe("HD Wallet Provider", function () {
           "http://localhost:8545"
         );
         assert.fail("Should throw on invalid mnemonic");
-      } catch (e) {
+      } catch (e: any) {
         assert(e.message.includes("Mnemonic invalid or undefined"));
       }
     });
@@ -314,7 +314,7 @@ describe("HD Wallet Provider", function () {
             provider: { junk: "in", an: "object" }
           });
           assert.fail("Should throw on invalid provider");
-        } catch (e) {
+        } catch (e: any) {
           assert(e.message.includes("invalid provider was specified"));
         }
       });
@@ -329,7 +329,7 @@ describe("HD Wallet Provider", function () {
             url: "justABunchOfJunk"
           });
           assert.fail("Should throw on invalid url");
-        } catch (e) {
+        } catch (e: any) {
           assert(e.message.includes("invalid provider was specified"));
         }
       });
@@ -343,7 +343,7 @@ describe("HD Wallet Provider", function () {
             url: "http://localhost:8545"
           });
           assert.fail("Should throw on invalid mnemonic");
-        } catch (e) {
+        } catch (e: any) {
           assert(e.message.includes("Mnemonic invalid or undefined"));
         }
       });
