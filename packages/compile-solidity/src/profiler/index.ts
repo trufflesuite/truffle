@@ -5,7 +5,7 @@ import { loadParser } from "./loadParser";
 import { shouldIncludePath } from "./shouldIncludePath";
 import type Config from "@truffle/config";
 
-module.exports = {
+export default {
   updated: async (options: Config) => {
     const profiler = new Profiler({});
     return await profiler.updated(options);
