@@ -65,7 +65,10 @@ export const zeroLinkReferences = (options: {
   const { linkReferences, bytes: inputBytes } = options;
 
   if (inputBytes === undefined) {
-    return undefined;
+    return {
+      bytes: undefined,
+      linkReferences: undefined
+    };
   }
 
   // inline link references - start by flattening the offsets

@@ -5,6 +5,23 @@ import OS = require("os");
 import semver from "semver";
 import Common from "@truffle/compile-common";
 import { CompilerSupplier } from "./compilerSupplier";
+import type {
+  Compilation,
+  Source,
+  LinkReference,
+  CompiledContract
+} from "@truffle/compile-common";
+import type Config from "@truffle/config";
+
+type Targets = string[];
+
+type PrepareCompilerInputArgs = {
+  sources: Common.Sources.Sources;
+  targets: Targets;
+  language: string;
+  settings: any;
+  modelCheckerSettings: any;
+};
 
 type InternalOptions = {
   language?: string;
@@ -12,10 +29,41 @@ type InternalOptions = {
   solc?: any;
 };
 
+type PreparedSources = {
+  [path: string]: {
+    content: string;
+  };
+};
+
+type CompilerOutput = {
+  contracts: {
+    [path: string]: object;
+  };
+  sources: {
+    [path: string]: {
+      ast?: object;
+      legacyAST?: object;
+      id: number;
+    };
+  };
+  errors?: any[];
+};
+
+type ProcessAllSourcesArgs = {
+  sources: Common.Sources.Sources;
+  compilerOutput: CompilerOutput;
+  originalSourcePaths: any;
+  language: string;
+};
+
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
-async function run(rawSources, options, internalOptions: InternalOptions = {}) {
+export async function run(
+  rawSources: { [name: string]: string },
+  options: Config,
+  internalOptions: InternalOptions = {}
+): Promise<Compilation | null> {
   if (Object.keys(rawSources).length === 0) {
     return null;
   }
@@ -77,17 +125,15 @@ async function run(rawSources, options, internalOptions: InternalOptions = {}) {
     throw new Common.Errors.CompileError(errors);
   }
 
-  // success case
-  // returns Compilation - see @truffle/compile-common
-  const outputSources = processAllSources({
+  const outputSources: Source[] = processAllSources({
     sources,
     compilerOutput,
     originalSourcePaths,
     language
   });
-  const sourceIndexes = outputSources
+  const sourceIndexes: string[] = outputSources
     ? outputSources.map(source => source.sourcePath)
-    : undefined; //leave undefined if sources undefined
+    : [];
   return {
     sourceIndexes,
     contracts: processContracts({
@@ -147,19 +193,13 @@ function orderABI({ abi, contractName, ast }) {
   ];
 }
 
-/**
- * @param sources - { [sourcePath]: contents }
- * @param targets - sourcePath[]
- * @param setings - subset of Solidity settings
- * @return solc compiler input JSON
- */
 function prepareCompilerInput({
   sources,
   targets,
   language,
   settings,
   modelCheckerSettings
-}) {
+}: PrepareCompilerInputArgs) {
   return {
     language,
     sources: prepareSources({ sources }),
@@ -178,7 +218,11 @@ function prepareCompilerInput({
  * @param sources - { [sourcePath]: string }
  * @return { [sourcePath]: { content: string } }
  */
-function prepareSources({ sources }) {
+function prepareSources({
+  sources
+}: {
+  sources: Common.Sources.Sources;
+}): PreparedSources {
   return Object.entries(sources)
     .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
     .reduce((a, b) => Object.assign({}, a, b), {});
@@ -189,7 +233,7 @@ function prepareSources({ sources }) {
  * Otherwise, just use "*" selector
  * @param targets - sourcePath[] | undefined
  */
-function prepareOutputSelection({ targets = [] }) {
+function prepareOutputSelection({ targets = [] }: { targets: Targets }) {
   const defaultSelectors = {
     "": ["legacyAST", "ast"],
     "*": [
@@ -219,16 +263,6 @@ function prepareOutputSelection({ targets = [] }) {
     .map(target => ({ [target]: defaultSelectors }))
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
-
-type CompilerOutput = {
-  contracts: {
-    [key: string]: object;
-  };
-  sources: {
-    [key: string]: object;
-  };
-  errors?: any[];
-};
 
 /**
  * Load solc and perform compilation
@@ -272,7 +306,7 @@ function detectErrors({
   solcVersion
 }: {
   compilerOutput: CompilerOutput;
-  options: any;
+  options: Config;
   solcVersion: string;
 }) {
   const outputErrors = compilerOutput.errors || [];
@@ -356,7 +390,7 @@ function processAllSources({
   compilerOutput,
   originalSourcePaths,
   language
-}): processAllSourcesArgs {
+}: ProcessAllSourcesArgs): Source[] {
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
@@ -373,7 +407,7 @@ function processAllSources({
       return [];
     }
   }
-  let outputSources = [];
+  let outputSources: Source[] = [];
   for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(
     compilerOutput.sources
   )) {
@@ -388,6 +422,13 @@ function processAllSources({
   return outputSources;
 }
 
+type ProcessContractsArgs = {
+  compilerOutput: CompilerOutput;
+  sources: Common.Sources.Sources;
+  originalSourcePaths: Common.Sources.PathMapping;
+  solcVersion: string;
+};
+
 /**
  * Converts compiler-output contracts into @truffle/compile-solidity's return format
  * Uses compiler contract output plus other information.
@@ -397,7 +438,7 @@ function processContracts({
   sources,
   originalSourcePaths,
   solcVersion
-}) {
+}: ProcessContractsArgs): CompiledContract[] {
   let { contracts } = compilerOutput;
   if (!contracts) return [];
   //HACK: versions of Solidity prior to 0.4.20 are confused by our "project:/"
@@ -408,20 +449,26 @@ function processContracts({
   return (
     Object.entries(contracts)
       // map to [[{ source, contractName, contract }]]
-      .map(([sourcePath, sourceContracts]) =>
-        Object.entries(sourceContracts).map(([contractName, contract]) => ({
-          contractName,
-          contract,
-          source: {
-            //some versions of Yul don't have sources in output
-            ast: ((compilerOutput.sources || {})[sourcePath] || {}).ast,
-            legacyAST: ((compilerOutput.sources || {})[sourcePath] || {})
-              .legacyAST,
-            contents: sources[sourcePath],
-            sourcePath
-          }
-        }))
-      )
+      .map(([sourcePath, sourceContracts]) => {
+        let ast: object | undefined, legacyAST: object | undefined;
+        if (compilerOutput.sources && compilerOutput.sources[sourcePath]) {
+          ast = compilerOutput.sources[sourcePath].ast;
+          legacyAST = compilerOutput.sources[sourcePath].legacyAST;
+        }
+        return Object.entries(sourceContracts).map(
+          ([contractName, contract]) => ({
+            contractName,
+            contract,
+            source: {
+              //some versions of Yul don't have sources in output
+              ast,
+              legacyAST,
+              contents: sources[sourcePath],
+              sourcePath
+            }
+          })
+        );
+      })
       // and flatten
       .reduce((a, b) => [...a, ...b], [])
 
@@ -454,51 +501,59 @@ function processContracts({
             sourcePath: transformedSourcePath,
             contents: source
           }
-        }) => ({
-          contractName,
-          abi: orderABI({ abi, contractName, ast }),
-          metadata,
-          devdoc,
-          userdoc,
-          sourcePath: originalSourcePaths[transformedSourcePath],
-          source,
-          sourceMap,
-          deployedSourceMap: (deployedBytecodeInfo || {}).sourceMap,
-          ast,
-          legacyAST,
-          bytecode: zeroLinkReferences({
-            bytes: bytecode,
-            linkReferences: formatLinkReferences(linkReferences)
-          }),
-          deployedBytecode: zeroLinkReferences({
-            bytes: (deployedBytecodeInfo || {}).object,
-            linkReferences: formatLinkReferences(
-              (deployedBytecodeInfo || {}).linkReferences
-            )
-          }),
-          immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
-          //ideally immutable references would be part of the deployedBytecode object,
-          //but compatibility makes that impossible
-          generatedSources,
-          deployedGeneratedSources: (deployedBytecodeInfo || {})
-            .generatedSources,
-          compiler: {
-            name: "solc",
-            version: solcVersion
-          }
-        })
+        }) => {
+          // the following two lines are purely for TS type compliance to
+          // ensure no missing values for CompiledContract
+          legacyAST = legacyAST || {};
+          ast = ast || {};
+          return {
+            contractName,
+            abi: orderABI({ abi, contractName, ast }),
+            metadata,
+            devdoc,
+            userdoc,
+            sourcePath: originalSourcePaths[transformedSourcePath],
+            source,
+            sourceMap,
+            deployedSourceMap: (deployedBytecodeInfo || {}).sourceMap,
+            ast,
+            legacyAST,
+            bytecode: zeroLinkReferences({
+              bytes: bytecode,
+              linkReferences: formatLinkReferences(linkReferences)
+            }),
+            deployedBytecode: zeroLinkReferences({
+              bytes: (deployedBytecodeInfo || {}).object,
+              linkReferences: formatLinkReferences(
+                (deployedBytecodeInfo || {}).linkReferences
+              )
+            }),
+            immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
+            //ideally immutable references would be part of the deployedBytecode object,
+            //but compatibility makes that impossible
+            generatedSources,
+            deployedGeneratedSources: (deployedBytecodeInfo || {})
+              .generatedSources,
+            compiler: {
+              name: "solc",
+              version: solcVersion
+            }
+          };
+        }
       )
   );
 }
 
 type Contracts = {
-  [key: string]: object;
+  [path: string]: {
+    [name: string]: any;
+  };
 };
 
-function repairOldContracts(contracts: Contracts) {
-  const contractNames = [].concat(
-    ...Object.values(contracts).map(source => Object.keys(source))
-  );
+function repairOldContracts(contracts: Contracts): Contracts {
+  const contractNames = Object.values(contracts)
+    .map(source => Object.keys(source))
+    .flat();
   if (contractNames.some(name => name.includes(":"))) {
     //if any of the "contract names" contains a colon... hack invoked!
     //(notionally we could always apply this hack but let's skip it most of the
@@ -529,5 +584,3 @@ function repairOldContracts(contracts: Contracts) {
     return contracts;
   }
 }
-
-module.exports = { run };

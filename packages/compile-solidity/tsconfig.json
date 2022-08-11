@@ -21,7 +21,10 @@
     },
     "rootDir": "src",
     "baseUrl": ".",
-    "types": [ "mocha" ],
+    "types": [
+      "mocha",
+      "node"
+    ],
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
