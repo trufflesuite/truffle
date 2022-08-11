@@ -49,7 +49,7 @@ const throwCompilerVersionNotFound = ({ path, semverExpressions }) => {
   throw new Error(message);
 };
 
-const compileWithPragmaAnalysis = async ({
+export const compileWithPragmaAnalysis = async ({
   paths,
   options
 }: {
@@ -160,8 +160,4 @@ const compileWithPragmaAnalysis = async ({
     }
   }
   return { compilations };
-};
-
-module.exports = {
-  compileWithPragmaAnalysis
 };

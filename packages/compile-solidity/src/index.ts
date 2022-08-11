@@ -1,16 +1,17 @@
-const debug = require("debug")("compile");
-const findContracts = require("@truffle/contract-sources");
-const Config = require("@truffle/config");
-const Profiler = require("./profiler");
-const { CompilerSupplier } = require("./compilerSupplier");
-const { run } = require("./run");
-const { normalizeOptions } = require("./normalizeOptions");
-const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
-const { reportSources } = require("./reportSources");
-const { Compilations } = require("@truffle/compile-common");
-const expect = require("@truffle/expect");
-const partition = require("lodash/partition");
-const fs = require("fs-extra");
+import debugModule from "debug";
+const debug = debugModule("compile");
+import findContracts from "@truffle/contract-sources";
+import Config from "@truffle/config";
+import Profiler from "./profiler";
+import { CompilerSupplier } from "./compilerSupplier";
+import { run } from "./run";
+import { normalizeOptions } from "./normalizeOptions";
+import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
+import { reportSources } from "./reportSources";
+import { Compilations } from "@truffle/compile-common";
+import expect from "@truffle/expect";
+import partition from "lodash/partition";
+import fs from "fs-extra";
 
 async function compileYulPaths(yulPaths, options) {
   let yulCompilations = [];
@@ -26,7 +27,7 @@ async function compileYulPaths(yulPaths, options) {
     });
     debug("Yul compiled successfully");
 
-    if (compilation.contracts.length > 0) {
+    if (compilation && compilation.contracts.length > 0) {
       yulCompilations.push(compilation);
     }
   }
@@ -63,7 +64,7 @@ const Compile = {
         noTransform: true
       });
       debug("Compiled Solidity");
-      if (compilation.contracts.length > 0) {
+      if (compilation && compilation.contracts.length > 0) {
         solidityCompilations = [compilation];
       }
     }
@@ -170,7 +171,7 @@ const Compile = {
       const compilation = await run(allSources, solidityOptions, { solc });
       debug("Solidity compiled successfully");
 
-      if (compilation.contracts.length > 0) {
+      if (compilation && compilation.contracts.length > 0) {
         solidityCompilations = [compilation];
       }
     }
@@ -190,7 +191,4 @@ const Compile = {
   }
 };
 
-module.exports = {
-  Compile,
-  CompilerSupplier
-};
+export { Compile, CompilerSupplier };
