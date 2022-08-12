@@ -189,8 +189,8 @@ function orderABI({ abi, contractName, ast }) {
 
   // Put function names in a hash with their order, lowest first, for speed.
   const functionIndexes = orderedFunctionNames
-    .map((functionName, index) => ({ [functionName]: index }))
-    .reduce((a, b) => Object.assign({}, a, b), {});
+    .map((functionName: string, index: number) => ({ [functionName]: index }))
+    .reduce((a: object, b: object) => Object.assign({}, a, b), {});
 
   // Construct new ABI with functions at the end in source order
   return [
@@ -307,10 +307,6 @@ async function invokeCompiler({ compilerInput, options, solc }): Promise<{
   };
 }
 
-/**
- * Extract errors/warnings from compiler output based on strict mode setting
- * @return { errors: string, warnings: string, infos: string }
- */
 function detectErrors({
   compilerOutput,
   options,
@@ -319,7 +315,7 @@ function detectErrors({
   compilerOutput: CompilerOutput;
   options: Config;
   solcVersion: string;
-}) {
+}): { errors: string; warnings: string[]; infos: string[] } {
   const outputErrors = compilerOutput.errors || [];
   const rawErrors = outputErrors.filter(
     ({ severity }) =>
@@ -535,7 +531,7 @@ function repairOldContracts(contracts: Contracts): Contracts {
     let repairedContracts = {};
     for (const [sourcePrefix, sourceContracts] of Object.entries(contracts)) {
       for (const [mixedPath, contract] of Object.entries(sourceContracts)) {
-        let sourcePath, contractName;
+        let sourcePath: string, contractName: string;
         const lastColonIndex = mixedPath.lastIndexOf(":");
         if (lastColonIndex === -1) {
           //if there is none

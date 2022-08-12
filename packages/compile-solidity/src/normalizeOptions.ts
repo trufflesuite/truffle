@@ -1,6 +1,7 @@
 const expect = require("@truffle/expect");
+import type Config from "@truffle/config";
 
-export const normalizeOptions = options => {
+export const normalizeOptions = (options: Config) => {
   if (options.logger === undefined) options.logger = console;
 
   expect.options(options, ["contracts_directory", "compilers"]);
