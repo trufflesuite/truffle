@@ -11,7 +11,7 @@
  * Hands-off deployment with Infura
  * --------------------------------
  *
- * Is your application complex and require lots of transactions to deploy?
+ * Do you have a complex application that requires lots of transactions to deploy?
  * Use this appproach to make deployment a breeze 🏖️:
  *
  * Infura deployment needs a wallet provider (like @truffle/hdwallet-provider)
