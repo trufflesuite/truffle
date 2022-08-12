@@ -3,6 +3,7 @@ const OS = require("os");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
 const { CompilerSupplier } = require("./compilerSupplier");
+const { zeroLinkReferences, formatLinkReferences } = require("./shims");
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
@@ -15,23 +16,20 @@ async function run(rawSources, options, internalOptions = {}) {
   const {
     language = "Solidity", // could also be "Yul"
     noTransform = false, // turns off project root transform
-    solc, // passing this skips compilerSupplier.load()
+    solc // passing this skips compilerSupplier.load()
   } = internalOptions;
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   // we also strip the project root (to avoid it appearing in metadata)
   // and replace it with "project:/" (unless noTransform is set)
-  const {
-    sources,
-    targets,
-    originalSourcePaths
-  } = Common.Sources.collectSources(
-    rawSources,
-    options.compilationTargets,
-    noTransform ? "" : options.working_directory,
-    noTransform ? "" : "project:/"
-  );
+  const { sources, targets, originalSourcePaths } =
+    Common.Sources.collectSources(
+      rawSources,
+      options.compilationTargets,
+      noTransform ? "" : options.working_directory,
+      noTransform ? "" : "project:/"
+    );
 
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
@@ -254,27 +252,32 @@ function detectErrors({
 }) {
   outputErrors = outputErrors || [];
   const rawErrors = outputErrors.filter(
-    ({ severity }) => options.strict
-      ? severity !== "info" //strict mode: warnings are errors too
-      : severity === "error" //nonstrict mode: only errors are errors
+    ({ severity }) =>
+      options.strict
+        ? severity !== "info" //strict mode: warnings are errors too
+        : severity === "error" //nonstrict mode: only errors are errors
   );
 
   const rawWarnings = options.strict
     ? [] // in strict mode these get classified as errors, not warnings
-    : outputErrors.filter(({ severity, message }) =>
-      severity === "warning" &&
-      message !== "Yul is still experimental. Please use the output with care." //filter out Yul warning
-    );
+    : outputErrors.filter(
+        ({ severity, message }) =>
+          severity === "warning" &&
+          message !==
+            "Yul is still experimental. Please use the output with care." //filter out Yul warning
+      );
 
   const rawInfos = outputErrors.filter(({ severity }) => severity === "info");
 
   // extract messages
-  let errors = rawErrors.map(
-    ({ formattedMessage }) => formattedMessage.replace(
-      /: File import callback not supported/g, //remove this confusing message suffix
-      ""
+  let errors = rawErrors
+    .map(({ formattedMessage }) =>
+      formattedMessage.replace(
+        /: File import callback not supported/g, //remove this confusing message suffix
+        ""
+      )
     )
-  ).join();
+    .join();
   const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
   const infos = rawInfos.map(({ formattedMessage }) => formattedMessage);
 
@@ -306,17 +309,24 @@ function detectErrors({
  * aggregate source information based on compiled output;
  * this can include sources that do not define any contracts
  */
-function processAllSources({ sources, compilerOutput, originalSourcePaths, language }) {
+function processAllSources({
+  sources,
+  compilerOutput,
+  originalSourcePaths,
+  language
+}) {
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
       //special case for handling Yul
       const [sourcePath, contents] = entries[0];
-      return [{
-        sourcePath: originalSourcePaths[sourcePath],
-        contents,
-        language
-      }]
+      return [
+        {
+          sourcePath: originalSourcePaths[sourcePath],
+          contents,
+          language
+        }
+      ];
     } else {
       return [];
     }
@@ -363,7 +373,8 @@ function processContracts({
           source: {
             //some versions of Yul don't have sources in output
             ast: ((compilerOutput.sources || {})[sourcePath] || {}).ast,
-            legacyAST: ((compilerOutput.sources || {})[sourcePath] || {}).legacyAST,
+            legacyAST: ((compilerOutput.sources || {})[sourcePath] || {})
+              .legacyAST,
             contents: sources[sourcePath],
             sourcePath
           }
@@ -419,13 +430,16 @@ function processContracts({
           }),
           deployedBytecode: zeroLinkReferences({
             bytes: (deployedBytecodeInfo || {}).object,
-            linkReferences: formatLinkReferences((deployedBytecodeInfo || {}).linkReferences)
+            linkReferences: formatLinkReferences(
+              (deployedBytecodeInfo || {}).linkReferences
+            )
           }),
           immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
           //ideally immutable references would be part of the deployedBytecode object,
           //but compatibility makes that impossible
           generatedSources,
-          deployedGeneratedSources: (deployedBytecodeInfo || {}).generatedSources,
+          deployedGeneratedSources: (deployedBytecodeInfo || {})
+            .generatedSources,
           compiler: {
             name: "solc",
             version: solcVersion
@@ -448,7 +462,8 @@ function repairOldContracts(contracts) {
       for (const [mixedPath, contract] of Object.entries(sourceContracts)) {
         let sourcePath, contractName;
         const lastColonIndex = mixedPath.lastIndexOf(":");
-        if (lastColonIndex === -1) { //if there is none
+        if (lastColonIndex === -1) {
+          //if there is none
           sourcePath = sourcePrefix;
           contractName = mixedPath;
         } else {
@@ -467,59 +482,6 @@ function repairOldContracts(contracts) {
     //otherwise just return contracts as-is rather than processing
     return contracts;
   }
-}
-
-function formatLinkReferences(linkReferences) {
-  if (!linkReferences) {
-    return [];
-  }
-
-  // convert to flat list
-  const libraryLinkReferences = Object.values(linkReferences)
-    .map(fileLinks =>
-      Object.entries(fileLinks).map(([name, links]) => ({
-        name,
-        links
-      }))
-    )
-    .reduce((a, b) => [...a, ...b], []);
-
-  // convert to { offsets, length, name } format
-  return libraryLinkReferences.map(({ name, links }) => ({
-    offsets: links.map(({ start }) => start),
-    length: links[0].length, // HACK just assume they're going to be the same
-    name
-  }));
-}
-
-// takes linkReferences in output format (not Solidity's format)
-function zeroLinkReferences({ bytes, linkReferences }) {
-  if (bytes === undefined) {
-    return undefined;
-  }
-  // inline link references - start by flattening the offsets
-  const flattenedLinkReferences = linkReferences
-    // map each link ref to array of link refs with only one offset
-    .map(({ offsets, length, name }) =>
-      offsets.map(offset => ({ offset, length, name }))
-    )
-    // flatten
-    .reduce((a, b) => [...a, ...b], []);
-
-  // then overwite bytes with zeroes
-  bytes = flattenedLinkReferences.reduce((bytes, { offset, length }) => {
-    // length is a byte offset
-    const characterLength = length * 2;
-    const start = offset * 2;
-
-    const zeroes = "0".repeat(characterLength);
-
-    return `${bytes.substring(0, start)}${zeroes}${bytes.substring(
-      start + characterLength
-    )}`;
-  }, bytes);
-
-  return { bytes, linkReferences };
 }
 
 module.exports = { run };
