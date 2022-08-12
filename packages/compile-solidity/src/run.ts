@@ -21,33 +21,6 @@ import type {
 } from "@truffle/compile-common";
 import type Config from "@truffle/config";
 
-type PreparedSources = {
-  [path: string]: {
-    content: string;
-  };
-};
-
-type CompilerOutput = {
-  contracts: {
-    [path: string]: object;
-  };
-  sources: {
-    [path: string]: {
-      ast?: object;
-      legacyAST?: object;
-      id: number;
-    };
-  };
-  errors?: any[];
-};
-
-type ProcessAllSourcesArgs = {
-  sources: Common.Sources.Sources;
-  compilerOutput: CompilerOutput;
-  originalSourcePaths: any;
-  language: string;
-};
-
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
@@ -356,7 +329,7 @@ function processAllSources({
   compilerOutput,
   originalSourcePaths,
   language
-}: ProcessAllSourcesArgs): Source[] {
+}: ProcessAllSourcesArgs) {
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
@@ -479,7 +452,8 @@ function processContracts({
                 (deployedBytecodeInfo || {}).linkReferences
               )
             }),
-            immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
+            immutableReferences: (deployedBytecodeInfo || {})
+              .immutableReferences,
             //ideally immutable references would be part of the deployedBytecode object,
             //but compatibility makes that impossible
             generatedSources,
