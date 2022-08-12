@@ -3,7 +3,6 @@ import debugModule from "debug";
 const debug = debugModule("compile:run");
 import OS = require("os");
 import semver from "semver";
-import Common from "@truffle/compile-common";
 import { CompilerSupplier } from "./compilerSupplier";
 import type {
   Compilation,
@@ -11,6 +10,7 @@ import type {
   CompiledContract
 } from "@truffle/compile-common";
 import type Config from "@truffle/config";
+import * as Common from "@truffle/compile-common";
 
 type Targets = string[];
 

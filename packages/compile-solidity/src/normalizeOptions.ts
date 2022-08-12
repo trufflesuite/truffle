@@ -1,4 +1,4 @@
-import expect from "@truffle/expect";
+const expect = require("@truffle/expect");
 
 export const normalizeOptions = options => {
   if (options.logger === undefined) options.logger = console;

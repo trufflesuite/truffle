@@ -10,9 +10,9 @@ import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
 import { reportSources } from "./reportSources";
 import { Compilations } from "@truffle/compile-common";
 import type { Compilation } from "@truffle/compile-common";
-import expect from "@truffle/expect";
 import partition from "lodash/partition";
 import fs from "fs-extra";
+const expect = require("@truffle/expect");
 
 type SourcesWithDependenciesArgs = {
   paths: string[];
