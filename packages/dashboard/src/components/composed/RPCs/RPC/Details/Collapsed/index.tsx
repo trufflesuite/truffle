@@ -112,6 +112,7 @@ function Collapsed({
         component={ChevronsUp}
         show={showChevronsUp}
         color={iconColors.accent}
+        animate={true}
       />
       <Icon component={Check} show={showCheck} color={iconColors.green} />
       <Icon component={X} show={showX} color={iconColors.red} />
