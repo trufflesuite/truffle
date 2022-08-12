@@ -1,5 +1,5 @@
 import { CompilerSupplier } from "../compilerSupplier";
-import Parser from "../parser";
+import { Parser } from "../parser";
 import semver, { SemVer } from "semver";
 import type Config from "@truffle/config";
 

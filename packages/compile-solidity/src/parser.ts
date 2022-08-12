@@ -5,7 +5,7 @@ const debug = debugModule("compile:parser");
 const preReleaseCompilerWarning =
   "This is a pre-release compiler version, please do not use it in production.";
 
-export default {
+export const Parser = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
   parseImports(body, solc) {
     // WARNING: Kind of a hack (an expedient one).

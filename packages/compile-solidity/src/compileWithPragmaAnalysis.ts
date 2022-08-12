@@ -1,7 +1,7 @@
 import { CompilerSupplier } from "./compilerSupplier";
 import Config from "@truffle/config";
 import semver from "semver";
-import Profiler from "./profiler";
+import { Profiler } from "./profiler";
 import { run } from "./run";
 import { reportSources } from "./reportSources";
 import OS from "os";

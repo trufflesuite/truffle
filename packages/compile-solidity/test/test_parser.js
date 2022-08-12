@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const Parser = require("../dist/parser").default;
+const { Parser } = require("../dist/parser");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
 const { assert } = require("chai");
 

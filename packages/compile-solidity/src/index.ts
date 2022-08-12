@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("compile");
 import findContracts from "@truffle/contract-sources";
 import Config from "@truffle/config";
-import Profiler from "./profiler";
+import { Profiler } from "./profiler";
 import { CompilerSupplier } from "./compilerSupplier";
 import { run } from "./run";
 import { normalizeOptions } from "./normalizeOptions";

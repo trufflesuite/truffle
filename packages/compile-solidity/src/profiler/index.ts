@@ -1,13 +1,13 @@
 // Compares .sol files to their .sol.js counterparts,
 // determines which .sol files have been updated.
-import { Profiler } from "@truffle/profiler";
+import { Profiler as TruffleProfiler } from "@truffle/profiler";
 import { loadParser } from "./loadParser";
 import { shouldIncludePath } from "./shouldIncludePath";
 import type Config from "@truffle/config";
 
-export default {
+export const Profiler = {
   updated: async (options: Config) => {
-    const profiler = new Profiler({});
+    const profiler = new TruffleProfiler({});
     return await profiler.updated(options);
   },
 
@@ -18,7 +18,7 @@ export default {
     const parseImports = await loadParser(options);
 
     // generate profiler
-    const profiler = new Profiler({
+    const profiler = new TruffleProfiler({
       parseImports,
       shouldIncludePath
     });
@@ -30,7 +30,7 @@ export default {
   requiredSourcesForSingleFile: async (options: Config) => {
     const parseImports = await loadParser(options);
 
-    const profiler = new Profiler({
+    const profiler = new TruffleProfiler({
       parseImports,
       shouldIncludePath
     });
