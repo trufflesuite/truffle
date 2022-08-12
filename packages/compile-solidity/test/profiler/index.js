@@ -1,8 +1,8 @@
-const assert = require("chai").assert;
+const { assert } = require("chai");
 const fs = require("fs-extra");
 const path = require("path");
 const tmp = require("tmp");
-const Profiler = require("../../dist/profiler");
+const Profiler = require("../../dist/profiler").default;
 const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const TruffleConfig = require("@truffle/config");

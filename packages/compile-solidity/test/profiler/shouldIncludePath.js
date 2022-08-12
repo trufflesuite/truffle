@@ -1,4 +1,4 @@
-const assert = require("assert");
+const { assert } = require("chai");
 const { shouldIncludePath } = require("../../dist/profiler/shouldIncludePath");
 
 describe(".shouldIncludePath(filename)", () => {
@@ -11,7 +11,7 @@ describe(".shouldIncludePath(filename)", () => {
     assert(result);
   });
   it("returns false for other extensions", () => {
-    const otherExtensions = [ ".js", ".ts", ".test.js", ".onion" ];
+    const otherExtensions = [".js", ".ts", ".test.js", ".onion"];
     assert(
       !otherExtensions.some(extension => shouldIncludePath(`file${extension}`))
     );
