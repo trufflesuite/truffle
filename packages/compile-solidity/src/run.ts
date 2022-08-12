@@ -437,19 +437,15 @@ function processContracts({
     Object.entries(contracts)
       // map to [[{ source, contractName, contract }]]
       .map(([sourcePath, sourceContracts]) => {
-        let ast: object | undefined, legacyAST: object | undefined;
-        if (compilerOutput.sources && compilerOutput.sources[sourcePath]) {
-          ast = compilerOutput.sources[sourcePath].ast;
-          legacyAST = compilerOutput.sources[sourcePath].legacyAST;
-        }
         return Object.entries(sourceContracts).map(
           ([contractName, contract]) => ({
             contractName,
             contract,
             source: {
               //some versions of Yul don't have sources in output
-              ast,
-              legacyAST,
+              ast: ((compilerOutput.sources || {})[sourcePath] || {}).ast,
+              legacyAST: ((compilerOutput.sources || {})[sourcePath] || {})
+                .legacyAST,
               contents: sources[sourcePath],
               sourcePath
             }
@@ -489,10 +485,6 @@ function processContracts({
             contents: source
           }
         }) => {
-          // the following two lines are purely for TS type compliance to
-          // ensure no missing values for CompiledContract
-          legacyAST = legacyAST || {};
-          ast = ast || {};
           return {
             contractName,
             abi: orderABI({ abi, contractName, ast }),

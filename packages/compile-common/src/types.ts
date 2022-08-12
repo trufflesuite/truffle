@@ -53,7 +53,7 @@ export type CompiledContract = {
   abi: Abi;
   metadata: string;
   bytecode?: Bytecode;
-  deployedBytecode: Bytecode;
+  deployedBytecode?: Bytecode;
   compiler: {
     name: string;
     version: string;
