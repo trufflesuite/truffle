@@ -8,12 +8,32 @@ import { CompilerSupplier } from "./compilerSupplier";
 import type {
   Compilation,
   Source,
-  LinkReference,
   CompiledContract
 } from "@truffle/compile-common";
 import type Config from "@truffle/config";
 
 type Targets = string[];
+
+type CompilerOutput = {
+  contracts: {
+    [path: string]: object;
+  };
+  sources: {
+    [path: string]: {
+      ast?: object;
+      legacyAST?: object;
+      id: number;
+    };
+  };
+  errors?: any[];
+};
+
+type ProcessAllSourcesArgs = {
+  sources: Common.Sources.Sources;
+  compilerOutput: CompilerOutput;
+  originalSourcePaths: any;
+  language: string;
+};
 
 type PrepareCompilerInputArgs = {
   sources: Common.Sources.Sources;
@@ -35,25 +55,17 @@ type PreparedSources = {
   };
 };
 
-type CompilerOutput = {
-  contracts: {
-    [path: string]: object;
-  };
-  sources: {
-    [path: string]: {
-      ast?: object;
-      legacyAST?: object;
-      id: number;
-    };
-  };
-  errors?: any[];
+type ProcessContractsArgs = {
+  compilerOutput: CompilerOutput;
+  sources: Common.Sources.Sources;
+  originalSourcePaths: Common.Sources.PathMapping;
+  solcVersion: string;
 };
 
-type ProcessAllSourcesArgs = {
-  sources: Common.Sources.Sources;
-  compilerOutput: CompilerOutput;
-  originalSourcePaths: any;
-  language: string;
+type Contracts = {
+  [path: string]: {
+    [name: string]: any;
+  };
 };
 
 // this function returns a Compilation - legacy/index.js and ./index.js
@@ -267,8 +279,7 @@ function prepareOutputSelection({ targets = [] }: { targets: Targets }) {
 /**
  * Load solc and perform compilation
  */
-async function invokeCompiler({ compilerInput, options, solc }):
-Promise<{
+async function invokeCompiler({ compilerInput, options, solc }): Promise<{
   compilerOutput: CompilerOutput;
   solcVersion: string;
 }> {
@@ -364,23 +375,6 @@ function detectErrors({
   return { warnings, errors, infos };
 }
 
-type Source = {
-  ast: object;
-  id: number;
-  legacyAST?: any;
-};
-
-type processAllSourcesArgs = {
-  sources: any;
-  compilerOutput: {
-    sources: {
-      [key: string]: Source;
-    }
-  };
-  originalSourcePaths: any;
-  language: string;
-};
-
 /**
  * aggregate source information based on compiled output;
  * this can include sources that do not define any contracts
@@ -390,7 +384,7 @@ function processAllSources({
   compilerOutput,
   originalSourcePaths,
   language
-}: ProcessAllSourcesArgs): Source[] {
+}: ProcessAllSourcesArgs) {
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
@@ -421,13 +415,6 @@ function processAllSources({
   }
   return outputSources;
 }
-
-type ProcessContractsArgs = {
-  compilerOutput: CompilerOutput;
-  sources: Common.Sources.Sources;
-  originalSourcePaths: Common.Sources.PathMapping;
-  solcVersion: string;
-};
 
 /**
  * Converts compiler-output contracts into @truffle/compile-solidity's return format
@@ -528,7 +515,8 @@ function processContracts({
                 (deployedBytecodeInfo || {}).linkReferences
               )
             }),
-            immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
+            immutableReferences: (deployedBytecodeInfo || {})
+              .immutableReferences,
             //ideally immutable references would be part of the deployedBytecode object,
             //but compatibility makes that impossible
             generatedSources,
@@ -543,12 +531,6 @@ function processContracts({
       )
   );
 }
-
-type Contracts = {
-  [path: string]: {
-    [name: string]: any;
-  };
-};
 
 function repairOldContracts(contracts: Contracts): Contracts {
   const contractNames = Object.values(contracts)
