@@ -48,11 +48,11 @@ export type CompiledContract = {
   source: string;
   sourceMap: string;
   deployedSourceMap: string;
-  legacyAST: object;
-  ast: object;
+  legacyAST?: object;
+  ast?: object;
   abi: Abi;
   metadata: string;
-  bytecode: Bytecode;
+  bytecode?: Bytecode;
   deployedBytecode: Bytecode;
   compiler: {
     name: string;
