@@ -69,10 +69,25 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   yield put(session.saveReceipt(receipt));
   yield put(session.saveBlock(block));
 
+  //Solidity's block.difficulty uses the opcode 0x44.
+  //This will return the difficulty (pre-merge) or the mixHash (post-merge).
+  //So if the mixHash is present and nonzero, we use that.  Otherwise, we use
+  //the difficulty.
+  let difficultyOrMixHash;
+  const mixHash = block.prevRandao || block.mixHash;
+  //mixHash is given in hex, so we have to slice off the 0x;
+  //BN doesn't accept 0n
+  const numericMixHash = new BN(mixHash.slice(2), 16);
+  if (numericMixHash.isZero()) {
+    difficultyOrMixHash = new BN(block.difficulty);
+  } else {
+    difficultyOrMixHash = numericMixHash;
+  }
+
   //these ones get grouped together for convenience
   const solidityBlock = {
     coinbase: block.miner,
-    difficulty: new BN(block.difficulty),
+    difficulty: difficultyOrMixHash,
     gaslimit: new BN(block.gasLimit),
     number: new BN(block.number),
     timestamp: new BN(block.timestamp),
