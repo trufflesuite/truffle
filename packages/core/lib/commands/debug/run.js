@@ -5,13 +5,39 @@ module.exports = async function (options) {
   const debug = debugModule("lib:commands:debug");
 
   const { Environment } = require("@truffle/environment");
+  const FromHardhat = require("@truffle/from-hardhat");
+  const Codec = require("@truffle/codec");
   const { CLIDebugger } = require("../../debug");
 
   if (options.url && options.network) {
     throw new Error("Url and Network options should not be specified together");
   }
 
-  let config = loadConfig(options);
+  let config;
+  let compilations;
+  try {
+    config = loadConfig(options);
+  } catch (configError) {
+    // if we can't load config, check to see if this is a hardhat project
+    try {
+      await FromHardhat.expectHardhat();
+
+      config = await FromHardhat.prepareConfig();
+      config.merge(options);
+      compilations = Codec.Compilations.Utils.shimCompilations(
+        await FromHardhat.prepareCompilations()
+      );
+    } catch (hardhatError) {
+      // if it's not a hardhat project, throw the original error
+      // otherwise, throw whatever error we got when process hardhat
+      const error =
+        hardhatError instanceof FromHardhat.NotHardhatError
+          ? configError
+          : hardhatError;
+
+      throw error;
+    }
+  }
 
   await Environment.detect(config);
 
@@ -27,6 +53,9 @@ module.exports = async function (options) {
   if (config.compileAll && config.compileNone) {
     throw new Error("Incompatible options passed regarding what to compile");
   }
-  const interpreter = await new CLIDebugger(config, { txHash }).run();
+  const interpreter = await new CLIDebugger(config, {
+    txHash,
+    compilations
+  }).run();
   return await promisify(interpreter.start.bind(interpreter))();
 };
