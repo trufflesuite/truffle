@@ -5,6 +5,7 @@ const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 const constructorMethods = require("./constructorMethods");
 const properties = require("./properties");
+const util = require("util");
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -155,6 +156,10 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
   }
 
   Contract._constructorMethods = constructorMethods(Contract);
+
+  Contract.prototype[util.inspect.custom] = function (/* _depth , _options */) {
+    return `Contract at: ${this.address}`;
+  };
 
   // Getter functions are scoped to Contract object.
   Contract._properties = properties;
