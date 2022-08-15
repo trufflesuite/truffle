@@ -1,5 +1,5 @@
-const { assert } = require("chai");
-const { shouldIncludePath } = require("../../dist/profiler/shouldIncludePath");
+import { assert } from "chai";
+import { shouldIncludePath } from "../../dist/profiler/shouldIncludePath";
 
 describe(".shouldIncludePath(filename)", () => {
   it("returns true if the file has a .sol extension", () => {

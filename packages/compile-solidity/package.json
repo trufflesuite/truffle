@@ -43,6 +43,7 @@
     "@truffle/box": "^2.1.57",
     "@truffle/resolver": "^9.0.15",
     "@types/node": "~12.12.0",
+    "@types/sinon": "^9.0.10",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -51,6 +52,7 @@
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
+    "ts-node": "10.7.0",
     "ttypescript": "1.5.13",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1"

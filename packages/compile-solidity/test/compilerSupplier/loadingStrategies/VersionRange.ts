@@ -1,11 +1,10 @@
-const assert = require("assert");
-const fs = require("fs");
-const axios = require("axios");
-const sinon = require("sinon");
-const {
-  VersionRange
-} = require("../../../dist/compilerSupplier/loadingStrategies");
-const Config = require("@truffle/config");
+import { assert } from "chai";
+import * as fs from "fs";
+import axios from "axios";
+import * as sinon from "sinon";
+import { VersionRange } from "../../../dist/compilerSupplier/loadingStrategies";
+import Config from "@truffle/config";
+
 const config = Config.default();
 let versionRangeOptions = {
   events: config.events,

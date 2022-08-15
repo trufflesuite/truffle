@@ -1,13 +1,14 @@
-const debug = require("debug")("compile:test:test_metadata");
-const tmp = require("tmp");
+import debugModule from "debug";
+const debug = debugModule("compile:test:test_metadata");
+import * as tmp from "tmp";
 tmp.setGracefulCleanup();
-const fs = require("fs");
-const path = require("path");
-const { Compile } = require("@truffle/compile-solidity");
-const { Resolver } = require("@truffle/resolver");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
-const assert = require("assert");
-const { findOne } = require("./helpers");
+import fs = require("fs");
+import path = require("path");
+import { Compile } from "@truffle/compile-solidity";
+import { Resolver } from "@truffle/resolver";
+import { CompilerSupplier } from "../dist/compilerSupplier";
+import { assert } from "chai";
+import { findOne } from "./helpers";
 const solcConfig = {
   version: "0.4.25",
   settings: {
@@ -25,7 +26,7 @@ const supplierOptions = {
 };
 
 describe("Compile - solidity ^0.4.0", function () {
-  this.timeout(5000); // solc // gets loaded via supplier
+  this.timeout(5000);
   let options;
 
   before("get solc", async function () {
@@ -40,7 +41,7 @@ describe("Compile - solidity ^0.4.0", function () {
     let tmpdir;
 
     before("Set up temporary directory and project", async function () {
-      tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
+      tmpdir = tmp.dirSync({ unsafeCleanup: true }).name;
       await fs.promises.mkdir(path.join(tmpdir, "./contracts"));
       const contracts_directory = path.join(tmpdir, "./contracts");
       options = {

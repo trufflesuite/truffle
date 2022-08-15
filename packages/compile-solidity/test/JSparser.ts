@@ -1,33 +1,40 @@
-const path = require("path");
-const assert = require("assert");
-const { Resolver } = require("@truffle/resolver");
-const { Compile } = require("@truffle/compile-solidity");
-const Config = require("@truffle/config");
+import * as path from "path";
+import { assert } from "chai";
+import { Resolver } from "@truffle/resolver";
+import { Compile } from "@truffle/compile-solidity";
+import Config from "@truffle/config";
+let options;
 
 describe("JSparser", () => {
-  const options = {
-    compilers: {
-      solc: {
-        parser: "solcjs",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
-          }
+  beforeEach(function () {
+    options = {
+      compilers: {
+        solc: {
+          parser: "solcjs",
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            }
+          },
+          version: undefined,
+          docker: undefined
         }
-      }
-    },
-    quiet: true,
-    contracts_build_directory: path.join(__dirname, "./build"),
-    working_directory: __dirname
-  };
+      },
+      quiet: true,
+      contracts_directory: undefined,
+      contracts_build_directory: path.join(__dirname, "./build"),
+      working_directory: __dirname
+    };
+  });
 
-  it("resolves imports when using solcjs parser instead of docker [ @native ]", async () => {
+  it("resolves imports when using solcjs parser instead of docker [ @native ]", async function () {
+    this.timeout(20000);
     options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
 
-    const paths = [];
+    const paths: string[] = [];
     paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
@@ -47,13 +54,14 @@ describe("JSparser", () => {
 
     // This contract imports / inherits
     assert(contractWasCompiled, "Should have compiled");
-  }).timeout(20000);
+  });
 
-  it("properly throws when passed an invalid parser value", async () => {
+  it("properly throws when passed an invalid parser value", async function () {
+    this.timeout(3000);
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 
-    const paths = [];
+    const paths: string[] = [];
     paths.push(path.join(__dirname, "./sources/v0.5.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.5.x/InheritB.sol"));
 
@@ -70,5 +78,5 @@ describe("JSparser", () => {
     } catch (error) {
       assert(error.message.match(/(Unsupported parser)/));
     }
-  }).timeout(3000);
+  });
 });

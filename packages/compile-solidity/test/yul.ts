@@ -1,30 +1,35 @@
-const debug = require("debug")("compile:test:test_yul");
-const path = require("path");
-const { Compile } = require("@truffle/compile-solidity");
-const assert = require("assert");
-const { Resolver } = require("@truffle/resolver");
+import debugModule from "debug";
+const debug = debugModule("compile:test:test_yul");
+import * as path from "path";
+import { Compile } from "@truffle/compile-solidity";
+import { assert } from "chai";
+import { Resolver } from "@truffle/resolver";
+let options;
 
 describe("Yul compilation", function () {
   this.timeout(5000); // solc
 
-  const options = {
-    working_directory: __dirname,
-    contracts_directory: path.join(__dirname, "./sources/yul"),
-    contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
-    compilers: {
-      solc: {
-        version: "0.5.17",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
+  beforeEach(function () {
+    options = {
+      working_directory: __dirname,
+      contracts_directory: path.join(__dirname, "./sources/yul"),
+      contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
+      compilers: {
+        solc: {
+          version: "0.5.17",
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            }
           }
         }
-      }
-    },
-    quiet: true
-  };
-  options.resolver = new Resolver(options);
+      },
+      quiet: true,
+      resolver: undefined
+    };
+    options.resolver = new Resolver(options);
+  });
 
   it("Compiles Yul", async function () {
     this.timeout(150000);

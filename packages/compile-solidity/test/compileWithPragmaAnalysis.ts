@@ -1,13 +1,11 @@
-const assert = require("assert");
-const Config = require("@truffle/config");
-const { CompilerSupplier } = require("../dist/index");
-const { Resolver } = require("@truffle/resolver");
-const sinon = require("sinon");
-const {
-  compileWithPragmaAnalysis
-} = require("../dist/compileWithPragmaAnalysis");
-const path = require("path");
-let paths = [];
+import { assert } from "chai";
+import Config from "@truffle/config";
+import { CompilerSupplier } from "../dist/index";
+import { Resolver } from "@truffle/resolver";
+import * as sinon from "sinon";
+import { compileWithPragmaAnalysis } from "../dist/compileWithPragmaAnalysis";
+import * as path from "path";
+let paths: string[] = [];
 
 const sourceDirectory = path.resolve(
   __dirname,
@@ -69,9 +67,12 @@ config.resolver = new Resolver(config);
 
 describe("compileWithPragmaAnalysis", function () {
   before(function () {
-    sinon.stub(CompilerSupplier.prototype, "list").returns(releases);
+    sinon
+      .stub(CompilerSupplier.prototype, "list")
+      .returns(Promise.resolve(releases));
   });
   after(function () {
+    // @ts-ignore
     CompilerSupplier.prototype.list.restore();
   });
 

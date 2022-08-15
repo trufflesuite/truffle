@@ -1,11 +1,11 @@
-const { assert } = require("chai");
-const fs = require("fs-extra");
-const path = require("path");
-const tmp = require("tmp");
-const { Profiler } = require("../../dist/profiler");
-const { Resolver } = require("@truffle/resolver");
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as tmp from "tmp";
+import { Profiler } from "../../dist/profiler";
+import { Resolver } from "@truffle/resolver";
+import TruffleConfig from "@truffle/config";
 const Artifactor = require("@truffle/artifactor");
-const TruffleConfig = require("@truffle/config");
 
 function createSandbox(source) {
   if (!fs.existsSync(source)) {

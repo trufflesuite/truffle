@@ -1,5 +1,5 @@
-const assert = require("assert");
-const { rangeContainsAtLeast } = require("../../dist/compilerSupplier/rangeUtils");
+import { assert } from "chai";
+import { rangeContainsAtLeast } from "../../dist/compilerSupplier/rangeUtils";
 
 describe("rangeUtils", () => {
   describe(".rangeContainsAtLeast(range, comparisonVersion)", () => {

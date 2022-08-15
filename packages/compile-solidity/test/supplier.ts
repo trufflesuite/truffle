@@ -1,17 +1,29 @@
-const debug = require("debug")("compile:test:test_supplier");
-const fse = require("fs-extra");
-const path = require("path");
-const { assert } = require("chai");
-const { Resolver } = require("@truffle/resolver");
-const { Compile } = require("@truffle/compile-solidity");
-const Config = require("@truffle/config");
-const { findOne } = require("./helpers");
+import debugModule from "debug";
+const debug = debugModule("compile:test:test_supplier");
+import * as fse from "fs-extra";
+import * as path from "path";
+import { assert } from "chai";
+import { Resolver } from "@truffle/resolver";
+import { Compile } from "@truffle/compile-solidity";
+import Config from "@truffle/config";
+import { findOne } from "./helpers";
+let options;
 
 function waitSecond() {
-  return new Promise(resolve => setTimeout(() => resolve(), 1250));
+  return new Promise<void>(resolve => setTimeout(() => resolve(), 1250));
 }
 
-describe("CompilerSupplier", function () {
+describe.only("CompilerSupplier", function () {
+  beforeEach(function () {
+    options = {
+      contracts_directory: "",
+      solc: "",
+      quiet: true,
+      compilers: {},
+      resolver: undefined
+    };
+  });
+
   describe("integration", function () {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
@@ -21,12 +33,6 @@ describe("CompilerSupplier", function () {
     let version8PragmaSource; // ^0.8.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
-
-    const options = {
-      contracts_directory: "",
-      solc: "",
-      quiet: true
-    };
 
     before("get code", async function () {
       const oldPragmaPin = await fse.readFile(
@@ -81,7 +87,7 @@ describe("CompilerSupplier", function () {
           settings: {}
         }
       };
-      const config = new Config().with(options);
+      const config = Config.default().with(options);
 
       const { compilations } = await Compile.sources({
         sources: oldPragmaPinSource,
@@ -177,11 +183,11 @@ describe("CompilerSupplier", function () {
         compilerFilename,
         "The compiler should have been cached but wasn't"
       );
-
       const cachedCompilerPath = path.join(
         compilerCacheDirectory,
         compilerFilename
       );
+      assert(fse.existsSync(cachedCompilerPath), "Should have cached compiler");
 
       // Get cached solc access time
       initialAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
@@ -254,11 +260,11 @@ describe("CompilerSupplier", function () {
       });
 
       it("resolves imports correctly when using built solc", async function () {
-        const paths = [];
+        const paths: string[] = [];
         paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
         paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
-        let options = {
+        options = {
           compilers: {
             solc: {
               version: "0.4.22",
