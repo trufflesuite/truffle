@@ -27,6 +27,7 @@
     "@truffle/provider": "^0.2.64",
     "@truffle/resolver": "^9.0.25",
     "ganache": "7.5.0",
+    "chalk": "^4.1.2",
     "node-ipc": "9.2.1",
     "source-map-support": "^0.5.19",
     "web3": "1.7.4"

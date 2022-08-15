@@ -38,16 +38,21 @@ module.exports = async function (options) {
   }
 
   // Start managed ganache network
-  async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
+  async function startGanacheAndRunTests(
+    ipcOptions,
+    ganacheOptions,
+    truffleConfig
+  ) {
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
-      ganacheOptions
+      ganacheOptions,
+      truffleConfig
     );
     const ipcDisconnect = disconnect;
-    await Environment.develop(config, ganacheOptions);
-    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
+    await Environment.develop(truffleConfig, ganacheOptions);
+    const { temporaryDirectory } = await copyArtifactsToTempDir(truffleConfig);
     const numberOfFailures = await prepareConfigAndRunTests({
-      config,
+      config: truffleConfig,
       files,
       temporaryDirectory
     });
@@ -103,6 +108,7 @@ module.exports = async function (options) {
     );
 
     const ipcOptions = { network: "test" };
+
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,

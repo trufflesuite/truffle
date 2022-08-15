@@ -45,14 +45,23 @@ module.exports = async options => {
     "This mnemonic was created for you by Truffle. It is not secure.\n" +
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-  const ipcOptions = { log: options.log };
+  const ipcOptions = {};
+
+  if (options.log) {
+    ipcOptions.log = options.log;
+  }
+
   const ganacheOptions = configureManagedGanache(
     config,
     customConfig,
     mnemonic
   );
 
-  const { started } = await Develop.connectOrStart(ipcOptions, ganacheOptions);
+  const { started } = await Develop.connectOrStart(
+    ipcOptions,
+    ganacheOptions,
+    config
+  );
   const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
   if (started) {

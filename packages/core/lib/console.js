@@ -11,7 +11,7 @@ const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
-const spawnSync = require("child_process").spawnSync;
+const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
@@ -243,10 +243,7 @@ class Console extends EventEmitter {
   provision() {
     let files;
     try {
-      const unfilteredFiles = fse.readdirSync(
-        this.options.contracts_build_directory
-      );
-      files = unfilteredFiles.filter(file => file.endsWith(".json"));
+      files = fse.readdirSync(this.options.contracts_build_directory);
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
@@ -314,7 +311,7 @@ class Console extends EventEmitter {
     });
   }
 
-  runSpawn(inputStrings, options) {
+  async runSpawn(inputStrings, options) {
     let childPath;
     /* eslint-disable no-undef */
     if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
@@ -323,10 +320,7 @@ class Console extends EventEmitter {
       childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
-    // stderr is piped here because we don't need to repeatedly see the parent
-    // errors/warnings in child process - specifically the error re: having
-    // multiple config files
-    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
+    const spawnOptions = { stdio: "pipe" };
     const settings = ["config", "network", "url"]
       .filter(setting => options[setting])
       .map(setting => `--${setting} ${options[setting]}`)
@@ -334,27 +328,39 @@ class Console extends EventEmitter {
 
     const spawnInput = `${settings} -- ${inputStrings}`;
 
-    const spawnResult = spawnSync(
+    const sid = spawn(
       "node",
       ["--no-deprecation", childPath, spawnInput],
       spawnOptions
     );
 
-    if (spawnResult.stderr) {
-      // Theoretically stderr can contain multiple errors.
-      // So let's just print it instead of throwing through
-      // the error handling mechanism. Bad call?
-      debug(spawnResult.stderr.toString());
-    }
+    // Theoretically stderr can contain multiple errors.
+    // So let's jsut print it instaed of throwing through
+    // the error handling mechanism. Bad call?
+    sid.stderr.on("data", data => {
+      debug(data.toString());
+    });
 
-    // re-provision to ensure any changes are available in the repl
-    this.provision();
+    sid.stdout.on("data", data => {
+      console.log(data.toString().trim());
+    });
 
-    //display prompt when child repl process is finished
-    this.repl.displayPrompt();
+    return new Promise((resolve, reject) => {
+      sid.on("close", code => {
+        if (!code) {
+          // re-provision to ensure any changes are available in the repl
+          this.provision();
+
+          //display prompt when child repl process is finished
+          this.repl.displayPrompt();
+          void resolve();
+        }
+        reject(code);
+      });
+    });
   }
 
-  interpret(input, context, filename, callback) {
+  async interpret(input, context, filename, callback) {
     const processedInput = processInput(input, this.allowedCommands);
     if (
       this.allowedCommands.includes(processedInput.split(" ")[0]) &&
@@ -365,7 +371,7 @@ class Console extends EventEmitter {
       }) !== null
     ) {
       try {
-        this.runSpawn(processedInput, this.options);
+        await this.runSpawn(processedInput, this.options);
       } catch (error) {
         // Perform error handling ourselves.
         if (error instanceof TruffleError) {
