@@ -73,7 +73,7 @@ export interface Source {
    */
   ast?: AstNode;
   /**
-   * This field is a compatibility hack only inteded for internal use.
+   * This field is a compatibility hack only intended for internal use.
    * (It allows the compiler to be set on a source if none is set on the
    * compilation as a whole; please don't do that.)
    */
@@ -118,7 +118,7 @@ export interface Contract {
    */
   immutableReferences?: ImmutableReferences;
   /**
-   * This field is a compatibility hack only inteded for internal use.
+   * This field is a compatibility hack only intended for internal use.
    * (It allows the compiler to be set on a source if none is set on the
    * compilation as a whole; please don't do that.)
    */
