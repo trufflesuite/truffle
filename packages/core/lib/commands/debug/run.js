@@ -1,14 +1,21 @@
 module.exports = async function (options) {
+  const OS = require("os");
   const { promisify } = require("util");
-  const debugModule = require("debug");
   const loadConfig = require("../../loadConfig");
-  const debug = debugModule("lib:commands:debug");
-
   const { Environment } = require("@truffle/environment");
+  const TruffleError = require("@truffle/error");
   const { CLIDebugger } = require("../../debug");
 
   if (options.url && options.network) {
-    throw new Error("Url and Network options should not be specified together");
+    const message =
+      "" +
+      "Mutually exclusive options, --url and --network detected!" +
+      OS.EOL +
+      "Please use either --url or --network and try again." +
+      OS.EOL +
+      "See: https://trufflesuite.com/docs/truffle/reference/truffle-commands/#debug" +
+      OS.EOL;
+    throw new TruffleError(message);
   }
 
   let config = loadConfig(options);
