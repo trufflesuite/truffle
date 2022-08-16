@@ -1,6 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_ordering");
-import { describe, it, beforeEach, before } from "mocha";
+import { describe, it, before } from "mocha";
 import Config from "@truffle/config";
 import { Compile, CompilerSupplier } from "@truffle/compile-solidity";
 import { assert } from "chai";
@@ -17,7 +17,8 @@ let compileOptions,
 describe("Compile - solidity ^0.4.0", function () {
   this.timeout(5000);
 
-  beforeEach(function () {
+  before("get solc", async function () {
+    this.timeout(40000);
     compileOptions = Config.default().merge({
       contracts_directory: "",
       compilers: {
@@ -39,10 +40,7 @@ describe("Compile - solidity ^0.4.0", function () {
         emit: () => {}
       }
     };
-  });
 
-  before("get solc", async function () {
-    this.timeout(40000);
     const supplier = new CompilerSupplier(supplierOptions);
     ({ solc } = await supplier.load());
   });
