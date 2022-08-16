@@ -10,6 +10,7 @@
     "moduleResolution": "node",
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
     "module": "commonjs",
     "outDir": "./dist",
     "strictBindCallApply": true,
