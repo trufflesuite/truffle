@@ -98,7 +98,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-gather",
     "energyweb",
     "volta-energyweb",
-    //sourcify does *not* support godwoken mainnet...?
+    "godwoken",
     "testnet-godwoken",
     //sourcify does *not* support xinfin mainnet...?
     "apothem-xinfin"
