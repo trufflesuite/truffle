@@ -39,6 +39,7 @@
     "@truffle/error": "^0.1.0",
     "@truffle/expect": "^0.1.2",
     "@truffle/fetch-and-compile": "^0.5.14",
+    "@truffle/from-hardhat": "^0.1.0-0",
     "@truffle/interface-adapter": "^0.5.20",
     "@truffle/migrate": "^3.3.6",
     "@truffle/plugins": "^0.2.9",
