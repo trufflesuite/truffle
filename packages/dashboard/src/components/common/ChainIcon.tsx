@@ -6,6 +6,7 @@ import ropsten from "src/assets/icons/ropsten.png";
 import kovan from "src/assets/icons/kovan.png";
 import rinkeby from "src/assets/icons/rinkeby.png";
 import goerli from "src/assets/icons/goerli.png";
+import devChain from "src/assets/icons/dev-chain.png";
 import unknownChain from "src/assets/icons/unknown-chain.png";
 import waitingChain from "src/assets/icons/waiting-chain.png";
 
@@ -15,7 +16,8 @@ const chainIDtoImgSrc = {
   3: ropsten,
   4: rinkeby,
   5: goerli,
-  42: kovan
+  42: kovan,
+  1337: devChain
 };
 
 interface ChainIconProps extends ImageProps {
