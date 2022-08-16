@@ -106,7 +106,7 @@ const prepareOptions = ({ command, inputStrings, options }) => {
     }
   });
 
-  // method `extractFlags(args)` : Extracts the `--option` flags from arguments
+  // method `extractFlags(args)` : Extracts the `--option` & `-option` flags from arguments
   const inputOptions = extractFlags(inputStrings);
 
   // adding allowed global options as enumerated in each command

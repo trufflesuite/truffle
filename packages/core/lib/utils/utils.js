@@ -1,8 +1,8 @@
-// Extracts the input flags --option from the arguments  of type `--option=value` or `--option value` or `--flag`
+// Extracts the input flags --option & -option from the arguments  of type `--option=value` or `--option value` or `--flag` or -flag
 const extractFlags = inputArguments => {
   // Get all the args that begins with `--`. This also includes `--option=value`
   const inputFlags = inputArguments.filter(flag => {
-    return flag.startsWith("--") ? flag : null;
+    return flag.startsWith("--") || flag.startsWith("-") ? flag : null;
   });
 
   // Extract only the flags i.e `--option` from `--option=value`
