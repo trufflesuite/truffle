@@ -1,6 +1,7 @@
 import Config from "@truffle/config";
+import { describe, it, beforeEach } from "mocha";
 import { assert } from "chai";
-import { run } from "../dist/run";
+import { run } from "@truffle/compile-solidity";
 let rawSources, options;
 
 describe("async run(rawSources, options)", () => {

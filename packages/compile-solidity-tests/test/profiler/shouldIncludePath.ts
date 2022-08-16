@@ -1,5 +1,6 @@
 import { assert } from "chai";
-import { shouldIncludePath } from "../../dist/profiler/shouldIncludePath";
+import { shouldIncludePath } from "@truffle/compile-solidity";
+import { describe, it } from "mocha";
 
 describe(".shouldIncludePath(filename)", () => {
   it("returns true if the file has a .sol extension", () => {

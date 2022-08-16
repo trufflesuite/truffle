@@ -1,5 +1,7 @@
 import { assert } from "chai";
-import { rangeContainsAtLeast } from "../../dist/compilerSupplier/rangeUtils";
+import { RangeUtils } from "@truffle/compile-solidity";
+const { rangeContainsAtLeast } = RangeUtils;
+import { describe, it } from "mocha";
 
 describe("rangeUtils", () => {
   describe(".rangeContainsAtLeast(range, comparisonVersion)", () => {

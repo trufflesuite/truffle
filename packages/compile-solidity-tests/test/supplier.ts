@@ -1,5 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_supplier");
+import { describe, it, beforeEach, before } from "mocha";
 import * as fse from "fs-extra";
 import * as path from "path";
 import { assert } from "chai";

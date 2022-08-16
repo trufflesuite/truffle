@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Parser } from "../dist/parser";
-import { CompilerSupplier } from "../dist/compilerSupplier";
+import { describe, it, before } from "mocha";
+import { CompilerSupplier, Parser } from "@truffle/compile-solidity";
 import { assert } from "chai";
 
 describe("Parser", () => {

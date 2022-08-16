@@ -23,8 +23,8 @@ type SolidityCompilersList = {
 };
 
 export class VersionRange {
-  private config: StrategyOptions;
-  private cache: Cache;
+  public config: StrategyOptions;
+  public cache: Cache;
 
   constructor(options: StrategyOptions) {
     const defaultConfig = {

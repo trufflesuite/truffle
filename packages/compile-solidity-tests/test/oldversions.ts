@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_oldversions");
-import { Compile } from "@truffle/compile-solidity";
-import { CompilerSupplier } from "../dist/compilerSupplier";
+import { describe, it, before } from "mocha";
+import { Compile, CompilerSupplier } from "@truffle/compile-solidity";
 import { assert } from "chai";
 import Config from "@truffle/config";
 let compileOptions, supplierOptions, sources, source, sourcePath;

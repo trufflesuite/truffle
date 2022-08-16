@@ -16,8 +16,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
-    "prepare": "yarn build",
-    "test": "./scripts/test.sh"
+    "prepare": "yarn build"
   },
   "dependencies": {
     "@truffle/compile-common": "^0.8.0",

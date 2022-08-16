@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "target": "es2016",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "rootDir": "test",
+    "baseUrl": ".",
+    "types": [
+      "mocha",
+      "node",
+      "sinon"
+    ],
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [ "test/**/*.ts", "test/*.ts" ],
+  "exclude": [
+    "node_modules", "dist"
+  ]
+}

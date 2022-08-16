@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_metadata");
+import { describe, it, before } from "mocha";
 import * as tmp from "tmp";
 tmp.setGracefulCleanup();
 import fs = require("fs");
 import path = require("path");
-import { Compile } from "@truffle/compile-solidity";
+import { Compile, CompilerSupplier } from "@truffle/compile-solidity";
 import { Resolver } from "@truffle/resolver";
-import { CompilerSupplier } from "../dist/compilerSupplier";
 import { assert } from "chai";
 import { findOne } from "./helpers";
 const solcConfig = {

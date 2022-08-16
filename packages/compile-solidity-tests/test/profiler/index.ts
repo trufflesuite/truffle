@@ -1,8 +1,9 @@
 import { assert } from "chai";
+import { before, describe, it } from "mocha";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as tmp from "tmp";
-import { Profiler } from "../../dist/profiler";
+import { Profiler } from "@truffle/compile-solidity";
 import { Resolver } from "@truffle/resolver";
 import TruffleConfig from "@truffle/config";
 const Artifactor = require("@truffle/artifactor");

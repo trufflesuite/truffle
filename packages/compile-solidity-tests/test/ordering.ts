@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_ordering");
+import { describe, it, beforeEach, before } from "mocha";
 import Config from "@truffle/config";
-import { Compile } from "@truffle/compile-solidity";
-import { CompilerSupplier } from "../dist/compilerSupplier";
+import { Compile, CompilerSupplier } from "@truffle/compile-solidity";
 import { assert } from "chai";
 import { findOne } from "./helpers";
 import * as fs from "fs";
@@ -13,21 +13,6 @@ let compileOptions,
   complexOrderedSource,
   inheritedSource,
   solc;
-// let compileOptions = Config.default().merge({
-//   contracts_directory: "",
-//   compilers: {
-//     solc: {
-//       version: "0.4.25",
-//       settings: {
-//         optimizer: {
-//           enabled: false,
-//           runs: 200
-//         }
-//       }
-//     }
-//   },
-//   quiet: true
-// });
 
 describe("Compile - solidity ^0.4.0", function () {
   this.timeout(5000);

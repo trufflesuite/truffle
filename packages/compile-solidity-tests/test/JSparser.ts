@@ -1,4 +1,5 @@
 import * as path from "path";
+import { describe, it, beforeEach } from "mocha";
 import { assert } from "chai";
 import { Resolver } from "@truffle/resolver";
 import { Compile } from "@truffle/compile-solidity";

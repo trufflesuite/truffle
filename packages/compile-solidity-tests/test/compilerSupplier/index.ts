@@ -1,15 +1,14 @@
 import * as path from "path";
 import { assert } from "chai";
+import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
 import axios from "axios";
-import { CompilerSupplier } from "../../dist/compilerSupplier";
-import { Cache } from "../../dist/compilerSupplier/Cache";
 import {
-  Docker,
-  Native,
-  Local,
-  VersionRange
-} from "../../dist/compilerSupplier/loadingStrategies";
+  CompilerSupplier,
+  Cache,
+  LoadingStrategies
+} from "@truffle/compile-solidity";
+const { Docker, Native, Local, VersionRange } = LoadingStrategies;
 import Config from "@truffle/config";
 const config = Config.default();
 let supplier, supplierOptions;

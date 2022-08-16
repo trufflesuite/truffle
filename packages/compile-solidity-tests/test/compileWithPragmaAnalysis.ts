@@ -1,9 +1,12 @@
+import { describe, it, before, after } from "mocha";
 import { assert } from "chai";
 import Config from "@truffle/config";
-import { CompilerSupplier } from "../dist/index";
+import {
+  CompilerSupplier,
+  compileWithPragmaAnalysis
+} from "@truffle/compile-solidity";
 import { Resolver } from "@truffle/resolver";
 import * as sinon from "sinon";
-import { compileWithPragmaAnalysis } from "../dist/compileWithPragmaAnalysis";
 import * as path from "path";
 let paths: string[] = [];
 

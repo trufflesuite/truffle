@@ -1,5 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_yul");
+import { describe, it, beforeEach } from "mocha";
 import * as path from "path";
 import { Compile } from "@truffle/compile-solidity";
 import { assert } from "chai";

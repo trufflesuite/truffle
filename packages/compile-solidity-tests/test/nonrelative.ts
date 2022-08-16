@@ -1,5 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("compile:test:test_nonrelative");
+import { describe, it, beforeEach, after, before } from "mocha";
 const path = require("path");
 import { Compile } from "@truffle/compile-solidity";
 import { assert } from "chai";
