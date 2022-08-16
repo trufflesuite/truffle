@@ -38,11 +38,6 @@ namespace Sources {
     sourceIndexes: Compilation["sourceIndexes"]
   ): Compilation["sources"] =>
     sourceIndexes.map(sourcePath => {
-      // to handle if sourceIndexes is a sparse array
-      if (!sourcePath) {
-        return;
-      }
-
       const inputSource = buildInfo.input.sources[sourcePath];
       const outputSource = buildInfo.output.sources[sourcePath];
 
