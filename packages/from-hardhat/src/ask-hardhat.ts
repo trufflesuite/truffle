@@ -34,7 +34,7 @@ export const askHardhatVersion = async (
     const { workingDirectory } = withDefaultEnvironmentOptions(options);
 
     const hardhat = spawn(`npx`, ["hardhat", "--version"], {
-      stdio: "pipe",
+      stdio: ["pipe", "pipe", "inherit"],
       cwd: workingDirectory
     });
 
@@ -43,7 +43,6 @@ export const askHardhatVersion = async (
       output = `${output}${data}`;
     });
 
-    // setup close event before writing to stdin because we're sending eof
     hardhat.on("close", code => {
       if (code !== 0) {
         return reject(new Error(`Hardhat exited with non-zero code ${code}`));

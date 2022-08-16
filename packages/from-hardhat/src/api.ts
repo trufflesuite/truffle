@@ -5,7 +5,10 @@ import type * as Hardhat from "hardhat/types";
 import type * as Common from "@truffle/compile-common";
 import type TruffleConfig from "@truffle/config";
 
-import { supportedHardhatVersionRange } from "./constants";
+import {
+  supportedHardhatVersionRange,
+  supportedHardhatBuildInfoFormats
+} from "./constants";
 import * as Compilation from "./compilation";
 import * as Config from "./config";
 
@@ -38,7 +41,7 @@ export const expectHardhat = async (
   const hardhatVersion = await askHardhatVersion(options);
 
   if (!semver.satisfies(hardhatVersion, supportedHardhatVersionRange)) {
-    throw new IncompatibleHardhatError(hardhatVersion);
+    throw new IncompatibleHardhatVersionError(hardhatVersion);
   }
 };
 
@@ -54,7 +57,7 @@ export class NotHardhatError extends Error {
 /**
  * Thrown when Hardhat was detected but with an incompatible version
  */
-export class IncompatibleHardhatError extends Error {
+export class IncompatibleHardhatVersionError extends Error {
   constructor(detectedVersion: string) {
     super(
       `Expected Hardhat version compatible with ${supportedHardhatVersionRange}, got: ${detectedVersion}`
@@ -133,6 +136,12 @@ export const prepareCompilations = async (
       (await fs.readFile(buildInfoPath)).toString()
     );
 
+    const { _format } = buildInfo;
+
+    if (!supportedHardhatBuildInfoFormats.has(_format)) {
+      throw new IncompatibleHardhatBuildInfoFormatError(_format);
+    }
+
     const compilation = Compilation.fromBuildInfo(buildInfo);
 
     compilations.push(compilation);
@@ -140,3 +149,16 @@ export const prepareCompilations = async (
 
   return compilations;
 };
+
+/**
+ * Thrown when the build-info format detected has an incompatible version
+ */
+export class IncompatibleHardhatBuildInfoFormatError extends Error {
+  constructor(detectedFormat: string) {
+    super(
+      `Expected build-info to be one of ["${[
+        ...supportedHardhatBuildInfoFormats
+      ].join('", "')}"], got: "${detectedFormat}"`
+    );
+  }
+}

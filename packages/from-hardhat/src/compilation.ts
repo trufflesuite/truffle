@@ -3,15 +3,7 @@ import type * as Hardhat from "hardhat/types";
 import type { Compilation, CompiledContract } from "@truffle/compile-common";
 import * as CompileSolidity from "@truffle/compile-solidity";
 
-import { supportedHardhatBuildInfoFormats } from "./constants";
-
 export const fromBuildInfo = (buildInfo: Hardhat.BuildInfo): Compilation => {
-  const { _format } = buildInfo;
-
-  if (!supportedHardhatBuildInfoFormats.has(_format)) {
-    throw new Error(`Unsupported build info format: ${_format}`);
-  }
-
   const sourceIndexes = SourceIndexes.fromBuildInfo(buildInfo);
 
   return {

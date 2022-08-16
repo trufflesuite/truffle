@@ -3,7 +3,8 @@ export type { EnvironmentOptions } from "./options";
 export {
   expectHardhat,
   NotHardhatError,
-  IncompatibleHardhatError,
+  IncompatibleHardhatVersionError,
+  IncompatibleHardhatBuildInfoFormatError,
   prepareConfig,
   prepareCompilations
 } from "./api";
