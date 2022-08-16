@@ -1,8 +1,9 @@
-const debug = require("debug")("workflow-compile");
-const fse = require("fs-extra");
-const { prepareConfig } = require("./utils");
-const { Shims } = require("@truffle/compile-common");
-const { getTruffleDb } = require("@truffle/db-loader");
+import debugModule from "debug";
+const debug = debugModule("workflow-compile");
+import fse from "fs-extra";
+import { prepareConfig } from "./utils";
+import { Shims } from "@truffle/compile-common";
+import { getTruffleDb } from "@truffle/db-loader";
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -60,7 +61,7 @@ async function compile(config) {
   return { contracts, compilations };
 }
 
-const WorkflowCompile = {
+export default {
   async compile(options) {
     const config = prepareConfig(options);
 
@@ -156,5 +157,3 @@ const WorkflowCompile = {
     });
   }
 };
-
-module.exports = WorkflowCompile;

@@ -1,12 +1,13 @@
-const Contracts = require("../");
-const assert = require("assert");
-const { existsSync, removeSync } = require("fs-extra");
-const { join } = require("path");
+import Contracts from "../src";
+import Config from "@truffle/config";
+import { assert } from "chai";
+import { existsSync, removeSync } from "fs-extra";
+import { join } from "path";
 
 let config;
 
-beforeEach(() => {
-  config = {
+beforeEach(function () {
+  config = Config.default().merge({
     contracts_directory: "./test/sources",
     contracts_build_directory: "./test/build",
     logger: {
@@ -15,7 +16,7 @@ beforeEach(() => {
       },
       loggedStuff: ""
     }
-  };
+  });
 });
 
 after(() => {
@@ -35,7 +36,8 @@ describe("Contracts.compile", () => {
   });
 
   describe("when config.all is true", () => {
-    it("recompiles all contracts in contracts_directory", async () => {
+    it("recompiles all contracts in contracts_directory", async function () {
+      this.timeout(4000);
       // initial compile
       const { contracts } = await Contracts.compileAndSave(config);
 
@@ -54,6 +56,6 @@ describe("Contracts.compile", () => {
             `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
           )
       );
-    }).timeout(4000);
+    });
   });
 });
