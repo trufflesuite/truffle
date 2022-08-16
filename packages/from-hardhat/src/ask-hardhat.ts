@@ -43,7 +43,7 @@ export const askHardhatVersion = async (
       output = `${output}${data}`;
     });
 
-    hardhat.on("close", code => {
+    hardhat.once("close", code => {
       if (code !== 0) {
         return reject(new Error(`Hardhat exited with non-zero code ${code}`));
       }
@@ -79,7 +79,7 @@ export const askHardhatConsole = async (
     });
 
     // setup close event before writing to stdin because we're sending eof
-    hardhat.on("close", code => {
+    hardhat.once("close", code => {
       if (code !== 0) {
         return reject(new Error(`Hardhat exited with non-zero code ${code}`));
       }
