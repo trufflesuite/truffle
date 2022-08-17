@@ -61,7 +61,11 @@ function ConnectedContent(): JSX.Element {
           >
             {chainInfo.name}
           </Text>
-          <Text size="xs" className={`${classes.address} ${classes.text}`}>
+          <Text
+            size="xs"
+            className={`${classes.address} ${classes.text}`}
+            align="start"
+          >
             {address?.slice(0, 10)}...{address?.slice(-8)}
           </Text>
         </Stack>
