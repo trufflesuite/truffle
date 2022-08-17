@@ -2,25 +2,29 @@ import debugModule from "debug";
 const debug = debugModule("compile");
 import findContracts from "@truffle/contract-sources";
 import Config from "@truffle/config";
-import { Parser } from "./parser";
-import { Cache } from "./compilerSupplier/Cache";
 import { Profiler } from "./profiler";
-import * as LoadingStrategies from "./compilerSupplier/loadingStrategies";
 import { CompilerSupplier } from "./compilerSupplier";
-export { CompilerSupplier } from "./compilerSupplier";
-export * as Shims from "./shims";
 import { run } from "./run";
 import { normalizeOptions } from "./normalizeOptions";
 import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
-import { shouldIncludePath } from "./profiler/shouldIncludePath";
 import { reportSources } from "./reportSources";
 import { Compilations } from "@truffle/compile-common";
 import type { Compilation } from "@truffle/compile-common";
 import partition from "lodash/partition";
 import fs from "fs-extra";
 import type { SourcesWithDependenciesArgs, SourcesArgs } from "./types";
-import * as RangeUtils from "./compilerSupplier/rangeUtils";
 const expect = require("@truffle/expect");
+
+export { CompilerSupplier } from "./compilerSupplier";
+export * as Shims from "./shims";
+export { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
+export { Profiler } from "./profiler";
+export { Cache } from "./compilerSupplier/Cache";
+export * as LoadingStrategies from "./compilerSupplier/loadingStrategies";
+export { shouldIncludePath } from "./profiler/shouldIncludePath";
+export { run } from "./run";
+export { Parser } from "./parser";
+export * as RangeUtils from "./compilerSupplier/rangeUtils";
 
 async function compileYulPaths(yulPaths: string[], options: Config) {
   let yulCompilations: Compilation[] = [];
