@@ -5,6 +5,7 @@ import Config from "@truffle/config";
 import { Profiler } from "./profiler";
 import { CompilerSupplier } from "./compilerSupplier";
 export { CompilerSupplier } from "./compilerSupplier";
+export * as Shims from "./shims";
 import { run } from "./run";
 import { normalizeOptions } from "./normalizeOptions";
 import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
