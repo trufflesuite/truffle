@@ -35,7 +35,7 @@ export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
   data: {
     lifecycle: ReceivedMessageLifecycle<Message>;
-    provider: providers.JsonRpcProvider;
+    provider: providers.Web3Provider;
   };
 }
 

@@ -1,3 +1,4 @@
+import type { providers } from "ethers";
 import type {
   DashboardMessageBusClient,
   ReceivedMessageLifecycle
@@ -8,6 +9,7 @@ import type { NoticeContent } from "src/components/composed/Notice/content/types
 export interface State {
   host: string;
   port: number;
+  provider: providers.Web3Provider;
   client: DashboardMessageBusClient | null;
   providerMessages: Map<
     number,

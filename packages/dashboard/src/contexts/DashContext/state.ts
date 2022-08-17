@@ -1,3 +1,4 @@
+import { providers } from "ethers";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
@@ -20,6 +21,8 @@ export const initialState: State = {
     process.env.NODE_ENV === "development"
       ? 24012
       : Number(window.location.port),
+  // @ts-ignore
+  provider: new providers.Web3Provider(window.ethereum),
   client: null,
   providerMessages: new Map(),
   chainInfo: {

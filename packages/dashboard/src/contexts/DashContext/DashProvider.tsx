@@ -1,6 +1,5 @@
 import { useReducer, useEffect, useRef } from "react";
-import { useAccount, useProvider, useNetwork } from "wagmi";
-import type { providers } from "ethers";
+import { useAccount, useNetwork } from "wagmi";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type {
@@ -21,7 +20,6 @@ type DashProviderProps = {
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
   const { isConnected } = useAccount();
-  const provider: providers.Web3Provider = useProvider();
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
@@ -37,7 +35,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
       window.devLog("Initializing message bus client");
       // Create message bus client
-      const { host, port } = state;
+      const { host, port, provider } = state;
       const client = new DashboardMessageBusClient({ host, port });
       await client.ready();
       dispatch({ type: "set-client", data: client });
@@ -54,7 +52,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     }
 
     init();
-  }, [state, provider]);
+  }, [state]);
 
   useEffect(() => {
     dispatch({
@@ -90,7 +88,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const operations = {
     userConfirmMessage: async (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
-    ) => await confirmMessage(lifecycle, provider),
+    ) => await confirmMessage(lifecycle, state.provider),
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),

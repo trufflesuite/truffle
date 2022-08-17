@@ -54,7 +54,7 @@
     "react-feather": "^2.0.10",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.1",
-    "wagmi": "^0.5.9",
+    "wagmi": "^0.6.3",
     "ws": "^7.2.0"
   },
   "devDependencies": {

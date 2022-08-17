@@ -1,10 +1,34 @@
-import { WagmiConfig, createClient } from "wagmi";
-import { providers } from "ethers";
+import {
+  WagmiConfig,
+  defaultChains,
+  configureChains,
+  createClient
+} from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+
+const chains = defaultChains.map(chain => {
+  const { default: defaultUrl, infura: infuraUrl } = chain.rpcUrls;
+  if (typeof infuraUrl === "string" && defaultUrl !== infuraUrl) {
+    return {
+      ...chain,
+      rpcUrls: {
+        ...chain.rpcUrls,
+        default: infuraUrl
+      }
+    };
+  } else {
+    return chain;
+  }
+});
+
+const { provider, webSocketProvider } = configureChains(chains, [
+  publicProvider()
+]);
 
 const client = createClient({
   autoConnect: true,
-  // @ts-ignore
-  provider: new providers.Web3Provider(window.ethereum || "ws://localhost:8545")
+  provider,
+  webSocketProvider
 });
 
 type WagmiWrapperProps = {

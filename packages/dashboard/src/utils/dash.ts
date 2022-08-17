@@ -44,7 +44,7 @@ export function rejectMessage(
 
 export async function confirmMessage(
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
-  provider: providers.JsonRpcProvider
+  provider: providers.Web3Provider
 ) {
   const { jsonrpc, id, method, params } = lifecycle.message.payload;
   let payload: any = { jsonrpc, id };
