@@ -454,8 +454,7 @@ function processContracts({
                 (deployedBytecodeInfo || {}).linkReferences
               )
             }),
-            immutableReferences: (deployedBytecodeInfo || {})
-              .immutableReferences,
+            immutableReferences: deployedBytecodeInfo?.immutableReferences,
             //ideally immutable references would be part of the deployedBytecode object,
             //but compatibility makes that impossible
             generatedSources,
