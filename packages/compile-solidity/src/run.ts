@@ -11,62 +11,17 @@ import type {
 } from "@truffle/compile-common";
 import type Config from "@truffle/config";
 import * as Common from "@truffle/compile-common";
-
-type Targets = string[];
-
-type CompilerOutput = {
-  contracts: {
-    [path: string]: object;
-  };
-  sources: {
-    [path: string]: {
-      ast?: object;
-      legacyAST?: object;
-      id: number;
-    };
-  };
-  errors?: any[];
-};
-
-type ProcessAllSourcesArgs = {
-  sources: Common.Sources.Sources;
-  compilerOutput: CompilerOutput;
-  originalSourcePaths: any;
-  language: string;
-};
-
-type PrepareCompilerInputArgs = {
-  sources: Common.Sources.Sources;
-  targets: Targets;
-  language: string;
-  settings: any;
-  modelCheckerSettings: any;
-};
-
-type InternalOptions = {
-  language?: string;
-  noTransform?: boolean;
-  solc?: any;
-};
-
-type PreparedSources = {
-  [path: string]: {
-    content: string;
-  };
-};
-
-type ProcessContractsArgs = {
-  compilerOutput: CompilerOutput;
-  sources: Common.Sources.Sources;
-  originalSourcePaths: Common.Sources.PathMapping;
-  solcVersion: string;
-};
-
-type Contracts = {
-  [path: string]: {
-    [name: string]: any;
-  };
-};
+import type {
+  CompilerOutput,
+  Contracts,
+  InternalOptions,
+  ProcessAllSourcesArgs,
+  PrepareCompilerInputArgs,
+  PreparedSources,
+  PrepareSourcesArgs,
+  ProcessContractsArgs,
+  Targets
+} from "./types";
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
@@ -230,11 +185,7 @@ function prepareCompilerInput({
  * @param sources - { [sourcePath]: string }
  * @return { [sourcePath]: { content: string } }
  */
-function prepareSources({
-  sources
-}: {
-  sources: Common.Sources.Sources;
-}): PreparedSources {
+function prepareSources({ sources }: PrepareSourcesArgs): PreparedSources {
   return Object.entries(sources)
     .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
     .reduce((a, b) => Object.assign({}, a, b), {});
