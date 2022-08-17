@@ -4,6 +4,7 @@ import findContracts from "@truffle/contract-sources";
 import Config from "@truffle/config";
 import { Profiler } from "./profiler";
 import { CompilerSupplier } from "./compilerSupplier";
+export { CompilerSupplier } from "./compilerSupplier";
 import { run } from "./run";
 import { normalizeOptions } from "./normalizeOptions";
 import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
@@ -53,7 +54,7 @@ async function compileYulPaths(yulPaths: string[], options: Config) {
   return yulCompilations;
 }
 
-const Compile = {
+export const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
   // NOTE: this function does *not* transform the source path prefix to
@@ -207,5 +208,3 @@ const Compile = {
     return Compilations.promoteCompileResult(compilationResult);
   }
 };
-
-export { Compile, CompilerSupplier };
