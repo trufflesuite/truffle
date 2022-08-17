@@ -17,13 +17,13 @@ function ColorSchemeWrapper({
   const [colorScheme, setColorScheme] = useSavedColorScheme();
   const toggleColorScheme = () => {
     setColorScheme(
-      (colorScheme ?? systemColorScheme) === "dark" ? "light" : "dark"
+      (colorScheme || systemColorScheme) === "dark" ? "light" : "dark"
     );
   };
 
   return (
     <ColorSchemeProvider
-      colorScheme={colorScheme ?? systemColorScheme}
+      colorScheme={colorScheme || systemColorScheme}
       toggleColorScheme={toggleColorScheme}
     >
       {children}
