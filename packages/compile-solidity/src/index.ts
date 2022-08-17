@@ -14,19 +14,8 @@ import { Compilations } from "@truffle/compile-common";
 import type { Compilation } from "@truffle/compile-common";
 import partition from "lodash/partition";
 import fs from "fs-extra";
+import type { SourcesWithDependenciesArgs, SourcesArgs } from "./types";
 const expect = require("@truffle/expect");
-
-type SourcesWithDependenciesArgs = {
-  paths: string[];
-  options: Config;
-};
-
-type SourcesArgs = {
-  sources: {
-    [key: string]: string;
-  };
-  options: Config;
-};
 
 async function compileYulPaths(yulPaths: string[], options: Config) {
   let yulCompilations: Compilation[] = [];

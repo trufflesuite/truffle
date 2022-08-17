@@ -1,4 +1,17 @@
 import Common from "@truffle/compile-common";
+import type Config from "@truffle/config";
+
+export type SourcesWithDependenciesArgs = {
+  paths: string[];
+  options: Config;
+};
+
+export type SourcesArgs = {
+  sources: {
+    [key: string]: string;
+  };
+  options: Config;
+};
 
 export type Targets = string[];
 
