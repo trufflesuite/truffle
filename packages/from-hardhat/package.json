@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.0-0",
+  "version": "0.1.0",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "ttsc",
@@ -20,9 +20,9 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.7.32",
-    "@truffle/compile-solidity": "^6.0.38",
-    "@truffle/config": "^1.3.34",
+    "@truffle/compile-common": "^0.7.34",
+    "@truffle/compile-solidity": "^6.0.40",
+    "@truffle/config": "^1.3.36",
     "debug": "^4.3.1",
     "find-up": "^2.1.0",
     "semver": "^5.7.1"
