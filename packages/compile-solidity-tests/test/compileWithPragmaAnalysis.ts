@@ -133,8 +133,11 @@ describe("compileWithPragmaAnalysis", function () {
         options: config,
         paths: [path.join(sourceDirectory, "withImports", "C.sol")]
       });
+      if (!compilations) {
+        assert.fail("Compilations were not created.");
+      }
       assert.equal(compilations.length, 1);
-      assert(compilations[0].compiler.version.startsWith("0.6.12"));
+      assert(compilations[0].compiler.version!.startsWith("0.6.12"));
     });
 
     it("throws an error if it cannot find one that satisfies", async function () {
