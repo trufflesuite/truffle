@@ -4,6 +4,7 @@ import semver from "semver";
 import { Profiler } from "./profiler";
 import { run } from "./run";
 import { reportSources } from "./reportSources";
+import type { Compilation } from "@truffle/compile-common";
 import OS from "os";
 import cloneDeep from "lodash/cloneDeep";
 
@@ -146,7 +147,7 @@ export const compileWithPragmaAnalysis = async ({
 
   reportSources({ paths: filteredPaths, options });
 
-  const compilations: any[] = [];
+  const compilations: Compilation[] = [];
   for (const compilerVersion in versionsAndSources) {
     const compilationOptions = {
       compilers: cloneDeep(options.compilers)
