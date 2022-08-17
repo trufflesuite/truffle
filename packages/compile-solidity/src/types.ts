@@ -23,7 +23,7 @@ export type PrepareSourcesArgs = {
 export type ProcessAllSourcesArgs = {
   sources: Common.Sources.Sources;
   compilerOutput: CompilerOutput;
-  originalSourcePaths: any;
+  originalSourcePaths: Common.Sources.PathMapping;
   language: string;
 };
 
@@ -31,8 +31,8 @@ export type PrepareCompilerInputArgs = {
   sources: Common.Sources.Sources;
   targets: Targets;
   language: string;
-  settings: any;
-  modelCheckerSettings: any;
+  settings: object;
+  modelCheckerSettings: object;
 };
 
 export type InternalOptions = {
