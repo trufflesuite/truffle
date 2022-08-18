@@ -29,14 +29,14 @@ export class VersionRange {
   constructor(options: StrategyOptions) {
     const defaultConfig = {
       compilerRoots: [
-        // Best performance binaries, via Truffle relay node
+        // this order of url root preference was recommended by Cameel from the
+        // Solidity team here -- https://github.com/trufflesuite/truffle/pull/5008
         "https://relay.trufflesuite.com/solc/emscripten-wasm32/",
-        // Fallback binaries, via Truffle relay node
-        "https://relay.trufflesuite.com/solc/emscripten-asmjs/",
-        // The last two addresses exist so that we have a backup option
-        // in case relay node fails
         "https://binaries.soliditylang.org/emscripten-wasm32/",
-        "https://binaries.soliditylang.org/emscripten-asmjs/"
+        "https://relay.trufflesuite.com/solc/emscripten-asmjs/",
+        "https://binaries.soliditylang.org/emscripten-asmjs/",
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/"
       ]
     };
     this.config = Object.assign({}, defaultConfig, options);
