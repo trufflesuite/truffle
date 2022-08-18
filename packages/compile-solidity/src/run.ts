@@ -145,7 +145,7 @@ function orderABI({ abi, contractName, ast }) {
   // Put function names in a hash with their order, lowest first, for speed.
   const functionIndexes = orderedFunctionNames
     .map((functionName: string, index: number) => ({ [functionName]: index }))
-    .reduce((a: object, b: object) => Object.assign({}, a, b), {});
+    .reduce((a: { [functionName: string]: number } , b: { [functionName: string]: number }) => Object.assign({}, a, b), {});
 
   // Construct new ABI with functions at the end in source order
   return [
