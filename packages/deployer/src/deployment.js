@@ -29,9 +29,9 @@ class Deployment {
   /**
    * Helper to parse a deploy statement's overwrite option
    * @private
-   * @param  {Arry}    args        arguments passed to deploy
-   * @param  {Boolean} isDeployed  is contract deployed?
-   * @return {Boolean}             true if overwrite is ok
+   * @param  {Array}   args       arguments passed to deploy
+   * @param  {Boolean} isDeployed is contract deployed?
+   * @return {Boolean}            true if overwrite is ok
    */
   _canOverwrite(args, isDeployed) {
     const lastArg = args[args.length - 1];
@@ -39,7 +39,6 @@ class Deployment {
 
     const overwrite = isObject && isDeployed && lastArg.overwrite === false;
 
-    isObject && delete lastArg.overwrite;
     return !overwrite;
   }
 
