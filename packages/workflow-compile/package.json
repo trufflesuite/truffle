@@ -15,7 +15,7 @@
   "version": "4.0.33",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ttsc",
+    "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha -r ts-node/register test/*.ts"
   },
