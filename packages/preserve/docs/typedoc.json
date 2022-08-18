@@ -1,20 +1,19 @@
 {
   "name": "@truffle/preserve",
-  "theme": "../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
   "excludeExternals": true,
   "exclude": [
     "**/test/*"
   ],
-  "out": "./dist/docs",
-  "readme": "./docs/README.md",
-  "media": "./docs/media",
-  "json": "./dist/api.json",
-  "tsconfig": "./docs/tsconfig.json",
+  "out": "../dist/docs",
+  "readme": "../README.md",
+  "media": "./media",
+  "json": "./api.json",
+  "tsconfig": "./tsconfig.json",
+  "plugin": [],
   "entryPoints": [
-    "../preserve/lib/index.ts",
-    "../preserve-fs/lib/index.ts",
-    "../preserve-to-ipfs/lib/index.ts",
-    "../preserve-to-filecoin/lib/index.ts",
-    "../preserve-to-buckets/lib/index.ts"
-  ]
+    "../lib/index.ts"
+  ],
+  "validation": {
+    "notExported": false
+  }
 }

@@ -10,11 +10,11 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2016", "dom"],
     "skipLibCheck": true,
     "paths": {
-      "@truffle/preserve": ["../preserve/lib"],
-      "@truffle/preserve/*": ["../preserve/lib/*"]
+      "@truffle/preserve": ["../lib"],
+      "@truffle/preserve/*": ["../lib/*"]
     },
     "rootDir": "../..",
     "types": [
@@ -22,11 +22,7 @@
     ]
   },
   "include": [
-    "../../preserve/lib/**/*.ts",
-    "../../preserve/typings/**/*.d.ts",
-    "../../preserve-fs/lib/**/*.ts",
-    "../../preserve-to-ipfs/lib/**/*.ts",
-    "../../preserve-to-filecoin/lib/**/*.ts",
-    "../../preserve-to-buckets/lib/**/*.ts"
+    "../lib/**/*.ts",
+    "../typings/**/*.d.ts",
   ]
 }
