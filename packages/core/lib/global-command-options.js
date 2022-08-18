@@ -7,7 +7,7 @@ const options = {
   from: {
     option: "--from <account>",
     description:
-      "Specify the account from which to make calls or send transactions."
+      "Specify the default account from which to make calls or send transactions."
   },
   config: {
     option: "--config <file>",
