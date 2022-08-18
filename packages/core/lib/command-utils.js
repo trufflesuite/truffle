@@ -27,7 +27,9 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
 
   // If the command wasn't specified directly, go through a process
   // for inferring the command.
-  if (commands.includes(firstInputString)) {
+  if (firstInputString === "-v" || firstInputString === "--version") {
+    chosenCommand = "version";
+  } else if (commands.includes(firstInputString)) {
     chosenCommand = firstInputString;
   } else if (noAliases !== true) {
     let currentLength = 1;
@@ -89,7 +91,10 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
 // the input options, merges it with the input options, and returns the result
 const prepareOptions = ({ command, inputStrings, options }) => {
   const yargs = require("yargs/yargs")();
-  yargs.command(require(`./commands/${command.name}/meta`));
+  yargs
+    .command(require(`./commands/${command.name}/meta`))
+    //Turn off yargs' default behavior when handling "truffle --version"
+    .version(false);
   const commandOptions = yargs.parse(inputStrings);
 
   // remove the task name itself put there by yargs
@@ -107,8 +112,14 @@ const prepareOptions = ({ command, inputStrings, options }) => {
   });
 
   // method `extractFlags(args)` : Extracts the `--option` & `-option` flags from arguments
-  const inputOptions = extractFlags(inputStrings);
+  let inputOptions = extractFlags(inputStrings);
 
+  //prevent invalid option warning for `truffle -v` & `truffle --version`
+  if (command.name === "version") {
+    inputOptions = inputOptions.filter(
+      opt => opt !== "-v" && opt !== "--version"
+    );
+  }
   // adding allowed global options as enumerated in each command
   const allowedGlobalOptions = command.meta.help.allowedGlobalOptions
     .filter(tag => tag in globalCommandOptions)
