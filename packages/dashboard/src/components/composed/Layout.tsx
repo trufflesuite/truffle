@@ -20,8 +20,9 @@ function Layout(): JSX.Element {
   return (
     <AppShell
       navbar={<Sidebar />}
-      classNames={{ main: classes.main }}
+      fixed={false}
       padding={0}
+      classNames={{ main: classes.main }}
     >
       {notice.show ? <Notice contentType={notice.type!} /> : <Outlet />}
     </AppShell>

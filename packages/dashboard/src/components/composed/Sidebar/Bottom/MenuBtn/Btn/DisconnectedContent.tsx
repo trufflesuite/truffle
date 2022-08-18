@@ -25,7 +25,7 @@ function DisconnectedContent(): JSX.Element {
       <ThemeIcon size={60} radius="xl" className={classes.waitingChainIcon}>
         <ChainIcon chainID={-1} m="xs" />
       </ThemeIcon>
-      <Text weight={600} color="gray" ml={36}>
+      <Text weight={600} color="#999" ml={36}>
         Click to connect
       </Text>
     </Group>

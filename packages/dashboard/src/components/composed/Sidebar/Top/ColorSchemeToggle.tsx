@@ -5,6 +5,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme } = theme;
   return {
     btn: {
+      color: colorScheme === "dark" ? colors.yellow[4] : colors.blue[6],
       backgroundColor:
         colorScheme === "dark"
           ? colors["truffle-brown"][6]
@@ -27,12 +28,7 @@ function ColorSchemeToggle(): JSX.Element {
   const handleClick = () => void toggleColorScheme();
 
   return (
-    <ActionIcon
-      onClick={handleClick}
-      size="lg"
-      className={classes.btn}
-      color={colorScheme === "dark" ? "yellow" : "indigo"}
-    >
+    <ActionIcon onClick={handleClick} size="lg" className={classes.btn}>
       {colorScheme === "dark" ? (
         <Sun {...featherIconProps} />
       ) : (

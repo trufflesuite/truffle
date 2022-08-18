@@ -6,13 +6,18 @@ import { useDash } from "src/hooks";
 import Btn from "src/components/composed/Sidebar/Bottom/MenuBtn/Btn";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
-  const { colors, fn } = theme;
+  const { colors, colorScheme, fn } = theme;
   return {
-    menuRoot: {
-      width: "100%"
-    },
-    menuBody: {
-      border: `1px solid ${fn.rgba(colors["truffle-beige"][8], 0.5)}`
+    menuDropdown: {
+      width: 290,
+      backgroundColor:
+        colorScheme === "dark"
+          ? colors["truffle-brown"][7]
+          : colors["truffle-beige"][4],
+      border:
+        colorScheme === "dark"
+          ? `1px solid ${colors["truffle-brown"][5]}`
+          : `1px solid ${fn.lighten(colors["truffle-beige"][5], 0.3)}`
     }
   };
 });
@@ -31,27 +36,28 @@ function MenuBtn(): JSX.Element {
   } else {
     return (
       <Menu
-        control={<Btn />}
-        placement="center"
-        size="xl"
+        position="top"
         transition="rotate-right"
-        classNames={{
-          root: classes.menuRoot,
-          body: classes.menuBody
-        }}
+        classNames={{ dropdown: classes.menuDropdown }}
       >
-        <Menu.Label>
-          <Text size="xs">
-            Connected to {chainInfo.name} (Chain ID: {chainInfo.id})
-          </Text>
-        </Menu.Label>
-        <Menu.Item
-          onClick={() => void disconnect()}
-          icon={<Slash />}
-          color="red"
-        >
-          Disconnect
-        </Menu.Item>
+        <Menu.Target>
+          <Btn />
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          <Menu.Label>
+            <Text size="xs">
+              Connected to {chainInfo.name} (Chain ID: {chainInfo.id})
+            </Text>
+          </Menu.Label>
+          <Menu.Item
+            onClick={() => void disconnect()}
+            icon={<Slash />}
+            color="pink"
+          >
+            Disconnect
+          </Menu.Item>
+        </Menu.Dropdown>
       </Menu>
     );
   }

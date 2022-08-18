@@ -35,7 +35,8 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     }
   },
   confirmBtnRightIcon: {
-    marginLeft: 4
+    marginLeft: 4,
+    marginRight: 6
   }
 }));
 

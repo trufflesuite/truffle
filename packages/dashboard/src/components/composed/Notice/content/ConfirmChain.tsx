@@ -44,7 +44,7 @@ function ConfirmChain(): JSX.Element {
       Confirm&nbsp;
       <Badge
         size="md"
-        color="orange"
+        color="pink"
         leftSection={<ChainIcon chainID={chainInfo.id!} height={11} />}
         pl={5}
         pr={6}
