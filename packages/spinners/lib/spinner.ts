@@ -145,6 +145,20 @@ export class Spinner {
   }
 
   /**
+   * @returns the indent level of this spinner, expressed as a number of spaces
+   */
+  public get indent(): number | undefined {
+    return spinnies.pick(this.name)?.indent;
+  }
+
+  /**
+   * Sets the indent level of this spinner, expressed as a number of spaces
+   */
+  public set indent(value: number | undefined) {
+    this._mutateOptions("indent", value);
+  }
+
+  /**
    * @returns string the `chalk` color of this spinner's text
    */
   public get textColor(): Color | undefined {
@@ -175,56 +189,56 @@ export class Spinner {
   /**
    * @returns string the prefix used when this spinner is stopped
    */
-  public get stoppedPrefix(): Color | undefined {
+  public get stoppedPrefix(): string | undefined {
     return spinnies.pick(this.name)?.stoppedPrefix;
   }
 
   /**
    * updates the prefix used when this spinner is stopped
    */
-  public set stoppedPrefix(value: Color | undefined) {
+  public set stoppedPrefix(value: string | undefined) {
     this._mutateOptions("stoppedPrefix", value);
   }
 
   /**
    * @returns string the prefix used on success
    */
-  public get succeedPrefix(): Color | undefined {
+  public get succeedPrefix(): string {
     return spinnies.pick(this.name)?.succeedPrefix;
   }
 
   /**
    * updates the prefix used on success
    */
-  public set succeedPrefix(value: Color | undefined) {
+  public set succeedPrefix(value: string) {
     this._mutateOptions("succeedPrefix", value);
   }
 
   /**
    * @returns string the prefix used on failure
    */
-  public get failPrefix(): Color | undefined {
+  public get failPrefix(): string {
     return spinnies.pick(this.name)?.failPrefix;
   }
 
   /**
    * updates the prefix used on failure
    */
-  public set failPrefix(value: Color | undefined) {
+  public set failPrefix(value: string) {
     this._mutateOptions("failPrefix", value);
   }
 
   /**
    * @returns string the prefix used on warn
    */
-  public get warnPrefix(): Color | undefined {
+  public get warnPrefix(): string {
     return spinnies.pick(this.name)?.warnPrefix;
   }
 
   /**
    * updates the prefix used on warn
    */
-  public set warnPrefix(value: Color | undefined) {
+  public set warnPrefix(value: string) {
     this._mutateOptions("warnPrefix", value);
   }
 
