@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    // We disable this because of IPFS dependencies that don't adhere
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "paths": {
+      "@truffle/preserve": ["../preserve/lib"],
+      "@truffle/preserve/*": ["../preserve/lib/*"]
+    },
+    "rootDir": "../..",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../../preserve/lib/**/*.ts",
+    "../../preserve/typings/**/*.d.ts",
+    "../../preserve-fs/lib/**/*.ts",
+    "../../preserve-to-ipfs/lib/**/*.ts",
+    "../../preserve-to-filecoin/lib/**/*.ts",
+    "../../preserve-to-buckets/lib/**/*.ts"
+  ]
+}
