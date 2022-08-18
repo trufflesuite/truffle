@@ -10,7 +10,7 @@
 const Config = require("@truffle/config");
 const userConfig = Config.getUserConfig();
 const ua = require("universal-analytics");
-const uuid = require("uuid/v4");
+const { v4: uuid } = require("uuid");
 
 const inquirer = require("inquirer");
 
@@ -49,7 +49,7 @@ const googleAnalytics = {
   /**
    * set user-level unique id
    */
-  setUserId: function() {
+  setUserId: function () {
     if (!userConfig.get("uniqueId")) {
       let userId = uuid();
       userConfig.set({ uniqueId: userId });
@@ -60,7 +60,7 @@ const googleAnalytics = {
    * @param {Object} userConfig
    * @returns {bool}
    */
-  getAnalytics: function() {
+  getAnalytics: function () {
     return userConfig.get("enableAnalytics");
   },
   /**
@@ -68,17 +68,17 @@ const googleAnalytics = {
    * @param {bool} analyticsBool
    * @param {Object} userConfig
    */
-  setAnalytics: function(analyticsBool) {
+  setAnalytics: function (analyticsBool) {
     if (analyticsBool === true) {
       this.setUserId();
-      console.log('Analytics enabled');
+      console.log("Analytics enabled");
       userConfig.set({
         enableAnalytics: true,
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
     } else if (analyticsBool === false) {
-      console.log('Analytics disabled');
+      console.log("Analytics disabled");
       userConfig.set({
         enableAnalytics: false,
         analyticsSet: true,
@@ -97,7 +97,7 @@ const googleAnalytics = {
    * prompt user to determine values for user-level analytics config options
    * @param {Object} userConfig
    */
-  setUserConfigViaPrompt: async function() {
+  setUserConfigViaPrompt: async function () {
     if (!userConfig.get("analyticsSet") && process.stdin.isTTY === true) {
       let answer = await inquirer.prompt(analyticsInquiry);
       if (answer.analyticsInquiry === analyticsInquiry[0].choices[0]) {
@@ -134,7 +134,7 @@ const googleAnalytics = {
    * check user-level config to see if user has enabled analytics
    * @returns {bool}
    */
-  checkIfAnalyticsEnabled: function() {
+  checkIfAnalyticsEnabled: function () {
     if (userConfig.get("enableAnalytics")) {
       return true;
     } else {
@@ -146,7 +146,7 @@ const googleAnalytics = {
    * set data that will be the same in future calls
    * @returns {Object} visitor
    */
-  setPersistentAnalyticsData: function() {
+  setPersistentAnalyticsData: function () {
     if (this.checkIfAnalyticsEnabled() === true) {
       let userId = userConfig.get("uniqueId");
       let visitor = ua(truffleAnalyticsId, { cid: userId });
@@ -159,7 +159,7 @@ const googleAnalytics = {
    * @param {Object}
    */
   // eslint-disable-next-line no-unused-vars
-  sendAnalyticsEvent: function(eventObject, callback) {
+  sendAnalyticsEvent: function (eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
     if (eventObject["command"]) {
@@ -177,7 +177,7 @@ const googleAnalytics = {
 
     if (visitor) {
       // eslint-disable-next-line no-unused-vars
-      visitor.event(sendObject, function(err) {});
+      visitor.event(sendObject, function (err) {});
     }
 
     return true;

@@ -26,11 +26,13 @@ module.exports = {
     }),
     new webpack.ProvidePlugin({
       process: "process/browser"
-    }),
+    })
   ],
   resolve: {
     fallback: {
       crypto: require.resolve("crypto-browserify"),
+      assert: require.resolve("assert/"),
+      url: require.resolve("url/"),
       http: require.resolve("stream-http"),
       https: require.resolve("https-browserify"),
       os: require.resolve("os-browserify/browser"),

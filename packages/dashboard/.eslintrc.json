@@ -1,8 +1,15 @@
 {
-  "extends": ["../../.eslintrc.package.json"],
+  "extends": [
+    "../../.eslintrc.package.json",
+    "react-app",
+    "react-app/jest"
+  ],
   "env": {
     "browser": true,
     "node": true,
     "jest": true
+  },
+  "globals": {
+    "JSX": "readonly"
   }
 }

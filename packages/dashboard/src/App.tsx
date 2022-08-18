@@ -1,45 +1,41 @@
-import Dashboard from "./Dashboard";
+// Wrappers
+import MantineWrapper from "src/components/wrappers/MantineWrapper";
+import ColorSchemeWrapper from "src/components/wrappers/ColorSchemeWrapper";
+import WagmiWrapper from "src/components/wrappers/WagmiWrapper";
+import { DashProvider } from "src/contexts/DashContext";
+// Router
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// Components
+import Layout from "src/components/composed/Layout";
+import RPCs from "src/components/composed/RPCs";
+import Palette from "src/components/composed/Palette";
+import MantineGlobal from "src/components/MantineGlobal";
 
-import { Provider, chain, defaultChains, Connector } from "wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
-
-import { getDefaultProvider, providers as ethproviders } from "ethers";
-import { getNetwork } from "@ethersproject/providers";
-
-const defaultChain = chain.mainnet;
-
-const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
-  let wProvider = _config.connector?.getProvider(true);
-  console.debug("getProvider", {
-    wProvider,
-    winEth: window.ethereum,
-    _config
-  });
-  let ret: any;
-  if (!wProvider) {
-    ret = getDefaultProvider(getNetwork(_config.chainId ?? defaultChain.id));
-  } else {
-    wProvider
-      .enable()
-      .then((r: any) => console.debug(r))
-      .catch((e: any) => console.error(e));
-    ret = new ethproviders.Web3Provider(wProvider);
-  }
-  console.debug("getProvider.returning", {
-    wProvider,
-    winEth: window.ethereum,
-    ret
-  });
-  return ret;
-};
-
-const connectors = [new InjectedConnector({ chains: defaultChains })];
-
-function App() {
+function App(): JSX.Element {
   return (
-    <Provider connectors={connectors} provider={getProvider}>
-      <Dashboard />
-    </Provider>
+    <div id="app">
+      <ColorSchemeWrapper>
+        <MantineWrapper>
+          <MantineGlobal /> {/* Set global styles */}
+          <WagmiWrapper>
+            <DashProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Navigate to="/rpcs" replace />} />
+                    <Route path="rpcs" element={<RPCs />} />
+                  </Route>
+                  {process.env.NODE_ENV === "development" && (
+                    <Route path="colors" element={<Palette />} />
+                  )}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </DashProvider>
+          </WagmiWrapper>
+        </MantineWrapper>
+      </ColorSchemeWrapper>
+    </div>
   );
 }
 
