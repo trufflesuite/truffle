@@ -112,8 +112,14 @@ const prepareOptions = ({ command, inputStrings, options }) => {
   });
 
   // method `extractFlags(args)` : Extracts the `--option` & `-option` flags from arguments
-  const inputOptions = extractFlags(inputStrings);
+  let inputOptions = extractFlags(inputStrings);
 
+  //prevent invalid option warning for `truffle -v` & `truffle --version`
+  if (command.name === "version") {
+    inputOptions = inputOptions.filter(
+      opt => opt !== "-v" && opt !== "--version"
+    );
+  }
   // adding allowed global options as enumerated in each command
   const allowedGlobalOptions = command.meta.help.allowedGlobalOptions
     .filter(tag => tag in globalCommandOptions)
