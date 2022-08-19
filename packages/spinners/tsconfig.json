@@ -19,8 +19,7 @@
     "types": ["node"]
   },
   "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+    "./lib/**/*.ts"
   ]
 
 }

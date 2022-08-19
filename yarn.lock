@@ -6792,10 +6792,10 @@
     strip-ansi "^4.0.0"
     strip-indent "^2.0.0"
 
-"@trufflesuite/spinnies@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/spinnies/-/spinnies-0.1.0.tgz#da09ff7c526b563ff6e4d4d86b7884ec00a77be2"
-  integrity sha512-22rVi7rECyAg9vsopa9jR84xQ9kSbjRxCYI9SPbHx4jjfRQODDzmVZtXLobUuXEQZYLgP1pXBtgY5kReb72E2g==
+"@trufflesuite/spinnies@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/spinnies/-/spinnies-0.1.1.tgz#719230993f55ab39f936ed8778979e7661af188d"
+  integrity sha512-jltEtmFJj6xmQqr85gP8OqBHCEiId+zw+uAsb3DyLLRD17O6sySW6Afa2Z/jpzSafj+32ssDfLJ+c0of1NLqcA==
   dependencies:
     chalk "^4.1.2"
     cli-cursor "^3.1.0"

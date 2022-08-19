@@ -26,7 +26,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@trufflesuite/spinnies": "^0.1.0"
+    "@trufflesuite/spinnies": "^0.1.1"
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",
