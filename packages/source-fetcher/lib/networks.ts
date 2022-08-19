@@ -14,7 +14,7 @@ export const networkNamesById: { [id: number]: string } = {
   421611: "rinkeby-arbitrum",
   137: "polygon",
   80001: "mumbai-polygon",
-  100: "xdai",
+  100: "gnosis", //formerly known as xdai
   99: "poa", //not presently supported by either fetcher, but...
   77: "sokol-poa",
   56: "binance",
