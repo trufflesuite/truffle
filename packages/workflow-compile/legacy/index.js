@@ -3,14 +3,36 @@ const fse = require("fs-extra");
 const externalCompile = require("@truffle/external-compile");
 const solcCompile = require("@truffle/compile-solidity");
 const vyperCompile = require("@truffle/compile-vyper");
-const { prepareConfig } = require("../utils");
 const { Shims } = require("@truffle/compile-common");
+const expect = require("@truffle/expect");
+const Config = require("@truffle/config");
+const Artifactor = require("@truffle/artifactor");
+const Resolver = require("@truffle/resolver");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
   vyper: vyperCompile,
   external: externalCompile
 };
+
+function prepareConfig(options) {
+  expect.options(options, ["contracts_build_directory"]);
+
+  expect.one(options, ["contracts_directory", "files"]);
+
+  // Use a config object to ensure we get the default sources.
+  const config = Config.default().merge(options);
+
+  config.compilersInfo = {};
+
+  if (!config.resolver) config.resolver = new Resolver(config);
+
+  if (!config.artifactor) {
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+  }
+
+  return config;
+}
 
 const WorkflowCompile = {
   collectCompilations: async compilations => {
@@ -103,9 +125,8 @@ const WorkflowCompile = {
         const { contracts, output } = compilations.reduce(
           (a, compilation) => {
             for (const contract of compilation.contracts) {
-              a.contracts[
-                contract.contractName
-              ] = Shims.NewToLegacy.forContract(contract);
+              a.contracts[contract.contractName] =
+                Shims.NewToLegacy.forContract(contract);
             }
             a.output = a.output.concat(compilation.sourceIndexes);
             return a;
