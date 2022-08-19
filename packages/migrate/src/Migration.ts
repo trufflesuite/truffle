@@ -1,16 +1,15 @@
-const debug = require("debug")("migrate:Migration");
-const path = require("path");
-const Deployer = require("@truffle/deployer");
-const Require = require("@truffle/require");
-const {
+import * as path from "path";
+import Deployer from "@truffle/deployer";
+import Require from "@truffle/require";
+import {
   Web3Shim,
   createInterfaceAdapter
-} = require("@truffle/interface-adapter");
-const ResolverIntercept = require("./ResolverIntercept");
-const { getTruffleDb } = require("@truffle/db-loader");
-const emitEvent = require("./emitEvent");
+} from "@truffle/interface-adapter";
+import { ResolverIntercept } from "./ResolverIntercept";
+import { getTruffleDb } from "@truffle/db-loader";
+import { emitEvent } from "./emitEvent";
 
-class Migration {
+export class Migration {
   constructor(file, config) {
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));
@@ -237,5 +236,3 @@ class Migration {
     };
   }
 }
-
-module.exports = Migration;

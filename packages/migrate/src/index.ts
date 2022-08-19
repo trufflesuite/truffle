@@ -1,11 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const glob = require("glob");
-const expect = require("@truffle/expect");
-const Config = require("@truffle/config");
-const Migration = require("./Migration");
-const emitEvent = require("./emitEvent");
-const inquirer = require("inquirer");
+import fs from "fs";
+import * as path from "path";
+import glob from "glob";
+import * as expect from "@truffle/expect";
+import Config from "@truffle/config";
+import { Migration } from "./Migration";
+import { emitEvent } from "./emitEvent";
+import inquirer from "inquirer";
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
