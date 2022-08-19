@@ -42,9 +42,3 @@ export interface PluginDefinition {
   // `truffle compile` plugin
   compile?: string;
 }
-
-export interface CompilerDefinition {
-  version: string;
-  source: string;
-  image: string;
-}
