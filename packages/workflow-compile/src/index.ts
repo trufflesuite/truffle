@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("workflow-compile");
 import fse from "fs-extra";
 import { prepareConfig } from "./utils";
-import { Shims } from "@truffle/compile-common";
+import { Shims, Compilation } from "@truffle/compile-common";
 import { getTruffleDb } from "@truffle/db-loader";
 
 const SUPPORTED_COMPILERS = {
@@ -13,7 +13,6 @@ const SUPPORTED_COMPILERS = {
 
 async function compile(config) {
   // determine compiler(s) to use
-  //
   const compilers = config.compiler
     ? config.compiler === "none"
       ? []
@@ -21,7 +20,6 @@ async function compile(config) {
     : Object.keys(config.compilers);
 
   // invoke compilers
-  //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
       const Compile = SUPPORTED_COMPILERS[name];
@@ -44,7 +42,7 @@ async function compile(config) {
   // collect results - rawCompilations is CompilerResult[]
   // flatten the array and remove compilations without results
   const compilations = rawCompilations.reduce((a, compilerResult) => {
-    compilerResult.compilations.forEach(compilation => {
+    compilerResult.compilations.forEach((compilation: Compilation) => {
       if (compilation.contracts.length > 0) {
         a = a.concat(compilation);
       }
