@@ -38,4 +38,13 @@ export interface PluginDefinition {
     recipe?: string;
     loader?: string;
   };
+
+  // `truffle compile` plugin
+  compile?: string;
+}
+
+export interface CompilerDefinition {
+  version: string;
+  source: string;
+  image: string;
 }
