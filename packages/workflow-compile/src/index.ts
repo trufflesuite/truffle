@@ -4,6 +4,22 @@ import fse from "fs-extra";
 import { prepareConfig } from "./utils";
 import { Shims, Compilation } from "@truffle/compile-common";
 import { getTruffleDb } from "@truffle/db-loader";
+import { Plugins } from "@truffle/plugins";
+
+const checkForCompilerPlugin = async (config, name) => {
+  // not sure if we need this check here; may want to remove in the future
+  const SUPPORTED_COMPILER_PLUGINS = ["zksolc"];
+  let pluginCompiler = config.plugins ? config.plugins : null;
+  const supportedCompiler = SUPPORTED_COMPILER_PLUGINS[name];
+  if (supportedCompiler && pluginCompiler) {
+    pluginCompiler = Plugins.compile(pluginCompiler);
+    return pluginCompiler;
+  } else {
+    // PROBABLY ADD SOME ERROR HANDLING HERE SPECIFIC TO PLUGIN NOT FOUND
+    return false;
+  }
+};
+
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -22,13 +38,21 @@ async function compile(config) {
   // invoke compilers
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
-      const Compile = SUPPORTED_COMPILERS[name];
-      if (!Compile) throw new Error("Unsupported compiler: " + name);
+      //NEED PLUGIN COMPILER TO BE IN SUPPORTED_COMPILERS
+      let Compile = SUPPORTED_COMPILERS[name];
+      const pluginCompile = await checkForCompilerPlugin(config, name);
+      if (pluginCompile) {
+        Compile = pluginCompile;
+      }
+
+      if (!Compile && !pluginCompile)
+        throw new Error("Unsupported compiler: " + name);
 
       if (config.all === true || config.compileAll === true) {
         return await Compile.all(config);
       } else if (Array.isArray(config.paths) && config.paths.length > 0) {
         // compile only user specified sources
+        //NEED THESE METHODS TO EXIST WITHIN THE PLUGIN COMPILER
         return await Compile.sourcesWithDependencies({
           options: config,
           paths: config.paths

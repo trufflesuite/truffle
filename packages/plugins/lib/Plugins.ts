@@ -40,8 +40,8 @@ export class Plugins {
   static listAllCommandPlugins(config: TruffleConfig): Plugin[] {
     const allPlugins = Plugins.listAll(config);
 
-    const pluginsWithCommands = allPlugins.filter(plugin =>
-      plugin.commands.length > 0
+    const pluginsWithCommands = allPlugins.filter(
+      plugin => plugin.commands.length > 0
     );
 
     return pluginsWithCommands;
@@ -93,5 +93,16 @@ export class Plugins {
     }
 
     return pluginConfigs;
+  }
+
+  // this will need some finessing, depending
+  // on how we want to handle the compiler plugin's internals
+  static compile(config: TruffleConfig): Plugin[] {
+    const plugins = Plugins.checkPluginModules(config);
+    const definitions = Plugins.loadPluginDefinitions(plugins);
+
+    return Object.entries(definitions).map(
+      ([module, definition]) => new Plugin({ module, definition })
+    );
   }
 }
