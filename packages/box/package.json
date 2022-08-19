@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
     "@types/inquirer": "9.0.1",
+    "@types/node": "~12.12.0",
     "@types/tmp": "^0.1.0",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
