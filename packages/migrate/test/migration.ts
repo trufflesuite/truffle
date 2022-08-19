@@ -1,30 +1,30 @@
-const assert = require("assert");
-const Config = require("@truffle/config");
-const Migration = require("../Migration");
-const sinon = require("sinon");
+import { assert } from "chai";
+import Config from "@truffle/config";
+import { Migration } from "../src/Migration";
+import sinon = require("sinon");
 let options,
   prepareForMigrationsReturn,
   fakeInterfaceAdapter,
   migration,
   context,
-  resolver;
-let deployer;
+  resolver,
+  deployer;
 
 describe("Migration", function () {
   before(() => {
-    deployer: "da fake deployer yo";
-    resolver: "da fake resolver yo",
-      (options = Config.default().with({
-        provider: "da fake provider yo",
-        artifactor: "da fake artifactor yo",
-        resolver,
-        networks: {
-          "fake network": {}
-        },
-        network: "fake network",
-        network_id: "this is also fake",
-        from: "Russia with love"
-      }));
+    deployer = "da fake deployer yo";
+    resolver = "da fake resolver yo";
+    options = Config.default().with({
+      provider: "da fake provider yo",
+      artifactor: "da fake artifactor yo",
+      resolver,
+      networks: {
+        "fake network": {}
+      },
+      network: "fake network",
+      network_id: "this is also fake",
+      from: "Russia with love"
+    });
     fakeInterfaceAdapter = {
       getBlock: sinon.stub().returns({ gasLimit: 2000 })
     };

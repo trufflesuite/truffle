@@ -31,6 +31,7 @@
     "inquirer": "8.2.4"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
     "ts-node": "10.7.0",

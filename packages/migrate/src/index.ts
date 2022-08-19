@@ -12,7 +12,7 @@ import type { Question } from "inquirer";
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
  *  the `.runMigrations` method.
  */
-const Migrate = {
+export default {
   Migration: Migration,
   logger: null,
 
@@ -116,7 +116,7 @@ const Migrate = {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
-    const clone = {};
+    const clone: any = {};
 
     Object.keys(options).forEach(key => (clone[key] = options[key]));
 
@@ -137,7 +137,9 @@ const Migrate = {
     });
 
     try {
+      // @ts-ignore
       global.artifacts = clone.resolver;
+      // @ts-ignore
       global.config = clone;
       for (const migration of migrations) {
         await migration.run(clone);
@@ -155,7 +157,9 @@ const Migrate = {
       });
       throw error;
     } finally {
+      // @ts-ignore
       delete global.artifacts;
+      // @ts-ignore
       delete global.config;
     }
   },
@@ -230,5 +234,3 @@ const Migrate = {
     });
   }
 };
-
-module.exports = Migrate;

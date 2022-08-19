@@ -1,8 +1,12 @@
-const Migrate = require("../index");
-const Config = require("@truffle/config");
-const assert = require("assert");
-const sinon = require("sinon");
+import Migrate from "../src";
+import Config from "@truffle/config";
+import { assert } from "chai";
+import * as sinon from "sinon";
 let options, migrations;
+
+const unstub = (stubbedThing: object, methodName: string) => {
+  stubbedThing[methodName].restore();
+};
 
 describe("Migrate", () => {
   before(() => {
@@ -26,11 +30,12 @@ describe("Migrate", () => {
         sinon.stub(Migrate, "runAll");
       });
       afterEach(() => {
-        Migrate.runAll.restore();
+        unstub(Migrate, "runAll");
       });
 
       it("calls runAll then the callback", async function () {
         await Migrate.run(options);
+        // @ts-ignore
         assert(Migrate.runAll.calledWith(options));
       });
     });
@@ -44,12 +49,13 @@ describe("Migrate", () => {
         sinon.stub(Migrate, "runFrom");
       });
       afterEach(() => {
-        Migrate.lastCompletedMigration.restore();
-        Migrate.runFrom.restore();
+        unstub(Migrate, "lastCompletedMigration");
+        unstub(Migrate, "runFrom");
       });
 
       it("calls runFrom with the proper migration number", async function () {
         await Migrate.run(options);
+        // @ts-ignore
         assert(Migrate.runFrom.calledWith(667));
       });
     });
@@ -67,12 +73,13 @@ describe("Migrate", () => {
       ];
     });
     afterEach(() => {
-      Migrate.wrapResolver.restore();
+      unstub(Migrate, "wrapResolver");
     });
 
     it("calls wrapResolver with the resolver and the wrapped provider", async function () {
       await Migrate.runMigrations(migrations, options);
       assert(
+        // @ts-ignore
         Migrate.wrapResolver.calledWith(options.resolver, options.provider)
       );
     });
