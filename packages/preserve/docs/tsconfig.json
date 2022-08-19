@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    // We disable this because of IPFS dependencies that don't adhere
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2016", "dom"],
+    "skipLibCheck": true,
+    "paths": {
+      "@truffle/preserve": ["../lib"],
+      "@truffle/preserve/*": ["../lib/*"]
+    },
+    "rootDir": "../..",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../lib/**/*.ts",
+    "../typings/**/*.d.ts",
+  ]
+}

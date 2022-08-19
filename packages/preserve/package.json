@@ -1,0 +1,44 @@
+{
+  "name": "@truffle/preserve",
+  "version": "0.2.8",
+  "description": "Library for functionality for `truffle preserve` command",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build && yarn docs",
+    "test": "jest --verbose --detectOpenHandles",
+    "docs": "typedoc --options ./docs/typedoc.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/preserve"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "27.4.1",
+    "@types/node": "~12.12.0",
+    "iter-tools": "^7.0.2",
+    "jest": "28.1.3",
+    "ts-jest": "28.0.7",
+    "typedoc": "0.22.18",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "@truffle/error": "^0.1.1",
+    "spinnies": "^0.5.1",
+    "chalk": "^2.4.2"
+  }
+}

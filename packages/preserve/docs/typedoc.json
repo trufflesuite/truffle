@@ -1,0 +1,19 @@
+{
+  "name": "@truffle/preserve",
+  "excludeExternals": true,
+  "exclude": [
+    "**/test/*"
+  ],
+  "out": "../dist/docs",
+  "readme": "../README.md",
+  "media": "./media",
+  "json": "./api.json",
+  "tsconfig": "./tsconfig.json",
+  "plugin": [],
+  "entryPoints": [
+    "../lib/index.ts"
+  ],
+  "validation": {
+    "notExported": false
+  }
+}
