@@ -1,15 +1,21 @@
 import * as path from "path";
 import Deployer from "@truffle/deployer";
 import Require from "@truffle/require";
-import {
-  Web3Shim,
-  createInterfaceAdapter
-} from "@truffle/interface-adapter";
+import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
 import { ResolverIntercept } from "./ResolverIntercept";
 import { getTruffleDb } from "@truffle/db-loader";
 import { emitEvent } from "./emitEvent";
+import type Config from "@truffle/config";
 
 export class Migration {
+  public file: string;
+  public number: number;
+  public isFirst: boolean;
+  public isLast: boolean;
+  public dryRun: boolean;
+  public interactive: boolean;
+  public config: Config;
+
   constructor(file, config) {
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));

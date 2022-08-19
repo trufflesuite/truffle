@@ -1,5 +1,10 @@
+import type Resolver from "@truffle/resolver";
+
 export class ResolverIntercept {
-  constructor(resolver) {
+  public resolver: Resolver;
+  public cache: object[];
+
+  constructor(resolver: Resolver) {
     this.resolver = resolver;
     this.cache = [];
   }
