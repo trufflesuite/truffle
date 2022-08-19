@@ -27,7 +27,7 @@
     "@truffle/require": "^2.1.3",
     "debug": "^4.3.1",
     "glob": "^7.1.6",
-    "inquirer": "8.2.2"
+    "inquirer": "9.0.0"
   },
   "devDependencies": {
     "mocha": "9.2.2",

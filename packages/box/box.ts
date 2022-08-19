@@ -4,6 +4,7 @@ import path from "path";
 import Config from "@truffle/config";
 import fse from "fs-extra";
 import inquirer from "inquirer";
+import type { Question } from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 import debugModule from "debug";
 
@@ -183,7 +184,6 @@ const Box = {
   ) => {
     const { events } = config;
     let tempDirCleanup;
-    const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
       force: options.force,
@@ -228,7 +228,7 @@ const Box = {
       const unboxDir = fse.readdirSync(destination);
       if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
-        const prompt: inquirer.Questions = [
+        const prompt: Question[] = [
           {
             type: "confirm",
             name: "proceed",
