@@ -6,6 +6,7 @@ import Config from "@truffle/config";
 import { Migration } from "./Migration";
 import { emitEvent } from "./emitEvent";
 import inquirer from "inquirer";
+import type { Question } from "inquirer";
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
@@ -16,7 +17,7 @@ const Migrate = {
   logger: null,
 
   promptToAcceptDryRun: async function (options) {
-    const prompt = [
+    const prompt: Question[] = [
       {
         type: "confirm",
         name: "proceed",
@@ -37,7 +38,7 @@ const Migrate = {
     const config = Config.detect(options);
     if (
       !fs.existsSync(config.migrations_directory) ||
-      !fs.readdirSync(config.migrations_directory).length > 0
+      !(fs.readdirSync(config.migrations_directory).length > 0)
     ) {
       return [];
     }
