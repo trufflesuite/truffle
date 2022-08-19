@@ -27,7 +27,7 @@
     "download-git-repo": "^3.0.2",
     "fs-extra": "^9.1.0",
     "ignore": "^5.1.8",
-    "inquirer": "9.1.0",
+    "inquirer": "8.2.4",
     "tmp": "^0.2.1",
     "vcsurl": "^0.1.1"
   },
