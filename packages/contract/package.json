@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.5.22",
+  "version": "4.5.23-hardhat-error.0",
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",

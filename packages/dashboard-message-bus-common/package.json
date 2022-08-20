@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-message-bus-common",
-  "version": "0.1.3",
+  "version": "0.1.4-hardhat-error.0",
   "description": "Message types that are used when communicating with the Truffle dashboard message bus",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
