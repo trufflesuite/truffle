@@ -88,11 +88,18 @@ export const askHardhatConsole = async (
         return accept(output);
       }
 
+      let result;
       try {
-        return accept(JSON.parse(output));
-      } catch (error) {
-        return reject(error);
+        result = JSON.parse(output);
+      } catch {
+        return reject(
+          new Error(
+            `Error reading information from Hardhat console. Expected valid JSON, got: ${output}`
+          )
+        );
       }
+
+      return accept(result);
     });
 
     hardhat.stdin.write(`
