@@ -29,7 +29,8 @@ export const getInitialConfig = ({
     },
     verboseRpc: false,
     solidityLog: {
-      prefix: ""
+      displayPrefix: "",
+      disableMigration: true
     },
     gas: null,
     gasPrice: null,

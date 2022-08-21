@@ -103,7 +103,7 @@ const Develop = {
     // enable output/logger for solidity console.log
     loggers.solidity = sanitizeAndCallFn(
       createSolidityLogger(
-        truffleConfig.solidityLog && truffleConfig.solidityLog.prefix
+        truffleConfig.solidityLog && truffleConfig.solidityLog.displayPrefix
       )
     );
 
