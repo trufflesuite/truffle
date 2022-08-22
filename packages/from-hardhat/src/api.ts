@@ -97,12 +97,12 @@ export class IncompatibleHardhatVersionError extends Error {
 export const prepareConfig = async (
   options?: EnvironmentOptions
 ): Promise<TruffleConfig> => {
-  const hardhatConfig = (await askHardhatConsole(
-    `hre.config`,
+  const networkUrls = (await askHardhatConsole(
+    Config.networkUrlsQuery,
     options
-  )) as Hardhat.HardhatConfig;
+  )) as Config.NetworkUrl[];
 
-  return Config.fromHardhatConfig(hardhatConfig);
+  return Config.fromNetworkUrls(networkUrls);
 };
 
 /**
