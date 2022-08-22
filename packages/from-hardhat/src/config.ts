@@ -1,36 +1,32 @@
-import type { HardhatConfig } from "hardhat/types";
-
 import Config from "@truffle/config";
 
-export const fromHardhatConfig = (hardhatConfig: HardhatConfig): Config => {
+export type NetworkUrl = [networkName: string, url: string];
+
+export const networkUrlsQuery = `Object.entries(hre.config.networks)
+      .flatMap(
+        ([networkName, networkConfig]) =>
+          (networkName === "hardhat") || !(networkConfig && "url" in networkConfig)
+            ? []
+            : [[networkName, networkConfig.url]]
+      )
+    `;
+
+export const fromNetworkUrls = (networkUrls: NetworkUrl[]): Config => {
   return Config.default().merge({
-    networks: Networks.fromHardhatConfig(hardhatConfig)
+    networks: Networks.fromNetworkUrls(networkUrls)
   });
 };
 
 namespace Networks {
-  export const fromHardhatConfig = (hardhatConfig: HardhatConfig) =>
-    Object.entries(hardhatConfig.networks)
-      .flatMap(([networkName, networkConfig]) => {
-        // exclude hardhat network as not supported
-        if (networkName === "hardhat") {
-          return [];
+  export const fromNetworkUrls = (networkUrls: NetworkUrl[]) =>
+    networkUrls.reduce(
+      (networks, [networkName, url]) => ({
+        ...networks,
+        [networkName]: {
+          url,
+          network_id: "*"
         }
-
-        // only accept netowrks that specify `url`
-        if (!networkConfig || !("url" in networkConfig)) {
-          return [];
-        }
-
-        const { url } = networkConfig;
-        return [
-          {
-            [networkName]: {
-              url,
-              network_id: "*"
-            }
-          }
-        ];
-      })
-      .reduce((a, b) => ({ ...a, ...b }), {});
+      }),
+      {}
+    );
 }
