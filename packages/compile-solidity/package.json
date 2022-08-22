@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.41-hardhat-error.0",
+  "version": "6.0.41-hardhat-error.1",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -21,11 +21,11 @@
   },
   "dependencies": {
     "@truffle/compile-common": "^0.7.34",
-    "@truffle/config": "^1.3.37-hardhat-error.0",
+    "@truffle/config": "^1.3.37-hardhat-error.1",
     "@truffle/contract-sources": "^0.2.0",
     "@truffle/expect": "^0.1.3",
-    "@truffle/profiler": "^0.1.29-hardhat-error.0",
-    "@truffle/spinners": "^0.2.2-hardhat-error.0",
+    "@truffle/profiler": "^0.1.29-hardhat-error.1",
+    "@truffle/spinners": "^0.2.2-hardhat-error.1",
     "axios": "0.27.2",
     "axios-retry": "^3.1.9",
     "debug": "^4.3.1",
@@ -39,9 +39,9 @@
     "solc": "0.8.16"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.167-hardhat-error.0",
-    "@truffle/box": "^2.1.57-hardhat-error.0",
-    "@truffle/resolver": "^9.0.14-hardhat-error.0",
+    "@truffle/artifactor": "^4.0.167-hardhat-error.1",
+    "@truffle/box": "^2.1.57-hardhat-error.1",
+    "@truffle/resolver": "^9.0.14-hardhat-error.1",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
