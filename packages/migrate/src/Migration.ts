@@ -1,6 +1,6 @@
 import * as path from "path";
 import Deployer from "@truffle/deployer";
-import Require from "@truffle/require";
+import * as Require from "@truffle/require";
 import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
 import { ResolverIntercept } from "./ResolverIntercept";
 import { getTruffleDb } from "@truffle/db-loader";

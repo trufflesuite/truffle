@@ -38,6 +38,7 @@ module.exports = async function (options) {
     );
     if (proceed) await runMigrations(preparedConfig);
   } else {
+    console.log("about to run them");
     await runMigrations(config);
   }
 };
