@@ -84,7 +84,7 @@ module.exports = {
         // count prompt
         const foundPrompts = (outputBuffer.match(readyPromptRex) || []).length;
         if (foundPrompts > numSeenPrompts) {
-          numSeenPrompts++;
+          numSeenPrompts = foundPrompts;
           if (inputCommands.length === 0) {
             // commands exhausted, close stdin
             child.stdin.end();
