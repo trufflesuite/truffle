@@ -42,6 +42,7 @@
     "original-require": "^1.0.1"
   },
   "devDependencies": {
+    "@ganache/console.log": "^0.2.0",
     "@truffle/box": "^2.1.65",
     "@truffle/config": "^1.3.45",
     "@truffle/contract": "^4.6.9",
