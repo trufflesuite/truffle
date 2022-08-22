@@ -12,9 +12,9 @@ import * as Codec from "@truffle/codec";
 import TruffleConfig from "@truffle/config";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
+import WorkflowCompile from "@truffle/workflow-compile";
 //sorry, some untyped imports here :-/
 
-const WorkflowCompile = require("@truffle/workflow-compile");
 const Deployer = require("@truffle/deployer");
 const { Resolver } = require("@truffle/resolver"); //resolver is TS too but I can't make it typecheck :-/
 

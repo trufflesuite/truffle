@@ -1,4 +1,5 @@
 # @truffle/workflow-compile
+
 Core workflow logic for the `truffle compile` command behavior
 
 ### install
@@ -10,7 +11,7 @@ $ npm install @truffle/workflow-compile
 ### Usage
 
 ```javascript
-const Contracts = require("@truffle/workflow-compile");
+import Contracts from "@truffle/workflow-compile";
 
 // expected config object
 const config = {
@@ -22,5 +23,5 @@ const config = {
 // saves them in contracts_build_directory
 Contracts.compile(config)
   .then(() => console.log("Compilation complete!"))
-  .catch(e => console.error(e))
+  .catch(e => console.error(e));
 ```

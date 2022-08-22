@@ -1,6 +1,6 @@
 module.exports = async function (options) {
   const Config = require("@truffle/config");
-  const WorkflowCompile = require("@truffle/workflow-compile");
+  const WorkflowCompile = require("@truffle/workflow-compile").default;
   const ConfigurationError = require("../../errors/configurationerror");
   const exec = require("@truffle/require").exec;
   const { Environment } = require("@truffle/environment");

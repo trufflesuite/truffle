@@ -1,5 +1,5 @@
 const { assert } = require("chai");
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const Ganache = require("ganache");
 const provision = require("@truffle/provisioner");
 const Config = require("@truffle/config");

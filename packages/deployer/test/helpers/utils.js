@@ -1,5 +1,5 @@
 const TruffleContract = require("@truffle/contract");
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const path = require("path");
 const fs = require("fs-extra");
 

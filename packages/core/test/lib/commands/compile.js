@@ -1,5 +1,5 @@
 const assert = require("chai").assert;
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/compile");
 const path = require("path");

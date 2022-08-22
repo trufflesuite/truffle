@@ -1,7 +1,7 @@
 const debugModule = require("debug");
 const debug = debugModule("decoder:test:helpers");
 
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const Migrate = require("@truffle/migrate");
 const Codec = require("@truffle/codec");
 const Config = require("@truffle/config");
