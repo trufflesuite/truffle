@@ -50,7 +50,7 @@ module.exports = {
     inputCommands = [],
     config,
     executableCommand,
-    executableArgs,
+    executableArgs = "",
     displayHost
   } = {}) {
     const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
@@ -63,13 +63,12 @@ module.exports = {
     // seems safe to escape parens only, as the readyprompt is constructed from
     // [a-zA-Z] strings and wrapping parens.
     const escapedPrompt = readyPrompt.replace("(", "\\(").replace(")", "\\)");
-    const readyPromptRex = new RegExp(`^${escapedPrompt}`, "gm");
+    const readyPromptRex = new RegExp(`^${escapedPrompt}`, "m");
 
     let outputBuffer = "";
 
     return new Promise((resolve, reject) => {
       const child = exec(cmdLine, { cwd: config.working_directory });
-      let numSeenPrompts = 0;
 
       if (child.error) return reject(child.error);
 
@@ -81,10 +80,11 @@ module.exports = {
         // accumulate buffer from chunks
         outputBuffer += data;
 
-        // count prompt
-        const foundPrompts = (outputBuffer.match(readyPromptRex) || []).length;
-        if (foundPrompts > numSeenPrompts) {
-          numSeenPrompts = foundPrompts;
+        if (readyPromptRex.test(outputBuffer)) {
+          // set outputBuffer to remaining segment after final match
+          const segments = outputBuffer.split(readyPromptRex);
+          outputBuffer = segments.pop();
+
           if (inputCommands.length === 0) {
             // commands exhausted, close stdin
             child.stdin.end();
@@ -94,7 +94,6 @@ module.exports = {
             child.stdin.write(nextCmd + EOL);
           }
         }
-
         config.logger.log("OUT: ", data);
       });
 
