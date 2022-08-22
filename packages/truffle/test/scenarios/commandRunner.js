@@ -60,11 +60,16 @@ module.exports = {
         ? `debug(${displayHost})>`
         : `truffle(${displayHost})>`;
 
-    let seenChildPrompt = false;
+    // seems safe to escape parens only, as the readyprompt is constructed from
+    // [a-zA-Z] strings and wrapping parens.
+    const escapedPrompt = readyPrompt.replace("(", "\\(").replace(")", "\\)");
+    const readyPromptRex = new RegExp(`^${escapedPrompt}`, "gm");
+
     let outputBuffer = "";
 
     return new Promise((resolve, reject) => {
       const child = exec(cmdLine, { cwd: config.working_directory });
+      let numSeenPrompts = 0;
 
       if (child.error) return reject(child.error);
 
@@ -74,17 +79,20 @@ module.exports = {
 
       child.stdout.on("data", data => {
         // accumulate buffer from chunks
-        if (!seenChildPrompt) {
-          outputBuffer += data;
-        }
+        outputBuffer += data;
 
-        // child process is ready for input when it displays the readyPrompt
-        if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
-          seenChildPrompt = true;
-          inputCommands.forEach(command => {
-            child.stdin.write(command + EOL);
-          });
-          child.stdin.end();
+        // count prompt
+        const foundPrompts = (outputBuffer.match(readyPromptRex) || []).length;
+        if (foundPrompts > numSeenPrompts) {
+          numSeenPrompts++;
+          if (inputCommands.length === 0) {
+            // commands exhausted, close stdin
+            child.stdin.end();
+          } else {
+            // fifo pop next command and submit
+            const nextCmd = inputCommands.shift();
+            child.stdin.write(nextCmd + EOL);
+          }
         }
 
         config.logger.log("OUT: ", data);
