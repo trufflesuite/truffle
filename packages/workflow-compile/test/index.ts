@@ -11,7 +11,7 @@ beforeEach(function () {
     contracts_directory: "./test/sources",
     contracts_build_directory: "./test/build",
     logger: {
-      log(stringToLog) {
+      log(stringToLog: string) {
         this.loggedStuff = this.loggedStuff + stringToLog;
       },
       loggedStuff: ""
@@ -19,8 +19,8 @@ beforeEach(function () {
   });
 });
 
-after(() => {
-  removeSync(join(`${process.cwd()}/${config.contracts_build_directory}`));
+afterEach(function () {
+  removeSync(config.contracts_build_directory);
 });
 
 describe("Contracts.compile", () => {
@@ -35,27 +35,21 @@ describe("Contracts.compile", () => {
     }
   });
 
-  describe("when config.all is true", () => {
-    it("recompiles all contracts in contracts_directory", async function () {
-      this.timeout(4000);
-      // initial compile
-      const { contracts } = await Contracts.compileAndSave(config);
+  it("recompiles all contracts when config === true", async function () {
+    this.timeout(4000);
+    // initial compile
+    const { contracts } = await Contracts.compileAndSave(config);
+    let contractName = contracts[0].contractName;
+    assert(
+      existsSync(`${config.contracts_build_directory}/${contractName}.json`)
+    );
 
-      let contractName = contracts[0].contractName;
-      assert(
-        existsSync(`${config.contracts_build_directory}/${contractName}.json`)
-      );
-
-      // compile again
-      config.all = true;
-      const { compilations } = await Contracts.compileAndSave(config);
-
-      assert(
-        compilations[0].sourceIndexes[0] ===
-          join(
-            `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
-          )
-      );
-    });
+    // compile again
+    config.all = true;
+    const { compilations } = await Contracts.compileAndSave(config);
+    assert(
+      compilations[0].sourceIndexes[0] ===
+        join(config.contracts_directory, `${contractName}.sol`)
+    );
   });
 });
