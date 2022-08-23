@@ -1,5 +1,20 @@
-import type { Sources, CollectedSources } from "./types";
 import * as path from "path";
+
+//source content by path
+export interface Sources {
+  [sourcePath: string]: string;
+}
+
+//original paths by transformed path
+export interface PathMapping {
+  [sourcePath: string]: string;
+}
+
+export interface CollectedSources {
+  sources: Sources;
+  targets: string[];
+  originalSourcePaths: PathMapping;
+}
 
 /**
  * Collects sources, targets into collections with OS-independent paths,
@@ -18,9 +33,10 @@ export function collectSources(
   replacement: string = "/"
 ): CollectedSources {
   const mappedResults = Object.entries(originalSources)
-    .filter(([originalSourcePath, _]) =>
-      !path.isAbsolute(originalSourcePath) ||
-      originalSourcePath.startsWith(baseDirectory)
+    .filter(
+      ([originalSourcePath, _]) =>
+        !path.isAbsolute(originalSourcePath) ||
+        originalSourcePath.startsWith(baseDirectory)
     )
     .map(([originalSourcePath, contents]) => ({
       originalSourcePath,
@@ -70,7 +86,7 @@ export function collectSources(
 function getPortableSourcePath(sourcePath: string): string {
   let replacement = sourcePath;
   //on Windows, replace backslashes with forward slashes
-  if (path.sep === '\\') {
+  if (path.sep === "\\") {
     replacement = sourcePath.replace(/\\/g, "/");
   }
 

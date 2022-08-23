@@ -1,6 +1,7 @@
-const { CompilerSupplier } = require("../compilerSupplier");
-const Parser = require("../parser");
-const semver = require("semver");
+import { CompilerSupplier } from "../compilerSupplier";
+import { Parser } from "../parser";
+import semver, { SemVer } from "semver";
+import type Config from "@truffle/config";
 
 /**
  * Loads solc and wrap it to parse imports rather than performing a full
@@ -13,7 +14,10 @@ const semver = require("semver");
  * up to twice: first time as usual, to get the specific version, then a second
  * time to get the solcjs of that version.
  */
-async function loadParser({ events, compilers: { solc: solcConfig } }) {
+export async function loadParser({
+  events,
+  compilers: { solc: solcConfig }
+}: Config) {
   const { parser } = solcConfig;
 
   const supplier = new CompilerSupplier({ events, solcConfig });
@@ -32,12 +36,15 @@ async function loadParser({ events, compilers: { solc: solcConfig } }) {
   }
 
   // determine normal solc version and then load that version as solcjs
-  const { version } = semver.coerce(solc.version());
+  const result: SemVer | null = semver.coerce(solc.version());
+  if (!result) {
+    throw new Error(`Could not determine version from ${solc.version}.`);
+  }
   const parserSupplier = new CompilerSupplier({
     events,
     solcConfig: {
       ...solcConfig,
-      version,
+      version: result.version,
       docker: false
     }
   });
@@ -46,8 +53,8 @@ async function loadParser({ events, compilers: { solc: solcConfig } }) {
   return makeParseImports(parserSolc);
 }
 
-function makeParseImports(parser) {
-  const parseImports = body => {
+function makeParseImports(parser: any) {
+  const parseImports = (body: string) => {
     try {
       return Parser.parseImports(body, parser);
     } catch (err) {
@@ -56,12 +63,14 @@ function makeParseImports(parser) {
         // if there's a match provide the helpful error, otherwise return solc's error output
         if (contractSolcPragma) {
           const contractSolcVer = contractSolcPragma[0];
-          const configSolcVer = semver.valid(solc.version());
+          const configSolcVer = semver.valid(parser.version());
           err.message = err.message.concat(
             `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
           );
         } else {
-          err.message = `Error parsing ${currentFile}: ${err.message}`;
+          err.message =
+            `Parsing error: ${err.message}.\nThe error occurred ` +
+            `while parsing the following source material: ${body}.`;
         }
       }
 
@@ -71,5 +80,3 @@ function makeParseImports(parser) {
 
   return parseImports;
 }
-
-module.exports = { loadParser };

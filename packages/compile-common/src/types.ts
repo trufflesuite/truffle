@@ -19,22 +19,6 @@ export type Source = {
   language: string;
 };
 
-//source content by path
-export interface Sources {
-  [sourcePath: string]: string;
-}
-
-//original paths by transformed path
-export interface PathMapping {
-  [sourcePath: string]: string;
-}
-
-export interface CollectedSources {
-  sources: Sources;
-  targets: string[];
-  originalSourcePaths: PathMapping;
-}
-
 export interface CompilerResult {
   compilations: Compilation[];
 }
@@ -64,12 +48,12 @@ export type CompiledContract = {
   source: string;
   sourceMap: string;
   deployedSourceMap: string;
-  legacyAST: object;
-  ast: object;
+  legacyAST?: object;
+  ast?: object;
   abi: Abi;
   metadata: string;
-  bytecode: Bytecode;
-  deployedBytecode: Bytecode;
+  bytecode?: Bytecode;
+  deployedBytecode?: Bytecode;
   compiler: {
     name: string;
     version: string;

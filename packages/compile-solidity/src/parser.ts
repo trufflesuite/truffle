@@ -1,10 +1,11 @@
-const debug = require("debug")("compile:parser");
+import debugModule from "debug";
+const debug = debugModule("compile:parser");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =
   "This is a pre-release compiler version, please do not use it in production.";
 
-module.exports = {
+export const Parser = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
   parseImports(body, solc) {
     // WARNING: Kind of a hack (an expedient one).
