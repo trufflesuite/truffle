@@ -7,30 +7,43 @@ module.exports = {
       type: "string"
     },
     "fetch-external": {
-      describe: "Allow debugging of external contracts",
+      describe: "Allow calling functions of external contracts",
       alias: "x",
       type: "boolean",
       default: false
+    },
+    "block-number": {
+      describe: "Allows calling functions of a contract from a specific block",
+      alias: "b",
+      type: "string",
+      default: "latest"
     }
   },
   help: {
     usage:
-      "truffle call [<contract-name>] [<function-name>] [<args...>]\n" +
+      "truffle call <contract-name>|<contract-address> <function-name>|<function-signature>\n" +
       "                             " + // spacing to align with previous line
-      "[--fetch-external|-x] [--network <network>|--url <provider_url>]\n" +
-      "                             ",
+      "[<args...>] [--fetch-external|-x] [--network <network>|--url <provider_url>]\n" +
+      "                             " + // spacing to align with previous line
+      "[--block-number|-b <block_number>]",
     options: [
       {
         option: "<contract-name>",
-        description: "The specified contract"
+        description: "The specified contract to be called."
+      },
+      {
+        option: "<contract-address>",
+        description:
+          "The address of the contract to be called.\n" +
+          "                    Mandatory if --fetch-external is passed."
       },
       {
         option: "<function-name>",
-        description: "The function inside the specified contract to be called"
+        description: "The function inside the specified contract to be called."
       },
       {
         option: "<args...>",
-        description: "List of arguments of the function to be called"
+        description: "List of arguments of the function to be called."
       },
       {
         option: "--fetch-external|-x",
@@ -47,6 +60,10 @@ module.exports = {
         option: "--network",
         description:
           "The network to connect to, as specified in the Truffle config."
+      },
+      {
+        option: "--block-number|-b",
+        description: "The block number from which the contract is to be called."
       }
     ],
     allowedGlobalOptions: ["from", "config"]
