@@ -393,23 +393,35 @@ const reservedWords = new Set([
 ]);
 
 type WordListKey = keyof typeof wordLists;
-const getArb = (wordTypes: WordListKey[], transform = camelCase) => {
-  return (
-    fc
-      // max 22 inclusive as there are 23 verbs and 23 nouns in the wordlist
-      .integer({ min: 0, max: 22 })
-      .noBias()
-      .noShrink()
-      .map(seed => {
-        // use seed to index the word lists
-        const words: string[] = [];
-        for (const type of wordTypes) {
-          words.push(wordLists[type][seed]);
-        }
-        return transform(words.join(" "));
-      })
-      .filter(word => !reservedWords.has(word))
-  );
+const getArb = (
+  wordTypes: WordListKey[],
+  transform = camelCase
+): fc.Arbitrary<string> => {
+  const results: fc.Arbitrary<string>[] = [];
+  for (const wordType of wordTypes) {
+    if (wordType === "noun") {
+      results.push(
+        fc
+          .integer({ min: 0, max: wordLists["noun"].length - 1 })
+          .noBias()
+          .noShrink()
+          .map(index => wordLists["noun"][index])
+      );
+    } else if (wordType === "verb") {
+      results.push(
+        fc
+          .integer({ min: 0, max: wordLists["verb"].length - 1 })
+          .noBias()
+          .noShrink()
+          .map(index => wordLists["verb"][index])
+      );
+    }
+  }
+
+  return fc
+    .tuple(...results)
+    .map((words: string[]): string => transform(words.join(" ")))
+    .filter(word => !reservedWords.has(word));
 };
 
 const ParameterName = () =>
