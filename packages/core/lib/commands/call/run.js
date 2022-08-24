@@ -3,10 +3,23 @@ module.exports = async function (options) {
   const util = require("util");
   const Config = require("@truffle/config");
   const { Environment } = require("@truffle/environment");
-
+  const OS = require("os");
   const Codec = require("@truffle/codec");
   const Encoder = require("@truffle/encoder");
   const Decoder = require("@truffle/decoder");
+  const TruffleError = require("@truffle/error");
+
+  if (options.url && options.network) {
+    const message =
+      "" +
+      "Mutually exclusive options, --url and --network detected!" +
+      OS.EOL +
+      "Please use either --url or --network and try again." +
+      OS.EOL +
+      "See: https://trufflesuite.com/docs/truffle/reference/truffle-commands/#call" +
+      OS.EOL;
+    throw new TruffleError(message);
+  }
 
   const config = Config.detect(options);
   await Environment.detect(config);
@@ -17,6 +30,7 @@ module.exports = async function (options) {
     .readdirSync(config.contracts_build_directory)
     .filter(filename => filename.endsWith(".json"))
     .map(filename => filename.slice(0, -".json".length));
+
   const contracts = contractNames
     .map(contractName => ({
       [contractName]: config.resolver.require(contractName)
@@ -30,26 +44,49 @@ module.exports = async function (options) {
     }
   };
 
-  const contract = contracts[contractName];
+  const isEmpty = Object.keys(contracts).length === 0;
+  let contract;
+  if (isEmpty) {
+    throw new Error(
+      "No artifacts found! Please run `truffle compile` to compile your contracts"
+    );
+  } else {
+    contract = contracts[contractName];
+  }
+
+  // Error handling to remind users to run truffle migrate first
   const instance = await contract.deployed();
 
   const encoder = await Encoder.forContractInstance(instance, settings);
 
+  // Check "stateMutability = view" and give a warning if the function is not read-only
   const { abi: functionEntry, tx: transaction } =
     await encoder.encodeTransaction(functionName, args);
 
   // wrap provider for lazy EIP-1193 compatibility
+  // replace the legacy provider API with EIP-1193?
   const provider = new Encoder.ProviderAdapter(config.provider);
 
   const result = await provider.request({
     method: "eth_call",
-    params: [transaction]
+    params: [
+      {
+        from: options.from,
+        to: transaction.to,
+        data: transaction.data
+      },
+      options.blockNumber
+    ]
+    //fields we don't allow overriding: to, data
   });
 
   const decoder = await Decoder.forContractInstance(instance, settings);
 
+  // Error handling for 0 returned value
+  // Handles cases for more than 1 returned values
   const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
 
+  // Use ResultInspector instead of ReturndataDecodingInspector
   config.logger.log(
     util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
       colors: true,
