@@ -14,16 +14,16 @@ export class Migration {
   public isLast: boolean;
   public dryRun: boolean;
   public interactive: boolean;
-  public config: Config;
+  public config: Config | {};
 
-  constructor(file, config) {
+  constructor(file: string, config: Config) {
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = config.dryRun;
     this.interactive = config.interactive;
-    this.config = config || {};
+    this.config = config;
   }
 
   // ------------------------------------- Private -------------------------------------------------
@@ -186,7 +186,7 @@ export class Migration {
    * and launches a migration file's deployment sequence
    * @param  {Object}   options  config and command-line
    */
-  async run(options) {
+  async run(options: Config) {
     const { interfaceAdapter, resolver, context, deployer } =
       this.prepareForMigrations(options);
 
@@ -207,7 +207,7 @@ export class Migration {
     await this._load(options, context, deployer, resolver);
   }
 
-  prepareForMigrations(options) {
+  prepareForMigrations(options: Config) {
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -227,11 +227,7 @@ export class Migration {
     return { interfaceAdapter, resolver, context, deployer };
   }
 
-  /**
-   * Returns a serializable version of `this`
-   * @returns  {Object}
-   */
-  serializeable() {
+  serializeable(): object {
     return {
       file: this.file,
       number: this.number,

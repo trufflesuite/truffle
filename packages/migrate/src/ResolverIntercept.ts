@@ -9,7 +9,7 @@ export class ResolverIntercept {
     this.cache = [];
   }
 
-  require(contractName) {
+  require(contractName: string) {
     // remove file extension if present on name
     const sanitizedContractName = contractName
       .replace(/^\.\//, "")
