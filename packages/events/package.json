@@ -1,6 +1,6 @@
 {
   "name": "@truffle/events",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Event system for Truffle",
   "main": "index.js",
   "keywords": [],
@@ -22,8 +22,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/dashboard-message-bus-client": "^0.1.5",
-    "@truffle/spinners": "^0.2.1",
+    "@truffle/dashboard-message-bus-client": "^0.1.6",
+    "@truffle/spinners": "^0.2.2",
     "debug": "^4.3.1",
     "emittery": "^0.4.1",
     "web3-utils": "1.7.4"
