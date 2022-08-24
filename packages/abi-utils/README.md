@@ -8,6 +8,7 @@ This package contains a few different components:
 
 - [Normalize ABIs](#normalize-abis)
 - [TypeScript types](#typescript-types)
+- [Selector and signature computation](#selector-and-signature-computation)
 - [Arbitrary random ABIs](#arbitrary-random-abis)
 
 ## Normalize ABIs
@@ -17,12 +18,14 @@ This package contains a few different components:
 > const isFunctionEntry = entry.type === "function" || !("type" in entry);
 >
 > // handle:        v--- new way                           v--- old way     v--- default
-> const isPayable = entry.stateMutability === "payable" || entry.payable || false;
+> const isPayable =
+>   entry.stateMutability === "payable" || entry.payable || false;
 >
 > // handle "outputs" possibly being undefined
 > const outputs = entry.outputs || [];
 > ```
-_^ Have you ever had to do this sort of thing?_ :scream:
+>
+> _^ Have you ever had to do this sort of thing?_ :scream:
 
 Solidity's official [JSON ABI specification](https://solidity.readthedocs.io/en/v0.7.3/abi-spec.html)
 is rather permissive, since it remains backwards compatible with older
@@ -41,6 +44,7 @@ import { normalize } from "@truffle/abi-utils";
 ```
 
 Specifically, this normalizes by:
+
 - Ensuring every ABI entry has a `type` field, since it's optional for
   `type: "function"`
 - Populating default value `[]` for function `outputs` field
@@ -58,7 +62,6 @@ const abi = normalize([{"type": "constructor"/*, ...*/}/*, ...*/);
 const isFunctionEntry = entry.type === "function";
 const isPayable = entry.stateMutability === "payable";
 ```
-
 
 ## TypeScript types
 
@@ -79,11 +82,32 @@ above.
 ```typescript
 import * as Abi from "@truffle/abi-utils";
 
-const abi: Abi.Abi = [{"type": "constructor"/*, ...*/}/*, ...*/];
-const parameter: Abi.Parameter = {"type": "tuple[]", "components": [/*...*/]};
+const abi: Abi.Abi = [{ type: "constructor" /*, ...*/ } /*, ...*/];
+const parameter: Abi.Parameter = {
+  type: "tuple[]",
+  components: [
+    /*...*/
+  ]
+};
 // etc.
 ```
 
+## Selector and signature computation
+
+This package exports the following functions for computing signatures and selectors:
+
+- `abiSelector`: This function takes a `FunctionEntry`, `EventEntry`, or
+  `ErrorEntry` and computes its selector, returned as a hex string. This will
+  be 4 bytes for a function or error, and 32 bytes for an event.
+- `abiSignature`: This function takes a `FunctionEntry`, `EventEntry`, or
+  `ErrorEntry` and computes its written-out signature (e.g., `"setStoredValue(uint256)"`).
+- `abiTupleSignature`: This function takes a `Parameter[]` and computes the signature
+  of that tuple on its own; e.g., `"(uint256,string)"` for a `uint` and a `string`.
+- `abiTypeSignature`: This function takes an individual `Parameter` and computes
+  the signature of that type on its own; e.g., `uint256` for a `uint`.
+
+In addition, the package also exports the constant `ShortSelectorSize`, which
+is equal to 4 (the number of bytes in a function or event selector).
 
 ## Arbitrary random ABIs
 

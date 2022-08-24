@@ -1,11 +1,17 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:utils");
 
-import Web3Utils from "web3-utils";
-import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
 import type * as Abi from "@truffle/abi-utils";
+import {
+  abiSignature,
+  abiTypeSignature,
+  abiTupleSignature,
+  abiSelector
+} from "@truffle/abi-utils";
 import type { FunctionAbiBySelectors } from "./types";
+
+export { abiSignature, abiTypeSignature, abiTupleSignature, abiSelector };
 
 export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorEntry = {
   type: "constructor",
@@ -42,46 +48,6 @@ export function abiHasPayableFallback(
       (abiEntry.type === "fallback" || abiEntry.type === "receive") &&
       abiEntry.stateMutability === "payable"
   );
-}
-
-//NOTE: this function returns the written out SIGNATURE, not the SELECTOR
-export function abiSignature(
-  abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry
-): string {
-  return abiEntry.name + abiTupleSignature(abiEntry.inputs);
-}
-
-export function abiTupleSignature(parameters: Abi.Parameter[]): string {
-  let components = parameters.map(abiTypeSignature);
-  return "(" + components.join(",") + ")";
-}
-
-function abiTypeSignature(parameter: Abi.Parameter): string {
-  let tupleMatch = parameter.type.match(/tuple(.*)/);
-  if (tupleMatch === null) {
-    //does not start with "tuple"
-    return parameter.type;
-  } else {
-    let tail = tupleMatch[1]; //everything after "tuple"
-    let tupleSignature = abiTupleSignature(parameter.components);
-    return tupleSignature + tail;
-  }
-}
-
-export function abiSelector(
-  abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry
-): string {
-  let signature = abiSignature(abiEntry);
-  //NOTE: web3's soliditySha3 has a problem if the empty
-  //string is passed in.  Fortunately, that should never happen here.
-  let hash = Web3Utils.soliditySha3({ type: "string", value: signature });
-  switch (abiEntry.type) {
-    case "event":
-      return hash;
-    case "function":
-    case "error":
-      return hash.slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
-  }
 }
 
 //note: undefined does not match itself :P
