@@ -16,7 +16,7 @@ export function abiTupleSignature(parameters: Parameter[]): string {
 }
 
 export function abiTypeSignature(parameter: Parameter): string {
-  const tupleMatch = parameter.type.match(/tuple(.*)/);
+  const tupleMatch = parameter.type.match(/^tuple(.*)/);
   if (tupleMatch === null) {
     //does not start with "tuple"
     return parameter.type;
