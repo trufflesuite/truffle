@@ -14,6 +14,7 @@
     "outDir": "./dist",
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "noImplicitAny": true,
     "rootDir": "src",
     "baseUrl": ".",
     "types": [ "mocha" ]
