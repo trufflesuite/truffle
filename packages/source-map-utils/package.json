@@ -12,14 +12,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.3.93",
+  "version": "1.3.94-hardhat-error.0",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
     "@truffle/code-utils": "^2.0.1",
-    "@truffle/codec": "^0.14.3",
+    "@truffle/codec": "^0.14.4-hardhat-error.0",
     "debug": "^4.3.1",
     "json-pointer": "^0.6.1",
     "node-interval-tree": "^1.3.3",

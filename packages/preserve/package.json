@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve",
-  "version": "0.2.9",
+  "version": "0.2.10-hardhat-error.0",
   "description": "Library for functionality for `truffle preserve` command",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",

@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.104",
+  "version": "0.1.105-hardhat-error.0",
   "scripts": {
     "prepare": "exit 0",
     "test": "./scripts/test.sh",
@@ -22,8 +22,8 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.1.4",
-    "@truffle/compile-solidity": "^6.0.41",
-    "@truffle/contract": "^4.5.23",
+    "@truffle/compile-solidity": "^6.0.42-hardhat-error.0",
+    "@truffle/contract": "^4.5.24-hardhat-error.0",
     "bignumber.js": "^7.2.1",
     "chai": "^4.2.0",
     "debug": "^4.3.1",
