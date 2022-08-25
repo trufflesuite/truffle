@@ -6764,6 +6764,15 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@truffle/abi-utils@^0.2.2":
+  version "0.2.17"
+  resolved "https://registry.yarnpkg.com/@truffle/abi-utils/-/abi-utils-0.2.17.tgz#a234ff38a12e80a1342ea3d7193e9c3caaf5cc03"
+  integrity sha512-Lz8bDjEYInaesdpP3ENVnDkfSkEmrV2z9BNcIEQPQnqdB5x/H+rIrWGny7LV6rX3Kz3kAerF8eGBFh7Z/dEhZw==
+  dependencies:
+    change-case "3.0.2"
+    faker "5.5.3"
+    fast-check "3.1.1"
+
 "@trufflesuite/bigint-buffer@1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.10.tgz#a1d9ca22d3cad1a138b78baaf15543637a3e1692"
