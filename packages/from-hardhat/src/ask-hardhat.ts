@@ -67,6 +67,12 @@ export const askHardhatConsole = async (
   new Promise((accept, reject) => {
     const { workingDirectory } = withDefaultEnvironmentOptions(options);
 
+    // Latin-1 Supplemental block control codes
+    const sos = String.fromCodePoint(0x0098); // start of string
+    const st = String.fromCodePoint(0x009c); // string terminator
+    const prefix = `${sos}truffle-start${st}`;
+    const suffix = `${sos}truffle-end${st}`;
+
     const hardhat = spawn(`npx`, ["hardhat", "console"], {
       stdio: ["pipe", "pipe", "inherit"],
       cwd: workingDirectory
@@ -84,12 +90,19 @@ export const askHardhatConsole = async (
         return reject(new Error(`Hardhat exited with non-zero code ${code}`));
       }
 
+      const data = output.slice(
+        output.indexOf(prefix) + prefix.length,
+        output.indexOf(suffix)
+      );
+
       if (raw) {
-        return accept(output);
+        return accept(data);
       }
 
       try {
-        return accept(JSON.parse(output));
+        const result = JSON.parse(data);
+
+        return accept(result);
       } catch (error) {
         return reject(error);
       }
@@ -99,8 +112,12 @@ export const askHardhatConsole = async (
       Promise.resolve(${expression})
         .then(${
           raw
-            ? `console.log`
-            : `(resolved) => console.log(JSON.stringify(resolved))`
+            ? `(resolved) => console.log(
+                \`${prefix}$\{resolved}${suffix}\`
+              )`
+            : `(resolved) => console.log(
+                \`${prefix}$\{JSON.stringify(resolved)}${suffix}\`
+              )`
         })
     `);
     hardhat.stdin.end();
