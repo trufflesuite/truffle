@@ -42,6 +42,7 @@
     "@truffle/dashboard-message-bus": "^0.1.8",
     "@truffle/dashboard-message-bus-client": "^0.1.8",
     "@truffle/dashboard-message-bus-common": "^0.1.4",
+    "@truffle/decoder": "^5.2.26",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "ethers": "^5.6.9",
