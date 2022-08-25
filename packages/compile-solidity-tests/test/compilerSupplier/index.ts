@@ -87,7 +87,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the Docker strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called Docker");
+        assert.equal(solc.version(), "called Docker");
       });
     });
 
@@ -106,7 +106,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the Native strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called Native");
+        assert.equal(solc.version(), "called Native");
       });
     });
 
@@ -125,7 +125,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the VersionRange strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called VersionRange");
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
@@ -144,7 +144,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the VersionRange strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called VersionRange");
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
@@ -222,7 +222,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the VersionRange strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called VersionRange");
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
@@ -243,7 +243,7 @@ describe("CompilerSupplier", () => {
 
       it("calls load on the Local strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc.version() === "called Local");
+        assert.equal(solc.version(), "called Local");
       });
     });
 
@@ -253,18 +253,14 @@ describe("CompilerSupplier", () => {
         supplier = new CompilerSupplier(supplierOptions);
       });
 
-      it("throws an error", done => {
-        supplier
-          .load()
-          .then(() => {
-            assert(false);
-            done();
-          })
-          .catch(error => {
-            let expectedMessageSnippet = "version matching globbity gloop";
-            assert(error.message.includes(expectedMessageSnippet));
-            done();
-          });
+      it("throws an error", async function () {
+        try {
+          await supplier.load();
+          assert.fail();
+        } catch (error) {
+          let expectedMessageSnippet = "version matching globbity gloop";
+          assert(error.message.includes(expectedMessageSnippet));
+        }
       });
     });
   });

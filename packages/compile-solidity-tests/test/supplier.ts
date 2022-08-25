@@ -78,7 +78,7 @@ describe.only("CompilerSupplier", function () {
         compilations[0].contracts
       );
 
-      assert(Version5Pragma.contractName === "Version5Pragma");
+      assert.equal(Version5Pragma.contractName, "Version5Pragma");
     });
 
     it("compiles w/ remote solc when options specify release (pinned)", async function () {
@@ -96,7 +96,7 @@ describe.only("CompilerSupplier", function () {
       });
       const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
-      assert(OldPragmaPin.contractName === "OldPragmaPin");
+      assert.equal(OldPragmaPin.contractName, "OldPragmaPin");
     });
 
     it("compiles w/ remote solc when options specify prerelease (float)", async function () {
@@ -119,7 +119,7 @@ describe.only("CompilerSupplier", function () {
         compilations[0].contracts
       );
 
-      assert(OldPragmaFloat.contractName === "OldPragmaFloat");
+      assert.equal(OldPragmaFloat.contractName, "OldPragmaFloat");
     });
 
     it("compiles w/ local path solc when options specify path", async function () {
@@ -146,7 +146,7 @@ describe.only("CompilerSupplier", function () {
         "Version8Pragma",
         compilations[0].contracts
       );
-      assert(Version8Pragma.contractName === "Version8Pragma");
+      assert.equal(Version8Pragma.contractName, "Version8Pragma");
     });
 
     it("caches releases and uses them if available", async function () {
@@ -205,7 +205,7 @@ describe.only("CompilerSupplier", function () {
       finalAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
-      assert(NewPragma.contractName === "NewPragma", "Should have compiled");
+      assert.equal(NewPragma.contractName, "NewPragma", "Should have compiled");
 
       assert(
         initialAccessTime < finalAccessTime,
@@ -232,8 +232,9 @@ describe.only("CompilerSupplier", function () {
           compilations[0].contracts
         ); //update when necessary
         assert(VersionLatestPragma.compiler.version.includes("0.8.")); //update when necessary
-        assert(
-          VersionLatestPragma.contractName === "Version8Pragma", //update when necessary
+        assert.equal(
+          VersionLatestPragma.contractName,
+          "Version8Pragma", //update when necessary
           "Should have compiled"
         );
       });
@@ -256,8 +257,12 @@ describe.only("CompilerSupplier", function () {
         });
         const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
-        assert(NewPragma.compiler.version === expectedVersion);
-        assert(NewPragma.contractName === "NewPragma", "Should have compiled");
+        assert.equal(NewPragma.compiler.version, expectedVersion);
+        assert.equal(
+          NewPragma.contractName,
+          "NewPragma",
+          "Should have compiled"
+        );
       });
 
       it("resolves imports correctly when using built solc", async function () {
@@ -299,8 +304,9 @@ describe.only("CompilerSupplier", function () {
         );
 
         // This contract imports / inherits
-        assert(
-          ComplexOrdered.contractName === "ComplexOrdered",
+        assert.equal(
+          ComplexOrdered.contractName,
+          "ComplexOrdered",
           "Should have compiled"
         );
       });
@@ -325,7 +331,7 @@ describe.only("CompilerSupplier", function () {
           error = err;
         }
 
-        assert(error);
+        assert.isDefined(error);
         assert(error.message.includes("option must be"));
       });
 
@@ -351,7 +357,7 @@ describe.only("CompilerSupplier", function () {
           error = err;
         }
 
-        assert(error);
+        assert.isDefined(error);
         assert(error.message.includes(imageName));
       });
     });

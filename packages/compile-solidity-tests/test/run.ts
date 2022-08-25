@@ -28,10 +28,9 @@ describe("async run(rawSources, options)", () => {
   describe("when remappings are provided in the options", () => {
     it("resolves them", async () => {
       const result = await run(rawSources, options);
-      if (result === null) {
-        throw new Error("Compilation failed.");
-      }
-      assert(result.contracts);
+      assert.isNotNull(result);
+      assert.isDefined(result);
+      assert.isDefined(result!.contracts);
     });
   });
 });

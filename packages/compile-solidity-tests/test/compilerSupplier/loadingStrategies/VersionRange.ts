@@ -64,7 +64,9 @@ const unStub = (stubbedThing: object, methodName: string): void => {
 
 describe("VersionRange loading strategy", () => {
   beforeEach(function () {
-    sinon.stub(instance, "getSolcVersionsForSource").returns(Promise.resolve(allVersions));
+    sinon
+      .stub(instance, "getSolcVersionsForSource")
+      .returns(Promise.resolve(allVersions));
   });
   afterEach(function () {
     unStub(instance, "getSolcVersionsForSource");
@@ -189,32 +191,34 @@ describe("VersionRange loading strategy", () => {
       const result = await instance.getAndCacheSolcByUrl(fileName, 0);
       // @ts-ignore
       assert(instance.cache.add.calledWith("requestReturn", "someSolcFile"));
-      assert(result === "success");
+      assert.equal(result, "success");
     });
   });
 
   describe(".findNewestValidVersion(version, allVersions)", () => {
     it("returns the version name of the newest valid version", () => {
       const expectedResult = "0.5.4";
-      assert(
-        instance.findNewestValidVersion("^0.5.0", allVersions) ===
-          expectedResult
+      assert.equal(
+        instance.findNewestValidVersion("^0.5.0", allVersions),
+        expectedResult
       );
     });
     it("returns null when the version is invalid", () => {
-      assert(
-        instance.findNewestValidVersion("garbageInput", allVersions) === null
+      assert.isNull(
+        instance.findNewestValidVersion("garbageInput", allVersions)
       );
     });
     it("returns null when there are no valid versions", () => {
-      assert(instance.findNewestValidVersion("^0.8.0", allVersions) === null);
+      assert.isNull(instance.findNewestValidVersion("^0.8.0", allVersions));
     });
   });
 
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
       // readdirSync returns fs.Dirent objects rather than just plain paths
-      sinon.stub(fs, "readdirSync").returns(compilerFileNames as unknown as fs.Dirent[]);
+      sinon
+        .stub(fs, "readdirSync")
+        .returns(compilerFileNames as unknown as fs.Dirent[]);
     });
     afterEach(() => {
       unStub(fs, "readdirSync");
@@ -244,7 +248,9 @@ describe("VersionRange loading strategy", () => {
   describe("getCachedSolcByVersionRange(version)", () => {
     beforeEach(() => {
       expectedResult = "soljson-v0.4.23+commit.1534a40d.js";
-      sinon.stub(fs, "readdirSync").returns(compilerFileNames as unknown as fs.Dirent[]);
+      sinon
+        .stub(fs, "readdirSync")
+        .returns(compilerFileNames as unknown as fs.Dirent[]);
       sinon.stub(instance, "getCachedSolcByFileName");
     });
     afterEach(() => {
