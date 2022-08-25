@@ -37,31 +37,34 @@ module.exports = async function (options) {
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
 
-  const settings = {
-    provider: config.provider,
-    projectInfo: {
-      artifacts: Object.values(contracts)
-    }
-  };
-
   const isEmpty = Object.keys(contracts).length === 0;
-  let contract;
+  let settings;
   if (isEmpty) {
     throw new Error(
       "No artifacts found! Please run `truffle compile` to compile your contracts"
     );
   } else {
-    contract = contracts[contractName];
+    settings = {
+      provider: config.provider,
+      projectInfo: {
+        artifacts: Object.values(contracts)
+      }
+    };
   }
+
+  const contract = contracts[contractName];
 
   // Error handling to remind users to run truffle migrate first
   const instance = await contract.deployed();
 
   const encoder = await Encoder.forContractInstance(instance, settings);
 
-  // Check "stateMutability = view" and give a warning if the function is not read-only
   const { abi: functionEntry, tx: transaction } =
     await encoder.encodeTransaction(functionName, args);
+
+  if (functionEntry.stateMutability !== "view") {
+    console.log("WARNING !!! The function called is not read-only");
+  }
 
   // wrap provider for lazy EIP-1193 compatibility
   // replace the legacy provider API with EIP-1193?
