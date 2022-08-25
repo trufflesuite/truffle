@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.5.28-hardhat-error.1",
+  "version": "5.5.28",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -31,21 +31,21 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "optionalDependencies": {
-    "@truffle/db": "^1.0.20-hardhat-error.1"
+    "@truffle/db": "^1.0.20"
   },
   "dependencies": {
-    "@truffle/db-loader": "^0.1.30-hardhat-error.1",
-    "@truffle/debugger": "^11.0.6-hardhat-error.1",
+    "@truffle/db-loader": "^0.1.30",
+    "@truffle/debugger": "^11.0.6",
     "app-module-path": "^2.2.0",
     "ganache": "7.4.0",
     "mocha": "9.2.2",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^2.1.57-hardhat-error.1",
-    "@truffle/config": "^1.3.37-hardhat-error.1",
-    "@truffle/contract": "^4.5.23-hardhat-error.1",
-    "@truffle/core": "^5.5.28-hardhat-error.1",
+    "@truffle/box": "^2.1.57",
+    "@truffle/config": "^1.3.37",
+    "@truffle/contract": "^4.5.23",
+    "@truffle/core": "^5.5.28",
     "@truffle/interface-adapter": "^0.5.21",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",

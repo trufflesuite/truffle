@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.2.17",
+  "version": "0.3.0",
   "description": "Utilities for working with ABIs",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
@@ -26,7 +26,8 @@
   "dependencies": {
     "change-case": "3.0.2",
     "faker": "5.5.3",
-    "fast-check": "3.1.1"
+    "fast-check": "3.1.1",
+    "web3-utils": "1.7.4"
   },
   "devDependencies": {
     "@fast-check/jest": "^1.0.1",

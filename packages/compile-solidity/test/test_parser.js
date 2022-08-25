@@ -1,12 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const Parser = require("../dist/parser");
+const { Parser } = require("../dist/parser");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
-const assert = require("assert");
+const { assert } = require("chai");
 
 describe("Parser", () => {
   let source = null;
-  let solc;
+  let solc, supplierOptions;
 
   const expected = [
     "./Dependency.sol",

@@ -1,6 +1,6 @@
-const path = require("path");
+import path from "path";
 
-const reportSources = ({ paths, options }) => {
+export const reportSources = ({ paths, options }) => {
   if (options.quiet !== true && options.events) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
@@ -13,9 +13,7 @@ const reportSources = ({ paths, options }) => {
       .map(contract => {
         if (path.isAbsolute(contract)) {
           contract =
-            "." +
-            path.sep +
-            path.relative(options.working_directory, contract);
+            "." + path.sep + path.relative(options.working_directory, contract);
         }
         if (contract.match(blacklistRegex) || contract.endsWith(".json")) {
           return;
@@ -27,8 +25,4 @@ const reportSources = ({ paths, options }) => {
       sourceFileNames: sources
     });
   }
-}
-
-module.exports = {
-  reportSources
 };

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.16-hardhat-error.1",
+  "version": "0.5.16",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -27,16 +27,16 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/codec": "^0.14.2",
-    "@truffle/compile-solidity": "^6.0.41-hardhat-error.1",
-    "@truffle/config": "^1.3.37-hardhat-error.1",
-    "@truffle/source-fetcher": "^1.0.16-hardhat-error.1",
+    "@truffle/codec": "^0.14.3",
+    "@truffle/compile-solidity": "^6.0.41",
+    "@truffle/config": "^1.3.37",
+    "@truffle/source-fetcher": "^1.0.16",
     "debug": "^4.3.2",
     "semver": "7.3.7",
     "web3-utils": "1.7.4"
   },
   "devDependencies": {
-    "@truffle/compile-common": "^0.7.34",
+    "@truffle/compile-common": "^0.8.0",
     "@types/chai": "^4.2.22",
     "@types/debug": "^4.1.7",
     "@types/mocha": "^9.0.0",

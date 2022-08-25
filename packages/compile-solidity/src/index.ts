@@ -1,20 +1,24 @@
-const debug = require("debug")("compile");
-const findContracts = require("@truffle/contract-sources");
-const Config = require("@truffle/config");
-const Profiler = require("./profiler");
-const { CompilerSupplier } = require("./compilerSupplier");
-const { run } = require("./run");
-const { normalizeOptions } = require("./normalizeOptions");
-const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
-const Shims = require("./shims");
-const { reportSources } = require("./reportSources");
-const { Compilations } = require("@truffle/compile-common");
+import debugModule from "debug";
+const debug = debugModule("compile");
+import findContracts from "@truffle/contract-sources";
+import Config from "@truffle/config";
+import { Profiler } from "./profiler";
+import { CompilerSupplier } from "./compilerSupplier";
+export { CompilerSupplier } from "./compilerSupplier";
+export * as Shims from "./shims";
+import { run } from "./run";
+import { normalizeOptions } from "./normalizeOptions";
+import { compileWithPragmaAnalysis } from "./compileWithPragmaAnalysis";
+import { reportSources } from "./reportSources";
+import { Compilations } from "@truffle/compile-common";
+import type { Compilation } from "@truffle/compile-common";
+import partition from "lodash/partition";
+import fs from "fs-extra";
+import type { SourcesWithDependenciesArgs, SourcesArgs } from "./types";
 const expect = require("@truffle/expect");
-const partition = require("lodash/partition");
-const fs = require("fs-extra");
 
-async function compileYulPaths(yulPaths, options) {
-  let yulCompilations = [];
+async function compileYulPaths(yulPaths: string[], options: Config) {
+  let yulCompilations: Compilation[] = [];
   for (const path of yulPaths) {
     const yulOptions = options.with({ compilationTargets: [path] });
     //load up Yul sources, since they weren't loaded up earlier
@@ -27,7 +31,7 @@ async function compileYulPaths(yulPaths, options) {
     });
     debug("Yul compiled successfully");
 
-    if (compilation.contracts.length > 0) {
+    if (compilation && compilation.contracts.length > 0) {
       yulCompilations.push(compilation);
     }
   }
@@ -40,12 +44,12 @@ async function compileYulPaths(yulPaths, options) {
   return yulCompilations;
 }
 
-const Compile = {
+export const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
   // NOTE: this function does *not* transform the source path prefix to
   // "project:/" before passing to the compiler!
-  async sources({ sources, options }) {
+  async sources({ sources, options }: SourcesArgs) {
     options = Config.default().merge(options);
     options = normalizeOptions(options);
     //note: "solidity" here includes JSON as well!
@@ -56,16 +60,16 @@ const Compile = {
       {},
       ...solidityNames.map(name => ({ [name]: sources[name] }))
     );
-    let solidityCompilations = [];
-    let yulCompilations = [];
+    let solidityCompilations: Compilation[] = [];
+    let yulCompilations: Compilation[] = [];
     if (solidityNames.length > 0) {
       debug("Compiling Solidity (specified sources)");
       const compilation = await run(soliditySources, options, {
         noTransform: true
       });
       debug("Compiled Solidity");
-      if (compilation.contracts.length > 0) {
-        solidityCompilations = [compilation];
+      if (compilation && compilation.contracts.length > 0) {
+        solidityCompilations.push(compilation);
       }
     }
     for (const name of yulNames) {
@@ -75,13 +79,15 @@ const Compile = {
         noTransform: true
       });
       debug("Compiled Yul");
-      yulCompilations.push(compilation);
+      if (compilation !== null) {
+        yulCompilations.push(compilation);
+      }
     }
     const compilations = [...solidityCompilations, ...yulCompilations];
     return Compilations.promoteCompileResult({ compilations });
   },
 
-  async all(options) {
+  async all(options: Config) {
     const paths = [
       ...new Set([
         ...(await findContracts(options.contracts_directory)),
@@ -95,7 +101,7 @@ const Compile = {
     });
   },
 
-  async necessary(options) {
+  async necessary(options: Config) {
     options.logger = options.logger || console;
 
     const paths = await Profiler.updated(options);
@@ -106,8 +112,10 @@ const Compile = {
     });
   },
 
-  // this takes an array of paths and options
-  async sourcesWithDependencies({ paths, options }) {
+  async sourcesWithDependencies({
+    paths,
+    options
+  }: SourcesWithDependenciesArgs) {
     if (options.compilers.solc.version === "pragma") {
       return this.sourcesWithPragmaAnalysis({ paths, options });
     }
@@ -163,7 +171,7 @@ const Compile = {
 
     reportSources({ paths: [...compilationTargets, ...yulPaths], options });
 
-    let solidityCompilations = [];
+    let solidityCompilations: Compilation[] = [];
     // only call run if there are sources to run on!
     if (Object.keys(allSources).length > 0) {
       const solidityOptions = options.with({ compilationTargets });
@@ -171,8 +179,8 @@ const Compile = {
       const compilation = await run(allSources, solidityOptions, { solc });
       debug("Solidity compiled successfully");
 
-      if (compilation.contracts.length > 0) {
-        solidityCompilations = [compilation];
+      if (compilation && compilation.contracts.length > 0) {
+        solidityCompilations.push(compilation);
       }
     }
 
@@ -189,10 +197,4 @@ const Compile = {
     });
     return Compilations.promoteCompileResult(compilationResult);
   }
-};
-
-module.exports = {
-  Compile,
-  CompilerSupplier,
-  Shims
 };

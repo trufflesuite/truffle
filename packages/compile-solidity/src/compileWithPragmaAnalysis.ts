@@ -1,11 +1,12 @@
-const { CompilerSupplier } = require("./compilerSupplier");
-const Config = require("@truffle/config");
-const semver = require("semver");
-const Profiler = require("./profiler");
-const { run } = require("./run");
-const { reportSources } = require("./reportSources");
-const OS = require("os");
-const cloneDeep = require("lodash/cloneDeep");
+import { CompilerSupplier } from "./compilerSupplier";
+import Config from "@truffle/config";
+import semver from "semver";
+import { Profiler } from "./profiler";
+import { run } from "./run";
+import { reportSources } from "./reportSources";
+import type { Compilation } from "@truffle/compile-common";
+import OS from "os";
+import cloneDeep from "lodash/cloneDeep";
 
 const getSemverExpression = source => {
   const result = source.match(/pragma solidity(.*);/);
@@ -49,7 +50,13 @@ const throwCompilerVersionNotFound = ({ path, semverExpressions }) => {
   throw new Error(message);
 };
 
-const compileWithPragmaAnalysis = async ({ paths, options }) => {
+export const compileWithPragmaAnalysis = async ({
+  paths,
+  options
+}: {
+  paths: string[];
+  options: Config;
+}) => {
   //don't compile if there's yul
   const yulPath = paths.find(path => path.endsWith(".yul"));
   if (yulPath !== undefined) {
@@ -140,7 +147,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
   reportSources({ paths: filteredPaths, options });
 
-  const compilations = [];
+  const compilations: Compilation[] = [];
   for (const compilerVersion in versionsAndSources) {
     const compilationOptions = {
       compilers: cloneDeep(options.compilers)
@@ -149,13 +156,9 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
     const config = Config.default().with(compilationOptions);
     const compilation = await run(versionsAndSources[compilerVersion], config);
-    if (compilation.contracts.length > 0) {
+    if (compilation && Object.keys(compilation.contracts).length > 0) {
       compilations.push(compilation);
     }
   }
   return { compilations };
-};
-
-module.exports = {
-  compileWithPragmaAnalysis
 };
