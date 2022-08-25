@@ -28,6 +28,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@truffle/compile-common": "^0.8.0"
+  },
   "devDependencies": {
     "@types/node": "~12.12.0",
     "typescript": "^4.7.4"

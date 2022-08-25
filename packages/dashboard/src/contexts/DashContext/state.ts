@@ -2,6 +2,7 @@ import { providers } from "ethers";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
+  isWorkflowCompileResultMessage,
   isInvalidateMessage,
   isLogMessage,
   isDebugMessage
@@ -66,6 +67,8 @@ export const reducer = (state: State, action: Action): State => {
           // Confirm supported and non-interactive messages
           confirmMessage(strictlyTypedLifecycle, provider);
         }
+      } else if (isWorkflowCompileResultMessage(message)) {
+        window.devLog("Received workflow-compile-result message", message);
       } else if (isInvalidateMessage(message)) {
         window.devLog("Received invalidate message", message);
         const invalidatedID = message.payload;

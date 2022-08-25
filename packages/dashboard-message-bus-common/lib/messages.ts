@@ -1,3 +1,5 @@
+import type { WorkflowCompileResult } from "@truffle/compile-common";
+
 export interface Message {
   id: number;
   type?: string;
@@ -25,9 +27,18 @@ export interface DashboardProviderMessage extends Message {
   };
 }
 
+export type WorkflowCompileResultMessageType = "workflow-compile-result";
+export const workflowCompileResultMessageType = "workflow-compile-result";
+/**
+ * Message to inform subscribers of new WorkflowCompileResult
+ */
+export interface WorkflowCompileResultMessage extends Message {
+  type: WorkflowCompileResultMessageType;
+  payload: WorkflowCompileResult;
+}
+
 export type LogMessageType = "log";
 export const logMessageType = "log";
-
 /**
  * Message intended to log messages across the message bus.
  * The message payload includes a "debug" namespace as well as a message.
@@ -43,7 +54,6 @@ export interface LogMessage extends Message {
 
 export type DebugMessageType = "debug";
 export const debugMessageType = "debug";
-
 /**
  * Message to log in Dashboard browser console
  */
@@ -72,6 +82,12 @@ export const isDashboardProviderMessage = (
   return message.type === dashboardProviderMessageType;
 };
 
+export const isWorkflowCompileResultMessage = (
+  message: Message
+): message is WorkflowCompileResultMessage => {
+  return message.type === workflowCompileResultMessageType;
+};
+
 export const isLogMessage = (message: Message): message is LogMessage => {
   return message.type === logMessageType;
 };
@@ -88,6 +104,7 @@ export const isInvalidateMessage = (
 
 export type MessageType =
   | DashboardProviderMessageType
+  | WorkflowCompileResultMessageType
   | LogMessageType
   | DebugMessageType
   | InvalidateMessageType;
