@@ -121,15 +121,15 @@ const execute = {
    * to execute a call at.
    * @param  {Array}  args      `arguments` that were passed to method
    * @param  {Any}    lastArg    terminal argument passed to method
-   * @param  {Array}  inputs     ABI segment defining method arguments
+   * @param  {Array}  methodABI  ABI for the method; null for ABI-less calls
    * @return {Boolean}           true if final argument is `defaultBlock`
    */
   hasDefaultBlock: function (args, lastArg, methodABI) {
-    const expectedArgs = methodABI ? methodABI.inputs.length : 0;
+    const expectedArgsCount = methodABI ? methodABI.inputs.length : 0;
     const hasDefaultBlock =
-      !execute.hasTxParams(lastArg) && args.length > expectedArgs;
+      !execute.hasTxParams(lastArg) && args.length > expectedArgsCount;
     const hasDefaultBlockWithParams =
-      execute.hasTxParams(lastArg) && args.length - 1 > expectedArgs;
+      execute.hasTxParams(lastArg) && args.length - 1 > expectedArgsCount;
     return hasDefaultBlock || hasDefaultBlockWithParams;
   },
 
