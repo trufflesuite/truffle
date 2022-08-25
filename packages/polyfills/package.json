@@ -1,0 +1,56 @@
+{
+  "name": "@truffle/polyfills",
+  "description": "A package for all polyfills used by the Truffle CLI and its dependent packages",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Ben Burns",
+      "email": "803016+benjamincburns@users.noreply.github.com",
+      "url": "https://github.com/benjamincburns"
+    }
+  ],
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/polyfills#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/polyfills"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0-0",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "typings"
+  ],
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha --require ts-node/register --extension ts,js"
+  },
+  "dependencies": {
+    "error-cause": "^1.0.4",
+    "node-abort-controller": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.0.0",
+    "@types/node": "~12.12.0",
+    "mocha": "9.2.2",
+    "ts-node": "10.7.0",
+    "typescript": "^4.7.4"
+  },
+  "keywords": [
+    "ethereum",
+    "exec",
+    "polyfills",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

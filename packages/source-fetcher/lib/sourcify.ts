@@ -8,7 +8,7 @@ import { networkNamesById, networksByName } from "./networks";
 import retry from "async-retry";
 
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
-import "./polyfill";
+import "@truffle/polyfills/dist/nodeAbortController";
 
 import axios from "axios";
 
