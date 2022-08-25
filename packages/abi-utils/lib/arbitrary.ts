@@ -393,8 +393,8 @@ const reservedWords = new Set([
 ]);
 
 type WordListKey = keyof typeof wordLists;
-const getArb = (
-  wordTypes: WordListKey[],
+const Name = (
+  wordTypes: WordListKey[] = ["noun"],
   transform = camelCase
 ): fc.Arbitrary<string> => {
   const wordArbitraries = wordTypes.map(wordType =>
@@ -410,12 +410,12 @@ const getArb = (
 
 const ParameterName = () =>
   fc.oneof(
-    { arbitrary: getArb(["noun"]), weight: 9 },
+    { arbitrary: Name(["noun"]), weight: 9 },
     { arbitrary: fc.constant(""), weight: 1 }
   );
-const EventName = () => getArb(["verb", "noun"], pascalCase);
-const ErrorName = () => getArb(["noun", "noun"], pascalCase);
-const FunctionName = () => getArb(["verb", "noun"]);
+const EventName = () => Name(["verb", "noun"], pascalCase);
+const ErrorName = () => Name(["noun", "noun"], pascalCase);
+const FunctionName = () => Name(["verb", "noun"]);
 
 const TypeRecord = (): fc.Arbitrary<any> =>
   Type().chain(type =>
