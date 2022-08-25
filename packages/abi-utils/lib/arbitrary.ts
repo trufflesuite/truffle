@@ -397,31 +397,15 @@ const getArb = (
   wordTypes: WordListKey[],
   transform = camelCase
 ): fc.Arbitrary<string> => {
-  const results: fc.Arbitrary<string>[] = [];
-  for (const wordType of wordTypes) {
-    if (wordType === "noun") {
-      results.push(
-        fc
-          .integer({ min: 0, max: wordLists["noun"].length - 1 })
-          .noBias()
-          .noShrink()
-          .map(index => wordLists["noun"][index])
-      );
-    } else if (wordType === "verb") {
-      results.push(
-        fc
-          .integer({ min: 0, max: wordLists["verb"].length - 1 })
-          .noBias()
-          .noShrink()
-          .map(index => wordLists["verb"][index])
-      );
-    }
-  }
+  const wordArbitraries = wordTypes.map(wordType =>
+    fc.constantFrom(...wordLists[wordType])
+  );
 
-  return fc
-    .tuple(...results)
-    .map((words: string[]): string => transform(words.join(" ")))
-    .filter(word => !reservedWords.has(word));
+  const wordsArbitrary = fc.tuple(...wordArbitraries);
+
+  const nameArbitrary = wordsArbitrary.map(words => transform(words.join(" ")));
+
+  return nameArbitrary.filter(word => !reservedWords.has(word));
 };
 
 const ParameterName = () =>
