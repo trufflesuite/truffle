@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:test:test_supplier");
 const fse = require("fs-extra");
 const path = require("path");
-const assert = require("assert");
+const { assert } = require("chai");
 const { Resolver } = require("@truffle/resolver");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
@@ -173,9 +173,8 @@ describe("CompilerSupplier", function () {
         return filename.includes("v0.4.21+commit.dfe3193c");
       });
 
-      assert.equal(
+      assert.isDefined(
         compilerFilename,
-        undefined,
         "The compiler should have been cached but wasn't"
       );
 
