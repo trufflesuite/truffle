@@ -152,8 +152,9 @@ describe("CompilerSupplier", function () {
       );
 
       // Delete if it's already there.
-      if (await fse.exists(compilerCacheDirectory))
-        await fse.removeSync(compilerCacheDirectory);
+      if (fse.existsSync(compilerCacheDirectory)) {
+        fse.removeSync(compilerCacheDirectory);
+      }
 
       options.compilers = {
         solc: { version: "0.4.21" }
@@ -172,8 +173,9 @@ describe("CompilerSupplier", function () {
         return filename.includes("v0.4.21+commit.dfe3193c");
       });
 
-      assert(
-        compilerFilename !== undefined,
+      assert.equal(
+        compilerFilename,
+        undefined,
         "The compiler should have been cached but wasn't"
       );
 
