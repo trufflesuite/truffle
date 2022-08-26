@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import Config from "@truffle/config";
 import { Migration } from "../src/Migration";
-import sinon = require("sinon");
+import * as sinon from "sinon";
 let options,
   prepareForMigrationsReturn,
   fakeInterfaceAdapter,

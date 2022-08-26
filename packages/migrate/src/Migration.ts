@@ -6,6 +6,14 @@ import { ResolverIntercept } from "./ResolverIntercept";
 import { getTruffleDb } from "@truffle/db-loader";
 import { emitEvent } from "./emitEvent";
 import type Config from "@truffle/config";
+import type { InterfaceAdapter } from "@truffle/interface-adapter";
+import type Web3 from "web3";
+
+type MigrationContext = {
+  web3: Web3;
+  interfaceAdapter: InterfaceAdapter;
+  config: Config;
+};
 
 export class Migration {
   public file: string;
@@ -14,7 +22,7 @@ export class Migration {
   public isLast: boolean;
   public dryRun: boolean;
   public interactive: boolean;
-  public config: Config | {};
+  public config: Config;
 
   constructor(file: string, config: Config) {
     this.file = path.resolve(file);
@@ -34,7 +42,7 @@ export class Migration {
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
-  async _load(options, context, deployer, resolver) {
+  async _load(options: Config, context: MigrationContext, deployer: typeof Deployer, resolver: ResolverIntercept) {
     // Load assets and run `execute`
     const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
@@ -68,7 +76,13 @@ export class Migration {
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
-  async _deploy(options, context, deployer, resolver, migrateFn) {
+  async _deploy(
+    options: Config,
+    context: MigrationContext,
+    deployer: typeof Deployer,
+    resolver: ResolverIntercept,
+    migrateFn: any
+  ) {
     try {
       await deployer.start();
       // Allow migrations method to be async and
@@ -121,7 +135,7 @@ export class Migration {
 
       let artifacts = resolver
         .contracts()
-        .map(abstraction => abstraction._json);
+        .map((abstraction: any) => abstraction._json);
       if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();

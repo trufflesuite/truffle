@@ -11,20 +11,19 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
-    "outDir": "./dist",
+    "outDir": "dist",
     "strictBindCallApply": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "rootDir": "src",
-    "baseUrl": ".",
+    "rootDir": "./src",
     "types": [ "mocha" ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "typings"
   ],
   "exclude": [
-    "dist",
     "node_modules",
-    "test"
+    "dist"
   ]
 }

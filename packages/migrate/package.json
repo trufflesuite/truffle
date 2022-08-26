@@ -37,7 +37,8 @@
     "sinon": "^9.0.2",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4",
-    "@types/inquirer": "9.0.1"
+    "@types/inquirer": "9.0.1",
+    "web3": "1.7.4"
   },
   "keywords": [
     "deployment",

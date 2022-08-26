@@ -9,6 +9,8 @@ import inquirer from "inquirer";
 import type { Question } from "inquirer";
 import type { Resolver } from "@truffle/resolver";
 
+export { ResolverIntercept } from "./ResolverIntercept";
+
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
  *  the `.runMigrations` method.
