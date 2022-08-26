@@ -63,6 +63,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "sepolia": "api-sepolia.etherscan.io",
       "optimistic": "api-optimistic.etherscan.io",
       "kovan-optimistic": "api-kovan-optimistic.etherscan.io",
+      "goerli-optimistic": "api-goerli-optimistic.etherscan.io",
       "arbitrum": "api.arbiscan.io",
       "rinkeby-arbitrum": "api-testnet.arbiscan.io",
       "polygon": "api.polygonscan.com",
