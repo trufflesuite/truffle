@@ -1,7 +1,6 @@
 import * as fc from "fast-check";
-import faker from "faker";
 import { camelCase, pascalCase } from "change-case";
-
+import wordLists from "./wordLists";
 import type * as Types from "./types";
 
 export const Parameter = () =>
@@ -393,29 +392,30 @@ const reservedWords = new Set([
   "years"
 ]);
 
-// borrowed from https://runkit.com/dubzzz/faker-to-fast-check
-const fakerToArb = (template: string, transform = camelCase) => {
-  return fc
-    .integer()
-    .noBias()
-    .noShrink()
-    .map(seed => {
-      faker.seed(seed);
-      return transform(faker.fake(template));
-    })
-    .filter(word => !reservedWords.has(word));
+type WordListKey = keyof typeof wordLists;
+const Name = (
+  wordTypes: WordListKey[] = ["noun"],
+  transform = camelCase
+): fc.Arbitrary<string> => {
+  const wordArbitraries = wordTypes.map(wordType =>
+    fc.constantFrom(...wordLists[wordType])
+  );
+
+  const wordsArbitrary = fc.tuple(...wordArbitraries);
+
+  const nameArbitrary = wordsArbitrary.map(words => transform(words.join(" ")));
+
+  return nameArbitrary.filter(word => !reservedWords.has(word));
 };
 
 const ParameterName = () =>
   fc.oneof(
-    { arbitrary: fakerToArb("{{hacker.noun}}"), weight: 9 },
+    { arbitrary: Name(["noun"]), weight: 9 },
     { arbitrary: fc.constant(""), weight: 1 }
   );
-const EventName = () =>
-  fakerToArb("{{hacker.verb}} {{hacker.noun}}", pascalCase);
-const ErrorName = () =>
-  fakerToArb("{{hacker.noun}} {{hacker.noun}}", pascalCase);
-const FunctionName = () => fakerToArb("{{hacker.verb}} {{hacker.noun}}");
+const EventName = () => Name(["verb", "noun"], pascalCase);
+const ErrorName = () => Name(["noun", "noun"], pascalCase);
+const FunctionName = () => Name(["verb", "noun"]);
 
 const TypeRecord = (): fc.Arbitrary<any> =>
   Type().chain(type =>
