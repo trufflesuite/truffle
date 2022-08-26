@@ -1,6 +1,5 @@
 import { assert } from "chai";
 import { describe, it, beforeEach, afterEach } from "mocha";
-import * as fs from "fs";
 import axios from "axios";
 import * as sinon from "sinon";
 import { LoadingStrategies } from "@truffle/compile-solidity";
@@ -76,7 +75,7 @@ describe("VersionRange loading strategy", () => {
     beforeEach(() => {
       sinon.stub(instance, "getCachedSolcByVersionRange");
       sinon.stub(instance, "getSolcFromCacheOrUrl");
-      sinon.stub(instance, "versionIsCached").returns(undefined);
+      sinon.stub(instance, "versionIsCached").returns("compilerFilename.js");
     });
     afterEach(() => {
       unStub(instance, "getCachedSolcByVersionRange");
@@ -87,12 +86,12 @@ describe("VersionRange loading strategy", () => {
     it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
       await instance.load("0.5.0");
       // @ts-ignore - TS not smart enough to recognize stubbed methods
-      assert(instance.getCachedSolcByVersionRange.called);
+      assert.isTrue(instance.getCachedSolcByVersionRange.called);
     });
     it("calls getSolcFromCacheOrUrl when a larger range is specified", async () => {
       await instance.load("^0.5.0");
       // @ts-ignore
-      assert(instance.getSolcFromCacheOrUrl.called);
+      assert.isTrue(instance.getSolcFromCacheOrUrl.called);
     });
   });
 
@@ -116,7 +115,7 @@ describe("VersionRange loading strategy", () => {
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
         await instance.getSolcFromCacheOrUrl("^0.5.0");
-        assert(
+        assert.isTrue(
           // @ts-ignore
           instance.getAndCacheSolcByUrl.calledWith(
             "soljson-v0.5.4+commit.9549d8ff.js"
@@ -136,7 +135,7 @@ describe("VersionRange loading strategy", () => {
 
       it("calls getCachedSolcByFileName", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.0");
-        assert(
+        assert.isTrue(
           // @ts-ignore
           instance.getCachedSolcByFileName.calledWith(
             "soljson-v0.5.0+commit.1d4f565a.js"
@@ -160,9 +159,9 @@ describe("VersionRange loading strategy", () => {
       it("eventually calls add and compilerFromString", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
         // @ts-ignore
-        assert(instance.cache.add.called);
+        assert.isTrue(instance.cache.add.called);
         // @ts-ignore
-        assert(instance.compilerFromString.called);
+        assert.isTrue(instance.compilerFromString.called);
       }).timeout(60000);
     });
   });
@@ -190,7 +189,9 @@ describe("VersionRange loading strategy", () => {
     it("calls add with the response and the file name", async () => {
       const result = await instance.getAndCacheSolcByUrl(fileName, 0);
       // @ts-ignore
-      assert(instance.cache.add.calledWith("requestReturn", "someSolcFile"));
+      assert.isTrue(
+        instance.cache.add.calledWith("requestReturn", "someSolcFile")
+      );
       assert.equal(result, "success");
     });
   });
@@ -215,13 +216,10 @@ describe("VersionRange loading strategy", () => {
 
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
-      // readdirSync returns fs.Dirent objects rather than just plain paths
-      sinon
-        .stub(fs, "readdirSync")
-        .returns(compilerFileNames as unknown as fs.Dirent[]);
+      sinon.stub(instance.cache, "list").returns(compilerFileNames);
     });
     afterEach(() => {
-      unStub(fs, "readdirSync");
+      unStub(instance.cache, "list");
     });
 
     describe("when a cached version of the compiler is present", () => {
@@ -248,25 +246,27 @@ describe("VersionRange loading strategy", () => {
   describe("getCachedSolcByVersionRange(version)", () => {
     beforeEach(() => {
       expectedResult = "soljson-v0.4.23+commit.1534a40d.js";
-      sinon
-        .stub(fs, "readdirSync")
-        .returns(compilerFileNames as unknown as fs.Dirent[]);
+      sinon.stub(instance.cache, "list").returns(compilerFileNames);
       sinon.stub(instance, "getCachedSolcByFileName");
     });
     afterEach(() => {
-      unStub(fs, "readdirSync");
+      unStub(instance.cache, "list");
       unStub(instance, "getCachedSolcByFileName");
     });
 
     it("returns the compiler when a single version is specified", () => {
       instance.getCachedSolcByVersionRange("0.4.23");
       // @ts-ignore
-      assert(instance.getCachedSolcByFileName.calledWith(expectedResult));
+      assert.isTrue(
+        instance.getCachedSolcByFileName.calledWith(expectedResult)
+      );
     });
     it("returns the newest compiler when there are multiple valid ones", () => {
       instance.getCachedSolcByVersionRange("^0.4.1");
       // @ts-ignore
-      assert(instance.getCachedSolcByFileName.calledWith(expectedResult));
+      assert.isTrue(
+        instance.getCachedSolcByFileName.calledWith(expectedResult)
+      );
     });
   });
 });
