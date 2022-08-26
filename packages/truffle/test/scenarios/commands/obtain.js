@@ -6,55 +6,52 @@ const path = require("path");
 const assert = require("assert");
 const sandbox = require("../sandbox");
 
-let logger, config, project, expectedPath;
+let logger, config, project, compilersCacheDirectory;
 
 describe("truffle obtain", function () {
   project = path.join(__dirname, "../../sources/obtain");
 
   beforeEach(async function () {
-    expectedPath = path.join(
+    compilersCacheDirectory = path.join(
       Config.getTruffleDataDirectory(),
       "compilers",
-      "node_modules",
-      "soljson-v0.7.2+commit.51b20bc0.js"
+      "node_modules"
     );
     this.timeout(10000);
     config = await sandbox.create(project);
     logger = new MemoryLogger();
     config.logger = logger;
+
+    // ensure the compiler is not cached beforehand
+    if (fse.existsSync(compilersCacheDirectory)) {
+      fse.removeSync(compilersCacheDirectory);
+    }
+  });
+
+  afterEach(() => {
+    if (fse.existsSync(compilersCacheDirectory)) {
+      fse.removeSync(compilersCacheDirectory);
+    }
   });
 
   it("fetches the solc version specified", async function () {
     this.timeout(70000);
-    // ensure the compiler does not yet exist
-    try {
-      fse.unlinkSync(expectedPath);
-    } catch (error) {
-      // unlink throws when file doesn't exist
-      if (error.code !== "ENOENT") {
-        throw error;
-      }
-    }
     await CommandRunner.run("obtain --solc=0.7.2", config);
-    assert(fse.statSync(expectedPath), "The compiler was not obtained!");
-    fse.unlinkSync(expectedPath);
+    const cachedCompilersFilenames = fse.readdirSync(compilersCacheDirectory);
+
+    assert(
+      cachedCompilersFilenames.some(filename => {
+        return filename.includes("v0.7.2+commit.51b20bc0");
+      }),
+      "The compiler was not obtained!"
+    );
   });
 
   it("respects the `quiet` option", async function () {
     this.timeout(80000);
-    // ensure the compiler does not yet exist
-    try {
-      fse.unlinkSync(expectedPath);
-    } catch (error) {
-      // unlink throws when file doesn't exist
-      if (error.code !== "ENOENT") {
-        throw error;
-      }
-    }
     await CommandRunner.run("obtain --solc=0.7.2 --quiet", config);
     // logger.contents() returns false as long as nothing is written to the
     // stream that is used for logging in MemoryLogger
-
     // in Node12, Ganache prints a warning and it cannot be suppressed
     // I guess we have to allow it until we stop supporting Node12
     const ganacheNode12WarningRegex =
@@ -68,6 +65,5 @@ describe("truffle obtain", function () {
       !loggedStuff,
       "The command logged to the console when it shouldn't have."
     );
-    fse.unlinkSync(expectedPath);
   });
 });

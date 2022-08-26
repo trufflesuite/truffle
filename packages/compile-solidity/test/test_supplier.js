@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:test:test_supplier");
 const fse = require("fs-extra");
 const path = require("path");
-const assert = require("assert");
+const { assert } = require("chai");
 const { Resolver } = require("@truffle/resolver");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
@@ -150,13 +150,11 @@ describe("CompilerSupplier", function () {
         Config.getTruffleDataDirectory(),
         "compilers/node_modules"
       );
-      const expectedCache = path.resolve(
-        compilerCacheDirectory,
-        "soljson-v0.4.21+commit.dfe3193c.js"
-      );
 
       // Delete if it's already there.
-      if (await fse.exists(expectedCache)) await fse.unlink(expectedCache);
+      if (fse.existsSync(compilerCacheDirectory)) {
+        fse.removeSync(compilerCacheDirectory);
+      }
 
       options.compilers = {
         solc: { version: "0.4.21" }
@@ -170,10 +168,23 @@ describe("CompilerSupplier", function () {
         options: cachedOptions
       });
 
-      assert(await fse.exists(expectedCache), "Should have cached compiler");
+      const cachedCompilerFilenames = fse.readdirSync(compilerCacheDirectory);
+      const compilerFilename = cachedCompilerFilenames.find(filename => {
+        return filename.includes("v0.4.21+commit.dfe3193c");
+      });
+
+      assert.isDefined(
+        compilerFilename,
+        "The compiler should have been cached but wasn't"
+      );
+
+      const cachedCompilerPath = path.join(
+        compilerCacheDirectory,
+        compilerFilename
+      );
 
       // Get cached solc access time
-      initialAccessTime = (await fse.stat(expectedCache)).atime.getTime();
+      initialAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
 
       // Wait a second and recompile, verifying that the cached solc
       // got accessed / ran ok.
@@ -184,7 +195,7 @@ describe("CompilerSupplier", function () {
         options: cachedOptions
       });
 
-      finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
+      finalAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");

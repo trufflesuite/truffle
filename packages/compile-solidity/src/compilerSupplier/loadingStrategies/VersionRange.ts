@@ -29,12 +29,12 @@ export class VersionRange {
   constructor(options: StrategyOptions) {
     const defaultConfig = {
       compilerRoots: [
-        // NOTE this relay address exists so that we have a backup option in
-        // case more official distribution mechanisms fail.
-        //
-        // currently this URL just redirects (302 Found); we may alter this to
-        // host for real in the future.
-        "https://relay.trufflesuite.com/solc/bin/",
+        // this order of url root preference was recommended by Cameel from the
+        // Solidity team here -- https://github.com/trufflesuite/truffle/pull/5008
+        "https://relay.trufflesuite.com/solc/emscripten-wasm32/",
+        "https://binaries.soliditylang.org/emscripten-wasm32/",
+        "https://relay.trufflesuite.com/solc/emscripten-asmjs/",
+        "https://binaries.soliditylang.org/emscripten-asmjs/",
         "https://solc-bin.ethereum.org/bin/",
         "https://ethereum.github.io/solc-bin/bin/"
       ]
