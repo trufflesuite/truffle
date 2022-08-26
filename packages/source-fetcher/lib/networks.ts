@@ -45,7 +45,7 @@ export const networkNamesById: { [id: number]: string } = {
   250: "fantom",
   4002: "testnet-fantom",
   128: "heco",
-  256: "testnet-heco", //not presently supported by either fetcher, but formerly by etherscan
+  256: "testnet-heco",
   1284: "moonbeam",
   1285: "moonriver",
   1287: "moonbase-alpha",
