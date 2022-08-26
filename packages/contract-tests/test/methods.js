@@ -589,40 +589,61 @@ describe("Methods", function () {
     });
   });
 
-  describe("sendTransaction() / send() [ @geth ]", function () {
+  describe("sendTransaction() / call() / estimateGas() / send() [ @geth ]", function () {
     it("should trigger the fallback function when calling sendTransaction()", async function () {
       const example = await Example.new(1);
-      const triggered = await example.fallbackTriggered();
+      let triggered = await example.fallbackTriggered();
 
-      assert(
-        triggered === false,
-        "Fallback should not have been triggered yet"
-      );
+      assert.isFalse(triggered, "Fallback should not have been triggered yet");
 
       await example.sendTransaction({
         value: web3.utils.toWei("1", "ether")
       });
 
       const balance = await web3.eth.getBalance(example.address);
-      assert(
-        balance === web3.utils.toWei("1", "ether"),
+      assert.strictEqual(
+        balance,
+        web3.utils.toWei("1", "ether"),
         "Balance should be 1 ether"
       );
+
+      triggered = await example.fallbackTriggered();
+      assert.isTrue(triggered, "Fallback should now have been triggered");
     });
 
     it("should trigger the fallback function when calling send() (shorthand notation)", async function () {
       const example = await Example.new(1);
-      const triggered = await example.fallbackTriggered();
+      let triggered = await example.fallbackTriggered();
 
-      assert(
-        triggered === false,
-        "Fallback should not have been triggered yet"
-      );
+      assert.isFalse(triggered, "Fallback should not have been triggered yet");
 
       await example.send(web3.utils.toWei("1", "ether"));
 
       const balance = await web3.eth.getBalance(example.address);
-      assert(balance === web3.utils.toWei("1", "ether"));
+      assert.strictEqual(balance, web3.utils.toWei("1", "ether"));
+
+      triggered = await example.fallbackTriggered();
+      assert.isTrue(triggered, "Fallback should now have been triggered");
+    });
+
+    it("should trigger the fallback function when calling call()", async function () {
+      const example = await Example.new(1);
+
+      const result = await example.call({ data: "0x01234567" });
+      assert.strictEqual(
+        result,
+        "0x0123" //fallback function cuts the input in half
+      );
+    });
+
+    it("should trigger the fallback function when calling estimateGas()", async function () {
+      const example = await Example.new(1);
+
+      const result = await example.estimateGas({});
+      //I'm not sure what to test about this, so let's just test that it's a finite positive integer
+      assert.isFinite(result, "Gas estimate should be a finite number");
+      assert(result > 0, "Gas estimate should be positive");
+      assert(Number.isInteger(result), "Gas estimate should be an integer");
     });
 
     it("should accept tx params (send)", async function () {
@@ -636,7 +657,7 @@ describe("Methods", function () {
       const finalSenderBalance = await web3.eth.getBalance(sender);
       const contractBalance = await web3.eth.getBalance(example.address);
 
-      assert(contractBalance === eth, "Contract should receive eth");
+      assert.strictEqual(contractBalance, eth, "Contract should receive eth");
 
       const initialBN = new web3.utils.BN(initialSenderBalance);
       const finalBN = new web3.utils.BN(finalSenderBalance);

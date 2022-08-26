@@ -121,14 +121,15 @@ const execute = {
    * to execute a call at.
    * @param  {Array}  args      `arguments` that were passed to method
    * @param  {Any}    lastArg    terminal argument passed to method
-   * @param  {Array}  inputs     ABI segment defining method arguments
+   * @param  {Array}  methodABI  ABI for the method; null for ABI-less calls
    * @return {Boolean}           true if final argument is `defaultBlock`
    */
-  hasDefaultBlock: function (args, lastArg, inputs) {
+  hasDefaultBlock: function (args, lastArg, methodABI) {
+    const expectedArgsCount = methodABI ? methodABI.inputs.length : 0;
     const hasDefaultBlock =
-      !execute.hasTxParams(lastArg) && args.length > inputs.length;
+      !execute.hasTxParams(lastArg) && args.length > expectedArgsCount;
     const hasDefaultBlockWithParams =
-      execute.hasTxParams(lastArg) && args.length - 1 > inputs.length;
+      execute.hasTxParams(lastArg) && args.length - 1 > expectedArgsCount;
     return hasDefaultBlock || hasDefaultBlockWithParams;
   },
 
@@ -150,7 +151,7 @@ const execute = {
       const promiEvent = new PromiEvent();
 
       // Extract defaultBlock parameter
-      if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
+      if (execute.hasDefaultBlock(args, lastArg, methodABI)) {
         defaultBlock = args.pop();
       }
       //skipNetworkCheck flag passed to skip network call for read data (calls type) methods invocation
@@ -170,11 +171,13 @@ const execute = {
             contract: constructor
           });
 
-          result = await fn(...args).call(params, defaultBlock);
+          result = fn //null fn is used for instance.call()
+            ? await fn(...args).call(params, defaultBlock)
+            : await constructor.web3.eth.call(params, defaultBlock);
           result = reformat.numbers.call(
             constructor,
             result,
-            methodABI.outputs
+            methodABI ? methodABI.outputs : []
           );
           return promiEvent.resolve(result);
         })
@@ -450,12 +453,19 @@ const execute = {
    * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}
    */
-  estimate: function (fn, methodABI) {
+  estimate: function (fn, methodABI, address) {
     const constructor = this;
     return function () {
       return execute
         .prepareCall(constructor, methodABI, arguments)
-        .then(res => fn(...res.args).estimateGas(res.params));
+        .then(async res =>
+          fn //null fn is used for instance.estimateGas()
+            ? await fn(...res.args).estimateGas(res.params)
+            : await constructor.web3.eth.estimateGas({
+                ...res.params,
+                to: address
+              })
+        );
     };
   },
 

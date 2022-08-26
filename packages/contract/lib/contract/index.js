@@ -116,7 +116,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
       }
     });
 
-    // sendTransaction / send
+    // instance.{sendTransaction, estimateGas, call, send}
     instance.sendTransaction = execute.send.call(
       constructor,
       null,
@@ -124,10 +124,27 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
       instance.address
     );
 
+    instance.estimateGas = execute.estimate.call(
+      constructor,
+      null,
+      null,
+      instance.address
+    );
+
+    // Prefer user defined `call`
+    if (!instance.call) {
+      instance.call = execute.call.call(
+        constructor,
+        null,
+        null,
+        instance.address
+      );
+    }
+
     // Prefer user defined `send`
     if (!instance.send) {
       instance.send = (value, txParams = {}) => {
-        const packet = Object.assign({value: value}, txParams);
+        const packet = Object.assign({ value: value }, txParams);
         return instance.sendTransaction(packet);
       };
     }
