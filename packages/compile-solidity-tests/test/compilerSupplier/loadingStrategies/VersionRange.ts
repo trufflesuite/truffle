@@ -188,8 +188,8 @@ describe("VersionRange loading strategy", () => {
 
     it("calls add with the response and the file name", async () => {
       const result = await instance.getAndCacheSolcByUrl(fileName, 0);
-      // @ts-ignore
       assert.isTrue(
+        // @ts-ignore
         instance.cache.add.calledWith("requestReturn", "someSolcFile")
       );
       assert.equal(result, "success");
@@ -256,15 +256,15 @@ describe("VersionRange loading strategy", () => {
 
     it("returns the compiler when a single version is specified", () => {
       instance.getCachedSolcByVersionRange("0.4.23");
-      // @ts-ignore
       assert.isTrue(
+        // @ts-ignore
         instance.getCachedSolcByFileName.calledWith(expectedResult)
       );
     });
     it("returns the newest compiler when there are multiple valid ones", () => {
       instance.getCachedSolcByVersionRange("^0.4.1");
-      // @ts-ignore
       assert.isTrue(
+        // @ts-ignore
         instance.getCachedSolcByFileName.calledWith(expectedResult)
       );
     });
