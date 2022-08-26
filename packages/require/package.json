@@ -37,6 +37,7 @@
     "original-require": "^1.0.1"
   },
   "devDependencies": {
+    "@truffle/migrate": "^3.3.8",
     "@types/mocha": "^9.0.0",
     "@types/node": "~12.12.0",
     "copyfiles": "^2.4.1",
