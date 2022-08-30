@@ -1,0 +1,23 @@
+{
+  "extends": ["../../.eslintrc.package.json"],
+  "env": {
+    "node": true
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.mts", "*.cts", "*.tsx"],
+      "rules": {
+        // ESLint can't resolve global types like Console, and TypeScript
+        // already errors when you use things that aren't defined, so this check
+        // can be safely disabled
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["test/*.test.[tj]s"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

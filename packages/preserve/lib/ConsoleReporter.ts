@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import Spinnies from "spinnies";
+import { Spinner, SpinnerOptions } from "@truffle/spinners";
 
 import * as Control from "./control";
 
@@ -8,11 +8,11 @@ export interface ConsoleReporterConstructorOptions {
 }
 
 export class ConsoleReporter {
-  private spinners: Spinnies;
+  private spinners: { [key: string]: Spinner };
   private console: Console;
 
   constructor(options: ConsoleReporterConstructorOptions) {
-    this.spinners = new Spinnies();
+    this.spinners = {};
     this.console = options.console;
   }
 
@@ -32,29 +32,35 @@ export class ConsoleReporter {
     const { key } = eventProperties(event);
 
     // get current text
-    const { text, indent } = this.spinners.pick(key);
+    const { text, indent } = this.spinners[key];
 
-    const errorMessage = error.message ? `Error: ${error.message}` : error.toString();
+    const errorMessage = error.message
+      ? `Error: ${error.message}`
+      : error.toString();
 
-    const options = error
+    const options: Partial<SpinnerOptions> = error
       ? {
-          text: `${text}\n${" ".repeat(indent)}${chalk.red(errorMessage)}`
+          text: `${text}\n${" ".repeat(indent)}${chalk.red(errorMessage)}`,
+          textColor: "white"
         }
-      : {};
+      : {
+          textColor: "white"
+        };
 
-    this.spinners.fail(key, options);
+    this.spinners[key].fail(options);
   }
 
   private abort(event: Control.Events.Abort) {
     const { key } = eventProperties(event);
 
-    this.spinners.fail(key);
+    this.spinners[key].fail({ textColor: "white" });
   }
 
   private stop(event: Control.Events.Stop) {
     const { key } = eventProperties(event);
 
-    this.spinners.remove(key);
+    this.spinners[key].remove();
+    delete this.spinners[key];
   }
 
   /*
@@ -66,9 +72,13 @@ export class ConsoleReporter {
 
     const { key, indent } = eventProperties(event);
 
-    this.spinners.add(key, {
-      succeedColor: "white",
-      failColor: "white",
+    if (this.spinners[key]) {
+      this.spinners[key].stop();
+      this.spinners[key].remove();
+    }
+
+    this.spinners[key] = new Spinner(key, {
+      text: "",
       indent: indent
     });
   }
@@ -78,9 +88,12 @@ export class ConsoleReporter {
 
     const { key } = eventProperties(event);
 
-    const options = message ? { text: message } : {};
+    const options: Partial<SpinnerOptions> = {
+      text: message,
+      textColor: "white"
+    };
 
-    this.spinners.succeed(key, options);
+    this.spinners[key].succeed(options);
   }
 
   private step(event: Control.Events.Step) {
@@ -88,12 +101,15 @@ export class ConsoleReporter {
 
     const { message } = event;
 
-    this.spinners.add(key, {
-      text: message,
-      indent,
-      succeedColor: "white",
-      failColor: "white"
-    });
+    if (this.spinners[key]) {
+      this.spinners[key].text = message;
+      this.spinners[key].indent = indent;
+    } else {
+      this.spinners[key] = new Spinner(key, {
+        text: message,
+        indent
+      });
+    }
   }
 
   /*
@@ -104,11 +120,15 @@ export class ConsoleReporter {
 
     const { message } = event;
 
-    this.spinners.add(key, {
-      text: chalk.cyan(message),
-      indent,
-      succeedColor: "white",
-      failColor: "white"
+    if (this.spinners[key]) {
+      this.spinners[key].stop();
+      this.spinners[key].remove();
+    }
+
+    this.spinners[key] = new Spinner(key, {
+      text: message,
+      textColor: "cyan",
+      indent
     });
   }
 
@@ -117,13 +137,13 @@ export class ConsoleReporter {
 
     const { key } = eventProperties(event);
 
-    const { text } = this.spinners.pick(key);
+    const { text } = this.spinners[key];
 
     const [name] = text.split(":");
 
     const options = payload ? { text: `${name}: ${payload}` } : { text };
 
-    this.spinners.update(key, {
+    this.spinners[key].stop({
       ...options,
       status: "stopped"
     });
@@ -134,18 +154,14 @@ export class ConsoleReporter {
 
     const { key } = eventProperties(event);
 
-    const { text } = this.spinners.pick(key);
+    const { text } = this.spinners[key];
 
     if (!payload && !message) return;
 
     const [name] = text.split(":");
 
     // Update the value resolution with a payload or the step with message
-    const options = message
-      ? { text: message }
-      : { text: `${name}: ${payload}` };
-
-    this.spinners.update(key, options);
+    this.spinners[key].text = message ? message : `${name}: ${payload}`;
   }
 }
 

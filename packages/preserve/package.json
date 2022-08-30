@@ -39,6 +39,6 @@
   "dependencies": {
     "@truffle/error": "^0.1.1",
     "chalk": "^2.4.2",
-    "spinnies": "^0.5.1"
+    "@truffle/spinners": "^0.2.2"
   }
 }
