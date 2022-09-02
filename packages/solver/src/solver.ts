@@ -1,18 +1,27 @@
 import { loadAll } from "js-yaml";
 import { readFile } from "fse";
 import { DeploymentSteps, DeclarationEntry } from "./types/";
+import * as validate from "./schema/validate";
 
 const toposort = require("toposort");
 
 const Solver = {
   read: async function (filepath: string): Promise<any> {
     const declarations: any = loadAll(await readFile(filepath, "utf8"));
+    // loadAll returns an array, we just want the first item; we will assume a user only has one declaration per project
+    const valid = validate.validate(declarations[0]);
+
     // @TODO check specifically for yaml in case this is a JSON file!
     // const fileExtension = filepath.split('.').pop();
     // if (fileExtension === 'yaml') {
     //   declarations = loadAll(declarations);
     // }
-    return declarations;
+    if (valid) {
+      return declarations[0];
+    } else {
+      //TODO finesse error handling
+      throw new Error("Invalid declaration file");
+    }
   },
   sort: async function (
     dependencies: Array<string>,

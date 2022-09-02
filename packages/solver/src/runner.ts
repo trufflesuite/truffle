@@ -28,7 +28,7 @@ const Runner = {
     let Contract;
     try {
       Contract = config.resolver.require(deploymentStep.contractName);
-      console.log("GOT CONTRACT! " + JSON.stringify(Contract, null, 2));
+      // console.log("GOT CONTRACT! " + JSON.stringify(Contract, null, 2));
     } catch (e) {
       throw new TruffleError(e);
     }

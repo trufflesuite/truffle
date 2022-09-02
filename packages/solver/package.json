@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/src/index.js",
   "scripts": {
-    "build": "yarn build:dist && yarn copy-files",
+    "build": "yarn build:dist && yarn copy-files && sh ./scripts/generate-declarations",
     "clean": "rimraf ./dist",
     "prepare": "yarn build",
     "build:dist": "ttsc",

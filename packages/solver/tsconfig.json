@@ -5,6 +5,7 @@
     "target": "es6",
     "moduleResolution": "node",
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "lib": [
       "esnext"

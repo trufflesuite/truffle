@@ -1,48 +1,49 @@
 {
   "$id": "deployment.spec.json",
   "title": "Deployment Object",
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
   "description": "Describes the completed deployment.",
   "type": "object",
   "properties": {
     "deployed": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z0-9]+$": {
-              "$ref": "#/$defs/network"
-            }
-          },
-          "minProperties": 1
+      "items": {
+        "type": "object",
+        "patternProperties": {
+          "^[a-zA-Z0-9]+$": {
+            "$ref": "#/$defs/Network"
+          }
         }
-      ]
+      },
+      "minItems": 1
     }
   },
   "$defs": {
-    "network": {
-      "type": "object",
-      "properties": {
-        "contract": {
-          "type": "string",
-          "description": "The contract name"
-        },
-        "links": {
-          "type": "array",
-          "description": "The contracts that this contract has dependencies upon"
-        },
-        "options": {
-          "type": "object",
-          "description": "Options that are passed in when deploying this contract",
-          "properties": {
-            "from": {
-              "type": "string",
-              "description": "The address that the contract is deployed from"
-            },
-            "gasPrice": {
-              "type": "number",
-              "description": "The gas price to be used when deploying this contract"
+    "Network": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contract": {
+            "type": "string",
+            "description": "The contract name"
+          },
+          "links": {
+            "type": "array",
+            "description": "The contracts that this contract has dependencies upon"
+          },
+          "options": {
+            "type": "object",
+            "description": "Options that are passed in when deploying this contract",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "The address that the contract is deployed from"
+              },
+              "gasPrice": {
+                "type": "number",
+                "description": "The gas price to be used when deploying this contract"
+              }
             }
           }
         }
