@@ -81,7 +81,10 @@ module.exports = {
         outputBuffer += data;
 
         if (readyPromptRex.test(outputBuffer)) {
-          // set outputBuffer to remaining segment after final match
+          // Set outputBuffer to remaining segment after final match.
+          // This will match the next prompt. There can only ever be one
+          // readyPrompt as the prompt is presented only after the REPL
+          // *evaluates* a command.
           const segments = outputBuffer.split(readyPromptRex);
           outputBuffer = segments.pop();
 
@@ -89,7 +92,8 @@ module.exports = {
             // commands exhausted, close stdin
             child.stdin.end();
           } else {
-            // fifo pop next command and submit
+            // fifo pop next command and let the REPL evaluate the next
+            // command.
             const nextCmd = inputCommands.shift();
             child.stdin.write(nextCmd + EOL);
           }
