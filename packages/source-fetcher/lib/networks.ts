@@ -74,6 +74,7 @@ export const networkNamesById: { [id: number]: string } = {
   50: "xinfin", //not presently supported by either fetcher, but...
   51: "apothem-xinfin"
   //I'm not including crystaleum as it has network ID different from chain ID
+  //not including kekchain for the same reason
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
