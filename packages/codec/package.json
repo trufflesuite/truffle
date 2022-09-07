@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.14.3",
+  "version": "0.14.4",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -25,7 +25,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/abi-utils": "^0.3.0",
+    "@truffle/abi-utils": "^0.3.1",
     "@truffle/compile-common": "^0.8.0",
     "big.js": "^6.0.3",
     "bn.js": "^5.1.3",

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.41",
+  "version": "6.0.42",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -39,9 +39,9 @@
     "solc": "0.8.16"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.167",
+    "@truffle/artifactor": "^4.0.168",
     "@truffle/box": "^2.1.57",
-    "@truffle/resolver": "^9.0.14",
+    "@truffle/resolver": "^9.0.15",
     "@types/node": "~12.12.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
