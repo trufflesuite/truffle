@@ -50,7 +50,7 @@ module.exports = {
     inputCommands = [],
     config,
     executableCommand,
-    executableArgs,
+    executableArgs = "",
     displayHost
   } = {}) {
     const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
@@ -60,7 +60,11 @@ module.exports = {
         ? `debug(${displayHost})>`
         : `truffle(${displayHost})>`;
 
-    let seenChildPrompt = false;
+    // seems safe to escape parens only, as the readyprompt is constructed from
+    // [a-zA-Z] strings and wrapping parens.
+    const escapedPrompt = readyPrompt.replace("(", "\\(").replace(")", "\\)");
+    const readyPromptRex = new RegExp(`^${escapedPrompt}`, "m");
+
     let outputBuffer = "";
 
     return new Promise((resolve, reject) => {
@@ -74,19 +78,26 @@ module.exports = {
 
       child.stdout.on("data", data => {
         // accumulate buffer from chunks
-        if (!seenChildPrompt) {
-          outputBuffer += data;
-        }
+        outputBuffer += data;
 
-        // child process is ready for input when it displays the readyPrompt
-        if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
-          seenChildPrompt = true;
-          inputCommands.forEach(command => {
-            child.stdin.write(command + EOL);
-          });
-          child.stdin.end();
-        }
+        if (readyPromptRex.test(outputBuffer)) {
+          // Set outputBuffer to remaining segment after final match.
+          // This will match the next prompt. There can only ever be one
+          // readyPrompt as the prompt is presented only after the REPL
+          // *evaluates* a command.
+          const segments = outputBuffer.split(readyPromptRex);
+          outputBuffer = segments.pop();
 
+          if (inputCommands.length === 0) {
+            // commands exhausted, close stdin
+            child.stdin.end();
+          } else {
+            // fifo pop next command and let the REPL evaluate the next
+            // command.
+            const nextCmd = inputCommands.shift();
+            child.stdin.write(nextCmd + EOL);
+          }
+        }
         config.logger.log("OUT: ", data);
       });
 

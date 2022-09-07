@@ -25,18 +25,27 @@ describe("truffle develop", function () {
   });
 
   describe("Globals", function () {
+    const cunningWord = "contrafibularities";
     let output;
+
     before(async function () {
       this.timeout(10000);
-      const input = "Object.keys(global)";
+      const inputs = [`dict = "${cunningWord}"`, "Object.keys(global)"];
 
       await CommandRunner.runInREPL({
-        inputCommands: [input],
+        inputCommands: inputs,
         config,
         executableCommand: "develop",
         displayHost: "develop"
       });
       output = logger.contents();
+    });
+
+    it("Sends multiple commands to REPL", () => {
+      assert(
+        output.includes(cunningWord),
+        "It seems the `runInREPL` does not handle multiple inputs!"
+      );
     });
 
     [
