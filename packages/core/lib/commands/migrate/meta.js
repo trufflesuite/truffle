@@ -43,6 +43,11 @@ module.exports = {
       describe: "Adds extra verbosity to the status of an ongoing migration",
       type: "boolean",
       default: false
+    },
+    "save": {
+      describe: "Specify whether the migration will save on chain",
+      type: "boolean",
+      default: true
     }
   },
   help: {
