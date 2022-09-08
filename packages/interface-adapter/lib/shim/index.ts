@@ -1,34 +1,36 @@
 import Web3 from "web3";
-import type { provider as Provider } from "web3-core/types";
+import ethers from "ethers";
+import type { provider as Web3Provider } from "web3-core/types";
 
 import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
 import { FabricEvmDefinition } from "./overloads/fabric-evm";
 import { Web3JsDefinition } from "./overloads/web3js";
+import { EthersDefinition } from "./overloads/ethers";
 
-const initInterface = async (web3Shim: Web3Shim) => {
+const initInterface = async (shim: Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
     Object.entries({
-      "web3js": Web3JsDefinition,
-      "ethereum": EthereumDefinition,
-      "quorum": QuorumDefinition,
+      web3js: Web3JsDefinition,
+      ethers: EthersDefinition,
+      ethereum: EthereumDefinition,
+      quorum: QuorumDefinition,
       "fabric-evm": FabricEvmDefinition
     })
   );
 
-  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  networkTypes.get(shim.networkType).initNetworkType(shim);
 };
 
-// March 13, 2019 - Mike Seese:
-// This is a temporary shim to support the basic, Ethereum-based
-// multiledger integration. This whole adapter, including this shim,
-// will undergo better architecture before TruffleCon to support
-// other non-Ethereum-based ledgers.
+// July 28, 2022 - Kevin Weaver
+// This has been augmented to allow for both Web3js and Ethers shims
+
+export type Shim = Web3Shim | EthersShim;
 
 export type NetworkType = string;
 
-export interface Web3ShimOptions {
-  provider?: Provider;
+export interface ShimOptions {
+  provider?: Web3Provider | EthersProvider;
   networkType?: NetworkType;
 }
 
@@ -55,10 +57,38 @@ export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 // should drive the development of the correct architecture of
 // `@truffle/interface-adapter`that should use this work in a more
 // sane and organized manner.
+
+//TODO move to web3js.ts?
 export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
-  constructor(options?: Web3ShimOptions) {
+  constructor(options?: ShimOptions) {
+    super();
+
+    if (options) {
+      this.networkType = options.networkType || "ethereum";
+
+      if (options.provider) {
+        this.setProvider(options.provider);
+      }
+    } else {
+      this.networkType = "ethereum";
+    }
+
+    initInterface(this);
+  }
+
+  public setNetworkType(networkType: NetworkType) {
+    this.networkType = networkType;
+    initInterface(this);
+  }
+}
+
+// TODO this should extend ethers
+export class EthersShim extends ethers {
+  public networkType: NetworkType;
+
+  constructor(options?: ShimOptions) {
     super();
 
     if (options) {

@@ -2,6 +2,7 @@ const assert = require("assert");
 const Ganache = require("ganache");
 const Provider = require("../index");
 const Web3 = require("web3");
+const ethers = requires("ethers");
 const promisify = require("util").promisify;
 const ProviderError = require("../error");
 
@@ -82,7 +83,7 @@ describe("Provider", function () {
     }
   });
 
-  it("accepts a provider instance", async () => {
+  it("accepts a Ganache provider instance", async () => {
     const provider = Provider.create({
       provider: Ganache.provider()
     });
@@ -94,11 +95,23 @@ describe("Provider", function () {
     }
   });
 
-  it("accepts a function that returns a provider instance", async () => {
+  it("accepts a function that returns a Ganache provider instance", async () => {
     const provider = Provider.create({
       provider: function () {
         return Ganache.provider();
       }
+    });
+    try {
+      await Provider.testConnection({ provider });
+      assert(provider);
+    } catch (error) {
+      assert.fail("There was an error testing the provider.");
+    }
+  });
+
+  it("accepts an Ethers provider instance", async () => {
+    const provider = Provider.create({
+      provider: Ganache.provider()
     });
     try {
       await Provider.testConnection({ provider });
@@ -189,7 +202,12 @@ describe("Provider", function () {
 
         assert.deepStrictEqual(error, err);
         const _stubbedRawError = _stubbedFailedResult(payload);
-        assert.deepStrictEqual(error, new ProviderError(_stubbedRawError.error.message, { underlyingError: _stubbedRawError.error }));
+        assert.deepStrictEqual(
+          error,
+          new ProviderError(_stubbedRawError.error.message, {
+            underlyingError: _stubbedRawError.error
+          })
+        );
 
         assert.strictEqual(result, undefined);
       }
