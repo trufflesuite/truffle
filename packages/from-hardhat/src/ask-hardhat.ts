@@ -108,6 +108,14 @@ export const askHardhatConsole = async (
       }
     });
 
+    // write to stdin to ask for requested data. this does a few things:
+    // - wrap the expression into something that resolves as a Promise.
+    //   this ensures that we can handle raw synchronous expressions as well
+    //   as Promise-returning expressions.
+    // - write the resolved value to the console, using the prefix/suffix
+    //   sentinels to ensure Truffle knows what stdout comes from this process,
+    //   vs. whatever stdout Hardhat may produce on its own.
+    // - unless `raw` is turned on, stringify the resolved value as JSON.
     hardhat.stdin.write(`
       Promise.resolve(${expression})
         .then(${
