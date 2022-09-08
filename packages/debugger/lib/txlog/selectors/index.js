@@ -443,6 +443,19 @@ let txlog = createSelectorTree({
      * txlog.views.flattedEvents
      */
     flattedEvents: createLeaf(["./transactionLog"], log => {
+      const returnStatus = node => {
+        switch (node.returnKind) {
+          case "revert":
+            return false;
+          case "unwind":
+            //note: if the returnKind is "unwind", the last action *must*
+            //be a callinternal!  if not, something has gone very wrong.
+            const lastCall = node.actions[node.actions.length - 1];
+            return returnStatus(lastCall);
+          default:
+            return true;
+        }
+      };
       const getFlattedEvents = (node, address, codeAddress, status) => {
         switch (node.type) {
           case "transaction":
@@ -450,9 +463,7 @@ let txlog = createSelectorTree({
               getFlattedEvents(subNode, node.origin, node.origin, status)
             );
           case "callexternal":
-            const subNodeStatus = !["revert", "unwind"].includes(
-              node.returnKind
-            );
+            const subNodeStatus = returnStatus(node);
             return node.actions.flatMap(subNode =>
               getFlattedEvents(
                 subNode,
