@@ -8,6 +8,10 @@ module.exports = async function (options) {
   const Encoder = require("@truffle/encoder");
   const Decoder = require("@truffle/decoder");
   const TruffleError = require("@truffle/error");
+  const { fetchAndCompile } = require("@truffle/fetch-and-compile");
+  const loadConfig = require("../../loadConfig");
+
+  let settings;
 
   if (options.url && options.network) {
     const message =
@@ -21,10 +25,29 @@ module.exports = async function (options) {
     throw new TruffleError(message);
   }
 
-  const config = Config.detect(options);
+  let config = loadConfig(options);
   await Environment.detect(config);
 
-  const [contractName, functionName, ...args] = config._;
+  const [contractAddress, contractName, functionName, ...args] = config._;
+
+  if (config.fetchExternal) {
+    const { compileResult } = await fetchAndCompile(contractAddress, config);
+
+    const contracts = compileResult.contracts
+    .map(contract => ({
+      [contract.contractName]: contract
+    }))
+    .reduce((a, b) => ({ ...a, ...b }), {});
+
+    //console.log("Contracts: ", contracts);
+
+    settings = {
+      provider: config.provider,
+      projectInfo: {
+        artifacts: Object.values(contracts)
+      }
+    };
+    console.log("Settings: ", settings);
 
   const contractNames = fs
     .readdirSync(config.contracts_build_directory)
