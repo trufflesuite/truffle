@@ -21,7 +21,7 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle call <contract-name>|<contract-address> <function-name>|<function-signature>\n" +
+      "truffle call [<contract-address>] <contract-name> <function-name>|<function-signature>\n" +
       "                             " + // spacing to align with previous line
       "[<args...>] [--fetch-external|-x] [--network <network>|--url <provider_url>]\n" +
       "                             " + // spacing to align with previous line
@@ -36,10 +36,10 @@ module.exports = {
         description:
           "The address of the contract to be called.\n" +
           "                    Mandatory if --fetch-external is passed."
-      },
+      },  
       {
-        option: "<function-name>",
-        description: "The function inside the specified contract to be called."
+        option: "<function-signature>",
+        description: "The function signature inside the specified contract to be called."
       },
       {
         option: "<args...>",

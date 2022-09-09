@@ -1,6 +1,7 @@
 module.exports = async function (options) {
   const fs = require("fs");
   const util = require("util");
+  const Web3 = require("web3");
   const Config = require("@truffle/config");
   const { Environment } = require("@truffle/environment");
   const OS = require("os");
@@ -25,16 +26,17 @@ module.exports = async function (options) {
     throw new TruffleError(message);
   }
 
+  //const config = Config.detect(options);
   let config = loadConfig(options);
   await Environment.detect(config);
 
   const [contractAddress, contractName, functionName, ...args] = config._;
 
   if (config.fetchExternal) {
-    const { compileResult } = await fetchAndCompile(contractAddress, config);
+    const { compileResult: { contracts } } = await fetchAndCompile(contractAddress, config);
 
-    const contracts = compileResult.contracts
-    .map(contract => ({
+    // [{name: contracts}...] -> {contract_name: contract_object, ...}
+    contracts.map(contract => ({
       [contract.contractName]: contract
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
@@ -49,19 +51,34 @@ module.exports = async function (options) {
     };
     console.log("Settings: ", settings);
 
+    const contract = contracts[contractName];
+    console.log("Contract: ", contract);
+
+    const encoder = await Encoder.forContract(contract, settings);
+    //console.log("Encoder: ", encoder);
+
+    /*const { abi: functionEntry, tx: transaction } =
+    await encoder.encodeTransaction(functionName, args);
+    console.log("Encoded Data: ", functionEntry, transaction);*/
+    
+  }
+
+  //-------------------- Nick's Written Code ---------------------//
+
   const contractNames = fs
     .readdirSync(config.contracts_build_directory)
     .filter(filename => filename.endsWith(".json"))
     .map(filename => filename.slice(0, -".json".length));
+  //console.log("Contract Names: ", contractNames);
 
   const contracts = contractNames
     .map(contractName => ({
       [contractName]: config.resolver.require(contractName)
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
+  //console.log("Contracts: ", contracts);
 
   const isEmpty = Object.keys(contracts).length === 0;
-  let settings;
   if (isEmpty) {
     throw new Error(
       "No artifacts found! Please run `truffle compile` to compile your contracts"
@@ -86,7 +103,7 @@ module.exports = async function (options) {
     await encoder.encodeTransaction(functionName, args);
 
   if (functionEntry.stateMutability !== "view") {
-    console.log("WARNING !!! The function called is not read-only");
+    console.log("WARNING!!! The function called is not read-only");
   }
 
   // wrap provider for lazy EIP-1193 compatibility
@@ -101,7 +118,7 @@ module.exports = async function (options) {
         to: transaction.to,
         data: transaction.data
       },
-      options.blockNumber
+      config.blockNumber
     ]
     //fields we don't allow overriding: to, data
   });
