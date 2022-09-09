@@ -22,7 +22,7 @@ const DEFAULT_TX_LOG = {
 };
 
 function transactionLog(state = DEFAULT_TX_LOG, action) {
-  const { pointer, newPointer } = action;
+  const { pointer, newPointer, step } = action;
   const node = state.byPointer[pointer];
   switch (action.type) {
     case actions.RECORD_ORIGIN:
@@ -52,7 +52,8 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           [newPointer]: {
             type: "event",
             decoding: action.decoding,
-            raw: action.rawEventInfo
+            raw: action.rawEventInfo,
+            step
           }
         }
       };
@@ -68,6 +69,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           [newPointer]: {
             type: "callinternal",
             actions: [],
+            beginStep: step,
             waitingForFunctionDefinition: true
           }
         }
@@ -99,6 +101,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       } else {
         debug("returninternal once tx done!");
       }
+      modifiedNode.endStep = step;
       return {
         byPointer: {
           ...state.byPointer,
@@ -161,7 +164,8 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         functionName,
         contractName,
         arguments: variables,
-        actions: []
+        actions: [],
+        beginStep: step
       };
       if (kind === "message" || kind === "library") {
         call.data = calldata;
@@ -173,6 +177,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       }
       if (instant) {
         call.returnKind = status ? "return" : "revert";
+        call.endStep = step;
       } else {
         //If kind === "message", set waiting to false.
         //Why?  Well, because fallback functions and receive functions
@@ -228,6 +233,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           modifiedNode.beneficiary = action.beneficiary;
           break;
       }
+      modifiedNode.endStep = step;
       let newState = {
         byPointer: {
           ...state.byPointer,
@@ -250,6 +256,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           //one already to note that they failed to return due to a call they made
           //reverting
           currentNode.returnKind = "unwind";
+          currentNode.endStep = step;
         }
         delete currentNode.waitingForFunctionDefinition;
         debug("set currentNode!");
@@ -302,6 +309,8 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           finalNode.returnImmutables = decoding.immutables;
         }
       }
+      //and of course set the end step
+      finalNode.endStep = step;
       //finally, delete internal info
       delete finalNode.waitingForFunctionDefinition;
       delete finalNode.absorbNextInternalCall;
