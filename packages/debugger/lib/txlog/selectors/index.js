@@ -494,6 +494,7 @@ let txlog = createSelectorTree({
               {
                 decoding: node.decoding,
                 raw: node.raw,
+                step: node.step,
                 address,
                 codeAddress,
                 status
