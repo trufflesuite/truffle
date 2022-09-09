@@ -19,6 +19,7 @@ function* tickSaga() {
 
 function* updateTransactionLogSaga() {
   const pointer = yield select(txlog.current.pointer); //log pointer, not AST pointer
+  const step = yield select(txlog.current.step);
   if (yield select(txlog.current.isHalting)) {
     //note that we process this case first so that it overrides the others!
     const newPointer = yield select(txlog.current.externalReturnPointer);
@@ -28,19 +29,19 @@ function* updateTransactionLogSaga() {
         const beneficiary = yield select(txlog.current.beneficiary);
         //note: this selector returns null for a value-destroying selfdestruct
         debug("sd: %o %o", pointer, newPointer);
-        yield put(actions.selfdestruct(pointer, newPointer, beneficiary));
+        yield put(actions.selfdestruct(pointer, newPointer, step, beneficiary));
       } else {
         const decodings = yield* data.decodeReturnValue();
         const rawData = yield select(txlog.current.returnData);
         debug("external return: %o %o", pointer, newPointer);
         yield put(
-          actions.externalReturn(pointer, newPointer, decodings, rawData)
+          actions.externalReturn(pointer, newPointer, step, decodings, rawData)
         );
       }
     } else {
       const error = (yield* data.decodeReturnValue())[0];
       debug("revert: %o %o", pointer, newPointer);
-      yield put(actions.revert(pointer, newPointer, error));
+      yield put(actions.revert(pointer, newPointer, step, error));
     }
   } else if (yield select(txlog.current.isJump)) {
     const jumpDirection = yield select(txlog.current.jumpDirection);
@@ -52,7 +53,7 @@ function* updateTransactionLogSaga() {
         if (!(yield select(txlog.current.waitingForInternalCallToAbsorb))) {
           const newPointer = yield select(txlog.current.nextActionPointer);
           debug("internal call: %o %o", pointer, newPointer);
-          yield put(actions.internalCall(pointer, newPointer));
+          yield put(actions.internalCall(pointer, newPointer, step));
         } else {
           debug("absorbed call: %o", pointer);
           yield put(actions.absorbedCall(pointer));
@@ -84,10 +85,14 @@ function* updateTransactionLogSaga() {
             variables.push({ name, value: decodedValue });
           }
           debug("internal return: %o %o", pointer, newPointer);
-          yield put(actions.internalReturn(pointer, newPointer, variables));
+          yield put(
+            actions.internalReturn(pointer, newPointer, step, variables)
+          );
         } else {
           debug("internal return: %o %o", pointer, newPointer);
-          yield put(actions.internalReturn(pointer, newPointer, undefined)); //I guess?
+          yield put(
+            actions.internalReturn(pointer, newPointer, step, undefined)
+          ); //I guess?
         }
       }
     }
@@ -113,6 +118,7 @@ function* updateTransactionLogSaga() {
         actions.instantExternalCall(
           pointer,
           newPointer, //note: doesn't actually change the current pointer
+          step,
           address,
           context,
           value,
@@ -130,6 +136,7 @@ function* updateTransactionLogSaga() {
         actions.externalCall(
           pointer,
           newPointer,
+          step,
           address,
           context,
           value,
@@ -157,6 +164,7 @@ function* updateTransactionLogSaga() {
         actions.instantCreate(
           pointer,
           newPointer, //note: doesn't actually change the current pointer
+          step,
           address,
           context,
           value,
@@ -172,6 +180,7 @@ function* updateTransactionLogSaga() {
         actions.create(
           pointer,
           newPointer,
+          step,
           address,
           context,
           value,
@@ -186,7 +195,7 @@ function* updateTransactionLogSaga() {
     //(note: because we know the event ID, there should typically only be one decoding)
     const rawInfo = yield select(txlog.current.rawEventInfo);
     const newPointer = yield select(txlog.current.nextActionPointer);
-    yield put(actions.logEvent(pointer, newPointer, decoding, rawInfo));
+    yield put(actions.logEvent(pointer, newPointer, step, decoding, rawInfo));
   } else if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
@@ -280,6 +289,7 @@ export function* begin() {
       actions.externalCall(
         pointer,
         newPointer,
+        -1, //initial call considered to happen at "step -1"
         address,
         context,
         value,
@@ -296,6 +306,7 @@ export function* begin() {
       actions.create(
         pointer,
         newPointer,
+        -1, //initial call considered to happen at "step -1"
         storageAddress,
         context,
         value,

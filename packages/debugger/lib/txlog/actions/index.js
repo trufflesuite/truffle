@@ -1,9 +1,10 @@
 export const INTERNAL_CALL = "TXLOG_INTERNAL_CALL";
-export function internalCall(pointer, newPointer) {
+export function internalCall(pointer, newPointer, step) {
   return {
     type: INTERNAL_CALL,
     pointer,
-    newPointer
+    newPointer,
+    step
   };
 }
 
@@ -16,11 +17,12 @@ export function absorbedCall(pointer) {
 }
 
 export const INTERNAL_RETURN = "TXLOG_INTERNAL_RETURN";
-export function internalReturn(pointer, newPointer, variables) {
+export function internalReturn(pointer, newPointer, step, variables) {
   return {
     type: INTERNAL_RETURN,
     pointer,
     newPointer,
+    step,
     variables
   };
 }
@@ -29,6 +31,7 @@ export const EXTERNAL_CALL = "TXLOG_EXTERNAL_CALL";
 export function externalCall(
   pointer,
   newPointer,
+  step,
   address,
   context,
   value,
@@ -42,6 +45,7 @@ export function externalCall(
     type: EXTERNAL_CALL,
     pointer,
     newPointer,
+    step,
     address,
     context,
     value,
@@ -57,6 +61,7 @@ export const INSTANT_EXTERNAL_CALL = "TXLOG_INSTANT_EXTERNAL_CALL";
 export function instantExternalCall(
   pointer,
   newPointer, //does not actually affect the current pointer!
+  step,
   address,
   context,
   value,
@@ -71,6 +76,7 @@ export function instantExternalCall(
     type: INSTANT_EXTERNAL_CALL,
     pointer,
     newPointer,
+    step,
     address,
     context,
     value,
@@ -87,6 +93,7 @@ export const CREATE = "TXLOG_CREATE";
 export function create(
   pointer,
   newPointer,
+  step,
   address,
   context,
   value,
@@ -98,6 +105,7 @@ export function create(
     type: CREATE,
     pointer,
     newPointer,
+    step,
     address,
     context,
     value,
@@ -111,6 +119,7 @@ export const INSTANT_CREATE = "TXLOG_INSTANT_CREATE";
 export function instantCreate(
   pointer,
   newPointer, //does not actually affect the current pointer!
+  step,
   address,
   context,
   value,
@@ -123,6 +132,7 @@ export function instantCreate(
     type: INSTANT_CREATE,
     pointer,
     newPointer,
+    step,
     address,
     context,
     value,
@@ -134,32 +144,41 @@ export function instantCreate(
 }
 
 export const EXTERNAL_RETURN = "TXLOG_EXTERNAL_RETURN";
-export function externalReturn(pointer, newPointer, decodings, returnData) {
+export function externalReturn(
+  pointer,
+  newPointer,
+  step,
+  decodings,
+  returnData
+) {
   return {
     type: EXTERNAL_RETURN,
     pointer,
     newPointer,
+    step,
     decodings,
     returnData
   };
 }
 
 export const SELFDESTRUCT = "TXLOG_SELFDESTRUCT";
-export function selfdestruct(pointer, newPointer, beneficiary) {
+export function selfdestruct(pointer, newPointer, step, beneficiary) {
   return {
     type: SELFDESTRUCT,
     pointer,
     newPointer,
+    step,
     beneficiary
   };
 }
 
 export const REVERT = "TXLOG_REVERT";
-export function revert(pointer, newPointer, error) {
+export function revert(pointer, newPointer, step, error) {
   return {
     type: REVERT,
     pointer,
     newPointer,
+    step,
     error
   };
 }
@@ -181,11 +200,12 @@ export function identifyFunctionCall(
 }
 
 export const LOG_EVENT = "TXLOG_LOG_EVENT";
-export function logEvent(pointer, newPointer, decoding, rawEventInfo) {
+export function logEvent(pointer, newPointer, step, decoding, rawEventInfo) {
   return {
     type: LOG_EVENT,
     pointer,
     newPointer, //does not actually affect current pointer!
+    step,
     decoding,
     rawEventInfo
   };
