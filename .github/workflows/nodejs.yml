@@ -12,6 +12,9 @@ on:
     branches:
       - "*"
 
+permissions:
+  contents: read
+
 jobs:
   yarncheck:
     runs-on: ubuntu-latest
