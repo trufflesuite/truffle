@@ -120,6 +120,19 @@ let txlog = createSelectorTree({
     ),
 
     /**
+     * txlog.current.step
+     */
+    step: createLeaf(
+      [trace.index, trace.steps],
+      (index, steps) =>
+        steps.length === 0
+          ? -1 //special case: we use step -1 to mean before the steps start;
+          : //so if there are no steps, that's what we want to report. trace.index
+            //won't do that, though, so we special-case it in here.
+            index //normal case
+    ),
+
+    /**
      * txlog.current.waitingForFunctionDefinition
      * This selector indicates whether there's a call (internal or external)
      * that is waiting to have its function definition identified when we hit
@@ -481,6 +494,7 @@ let txlog = createSelectorTree({
               {
                 decoding: node.decoding,
                 raw: node.raw,
+                step: node.step,
                 address,
                 codeAddress,
                 status

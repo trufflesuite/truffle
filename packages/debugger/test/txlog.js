@@ -15,6 +15,7 @@ import * as Codec from "@truffle/codec";
 import Web3 from "web3";
 
 import txlog from "lib/txlog/selectors";
+import trace from "lib/trace/selectors";
 
 const __TXLOG = `
 //SPDX-License-Identifier: MIT
@@ -220,6 +221,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -229,6 +231,8 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "testCall");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     const expectedSelector = Web3.utils
       .soliditySha3("testCall(uint256)")
       .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE);
@@ -256,6 +260,11 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "called");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
+    assert.isAbove(
+      call.endStep,
+      call.beginStep,
+      "beginStep should precede endStep for non-instant calls"
+    );
     inputs = Codec.Export.unsafeNativizeVariables(byName(call.arguments));
     assert.deepEqual(inputs, {
       x: 108
@@ -282,6 +291,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -291,6 +301,8 @@ describe("Transaction log (visualizer)", function () {
     assert.isUndefined(call.functionName);
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     const expectedBytecode = abstractions.Secondary.binary;
     const expectedArgument = Codec.Conversion.toHexString(
       108,
@@ -316,6 +328,11 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "another");
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
+    assert.isAbove(
+      call.endStep,
+      call.beginStep,
+      "beginStep should precede endStep for non-instant calls"
+    );
     assert.lengthOf(call.arguments, 0);
     outputs = Codec.Export.unsafeNativizeVariables(byName(call.returnValues));
     assert.include(outputs, {
@@ -341,6 +358,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -352,6 +370,8 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.returnKind, "return");
     assert.lengthOf(call.arguments, 0);
     assert.lengthOf(call.returnValues, 0);
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     assert.lengthOf(call.actions, 1);
     call = call.actions[0];
     assert.equal(call.type, "callexternal");
@@ -361,6 +381,11 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "loudIncrement");
     assert.equal(call.contractName, "VizLibrary");
     assert.equal(call.returnKind, "return");
+    assert.isAbove(
+      call.endStep,
+      call.beginStep,
+      "beginStep should precede endStep for non-instant calls"
+    );
     let inputs = Codec.Export.unsafeNativizeVariables(byName(call.arguments));
     assert.deepEqual(inputs, {
       x: 1
@@ -390,6 +415,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     let origin = root.origin;
     assert.lengthOf(root.actions, 1);
@@ -403,12 +429,19 @@ describe("Transaction log (visualizer)", function () {
     assert.lengthOf(call.arguments, 0);
     assert.lengthOf(call.returnValues, 0);
     assert.lengthOf(call.actions, 1);
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     call = call.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "message");
     assert.equal(call.address, origin);
     assert.equal(call.value.toNumber(), 1);
     assert.equal(call.returnKind, "return");
+    assert.equal(
+      call.endStep,
+      call.beginStep,
+      "beginStep should equal endStep for instant calls"
+    );
   });
 
   it("Correctly logs a fallback call", async function () {
@@ -428,6 +461,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -439,11 +473,18 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.returnKind, "return");
     assert.equal(call.returnData, "0xbeefdead");
     assert.lengthOf(call.actions, 1);
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     call = call.actions[0];
     assert.equal(call.type, "callinternal");
     assert.equal(call.functionName, "called");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
+    assert.isAbove(
+      call.endStep,
+      call.beginStep,
+      "beginStep should precede endStep for non-instant calls"
+    );
     let inputs = Codec.Export.unsafeNativizeVariables(byName(call.arguments));
     assert.deepEqual(inputs, {
       x: 4
@@ -481,6 +522,7 @@ describe("Transaction log (visualizer)", function () {
     verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
+    const steps = bugger.view(trace.steps).length;
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -492,6 +534,8 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.returnKind, "unwind");
     assert.lengthOf(call.arguments, 0);
     assert.lengthOf(call.actions, 1);
+    assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
+    assert.equal(call.endStep, steps - 1);
     call = call.actions[0];
     assert.equal(call.type, "callinternal");
     assert.equal(call.functionName, "callReverter");
@@ -499,6 +543,7 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.returnKind, "revert");
     assert.lengthOf(call.arguments, 0);
     assert.equal(call.error.kind, "revert");
+    assert.equal(call.endStep, steps - 1); //the internal and external call should end simultaneously
     assert.lengthOf(call.error.arguments, 1);
     assert.equal(
       Codec.Export.unsafeNativize(call.error.arguments[0].value),
@@ -536,7 +581,9 @@ describe("Transaction log (visualizer)", function () {
       x: 108
     });
     assert.notProperty(call, "returnValues");
+    assert.notProperty(call, "endStep");
     assert.lengthOf(call.actions, 0);
+    assert.equal(call.beginStep, -1);
     assert.isTrue(call.waitingForFunctionDefinition);
     assert.isTrue(call.absorbNextInternalCall);
   });
@@ -708,6 +755,18 @@ describe("Transaction log (visualizer)", function () {
       assert.strictEqual(event.address, instance.address);
       assert.strictEqual(event.codeAddress, instance.address);
       assert.isTrue(event.status);
+
+      //now: check that they all have steps and are in increasing order
+      let previousStep = -1;
+      for (const event of flattedEvents) {
+        assert.isFinite(event.step);
+        assert.isAbove(
+          event.step,
+          previousStep,
+          "steps should be in increasing order"
+        );
+        previousStep = event.step;
+      }
     });
 
     it("Correctly logs an event inside a library", async function () {
