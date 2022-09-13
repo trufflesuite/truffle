@@ -1,57 +1,45 @@
-const debug = require("debug")("compile:test:test_ordering");
-const fs = require("fs");
-const path = require("path");
-const { Compile } = require("@truffle/compile-solidity");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
-const assert = require("assert");
-const { findOne } = require("./helpers");
-let compileOptions = {
-  contracts_directory: "",
-  compilers: {
-    solc: {
-      version: "0.4.25",
-      settings: {
-        optimizer: {
-          enabled: false,
-          runs: 200
-        }
-      }
-    }
-  },
-  quiet: true
-};
-let supplierOptions = {
-  solcConfig: compileOptions.compilers.solc,
-  events: {
-    emit: () => {}
-  }
-};
+import debugModule from "debug";
+const debug = debugModule("compile:test:test_ordering");
+import { describe, it, before } from "mocha";
+import Config from "@truffle/config";
+import { Compile, CompilerSupplier } from "@truffle/compile-solidity";
+import { assert } from "chai";
+import { findOne } from "./helpers";
+import * as fs from "fs";
+import * as path from "path";
+let compileOptions,
+  supplierOptions,
+  simpleOrderedSource,
+  complexOrderedSource,
+  inheritedSource,
+  solc;
 
 describe("Compile - solidity ^0.4.0", function () {
-  this.timeout(5000); // solc
-  let simpleOrderedSource = null;
-  let complexOrderedSource = null;
-  let inheritedSource = null;
-  let solc = null; // gets loaded via supplier
-
-  const compileOptions = {
-    contracts_directory: "",
-    compilers: {
-      solc: {
-        version: "0.4.25",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
-          }
-        }
-      }
-    },
-    quiet: true
-  };
+  this.timeout(5000);
 
   before("get solc", async function () {
     this.timeout(40000);
+    compileOptions = Config.default().merge({
+      contracts_directory: "",
+      compilers: {
+        solc: {
+          version: "0.4.25",
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            }
+          }
+        }
+      },
+      quiet: true
+    });
+    supplierOptions = {
+      solcConfig: compileOptions.compilers.solc,
+      events: {
+        emit: () => {}
+      }
+    };
 
     const supplier = new CompilerSupplier(supplierOptions);
     ({ solc } = await supplier.load());

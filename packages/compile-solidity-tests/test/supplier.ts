@@ -1,17 +1,28 @@
-const debug = require("debug")("compile:test:test_supplier");
-const fse = require("fs-extra");
-const path = require("path");
-const { assert } = require("chai");
-const { Resolver } = require("@truffle/resolver");
-const { Compile } = require("@truffle/compile-solidity");
-const Config = require("@truffle/config");
-const { findOne } = require("./helpers");
+import { describe, it, beforeEach, before } from "mocha";
+import * as fse from "fs-extra";
+import * as path from "path";
+import { assert } from "chai";
+import { Resolver } from "@truffle/resolver";
+import { Compile } from "@truffle/compile-solidity";
+import Config from "@truffle/config";
+import { findOne } from "./helpers";
+let options;
 
 function waitSecond() {
-  return new Promise(resolve => setTimeout(() => resolve(), 1250));
+  return new Promise<void>(resolve => setTimeout(() => resolve(), 1250));
 }
 
 describe("CompilerSupplier", function () {
+  beforeEach(function () {
+    options = {
+      contracts_directory: "",
+      solc: "",
+      quiet: true,
+      compilers: {},
+      resolver: undefined
+    };
+  });
+
   describe("integration", function () {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
@@ -21,12 +32,6 @@ describe("CompilerSupplier", function () {
     let version8PragmaSource; // ^0.8.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
-
-    const options = {
-      contracts_directory: "",
-      solc: "",
-      quiet: true
-    };
 
     before("get code", async function () {
       const oldPragmaPin = await fse.readFile(
@@ -71,7 +76,7 @@ describe("CompilerSupplier", function () {
         compilations[0].contracts
       );
 
-      assert(Version5Pragma.contractName === "Version5Pragma");
+      assert.equal(Version5Pragma.contractName, "Version5Pragma");
     });
 
     it("compiles w/ remote solc when options specify release (pinned)", async function () {
@@ -81,7 +86,7 @@ describe("CompilerSupplier", function () {
           settings: {}
         }
       };
-      const config = new Config().with(options);
+      const config = Config.default().with(options);
 
       const { compilations } = await Compile.sources({
         sources: oldPragmaPinSource,
@@ -89,7 +94,7 @@ describe("CompilerSupplier", function () {
       });
       const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
-      assert(OldPragmaPin.contractName === "OldPragmaPin");
+      assert.equal(OldPragmaPin.contractName, "OldPragmaPin");
     });
 
     it("compiles w/ remote solc when options specify prerelease (float)", async function () {
@@ -112,7 +117,7 @@ describe("CompilerSupplier", function () {
         compilations[0].contracts
       );
 
-      assert(OldPragmaFloat.contractName === "OldPragmaFloat");
+      assert.equal(OldPragmaFloat.contractName, "OldPragmaFloat");
     });
 
     it("compiles w/ local path solc when options specify path", async function () {
@@ -139,13 +144,10 @@ describe("CompilerSupplier", function () {
         "Version8Pragma",
         compilations[0].contracts
       );
-      assert(Version8Pragma.contractName === "Version8Pragma");
+      assert.equal(Version8Pragma.contractName, "Version8Pragma");
     });
 
     it("caches releases and uses them if available", async function () {
-      let initialAccessTime;
-      let finalAccessTime;
-
       const compilerCacheDirectory = path.resolve(
         Config.getTruffleDataDirectory(),
         "compilers/node_modules"
@@ -177,14 +179,19 @@ describe("CompilerSupplier", function () {
         compilerFilename,
         "The compiler should have been cached but wasn't"
       );
-
       const cachedCompilerPath = path.join(
         compilerCacheDirectory,
-        compilerFilename
+        compilerFilename!
+      );
+      assert.isTrue(
+        fse.existsSync(cachedCompilerPath),
+        "Should have cached compiler"
       );
 
       // Get cached solc access time
-      initialAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
+      const initialAccessTime = (
+        await fse.stat(cachedCompilerPath)
+      ).atime.getTime();
 
       // Wait a second and recompile, verifying that the cached solc
       // got accessed / ran ok.
@@ -195,13 +202,16 @@ describe("CompilerSupplier", function () {
         options: cachedOptions
       });
 
-      finalAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
+      const finalAccessTime = (
+        await fse.stat(cachedCompilerPath)
+      ).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
-      assert(NewPragma.contractName === "NewPragma", "Should have compiled");
+      assert.equal(NewPragma.contractName, "NewPragma", "Should have compiled");
 
-      assert(
-        initialAccessTime < finalAccessTime,
+      assert.isBelow(
+        initialAccessTime,
+        finalAccessTime,
         "Should have used cached compiler"
       );
     });
@@ -224,9 +234,10 @@ describe("CompilerSupplier", function () {
           "Version8Pragma",
           compilations[0].contracts
         ); //update when necessary
-        assert(VersionLatestPragma.compiler.version.includes("0.8.")); //update when necessary
-        assert(
-          VersionLatestPragma.contractName === "Version8Pragma", //update when necessary
+        assert.include(VersionLatestPragma.compiler.version, "0.8."); //update when necessary
+        assert.equal(
+          VersionLatestPragma.contractName,
+          "Version8Pragma", //update when necessary
           "Should have compiled"
         );
       });
@@ -249,16 +260,20 @@ describe("CompilerSupplier", function () {
         });
         const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
-        assert(NewPragma.compiler.version === expectedVersion);
-        assert(NewPragma.contractName === "NewPragma", "Should have compiled");
+        assert.equal(NewPragma.compiler.version, expectedVersion);
+        assert.equal(
+          NewPragma.contractName,
+          "NewPragma",
+          "Should have compiled"
+        );
       });
 
       it("resolves imports correctly when using built solc", async function () {
-        const paths = [];
+        const paths: string[] = [];
         paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
         paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
-        let options = {
+        options = {
           compilers: {
             solc: {
               version: "0.4.22",
@@ -292,8 +307,9 @@ describe("CompilerSupplier", function () {
         );
 
         // This contract imports / inherits
-        assert(
-          ComplexOrdered.contractName === "ComplexOrdered",
+        assert.equal(
+          ComplexOrdered.contractName,
+          "ComplexOrdered",
           "Should have compiled"
         );
       });
@@ -318,8 +334,8 @@ describe("CompilerSupplier", function () {
           error = err;
         }
 
-        assert(error);
-        assert(error.message.includes("option must be"));
+        assert.isDefined(error);
+        assert.include(error.message, "option must be");
       });
 
       it("errors if running dockerized solc when image does not exist locally", async function () {
@@ -344,8 +360,8 @@ describe("CompilerSupplier", function () {
           error = err;
         }
 
-        assert(error);
-        assert(error.message.includes(imageName));
+        assert.isDefined(error);
+        assert.include(error.message, imageName);
       });
     });
   });

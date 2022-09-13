@@ -1,19 +1,17 @@
-const fs = require("fs");
-const assert = require("assert");
-const sinon = require("sinon");
-const axios = require("axios");
-const { CompilerSupplier } = require("../../dist/compilerSupplier");
-const { Cache } = require("../../dist/compilerSupplier/Cache");
-const {
-  Docker,
-  Native,
-  Local,
-  VersionRange
-} = require("../../dist/compilerSupplier/loadingStrategies");
-const Config = require("@truffle/config");
-const config = new Config();
-let supplier;
-const supplierOptions = { events: config.events };
+import * as path from "path";
+import { assert } from "chai";
+import { describe, it, beforeEach, afterEach } from "mocha";
+import * as sinon from "sinon";
+import axios from "axios";
+import {
+  CompilerSupplier,
+  Cache,
+  LoadingStrategies
+} from "@truffle/compile-solidity";
+const { Docker, Native, Local, VersionRange } = LoadingStrategies;
+import Config from "@truffle/config";
+const config = Config.default();
+let supplier, supplierOptions;
 
 const allVersions = {
   builds: [
@@ -54,7 +52,22 @@ const allVersions = {
   latestRelease: "0.5.4"
 };
 
+const unStub = (stubbedThing: object, methodName: string) => {
+  stubbedThing[methodName].restore();
+};
+
+let fakeReturn = {
+  compile: _arg1 => "loaded",
+  version: () => ""
+};
+
 describe("CompilerSupplier", () => {
+  beforeEach(function () {
+    supplierOptions = {
+      events: config.events
+    };
+  });
+
   describe("load()", () => {
     describe("when a docker tag is specified in the config", () => {
       beforeEach(() => {
@@ -63,15 +76,18 @@ describe("CompilerSupplier", () => {
           version: "0.4.25"
         };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(Docker.prototype, "load").returns("called Docker");
+        fakeReturn.version = () => "called Docker";
+        sinon
+          .stub(Docker.prototype, "load")
+          .returns(Promise.resolve(fakeReturn));
       });
       afterEach(() => {
-        Docker.prototype.load.restore();
+        unStub(Docker.prototype, "load");
       });
 
       it("calls load on the Docker strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc === "called Docker");
+        assert.equal(solc.version(), "called Docker");
       });
     });
 
@@ -81,15 +97,16 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: "native" };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(Native.prototype, "load").returns("called Native");
+        fakeReturn.version = () => "called Native";
+        sinon.stub(Native.prototype, "load").returns(fakeReturn);
       });
       afterEach(() => {
-        Native.prototype.load.restore();
+        unStub(Native.prototype, "load");
       });
 
       it("calls load on the Native strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc === "called Native");
+        assert.equal(solc.version(), "called Native");
       });
     });
 
@@ -97,17 +114,18 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: undefined };
         supplier = new CompilerSupplier(supplierOptions);
+        fakeReturn.version = () => "called VersionRange";
         sinon
           .stub(VersionRange.prototype, "load")
-          .returns("called VersionRange");
+          .returns(Promise.resolve(fakeReturn));
       });
       afterEach(() => {
-        VersionRange.prototype.load.restore();
+        unStub(VersionRange.prototype, "load");
       });
 
       it("calls load on the VersionRange strategy", async function () {
         const { solc } = await supplier.load();
-        assert(solc === "called VersionRange");
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
@@ -115,25 +133,18 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: "0.4.11" };
         supplier = new CompilerSupplier(supplierOptions);
+        fakeReturn.version = () => "called VersionRange";
         sinon
           .stub(VersionRange.prototype, "load")
-          .returns("called VersionRange");
+          .returns(Promise.resolve(fakeReturn));
       });
       afterEach(() => {
-        VersionRange.prototype.load.restore();
+        unStub(VersionRange.prototype, "load");
       });
 
-      it("calls load on the VersionRange strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called VersionRange");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the VersionRange strategy", async function () {
+        const { solc } = await supplier.load();
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
@@ -143,26 +154,29 @@ describe("CompilerSupplier", () => {
         sinon.stub(Cache.prototype, "has").returns(false);
         sinon
           .stub(VersionRange.prototype, "getSolcVersionsForSource")
-          .returns(allVersions);
-        sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
+          .returns(Promise.resolve(allVersions));
+        sinon
+          .stub(VersionRange.prototype, "versionIsCached")
+          .returns(undefined);
         sinon.stub(VersionRange.prototype, "compilerFromString");
         sinon
           .stub(axios, "get")
           .withArgs(
             "https://ethereum.github.io/solc-bin/bin/soljson-v0.5.1+commit.c8a2cb62.js"
           )
-          .returns({ data: "response" });
+          .returns(Promise.resolve({ data: "response" }));
       });
       afterEach(() => {
-        Cache.prototype.add.restore();
-        Cache.prototype.has.restore();
-        VersionRange.prototype.getSolcVersionsForSource.restore();
-        VersionRange.prototype.versionIsCached.restore();
-        VersionRange.prototype.compilerFromString.restore();
-        axios.get.restore();
+        unStub(Cache.prototype, "add");
+        unStub(Cache.prototype, "has");
+        unStub(VersionRange.prototype, "getSolcVersionsForSource");
+        unStub(VersionRange.prototype, "versionIsCached");
+        unStub(VersionRange.prototype, "compilerFromString");
+        unStub(axios, "get");
       });
 
       it("loads VersionRange with the user specified urls", async function () {
+        this.timeout(30000);
         // This doesn't really verify that user provided list is being used but this in combination with next test does.
         // I am not sure what's the best way to check if user specified list is being used.
         supplierOptions.solcConfig = {
@@ -172,9 +186,10 @@ describe("CompilerSupplier", () => {
         supplier = new CompilerSupplier(supplierOptions);
         await supplier.load();
         assert(
+          // @ts-ignore
           VersionRange.prototype.compilerFromString.calledWith("response")
         );
-      }).timeout(30000);
+      });
 
       it("throws an error on incorrect user url", async function () {
         supplierOptions.solcConfig = {
@@ -187,7 +202,7 @@ describe("CompilerSupplier", () => {
           assert.fail();
         } catch (error) {
           let expectedMessageSnippet = "Failed to fetch the Solidity compiler";
-          assert(error.message.includes(expectedMessageSnippet));
+          assert.include(error.message, expectedMessageSnippet);
         }
       });
     });
@@ -196,51 +211,39 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: "^0.4.11" };
         supplier = new CompilerSupplier(supplierOptions);
+        fakeReturn.version = () => "called VersionRange";
         sinon
           .stub(VersionRange.prototype, "load")
-          .returns("called VersionRange");
+          .returns(Promise.resolve(fakeReturn));
       });
       afterEach(() => {
-        VersionRange.prototype.load.restore();
+        unStub(VersionRange.prototype, "load");
       });
 
-      it("calls load on the VersionRange strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called VersionRange");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the VersionRange strategy", async function () {
+        const { solc } = await supplier.load();
+        assert.equal(solc.version(), "called VersionRange");
       });
     });
 
     describe("when a path is specified in the config", () => {
       beforeEach(() => {
-        supplierOptions.solcConfig = { version: "./some/path" };
+        supplierOptions.solcConfig = {
+          version: path.resolve(__dirname, "./test/fixture/fakeCompiler")
+        };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(fs, "existsSync").returns(true);
-        sinon.stub(Local.prototype, "load").returns("called Local");
+        fakeReturn.version = () => "called Local";
+        sinon
+          .stub(Local.prototype, "load")
+          .returns(Promise.resolve(fakeReturn));
       });
-      afterEach(() => {
-        fs.existsSync.restore();
-        Local.prototype.load.restore();
+      afterEach(async () => {
+        unStub(Local.prototype, "load");
       });
 
-      it("calls load on the Local strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called Local");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the Local strategy", async function () {
+        const { solc } = await supplier.load();
+        assert.equal(solc.version(), "called Local");
       });
     });
 
@@ -250,18 +253,14 @@ describe("CompilerSupplier", () => {
         supplier = new CompilerSupplier(supplierOptions);
       });
 
-      it("throws an error", done => {
-        supplier
-          .load()
-          .then(() => {
-            assert(false);
-            done();
-          })
-          .catch(error => {
-            let expectedMessageSnippet = "version matching globbity gloop";
-            assert(error.message.includes(expectedMessageSnippet));
-            done();
-          });
+      it("throws an error", async function () {
+        try {
+          await supplier.load();
+          assert.fail();
+        } catch (error) {
+          let expectedMessageSnippet = "version matching globbity gloop";
+          assert.include(error.message, expectedMessageSnippet);
+        }
       });
     });
   });

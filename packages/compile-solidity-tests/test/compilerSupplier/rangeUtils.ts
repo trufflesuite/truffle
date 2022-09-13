@@ -1,5 +1,7 @@
-const assert = require("assert");
-const { rangeContainsAtLeast } = require("../../dist/compilerSupplier/rangeUtils");
+import { assert } from "chai";
+import { RangeUtils } from "@truffle/compile-solidity";
+const { rangeContainsAtLeast } = RangeUtils;
+import { describe, it } from "mocha";
 
 describe("rangeUtils", () => {
   describe(".rangeContainsAtLeast(range, comparisonVersion)", () => {

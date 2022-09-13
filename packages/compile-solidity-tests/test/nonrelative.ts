@@ -1,37 +1,39 @@
-const debug = require("debug")("compile:test:test_nonrelative");
+import debugModule from "debug";
+const debug = debugModule("compile:test:test_nonrelative");
+import { describe, it, beforeEach, after, before } from "mocha";
 const path = require("path");
-const { Compile } = require("@truffle/compile-solidity");
-const assert = require("assert");
-const { Resolver } = require("@truffle/resolver");
-const process = require("process");
-const tmp = require("tmp");
+import { Compile } from "@truffle/compile-solidity";
+import { assert } from "chai";
+import { Resolver } from "@truffle/resolver";
+import process = require("process");
+import tmp = require("tmp");
 tmp.setGracefulCleanup();
-const fs = require("fs");
-let originalWorkingDirectory;
+import fs = require("fs");
+let originalWorkingDirectory, options;
 
 describe("Non-relative non-absolute file paths", function () {
-  this.timeout(5000); // solc
+  this.timeout(5000);
 
-  const options = {
-    working_directory: __dirname,
-    contracts_directory: path.join(__dirname, "./sources/badSources"),
-    contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
-    compilers: {
-      solc: {
-        version: "0.8.6",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
+  beforeEach(function () {
+    options = {
+      working_directory: __dirname,
+      contracts_directory: path.join(__dirname, "./sources/badSources"),
+      contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
+      compilers: {
+        solc: {
+          version: "0.8.6",
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            }
           }
         }
-      }
-    },
-    quiet: true
-  };
-  options.resolver = new Resolver(options);
-
-  before("Set working directory", function () {
+      },
+      resolver: undefined,
+      quiet: true
+    };
+    options.resolver = new Resolver(options);
     originalWorkingDirectory = process.cwd();
     process.chdir(options.contracts_directory);
   });
@@ -67,7 +69,6 @@ describe("Non-relative non-absolute file paths", function () {
 describe("Non-canonical absolute file paths", function () {
   this.timeout(5000); // solc
   let tmpdir;
-  let options;
 
   before("Set up temporary directory and project", async function () {
     tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync

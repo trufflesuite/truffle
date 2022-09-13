@@ -1,13 +1,14 @@
-const assert = require("assert");
-const Config = require("@truffle/config");
-const { CompilerSupplier } = require("../dist/index");
-const { Resolver } = require("@truffle/resolver");
-const sinon = require("sinon");
-const {
+import { describe, it, before, after } from "mocha";
+import { assert } from "chai";
+import Config from "@truffle/config";
+import {
+  CompilerSupplier,
   compileWithPragmaAnalysis
-} = require("../dist/compileWithPragmaAnalysis");
-const path = require("path");
-let paths = [];
+} from "@truffle/compile-solidity";
+import { Resolver } from "@truffle/resolver";
+import * as sinon from "sinon";
+import * as path from "path";
+let paths: string[] = [];
 
 const sourceDirectory = path.resolve(
   __dirname,
@@ -69,9 +70,12 @@ config.resolver = new Resolver(config);
 
 describe("compileWithPragmaAnalysis", function () {
   before(function () {
-    sinon.stub(CompilerSupplier.prototype, "list").returns(releases);
+    sinon
+      .stub(CompilerSupplier.prototype, "list")
+      .returns(Promise.resolve(releases));
   });
   after(function () {
+    // @ts-ignore
     CompilerSupplier.prototype.list.restore();
   });
 
@@ -130,7 +134,7 @@ describe("compileWithPragmaAnalysis", function () {
         paths: [path.join(sourceDirectory, "withImports", "C.sol")]
       });
       assert.equal(compilations.length, 1);
-      assert(compilations[0].compiler.version.startsWith("0.6.12"));
+      assert(compilations[0].compiler.version!.startsWith("0.6.12"));
     });
 
     it("throws an error if it cannot find one that satisfies", async function () {

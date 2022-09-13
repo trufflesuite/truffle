@@ -1,6 +1,7 @@
-const Config = require("@truffle/config");
-const { assert } = require("chai");
-const { run } = require("../dist/run");
+import Config from "@truffle/config";
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
+import { run } from "@truffle/compile-solidity";
 let rawSources, options;
 
 describe("async run(rawSources, options)", () => {
@@ -26,12 +27,10 @@ describe("async run(rawSources, options)", () => {
 
   describe("when remappings are provided in the options", () => {
     it("resolves them", async () => {
-      try {
-        const { contracts } = await run(rawSources, options);
-        assert(contracts);
-      } catch (error) {
-        assert.fail(error);
-      }
+      const result = await run(rawSources, options);
+      assert.isNotNull(result);
+      assert.isDefined(result);
+      assert.isDefined(result!.contracts);
     });
   });
 });

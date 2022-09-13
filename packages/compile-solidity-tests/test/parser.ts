@@ -1,12 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const { Parser } = require("../dist/parser");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
-const { assert } = require("chai");
+import * as fs from "fs";
+import * as path from "path";
+import { describe, it, before } from "mocha";
+import { CompilerSupplier, Parser } from "@truffle/compile-solidity";
+import { assert } from "chai";
 
 describe("Parser", () => {
-  let source = null;
-  let solc, supplierOptions;
+  let source, solc, supplierOptions;
 
   const expected = [
     "./Dependency.sol",
@@ -60,7 +59,8 @@ describe("Parser", () => {
     });
   });
 
-  it("should return correct imports with docker solc [ @native ]", () => {
+  it("should return correct imports with docker solc [ @native ]", function () {
+    this.timeout(20000);
     const options = {
       events: { emit: () => {} },
       solcConfig: {
@@ -78,5 +78,5 @@ describe("Parser", () => {
 
       assert.deepEqual(imports, expected);
     });
-  }).timeout(20000);
+  });
 });

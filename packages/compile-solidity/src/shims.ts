@@ -61,11 +61,14 @@ export const zeroLinkReferences = (options: {
    * For abstract contracts, this might be undefined
    */
   bytes: string | undefined;
-}): Common.Bytecode | undefined => {
+}): Common.Bytecode => {
   const { linkReferences, bytes: inputBytes } = options;
 
   if (inputBytes === undefined) {
-    return undefined;
+    return {
+      bytes: "",
+      linkReferences: []
+    };
   }
 
   // inline link references - start by flattening the offsets

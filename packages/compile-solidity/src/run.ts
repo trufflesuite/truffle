@@ -4,13 +4,12 @@ const debug = debugModule("compile:run");
 import OS = require("os");
 import semver from "semver";
 import { CompilerSupplier } from "./compilerSupplier";
+import * as Common from "@truffle/compile-common";
 import type {
   Compilation,
   Source,
   CompiledContract
 } from "@truffle/compile-common";
-import type Config from "@truffle/config";
-import * as Common from "@truffle/compile-common";
 import type {
   CompilerOutput,
   Contracts,
@@ -22,6 +21,7 @@ import type {
   ProcessContractsArgs,
   Targets
 } from "./types";
+import type Config from "@truffle/config";
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
@@ -145,7 +145,13 @@ function orderABI({ abi, contractName, ast }) {
   // Put function names in a hash with their order, lowest first, for speed.
   const functionIndexes = orderedFunctionNames
     .map((functionName: string, index: number) => ({ [functionName]: index }))
-    .reduce((a: { [functionName: string]: number } , b: { [functionName: string]: number }) => Object.assign({}, a, b), {});
+    .reduce(
+      (
+        a: { [functionName: string]: number },
+        b: { [functionName: string]: number }
+      ) => Object.assign({}, a, b),
+      {}
+    );
 
   // Construct new ABI with functions at the end in source order
   return [
@@ -454,7 +460,8 @@ function processContracts({
                 (deployedBytecodeInfo || {}).linkReferences
               )
             }),
-            immutableReferences: deployedBytecodeInfo?.immutableReferences,
+            immutableReferences: (deployedBytecodeInfo || {})
+              .immutableReferences,
             //ideally immutable references would be part of the deployedBytecode object,
             //but compatibility makes that impossible
             generatedSources,
