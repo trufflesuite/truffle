@@ -57,7 +57,7 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run]",
+      "[--skip-dry-run] [--describe-json] [--dry-run] [--save <boolean>]",
     options: [
       {
         option: "--reset",
@@ -108,6 +108,11 @@ module.exports = {
         option: "--describe-json",
         description:
           "Adds extra verbosity to the status of an ongoing migration"
+      },
+      {
+        option: "--save",
+        describe: "Specify whether the migration will save on chain",
+        hide: true
       }
     ],
     allowedGlobalOptions: ["network", "config", "quiet"]
