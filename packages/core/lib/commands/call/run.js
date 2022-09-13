@@ -1,8 +1,6 @@
 module.exports = async function (options) {
   const fs = require("fs");
   const util = require("util");
-  const Web3 = require("web3");
-  const Config = require("@truffle/config");
   const { Environment } = require("@truffle/environment");
   const OS = require("os");
   const Codec = require("@truffle/codec");
@@ -26,81 +24,70 @@ module.exports = async function (options) {
     throw new TruffleError(message);
   }
 
-  //const config = Config.detect(options);
   let config = loadConfig(options);
   await Environment.detect(config);
 
-  const [contractAddress, contractName, functionName, ...args] = config._;
+  const [contractNameOrAddress, functionName, ...args] = config._;
+  let encoder, decoder, functionEntry, transaction;
 
   if (config.fetchExternal) {
-    const { compileResult: { contracts } } = await fetchAndCompile(contractAddress, config);
-
-    // [{name: contracts}...] -> {contract_name: contract_object, ...}
-    contracts.map(contract => ({
-      [contract.contractName]: contract
-    }))
-    .reduce((a, b) => ({ ...a, ...b }), {});
-
-    //console.log("Contracts: ", contracts);
-
-    settings = {
-      provider: config.provider,
-      projectInfo: {
-        artifacts: Object.values(contracts)
-      }
-    };
-    console.log("Settings: ", settings);
-
-    const contract = contracts[contractName];
-    console.log("Contract: ", contract);
-
-    const encoder = await Encoder.forContract(contract, settings);
-    //console.log("Encoder: ", encoder);
-
-    /*const { abi: functionEntry, tx: transaction } =
-    await encoder.encodeTransaction(functionName, args);
-    console.log("Encoded Data: ", functionEntry, transaction);*/
-    
-  }
-
-  //-------------------- Nick's Written Code ---------------------//
-
-  const contractNames = fs
-    .readdirSync(config.contracts_build_directory)
-    .filter(filename => filename.endsWith(".json"))
-    .map(filename => filename.slice(0, -".json".length));
-  //console.log("Contract Names: ", contractNames);
-
-  const contracts = contractNames
-    .map(contractName => ({
-      [contractName]: config.resolver.require(contractName)
-    }))
-    .reduce((a, b) => ({ ...a, ...b }), {});
-  //console.log("Contracts: ", contracts);
-
-  const isEmpty = Object.keys(contracts).length === 0;
-  if (isEmpty) {
-    throw new Error(
-      "No artifacts found! Please run `truffle compile` to compile your contracts"
+    const { compileResult } = await fetchAndCompile(
+      contractNameOrAddress,
+      config
     );
-  } else {
-    settings = {
-      provider: config.provider,
-      projectInfo: {
-        artifacts: Object.values(contracts)
-      }
+
+    const projectInfo = {
+      commonCompilations: compileResult.compilations
     };
+    const projectEncoder = await Encoder.forProject({
+      provider: config.provider,
+      projectInfo
+    });
+    encoder = await projectEncoder.forAddress(contractNameOrAddress);
+
+    const projectDecoder = await Decoder.forProject({
+      provider: config.provider,
+      projectInfo
+    });
+
+    decoder = await projectDecoder.forAddress(contractNameOrAddress);
+  } else {
+    const contractNames = fs
+      .readdirSync(config.contracts_build_directory)
+      .filter(filename => filename.endsWith(".json"))
+      .map(filename => filename.slice(0, -".json".length));
+
+    const contracts = contractNames
+      .map(contractName => ({
+        [contractName]: config.resolver.require(contractName)
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
+    const isEmpty = Object.keys(contracts).length === 0;
+    if (isEmpty) {
+      throw new Error(
+        "No artifacts found! Please run `truffle compile` to compile your contracts"
+      );
+    } else {
+      settings = {
+        provider: config.provider,
+        projectInfo: {
+          artifacts: Object.values(contracts)
+        }
+      };
+    }
+
+    const contract = contracts[contractNameOrAddress];
+    // Error handling to remind users to run truffle migrate first
+    const instance = await contract.deployed();
+    encoder = await Encoder.forContractInstance(instance, settings);
+    decoder = await Decoder.forContractInstance(instance, settings);
   }
 
-  const contract = contracts[contractName];
-
-  // Error handling to remind users to run truffle migrate first
-  const instance = await contract.deployed();
-
-  const encoder = await Encoder.forContractInstance(instance, settings);
-
-  const { abi: functionEntry, tx: transaction } =
-    await encoder.encodeTransaction(functionName, args);
+  ({ abi: functionEntry, tx: transaction } = await encoder.encodeTransaction(
+    functionName,
+    args
+  ));
 
   if (functionEntry.stateMutability !== "view") {
     console.log("WARNING!!! The function called is not read-only");
@@ -122,8 +109,6 @@ module.exports = async function (options) {
     ]
     //fields we don't allow overriding: to, data
   });
-
-  const decoder = await Decoder.forContractInstance(instance, settings);
 
   // Error handling for 0 returned value
   // Handles cases for more than 1 returned values
