@@ -21,10 +21,10 @@
     "test": "./scripts/test.sh"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.167",
-    "@truffle/compile-solidity": "^6.0.41",
+    "@truffle/artifactor": "^4.0.168",
+    "@truffle/compile-solidity": "^6.0.42",
     "@truffle/config": "^1.3.37",
-    "@truffle/resolver": "^9.0.14",
+    "@truffle/resolver": "^9.0.15",
     "@types/node": "12.12.21",
     "@types/sinon": "^9.0.10",
     "babel-core": "^6.26.0",
