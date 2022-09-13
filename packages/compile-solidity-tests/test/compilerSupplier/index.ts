@@ -202,7 +202,7 @@ describe("CompilerSupplier", () => {
           assert.fail();
         } catch (error) {
           let expectedMessageSnippet = "Failed to fetch the Solidity compiler";
-          assert(error.message.includes(expectedMessageSnippet));
+          assert.include(error.message, expectedMessageSnippet);
         }
       });
     });
@@ -259,7 +259,7 @@ describe("CompilerSupplier", () => {
           assert.fail();
         } catch (error) {
           let expectedMessageSnippet = "version matching globbity gloop";
-          assert(error.message.includes(expectedMessageSnippet));
+          assert.include(error.message, expectedMessageSnippet);
         }
       });
     });

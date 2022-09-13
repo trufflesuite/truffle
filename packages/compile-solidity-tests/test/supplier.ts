@@ -183,10 +183,15 @@ describe("CompilerSupplier", function () {
         compilerCacheDirectory,
         compilerFilename!
       );
-      assert.isTrue(fse.existsSync(cachedCompilerPath), "Should have cached compiler");
+      assert.isTrue(
+        fse.existsSync(cachedCompilerPath),
+        "Should have cached compiler"
+      );
 
       // Get cached solc access time
-      const initialAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
+      const initialAccessTime = (
+        await fse.stat(cachedCompilerPath)
+      ).atime.getTime();
 
       // Wait a second and recompile, verifying that the cached solc
       // got accessed / ran ok.
@@ -197,7 +202,9 @@ describe("CompilerSupplier", function () {
         options: cachedOptions
       });
 
-      const finalAccessTime = (await fse.stat(cachedCompilerPath)).atime.getTime();
+      const finalAccessTime = (
+        await fse.stat(cachedCompilerPath)
+      ).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
       assert.equal(NewPragma.contractName, "NewPragma", "Should have compiled");
@@ -227,7 +234,7 @@ describe("CompilerSupplier", function () {
           "Version8Pragma",
           compilations[0].contracts
         ); //update when necessary
-        assert.isTrue(VersionLatestPragma.compiler.version.includes("0.8.")); //update when necessary
+        assert.include(VersionLatestPragma.compiler.version, "0.8."); //update when necessary
         assert.equal(
           VersionLatestPragma.contractName,
           "Version8Pragma", //update when necessary
@@ -328,7 +335,7 @@ describe("CompilerSupplier", function () {
         }
 
         assert.isDefined(error);
-        assert.isTrue(error.message.includes("option must be"));
+        assert.include(error.message, "option must be");
       });
 
       it("errors if running dockerized solc when image does not exist locally", async function () {
@@ -354,7 +361,7 @@ describe("CompilerSupplier", function () {
         }
 
         assert.isDefined(error);
-        assert.isTrue(error.message.includes(imageName));
+        assert.include(error.message, imageName);
       });
     });
   });
