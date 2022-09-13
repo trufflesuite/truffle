@@ -312,7 +312,7 @@ const val = instance.getValue();
 
 #### Processing transaction results
 
-When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction hash (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
+When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction hash (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll receive the `ValueSet()` event because you triggered the event using the `setValue()` function:
 
 ```javascript
 const result = await instance.setValue(5);
