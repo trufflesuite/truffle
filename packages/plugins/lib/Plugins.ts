@@ -102,7 +102,7 @@ export class Plugins {
     const definitions = Plugins.loadPluginDefinitions(plugins);
 
     return Object.entries(definitions).map(
-      ([module, definition]) => new Plugin({ module, definition })
+      ([module, definition]) => require(path.join(module, definition.compile)).Compile
     );
   }
 }
