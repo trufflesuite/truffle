@@ -15,6 +15,7 @@ export interface ResolverOptions {
 export class Resolver {
   options: any;
   sources: ResolverSource[];
+  cache: ReturnType<typeof contract>[];
 
   constructor(options: any, resolverOptions: ResolverOptions = {}) {
     expect.options(options, [
@@ -26,6 +27,7 @@ export class Resolver {
     const { includeTruffleSources } = resolverOptions;
 
     this.options = options;
+    this.cache = [];
 
     let basicSources: ResolverSource[] = [
       new EthPMv1(options.working_directory),
@@ -51,20 +53,38 @@ export class Resolver {
 
   // This function might be doing too much. If so, too bad (for now).
   require(
-    import_path: string,
-    search_path?: string
+    importPath: string,
+    searchPath?: string
   ): ReturnType<typeof contract> {
     let abstraction;
+
+    // remove file extension if present on name
+    const sanitizedContractName = importPath
+      .replace(/^\.\//, "")
+      .replace(/\.sol$/i, "");
+
+    // there may be more than one contract of the same name which will be
+    // problematic - only return the first one found in the cache for now
+    for (const contract of this.cache) {
+      if (contract.contract_name === sanitizedContractName) {
+        return contract;
+      }
+    }
+
     this.sources.forEach((source: ResolverSource) => {
-      const result = source.require(import_path, search_path);
+      const result = source.require(importPath, searchPath);
       if (result) {
         abstraction = contract(result);
         provision(abstraction, this.options);
       }
     });
-    if (abstraction) return abstraction;
+    if (abstraction) {
+      this.cache.push(abstraction);
+      return abstraction;
+    }
+
     throw new Error(
-      "Could not find artifacts for " + import_path + " from any sources"
+      "Could not find artifacts for " + importPath + " from any sources"
     );
   }
 
@@ -109,5 +129,9 @@ export class Resolver {
       filePath,
       source
     };
+  }
+
+  contracts(): ReturnType<typeof contract> {
+    return this.cache;
   }
 }

@@ -6,7 +6,6 @@ const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
-const ResolverIntercept = require("./ResolverIntercept");
 const { getTruffleDb } = require("@truffle/db-loader");
 const emitEvent = require("./emitEvent");
 
@@ -212,14 +211,17 @@ class Migration {
       networkType: options.networks[options.network].type
     });
 
-    const resolver = new ResolverIntercept(options.resolver);
-
     // Initial context.
     const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer(options);
 
-    return { interfaceAdapter, resolver, context, deployer };
+    return {
+      interfaceAdapter,
+      resolver: options.resolver,
+      context,
+      deployer
+    };
   }
 
   /**
