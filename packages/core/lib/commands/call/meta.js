@@ -38,6 +38,11 @@ module.exports = {
           "                    Mandatory if --fetch-external is passed."
       },
       {
+        option: "<function-name>",
+        description:
+          "The function name inside the specified contract to be called."
+      },
+      {
         option: "<function-signature>",
         description:
           "The function signature inside the specified contract to be called."
