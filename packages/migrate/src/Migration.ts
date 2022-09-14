@@ -42,7 +42,12 @@ export class Migration {
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
-  async _load(options: Config, context: MigrationContext, deployer: typeof Deployer, resolver: ResolverIntercept) {
+  async _load(
+    options: Config,
+    context: MigrationContext,
+    deployer: typeof Deployer,
+    resolver: ResolverIntercept
+  ) {
     // Load assets and run `execute`
     const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
@@ -52,6 +57,10 @@ export class Migration {
       args: [deployer]
     };
 
+    // in the above options, resolver is actually an instance of
+    // ResolverIntercept - adding that type to @truffle/require causes a
+    // circular dependency - for now we'll just do a ts-ignore
+    // @ts-ignore
     const fn = Require.file(requireOptions);
 
     const unRunnable = !fn || !fn.length || fn.length == 0;
