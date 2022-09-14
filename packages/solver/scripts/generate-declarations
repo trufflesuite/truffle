@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd src/schema
+
+json2ts -i declaration.spec.json -o ./index.d.ts \
