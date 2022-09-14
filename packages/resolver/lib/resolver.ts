@@ -1,9 +1,6 @@
-import debugModule from "debug";
-const debug = debugModule("resolver");
-
-const contract = require("@truffle/contract");
-const expect = require("@truffle/expect");
-const provision = require("@truffle/provisioner");
+import * as contract from "@truffle/contract";
+import * as expect from "@truffle/expect";
+import provision from "@truffle/provisioner";
 
 import type { ResolverSource, ResolvedSource } from "./source";
 import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
