@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "yarn exec lerna bootstrap",
-    "build": "yarn exec lerna run build --stream",
+    "build": "lerna run build --stream",
     "prepare": "lerna run prepare --stream --concurrency=1 && husky install",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
@@ -44,7 +44,7 @@
     "packages/*/package.json": "node ./scripts/check-truffle-namespace-dependency-versions.js"
   },
   "resolutions": {
-    "web3-core": "^4.0.0-alpha.0",
-    "web3-net": "4.0.0-alpha.0"
+    "web3-core": "^4.0.1-alpha.0",
+    "web3-net": "^4.0.1-alpha.0"
   }
 }
