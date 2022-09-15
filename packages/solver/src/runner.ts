@@ -1,9 +1,8 @@
 import { Solver } from "@truffle/solver";
 import { DeclarationTarget } from "./types/";
-import { deployer } from "@truffle/deployer";
+import Deployer from "@truffle/deployer";
 import { Resolver } from "@truffle/resolver";
 import Config from "@truffle/config";
-import TruffleError from "@truffle/error";
 
 const Runner = {
   orchestrate: async function (declarationSteps, options) {
@@ -22,15 +21,28 @@ const Runner = {
     return declarationSteps;
   },
   run: async function (deploymentStep: DeclarationTarget, options: any) {
+    options.network = "development";
     const config = Config.detect(options);
+    // since the whole point of the runner is to run deployments for more than one network,
+    // we need to set the network to the one specified in the declaration, after checking it exists
+    // in the config
+    // TODO update this to play with environment-based config, when that is ready; this way of
+    // handling networks is temporary
+    const configNetworks = config.networks;
+    if (configNetworks[deploymentStep.network]) {
+      config.network = deploymentStep.network;
+    } else {
+      throw new Error(`Network ${deploymentStep.network} not found in config`);
+    }
+
+    // Config.detect doesn't seem to set resolver, so we'll do it manually
     config.resolver = new Resolver(config);
 
     let Contract;
     try {
       Contract = config.resolver.require(deploymentStep.contractName);
-      // console.log("GOT CONTRACT! " + JSON.stringify(Contract, null, 2));
     } catch (e) {
-      throw new TruffleError(e);
+      throw new Error(JSON.stringify(e));
     }
 
     // need something here to handle the state
@@ -42,6 +54,7 @@ const Runner = {
     }
     if (deploymentStep.run.includes("deploy")) {
       // @TODO: will need to add options here for the deployment like gasPrice, etc.
+      const deployer = new Deployer(config);
       deployer.deploy(Contract);
     }
     // if (deploymentStep.run.includes("script")) {
