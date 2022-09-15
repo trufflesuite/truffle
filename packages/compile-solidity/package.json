@@ -40,7 +40,6 @@
   "devDependencies": {
     "@truffle/artifactor": "^4.0.169",
     "@truffle/box": "^2.1.57",
-    "@truffle/resolver": "^9.0.16",
     "@types/node": "~12.12.0",
     "@types/sinon": "^9.0.10",
     "babel-core": "^6.26.0",
