@@ -95,7 +95,7 @@ describe("DashboardServer", () => {
       const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: utils.parseEther("0.1")
+        value: utils.parseEther("0.1").toHexString()
       });
 
       expect(response).toHaveProperty("hash");

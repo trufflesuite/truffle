@@ -43,7 +43,6 @@ const execute = {
             const defaultGas = utils.bigNumberify(Math.floor(blockLimit / 2));
             accept(defaultGas.toHexString());
           } else {
-            console.log({ gas, blockLimit });
             const limit = utils.bigNumberify(blockLimit);
             // if we did get a numerical gas estimate from interfaceAdapter, we
             // multiply that estimate by the gasMultiplier to help ensure we
@@ -59,7 +58,6 @@ const execute = {
           }
         })
         .catch(error => {
-          console.log({ error });
           //HACK: Frankenstein together an error in a destructive fashion!!
           debug("error: %O", error);
           const reason = Reason._extract({ error }, web3);
@@ -202,7 +200,6 @@ const execute = {
 
     return function () {
       const promiEvent = new PromiEvent(false, constructor.debugger);
-
       execute
         .prepareCall(constructor, methodABI, arguments)
         .then(async ({ args, params, network }) => {
@@ -301,10 +298,8 @@ const execute = {
           });
 
           deferred = execute.sendTransaction(web3, params, promiEvent, context); //the crazy things we do for stacktracing...
-          console.log({ deferred });
           try {
             const receipt = await deferred;
-            console.log({ receipt });
             if (receipt.status !== undefined && !receipt.status) {
               const reason = await Reason.get(params, web3);
 

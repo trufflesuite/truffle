@@ -44,7 +44,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           var isConstant =
             ["pure", "view"].includes(item.stateMutability) || item.constant; // new form // deprecated case
 
-          var signature = webUtils._jsonInterfaceMethodToString(item);
+          var signature = webUtils.jsonInterfaceMethodToString(item);
 
           var method = function (constant, web3Method) {
             var fn;
