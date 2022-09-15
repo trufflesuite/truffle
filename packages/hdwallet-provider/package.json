@@ -30,14 +30,12 @@
     "ethereumjs-util": "^7.1.5",
     "web3": "1.7.4",
     "web3-provider-engine": "16.0.3",
-    "keccak": "3.0.2",
-    "secp256k1": "4.0.3"
+    "@truffle/hdwallet": "^0.1.0"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
     "@types/ethereum-protocol": "^1.0.0",
     "@types/ethereumjs-util": "^5.2.0",
-    "@types/keccak": "3.0.1",
     "@types/mocha": "^5.2.7",
     "@types/web3-provider-engine": "^14.0.0",
     "ganache": "7.4.3",

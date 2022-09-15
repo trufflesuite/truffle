@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "target": "es2016",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "paths": {
+      "@truffle/hdwallet": ["./src"],
+      "@truffle/hdwallet/*": ["./src/*"],
+      "test/*": ["./test/*"]
+    },
+    "rootDir": ".",
+    "baseUrl": ".",
+    "typeRoots": ["../../node_modules/@types/node"],
+    "types": ["mocha"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"]
+}

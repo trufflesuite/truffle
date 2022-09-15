@@ -35,7 +35,7 @@ import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import {
   createAccountGeneratorFromSeedAndPath,
   uncompressedPublicKeyToAddress
-} from "./wallet";
+} from "@truffle/hdwallet";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 

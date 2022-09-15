@@ -1,0 +1,44 @@
+{
+  "name": "@truffle/hdwallet",
+  "description": "HD Wallet helpers for Truffle",
+  "license": "MIT",
+  "author": "david <david@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/hdwallet#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/hdwallet"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "build": "ttsc",
+    "prepare": "yarn build",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "ethereum-cryptography": "1.1.2",
+    "keccak": "3.0.2",
+    "secp256k1": "4.0.3"
+  },
+  "devDependencies": {
+    "@types/keccak": "3.0.1",
+    "mocha": "9.2.2",
+    "ts-node": "10.7.0",
+    "typescript": "^4.7.4",
+    "bip39": "3.0.4"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "truffle",
+    "hardhat",
+    "hdwallet"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

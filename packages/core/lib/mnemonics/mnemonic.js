@@ -3,7 +3,7 @@
  * @requires module:@truffle/config
  * @requires module:seedrandom
  * @requires module:ethereum-cryptography
- * @requires module:ethereumjs-wallet/hdkey
+ * @requires module:@truffle/hdwallet
  * @requires module:crypto
  */
 
@@ -14,8 +14,11 @@ const {
   mnemonicToSeedSync
 } = require("ethereum-cryptography/bip39");
 const { wordlist } = require("ethereum-cryptography/bip39/wordlists/english");
-const { hdkey } = require("ethereumjs-wallet");
 const crypto = require("crypto");
+const {
+  createAccountGeneratorFromSeedAndPath,
+  uncompressedPublicKeyToAddress
+} = require("@truffle/hdwallet");
 
 const mnemonic = {
   /**
@@ -45,16 +48,19 @@ const mnemonic = {
     let accounts = [];
     let privateKeys = [];
 
-    let hdwallet = hdkey.fromMasterSeed(
-      Buffer.from(mnemonicToSeedSync(mnemonic))
+    let walletHdpath = "m/44'/60'/0'/0".split("/");
+    let hdwallet = createAccountGeneratorFromSeedAndPath(
+      Buffer.from(mnemonicToSeedSync(mnemonic)),
+      walletHdpath
     );
     let addressIndex = 0;
-    let walletHdpath = "m/44'/60'/0'/0/";
 
     for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
-      let wallet = hdwallet.derivePath(walletHdpath + i).getWallet();
-      let addr = "0x" + wallet.getAddress().toString("hex");
-      let privKey = wallet.getPrivateKey().toString("hex");
+      let wallet = hdwallet(i);
+      let addr = `0x${Buffer.from(
+        uncompressedPublicKeyToAddress(wallet.publicKey)
+      ).toString("hex")}`;
+      let privKey = wallet.privateKey.toString("hex");
       accounts.push(addr);
       privateKeys.push(privKey);
     }
