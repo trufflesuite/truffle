@@ -55,7 +55,7 @@
     "pouchdb-adapter-node-websql": "^7.0.0",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
-    "web3-utils": "1.7.4"
+    "web3-utils": "1.8.0"
   },
   "devDependencies": {
     "@fast-check/jest": "^1.0.1",
@@ -87,7 +87,7 @@
     "typedoc": "0.22.18",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1",
-    "web3": "1.7.4"
+    "web3": "1.8.0"
   },
   "keywords": [
     "database",
