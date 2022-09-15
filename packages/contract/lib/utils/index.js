@@ -1,5 +1,5 @@
 const debug = require("debug")("contract:utils");
-const web3Utils = require("web3-utils");
+const BN = require("bn.js");
 const { bigNumberify } = require("ethers/utils/bignumber");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
@@ -30,11 +30,7 @@ const Utils = {
   is_big_number(val) {
     if (typeof val !== "object") return false;
 
-    //NOTE: For some reason, contrary to the docs,
-    //web3Utils.isBigNumber returns true not only for
-    //bignumber.js BigNumbers, but also for ethers BigNumbers,
-    //even though these are totally different things.
-    return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
+    return BN.isBN(val);
   },
 
   isTxParams(val) {
@@ -209,12 +205,13 @@ const Utils = {
         const ethersBN = bigNumberify(stringValue);
         converted.push(ethersBN);
       }
-      if (BigInt.isBigInt(item)) {
+      if (typeof item === "bigint") {
         converted.push(bigNumberify(item.toString()));
       } else {
         converted.push(item);
       }
     });
+
     return converted;
   },
 

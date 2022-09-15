@@ -21957,24 +21957,14 @@ web3-eth@^4.0.1-alpha.1, web3-eth@^4.0.1-alpha.2:
     web3-utils "^4.0.1-alpha.2"
     web3-validator "^0.1.1-alpha.2"
 
-web3-net@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/web3-net/-/web3-net-1.8.1.tgz#2bed4d4b93166724129ec33d0e5dea98880285f4"
-  integrity sha512-LyEJAwogdFo0UAXZqoSJGFjopdt+kLw0P00FSZn2yszbgcoI7EwC+nXiOsEe12xz4LqpYLOtbR7+gxgiTVjjHQ==
+web3-net@1.8.1, web3-net@4.0.0-alpha.0, web3-net@^4.0.1-alpha.1, web3-net@^4.0.1-alpha.2:
+  version "4.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/web3-net/-/web3-net-4.0.0-alpha.0.tgz#d1e16f8064a520466c8ca4226efb736c6c908c79"
+  integrity sha512-a6rQ3kAOJlx9SgJe5L3L28MQvlqC1ImGIFqw8MT9yhuIGXT81sTrAAC+VeAJNqMfG8RcsQEoiCFZ5Tz7YxgFrQ==
   dependencies:
-    web3-core "1.8.1"
-    web3-core-method "1.8.1"
-    web3-utils "1.8.1"
-
-web3-net@^4.0.1-alpha.1, web3-net@^4.0.1-alpha.2:
-  version "4.0.1-alpha.2"
-  resolved "https://registry.yarnpkg.com/web3-net/-/web3-net-4.0.1-alpha.2.tgz#1b0b04b73ad22e9ed18f1c06e38333cef696e4de"
-  integrity sha512-UdTEHYRomFz2fo5AsCAx5M5pc+XITGWkXeBWXnXDJtEFulp1gOU8OlQygB9z1oSkxoq/3ijtBHEsTuyTWTQ3+g==
-  dependencies:
-    web3-core "^4.0.1-alpha.2"
-    web3-rpc-methods "^0.1.0-alpha.1"
-    web3-types "^0.1.1-alpha.2"
-    web3-utils "^4.0.1-alpha.2"
+    web3-core "^4.0.0-alpha.0"
+    web3-types "^0.1.0-alpha.0"
+    web3-utils "^4.0.0-alpha.1"
 
 web3-provider-engine@16.0.3:
   version "16.0.3"
