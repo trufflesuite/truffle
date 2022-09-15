@@ -35,7 +35,7 @@ describe("ABIEncoderV2", function () {
       addUserReceipt = receipt;
     });
 
-    it.only("should allow structs as transaction arguments", async function () {
+    it("should allow structs as transaction arguments", async function () {
       assert.strictEqual(
         addUserReceipt.status,
         BigInt(1),
@@ -64,7 +64,7 @@ describe("ABIEncoderV2", function () {
       );
     });
 
-    it("should be capable of returning structs from calls", async function () {
+    it.only("should be capable of returning structs from calls", async function () {
       const returnedUser = await userDirectory.user(user.addr);
       console.log(returnedUser);
 
