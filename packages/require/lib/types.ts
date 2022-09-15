@@ -1,5 +1,4 @@
 import type TruffleConfig from "@truffle/config";
-import type { ResolverIntercept } from "@truffle/migrate";
 import type Resolver from "@truffle/resolver";
 import TruffleError from "@truffle/error";
 
@@ -18,7 +17,7 @@ export interface RequireOptions {
   config?: TruffleConfig;
 
   context?: { [key: string]: any };
-  resolver?: Resolver | ResolverIntercept;
+  resolver?: Resolver;
 }
 
 export interface ExecOptions extends TruffleConfig {
