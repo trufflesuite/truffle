@@ -1,8 +1,9 @@
-const debug = require("debug")("workflow-compile");
-const fse = require("fs-extra");
-const { prepareConfig } = require("./utils");
-const { Shims } = require("@truffle/compile-common");
-const { getTruffleDb } = require("@truffle/db-loader");
+import debugModule from "debug";
+const debug = debugModule("workflow-compile");
+import fse from "fs-extra";
+import { prepareConfig } from "./utils";
+import { Shims, Compilation } from "@truffle/compile-common";
+import { getTruffleDb } from "@truffle/db-loader";
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -12,7 +13,6 @@ const SUPPORTED_COMPILERS = {
 
 async function compile(config) {
   // determine compiler(s) to use
-  //
   const compilers = config.compiler
     ? config.compiler === "none"
       ? []
@@ -20,7 +20,6 @@ async function compile(config) {
     : Object.keys(config.compilers);
 
   // invoke compilers
-  //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
       const Compile = SUPPORTED_COMPILERS[name];
@@ -43,7 +42,7 @@ async function compile(config) {
   // collect results - rawCompilations is CompilerResult[]
   // flatten the array and remove compilations without results
   const compilations = rawCompilations.reduce((a, compilerResult) => {
-    compilerResult.compilations.forEach(compilation => {
+    compilerResult.compilations.forEach((compilation: Compilation) => {
       if (compilation.contracts.length > 0) {
         a = a.concat(compilation);
       }
@@ -60,7 +59,7 @@ async function compile(config) {
   return { contracts, compilations };
 }
 
-const WorkflowCompile = {
+export default {
   async compile(options) {
     const config = prepareConfig(options);
 
@@ -156,5 +155,3 @@ const WorkflowCompile = {
     });
   }
 };
-
-module.exports = WorkflowCompile;

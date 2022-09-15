@@ -5,7 +5,7 @@ var path = require("path");
 var fse = require("fs-extra");
 var { Resolver } = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
-var WorkflowCompile = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile").default;
 
 describe("NPM integration", function () {
   var config;

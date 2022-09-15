@@ -1,9 +1,9 @@
-const Config = require("@truffle/config");
-const expect = require("@truffle/expect");
-const { Resolver } = require("@truffle/resolver");
-const Artifactor = require("@truffle/artifactor");
+import Config from "@truffle/config";
+import * as expect from "@truffle/expect";
+import { Resolver } from "@truffle/resolver";
+import Artifactor from "@truffle/artifactor";
 
-function prepareConfig(options) {
+export function prepareConfig(options: Config) {
   expect.options(options, ["contracts_build_directory"]);
 
   expect.one(options, ["contracts_directory", "files"]);
@@ -22,7 +22,7 @@ function prepareConfig(options) {
   return config;
 }
 
-function multiPromisify(func) {
+export function multiPromisify(func) {
   return (...args) =>
     new Promise((accept, reject) => {
       const callback = (err, ...results) => {
@@ -34,8 +34,3 @@ function multiPromisify(func) {
       func(...args, callback);
     });
 }
-
-module.exports = {
-  prepareConfig,
-  multiPromisify
-};

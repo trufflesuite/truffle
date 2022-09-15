@@ -3,7 +3,7 @@ const fse = require("fs-extra");
 
 module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
-  const WorkflowCompile = require("@truffle/workflow-compile");
+  const WorkflowCompile = require("@truffle/workflow-compile").default;
   const Config = require("@truffle/config");
   const config = Config.detect(options);
 

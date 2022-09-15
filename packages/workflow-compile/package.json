@@ -13,10 +13,11 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "4.0.33",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "prepare": "exit 0",
-    "test": "mocha"
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha -r ts-node/register test/*.ts"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.169",
@@ -32,10 +33,11 @@
   },
   "devDependencies": {
     "debug": "^4.3.1",
-    "mocha": "9.2.2"
+    "mocha": "9.2.2",
+    "ts-node": "10.7.0",
+    "typescript": "^4.7.4"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
+  }
 }

@@ -1,8 +1,8 @@
 const fse = require("fs-extra");
 const del = require("del");
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const BuildError = require("./errors/builderror");
-const {spawn} = require("child_process");
+const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("@truffle/expect");

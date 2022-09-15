@@ -59,5 +59,8 @@ typings/
 
 package-lock.json
 
+# built TS files
+dist
+
 # commit the bin directory with scripts
 !bin

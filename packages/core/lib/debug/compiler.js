@@ -1,4 +1,4 @@
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile").default;
 const { Resolver } = require("@truffle/resolver");
 const glob = require("glob");
 const path = require("path");
