@@ -56,7 +56,7 @@ const codes: OpcodeTable = {
   0x41: "COINBASE",
   0x42: "TIMESTAMP",
   0x43: "NUMBER",
-  0x44: "DIFFICULTY",
+  0x44: "PREVRANDAO|DIFFICULTY",
   0x45: "GASLIMIT",
   0x46: "CHAINID",
   0x47: "SELFBALANCE",
