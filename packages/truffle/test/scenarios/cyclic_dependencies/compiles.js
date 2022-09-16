@@ -37,7 +37,7 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
   });
 
   it("compiles cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {
-    this.timeout(20000);
+    this.timeout(25000);
 
     await CommandRunner.run("compile", config);
 
