@@ -33,9 +33,7 @@ module.exports = {
       },
       {
         option: "<contract-address>",
-        description:
-          "The address of the contract to be called.\n" +
-          "                    Mandatory if --fetch-external is passed."
+        description: "The address of the contract to be called.\n"
       },
       {
         option: "<function-name>",
