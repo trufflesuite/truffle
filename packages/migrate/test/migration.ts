@@ -2,13 +2,27 @@ import { assert } from "chai";
 import Config from "@truffle/config";
 import { Migration } from "../src/Migration";
 import * as sinon from "sinon";
-let options,
-  prepareForMigrationsReturn,
-  fakeInterfaceAdapter,
-  migration,
-  context,
-  resolver,
-  deployer;
+
+type FakeInterfaceAdapter = {
+  getBlock: any;
+};
+
+type Context = {
+  interfaceAdapter: FakeInterfaceAdapter;
+};
+
+let options: Config,
+  prepareForMigrationsReturn: {
+    interfaceAdapter: FakeInterfaceAdapter;
+    deployer: string;
+    resolver: string;
+    context: Context;
+  },
+  fakeInterfaceAdapter: FakeInterfaceAdapter,
+  migration: Migration,
+  context: Context,
+  resolver: string,
+  deployer: string;
 
 describe("Migration", function () {
   before(() => {
@@ -42,11 +56,14 @@ describe("Migration", function () {
     beforeEach(function () {
       sinon
         .stub(migration, "prepareForMigrations")
+        // @ts-ignore
         .returns(prepareForMigrationsReturn);
       sinon.stub(migration, "_load");
     });
     afterEach(function () {
+      // @ts-ignore
       migration.prepareForMigrations.restore();
+      // @ts-ignore
       migration._load.restore();
     });
 
@@ -57,6 +74,7 @@ describe("Migration", function () {
 
     it("calls _load with the proper arguments", async function () {
       await migration.run(options);
+      // @ts-ignore
       assert(migration._load.calledWith(options, context, deployer, resolver));
     });
   });

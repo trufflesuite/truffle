@@ -45,7 +45,7 @@ export class Migration {
   async _load(
     options: Config,
     context: MigrationContext,
-    deployer: typeof Deployer,
+    deployer: Deployer,
     resolver: ResolverIntercept
   ) {
     // Load assets and run `execute`
@@ -88,7 +88,7 @@ export class Migration {
   async _deploy(
     options: Config,
     context: MigrationContext,
-    deployer: typeof Deployer,
+    deployer: Deployer,
     resolver: ResolverIntercept,
     migrateFn: any
   ) {
@@ -97,6 +97,7 @@ export class Migration {
       // Allow migrations method to be async and
       // deploy to use await
       if (migrateFn && migrateFn.then !== undefined) {
+        // @ts-ignore
         await deployer.then(() => migrateFn);
       }
 

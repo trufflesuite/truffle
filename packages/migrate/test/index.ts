@@ -1,10 +1,12 @@
 import Migrate from "../src";
 import Config from "@truffle/config";
-import { assert } from "chai";
+import assert from "assert";
 import * as sinon from "sinon";
-let options, migrations;
+import { Migration } from "../src/Migration";
+let options: Config, migrations: Migration[], fakeMigration: Migration;
 
 const unstub = (stubbedThing: object, methodName: string) => {
+  // @ts-ignore
   stubbedThing[methodName].restore();
 };
 
@@ -64,13 +66,9 @@ describe("Migrate", () => {
   describe("runMigrations(migrations, options)", function () {
     beforeEach(() => {
       sinon.stub(Migrate, "wrapResolver");
-      migrations = [
-        {
-          run: () => {
-            return Promise.resolve();
-          }
-        }
-      ];
+      fakeMigration = new Migration("", Config.default());
+      fakeMigration.run = () => Promise.resolve();
+      migrations = [fakeMigration];
     });
     afterEach(() => {
       unstub(Migrate, "wrapResolver");
@@ -86,22 +84,16 @@ describe("Migrate", () => {
 
     describe("when an error occurs in a migration", function () {
       beforeEach(() => {
-        migrations = [
-          {
-            run: () => {
-              return Promise.reject(new Error("Somethin bad!"));
-            }
-          }
-        ];
+        fakeMigration = new Migration("", Config.default());
+        fakeMigration.run = () => Promise.reject("Somethin bad!");
+        migrations = [fakeMigration];
       });
 
-      it("returns a resolved Promise after running migrations", async function () {
-        try {
-          await Migrate.runMigrations(migrations, options);
-          assert(false, "This code should not run");
-        } catch (error) {
-          assert(error.message === "Somethin bad!");
-        }
+      it("throws an error", async function () {
+        assert.rejects(
+          async () => await Migrate.runMigrations(migrations, options),
+          "Somethin bad!"
+        );
       });
     });
   });
