@@ -13,7 +13,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "3.3.11",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
