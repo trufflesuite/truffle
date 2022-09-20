@@ -77,7 +77,14 @@ module.exports = async function (options) {
 
   // Alternative for ReturndataDecodingInspector, use ResultInspector for logging
   for (const { value: result } of decoding.arguments) {
-    console.log(new Codec.Format.Utils.Inspect.ResultInspector(result), result);
+    console.log(
+      util.inspect(new Codec.Export.ResultInspector(result), {
+        colors: true,
+        depth: null,
+        maxArrayLength: null,
+        breakLength: 79
+      })
+    );
   }
 
   async function sourceFromLocal(contractNameOrAddress, config) {
@@ -95,7 +102,7 @@ module.exports = async function (options) {
     const isEmpty = Object.keys(contracts).length === 0;
     if (isEmpty) {
       throw new Error(
-        "No artifacts found! Please run `truffle compile` to compile your contracts"
+        "No artifacts found! Please run `truffle compile` first to compile your contracts"
       );
     }
     const settings = {
@@ -108,8 +115,8 @@ module.exports = async function (options) {
     const contract = contracts[contractNameOrAddress];
     // Error handling to remind users to run truffle migrate first
     const instance = await contract.deployed();
-    encoder = await Encoder.forContractInstance(instance, settings);
-    decoder = await Decoder.forContractInstance(instance, settings);
+    const encoder = await Encoder.forContractInstance(instance, settings);
+    const decoder = await Decoder.forContractInstance(instance, settings);
     return { encoder, decoder };
   }
 
