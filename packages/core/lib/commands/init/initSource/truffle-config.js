@@ -12,7 +12,7 @@
  * --------------------------------
  *
  * Do you have a complex application that requires lots of transactions to deploy?
- * Use this appproach to make deployment a breeze 🏖️:
+ * Use this approach to make deployment a breeze 🏖️:
  *
  * Infura deployment needs a wallet provider (like @truffle/hdwallet-provider)
  * to sign transactions before they're sent to a remote public node. 
