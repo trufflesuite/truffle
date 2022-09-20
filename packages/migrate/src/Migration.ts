@@ -9,6 +9,14 @@ import type Config from "@truffle/config";
 import type { InterfaceAdapter } from "@truffle/interface-adapter";
 import type Web3 from "web3";
 
+// this is kind of a hacky interface to use to make TS happy until
+// @truffle/deployer is converted to TS and has its own types
+interface DeployerInterface {
+  start: () => void;
+  then: () => void;
+  finish: () => void;
+}
+
 type MigrationContext = {
   web3: Web3;
   interfaceAdapter: InterfaceAdapter;
@@ -45,7 +53,7 @@ export class Migration {
   async _load(
     options: Config,
     context: MigrationContext,
-    deployer: Deployer,
+    deployer: DeployerInterface,
     resolver: ResolverIntercept
   ) {
     // Load assets and run `execute`
@@ -88,7 +96,7 @@ export class Migration {
   async _deploy(
     options: Config,
     context: MigrationContext,
-    deployer: Deployer,
+    deployer: DeployerInterface,
     resolver: ResolverIntercept,
     migrateFn: any
   ) {
