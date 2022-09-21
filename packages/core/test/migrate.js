@@ -5,58 +5,43 @@ const WorkflowCompile = require("@truffle/workflow-compile").default;
 const Networks = require("../lib/networks");
 const path = require("path");
 const fs = require("fs-extra");
-const glob = require("glob");
 const Ganache = require("ganache");
 const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Web3 = require("web3");
+let provider;
+
+async function createProviderAndSetNetworkConfig(network, config) {
+  provider = Ganache.provider({
+    seed: network,
+    miner: {
+      instamine: "strict"
+    },
+    logging: {
+      quiet: true
+    }
+  });
+  const web3 = new Web3(provider);
+  const accounts = await web3.eth.getAccounts();
+  const networkId = await web3.eth.net.getId();
+  config.networks[network] = {
+    provider,
+    network_id: networkId,
+    from: accounts[0]
+  };
+}
 
 describe("migrate", function () {
   let config;
 
-  before("Create a sandbox", async function () {
+  before("create test project and set up network configs", async function () {
     config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
     config.networks = {};
+    await createProviderAndSetNetworkConfig("primary", config);
+    await createProviderAndSetNetworkConfig("secondary", config);
   });
-
-  function createProviderAndSetNetworkConfig(network) {
-    const provider = Ganache.provider({
-      seed: network,
-      miner: {
-        instamine: "strict"
-      },
-      logging: {
-        quiet: true
-      }
-    });
-    const web3 = new Web3(provider);
-    return web3.eth.getAccounts().then(accs => {
-      return web3.eth.net.getId().then(network_id => {
-        config.networks[network] = {
-          provider: provider,
-          network_id: network_id + "",
-          from: accs[0]
-        };
-      });
-    });
-  }
-
-  before("Get accounts and network id of network one", function () {
-    return createProviderAndSetNetworkConfig("primary");
-  });
-
-  before("Get accounts and network id of network one", function () {
-    return createProviderAndSetNetworkConfig("secondary");
-  });
-
-  after("Cleanup tmp files", function (done) {
-    glob("tmp-*", (err, files) => {
-      if (err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    });
+  after(async function () {
+    await provider.disconnect();
   });
 
   it("profiles a new project as not having any contracts deployed", async function () {
@@ -132,6 +117,12 @@ describe("migrate", function () {
     ["MetaCoin", "ConvertLib", "Migrations"].forEach(contractName => {
       currentAddresses[contractName] = networks["primary"][contractName];
     });
+
+    // we need to recreate the resolver here or the new contract addresses will
+    // not be created in the artifact as it will retrieve the artifacts from
+    // the cache - normall a new resolver is created for every run
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
 
     await Migrate.run(config.with({ quiet: true }));
 
