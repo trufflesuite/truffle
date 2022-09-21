@@ -1,6 +1,6 @@
-import * as contract from "@truffle/contract";
 import * as expect from "@truffle/expect";
 import provision from "@truffle/provisioner";
+import contract from "@truffle/contract";
 
 import type { ResolverSource, ResolvedSource } from "./source";
 import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
@@ -62,9 +62,9 @@ export class Resolver {
 
     // there may be more than one contract of the same name which will be
     // problematic - only return the first one found in the cache for now
-    for (const contract of this.cache) {
-      if (contract.contract_name === sanitizedContractName) {
-        return contract;
+    for (const cachedContract of this.cache) {
+      if (cachedContract.contract_name === sanitizedContractName) {
+        return cachedContract;
       }
     }
 

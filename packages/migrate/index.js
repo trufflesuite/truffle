@@ -166,7 +166,9 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve
+      resolve: resolver.resolve,
+      cachedContracts: resolver.cachedContracts,
+      cache: resolver.cache
     };
   },
 
