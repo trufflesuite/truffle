@@ -1,6 +1,7 @@
-import parseOpcode from "./opcodes";
-import type { Instruction, OpcodeTable, DisassemblyOptions } from "./types";
-export type { Instruction, OpcodeTable, DisassemblyOptions };
+import { parseOpcode, OpcodeTable } from "./opcodes";
+export type { OpcodeTable };
+import type { Instruction, DisassemblyOptions } from "./types";
+export type { Instruction, DisassemblyOptions };
 import * as cbor from "cbor";
 
 /**
