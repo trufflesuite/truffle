@@ -62,7 +62,7 @@
     "ethereum-cryptography": "1.1.2",
     "ethereumjs-wallet": "^1.0.2",
     "fs-extra": "^9.1.0",
-    "ganache": "7.4.0",
+    "ganache": "7.4.3",
     "get-port": "^5.1.1",
     "get-random-values": "^1.2.2",
     "glob": "^7.1.6",
