@@ -28,8 +28,8 @@ describe("truffle migrate", () => {
       try {
         await CommandRunner.run("migrate", config);
       } catch (error) {
-        console.log("the logged stuff -- %o", config.logger.loggedStuff);
-        console.log("an error occurred -- %o", error.message);
+        console.log("the logger contents -- %o", config.logger.loggedStuff);
+        console.log("the following error occurred -- %o", error.message);
         assert.fail();
       }
     }).timeout(20000);
