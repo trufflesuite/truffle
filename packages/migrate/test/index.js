@@ -57,7 +57,6 @@ describe("Migrate", () => {
 
   describe("runMigrations(migrations, options)", function () {
     beforeEach(() => {
-      sinon.stub(Migrate, "wrapResolver");
       migrations = [
         {
           run: () => {
@@ -65,16 +64,6 @@ describe("Migrate", () => {
           }
         }
       ];
-    });
-    afterEach(() => {
-      Migrate.wrapResolver.restore();
-    });
-
-    it("calls wrapResolver with the resolver and the wrapped provider", async function () {
-      await Migrate.runMigrations(migrations, options);
-      assert(
-        Migrate.wrapResolver.calledWith(options.resolver, options.provider)
-      );
     });
 
     describe("when an error occurs in a migration", function () {
