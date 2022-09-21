@@ -128,7 +128,7 @@ export class Resolver {
     };
   }
 
-  contracts(): ReturnType<typeof contract> {
+  cachedContracts(): ReturnType<typeof contract> {
     return this.cache;
   }
 }

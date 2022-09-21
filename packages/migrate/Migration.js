@@ -114,7 +114,7 @@ class Migration {
       await emitEvent(options, "migrate:migration:succeed", eventArgs);
 
       let artifacts = resolver
-        .contracts()
+        .cachedContracts()
         .map(abstraction => abstraction._json);
       if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
