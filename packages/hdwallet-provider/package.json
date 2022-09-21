@@ -30,7 +30,7 @@
     "ethereumjs-util": "^7.1.5",
     "web3": "1.7.4",
     "web3-provider-engine": "16.0.3",
-    "@truffle/hdwallet": "^0.1.0"
+    "@truffle/hdwallet": "^0.1.0-0"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
