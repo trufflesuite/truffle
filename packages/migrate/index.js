@@ -121,7 +121,7 @@ const Migrate = {
 
     if (options.quiet) clone.logger = { log: function () {} };
 
-    clone.resolver = this.wrapResolver(options.resolver, clone.provider);
+    clone.resolver = options.resolver;
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
@@ -157,19 +157,6 @@ const Migrate = {
       delete global.artifacts;
       delete global.config;
     }
-  },
-
-  wrapResolver: function (resolver, provider) {
-    return {
-      require: function (import_path, search_path) {
-        const abstraction = resolver.require(import_path, search_path);
-        abstraction.setProvider(provider);
-        return abstraction;
-      },
-      resolve: resolver.resolve,
-      cachedContracts: resolver.cachedContracts,
-      cache: resolver.cache
-    };
   },
 
   lastCompletedMigration: async function (options) {
