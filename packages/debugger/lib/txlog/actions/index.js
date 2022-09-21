@@ -211,6 +211,19 @@ export function logEvent(pointer, newPointer, step, decoding, rawEventInfo) {
   };
 }
 
+//this may be replaced once decoding info was added
+export const STORE = "TXLOG_STORE";
+export function store(pointer, newPointer, step, rawSlot, rawValue) {
+  return {
+    type: STORE,
+    pointer,
+    newPointer, //does not actually affect current pointer!
+    step,
+    rawSlot,
+    rawValue
+  };
+}
+
 export const RECORD_ORIGIN = "TXLOG_RECORD_ORIGIN";
 export function recordOrigin(pointer, address) {
   return {

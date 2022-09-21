@@ -196,6 +196,13 @@ function* updateTransactionLogSaga() {
     const rawInfo = yield select(txlog.current.rawEventInfo);
     const newPointer = yield select(txlog.current.nextActionPointer);
     yield put(actions.logEvent(pointer, newPointer, step, decoding, rawInfo));
+  } else if (yield select(txlog.current.isStore)) {
+    //note: in the future this is going to get much more complicated so as to
+    //include decoded info and combining things...
+    const newPointer = yield select(txlog.current.nextActionPointer);
+    const rawSlot = yield select(txlog.current.rawStorageSlot);
+    const rawValue = yield select(txlog.current.rawStorageValue);
+    yield put(actions.store(pointer, newPointer, step, rawSlot, rawValue));
   } else if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
