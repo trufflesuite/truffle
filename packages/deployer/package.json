@@ -30,7 +30,7 @@
     "@truffle/config": "^1.3.37",
     "@truffle/environment": "^0.2.123",
     "@truffle/workflow-compile": "^4.0.33",
-    "ganache": "7.4.0",
+    "ganache": "7.4.3",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
     "web3": "1.7.4"
