@@ -10,6 +10,7 @@ export interface DeclarationTarget {
   //this will be a function to check whether the target in question
   //has finished successfully
   isCompleted: any;
+  links: Array<string>;
   //this is the function to complete this target, this is the function that will
   //actually deploy, link, execute, etc.; ultimately the execution layer of the declarative
   //deployments module will look something like DeploymentSteps[0].run(contractName, options), etc.;
