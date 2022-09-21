@@ -167,4 +167,4 @@ const codes = {
 export type OpcodeTable = typeof codes;
 
 export const parseOpcode = (op: number) =>
-  codes[op in codes ? (op as keyof OpcodeTable) : 0xfe];
+  op in codes ? codes[op as keyof OpcodeTable] : "INVALID";
