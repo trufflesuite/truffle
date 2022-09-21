@@ -11,6 +11,8 @@ const Artifactor = require("@truffle/artifactor");
 const Web3 = require("web3");
 let provider;
 
+const providers = [];
+
 async function createProviderAndSetNetworkConfig(network, config) {
   provider = Ganache.provider({
     seed: network,
@@ -21,6 +23,9 @@ async function createProviderAndSetNetworkConfig(network, config) {
       quiet: true
     }
   });
+  // we need to save refs to all providers created so that we can disconnect
+  // them - if they aren't disconnected then the tests hang a bit
+  providers.push(provider);
   const web3 = new Web3(provider);
   const accounts = await web3.eth.getAccounts();
   const networkId = await web3.eth.net.getId();
@@ -41,7 +46,9 @@ describe("migrate", function () {
     await createProviderAndSetNetworkConfig("secondary", config);
   });
   after(async function () {
-    await provider.disconnect();
+    for (const pro of providers) {
+      await pro.disconnect();
+    }
   });
 
   it("profiles a new project as not having any contracts deployed", async function () {
