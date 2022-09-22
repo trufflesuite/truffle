@@ -1,6 +1,4 @@
-import type { OpcodeTable } from "./types";
-
-const codes: OpcodeTable = {
+const codes = {
   0x00: "STOP",
   0x01: "ADD",
   0x02: "MUL",
@@ -162,8 +160,11 @@ const codes: OpcodeTable = {
   0xf5: "CREATE2",
   0xfa: "STATICCALL",
   0xfd: "REVERT",
-  //(we can omit 0xfe INVALID)
+  0xfe: "INVALID",
   0xff: "SELFDESTRUCT"
-};
+} as const;
 
-export = (op: number) => (codes[op] ? codes[op] : "INVALID");
+export type OpcodeTable = typeof codes;
+
+export const parseOpcode = (op: number) =>
+  op in codes ? codes[op as keyof OpcodeTable] : "INVALID";

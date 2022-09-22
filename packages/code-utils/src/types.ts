@@ -4,10 +4,6 @@ export interface Instruction {
   pushData?: string;
 }
 
-export interface OpcodeTable {
-  [hex: number]: string;
-}
-
 export interface DisassemblyOptions {
   maxInstructionCount?: number;
   attemptStripMetadata?: boolean;
