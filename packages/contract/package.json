@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.6.1",
+  "version": "4.6.2",
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",
@@ -26,7 +26,7 @@
     "@truffle/contract-schema": "^3.4.10",
     "@truffle/debug-utils": "^6.0.35",
     "@truffle/error": "^0.1.1",
-    "@truffle/interface-adapter": "^0.5.21",
+    "@truffle/interface-adapter": "^0.5.22",
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",

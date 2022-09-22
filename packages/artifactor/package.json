@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.169",
+  "version": "4.0.170",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -27,7 +27,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@truffle/contract": "^4.6.1",
+    "@truffle/contract": "^4.6.2",
     "@types/fs-extra": "^8.1.0",
     "@types/lodash": "^4.14.179",
     "@types/node": "~12.12.0",
