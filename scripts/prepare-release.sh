@@ -10,11 +10,11 @@ git checkout master
 git pull origin master
 git checkout develop
 git pull origin develop
-git checkout -b release-branch-$(date +%s)
+git checkout -b release-branch-"$(date +%s)"
 
 ## Build
 yarn bootstrap
 
 ## Get output of changes for release notes
-prs-merged-since --repo trufflesuite/truffle --tag v$LAST_PUBLISHED_TAG --format markdown
+prs-merged-since --repo trufflesuite/truffle --tag v"$LAST_PUBLISHED_TAG" --format markdown
 lerna changed

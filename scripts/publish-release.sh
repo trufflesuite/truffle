@@ -4,8 +4,7 @@
 set -ex
 
 ## Obtain/check npm access
-npm whoami
-if [ "$?" != "0" ];
+if ! npm whoami;
   then
     npm login
 fi
@@ -18,7 +17,7 @@ lerna publish from-package
 ## Update git branches
 RELEASE_BRANCH_NAME=$(git branch --show-current)
 git checkout master
-git merge $RELEASE_BRANCH_NAME
+git merge "$RELEASE_BRANCH_NAME"
 git push origin master
 git checkout develop
 git pull origin master
