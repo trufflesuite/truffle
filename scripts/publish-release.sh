@@ -13,11 +13,12 @@ node ./scripts/npm-access.js
 
 ## Publish packages to npm
 lerna version
-lerna publish from-package 
+lerna publish from-package
 
 ## Update git branches
+RELEASE_BRANCH_NAME=$(git branch --show-current)
 git checkout master
-git merge develop
+git merge $RELEASE_BRANCH_NAME
 git push origin master
 git checkout develop
 git pull origin master
