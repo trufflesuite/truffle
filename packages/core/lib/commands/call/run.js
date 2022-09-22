@@ -88,6 +88,7 @@ module.exports = async function (options) {
   }
 
   async function sourceFromLocal(contractNameOrAddress, config) {
+    let encoder, decoder;
     const contractNames = fs
       .readdirSync(config.contracts_build_directory)
       .filter(filename => filename.endsWith(".json"))
@@ -105,18 +106,30 @@ module.exports = async function (options) {
         "No artifacts found! Please run `truffle compile` first to compile your contracts"
       );
     }
-    const settings = {
-      provider: config.provider,
-      projectInfo: {
-        artifacts: Object.values(contracts)
-      }
-    };
 
-    const contract = contracts[contractNameOrAddress];
-    // Error handling to remind users to run truffle migrate first
-    const instance = await contract.deployed();
-    const encoder = await Encoder.forContractInstance(instance, settings);
-    const decoder = await Decoder.forContractInstance(instance, settings);
+    if (contractNameOrAddress.startsWith("0x")) {
+      const projectInfo = {
+        artifacts: Object.values(contracts)
+      };
+
+      ({ encoder, decoder } = await getEncoderDecoderForContractAddress(
+        contractNameOrAddress,
+        projectInfo
+      ));
+    } else {
+      const settings = {
+        provider: config.provider,
+        projectInfo: {
+          artifacts: Object.values(contracts)
+        }
+      };
+
+      const contract = contracts[contractNameOrAddress];
+      // Error handling to remind users to run truffle migrate first
+      const instance = await contract.deployed();
+      encoder = await Encoder.forContractInstance(instance, settings);
+      decoder = await Decoder.forContractInstance(instance, settings);
+    }
     return { encoder, decoder };
   }
 
@@ -130,6 +143,18 @@ module.exports = async function (options) {
       commonCompilations: compileResult.compilations
     };
 
+    const { encoder, decoder } = await getEncoderDecoderForContractAddress(
+      contractNameOrAddress,
+      projectInfo
+    );
+
+    return { encoder, decoder };
+  }
+
+  async function getEncoderDecoderForContractAddress(
+    contractNameOrAddress,
+    projectInfo
+  ) {
     const projectEncoder = await Encoder.forProject({
       provider: config.provider,
       projectInfo
@@ -140,8 +165,8 @@ module.exports = async function (options) {
       provider: config.provider,
       projectInfo
     });
-
     const decoder = await projectDecoder.forAddress(contractNameOrAddress);
+
     return { encoder, decoder };
   }
 };
