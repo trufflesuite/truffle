@@ -10,7 +10,7 @@ git checkout master
 git pull origin master
 git checkout develop
 git pull origin develop
-git checkout -b release-branch-"$(date +%s)"
+git checkout -b release/"$(date +%m-%d-%y.%S)"
 
 ## Build
 yarn bootstrap
