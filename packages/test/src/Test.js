@@ -24,7 +24,7 @@ let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 chai.use(require("./assertions"));
 
 const Test = {
-  run: async function (options) {
+  run: async function (options, generateDebug) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -144,7 +144,8 @@ const Test = {
       testResolver,
       runner,
       compilations: debuggerCompilations,
-      bugger
+      bugger,
+      generateDebug
     });
 
     // Finally, run mocha.
@@ -269,7 +270,8 @@ const Test = {
     testResolver,
     runner,
     compilations,
-    bugger //for stacktracing
+    bugger, //for stacktracing
+    generateDebug
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
@@ -293,26 +295,11 @@ const Test = {
     };
     global.config = config.normalize(config);
 
-    global[config.debugGlobal] = async operation => {
-      if (!config.debug) {
-        config.logger.log(
-          `${colors.bold(
-            "Warning:"
-          )} Invoked in-test debugger without --debug flag. ` +
-            `Try: \`truffle test --debug\``
-        );
-        return operation;
-      }
-
-      // wrapped inside function so as not to load debugger on every test
-      const { CLIDebugHook } = require("../debug/mocha");
-
-      // note: this.mochaRunner will be available by the time debug()
-      // is invoked
-      const hook = new CLIDebugHook(config, compilations, this.mochaRunner);
-
-      return await hook.debug(operation);
-    };
+    global[config.debugGlobal] = generateDebug({
+      compilations,
+      mochaRunner: this.mochaRunner,
+      config
+    });
 
     const template = function (tests) {
       this.timeout(runner.TEST_TIMEOUT);

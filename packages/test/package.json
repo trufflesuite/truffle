@@ -1,6 +1,6 @@
 {
   "name": "@truffle/test",
-  "description": "On-chain migrations management",
+  "description": "Package for testing Solidity contracts.",
   "license": "MIT",
   "author": "Tyler Feickert <tyler.feickert@consensys.net>",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/test#readme",
