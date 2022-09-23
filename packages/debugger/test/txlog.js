@@ -895,4 +895,53 @@ describe("Transaction log (visualizer)", function () {
       });
     });
   });
+
+  describe("Storage writes", function () {
+    it("Logs raw storage write info", async function () {
+      this.timeout(12000);
+      const tertInstance = await abstractions.Tertiary.deployed();
+      const instance = await abstractions.VizTest.new(tertInstance.address);
+      const txHash = instance.transactionHash;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations
+      });
+
+      await bugger.runToEnd();
+
+      const untied = bugger.view(txlog.proc.transactionLog);
+      verifyNoIntermediates(untied);
+
+      const root = bugger.view(txlog.views.transactionLog);
+      const steps = bugger.view(trace.steps).length;
+      assert.equal(root.type, "transaction");
+      assert.lengthOf(root.actions, 1);
+      const call = root.actions[0];
+      assert.equal(call.type, "callexternal");
+      assert.equal(call.kind, "constructor");
+      assert.equal(call.address, instance.address);
+      assert.lengthOf(call.actions, 1);
+      const write = call.actions[0];
+      assert.equal(write.type, "write");
+      const entries = Object.entries(write.raw);
+      assert.lengthOf(entries, 1);
+      const [[key, value]] = entries;
+      assert.equal(key, "0x" + "00".repeat(32)); //zero word
+      assert.equal(
+        value,
+        "0x" +
+          tertInstance.address
+            .slice(2)
+            .toLowerCase()
+            .padStart(2 * 32, "00")
+      ); //tertInstance.address as word
+      const stepEntries = Object.entries(write.steps);
+      assert.lengthOf(stepEntries, 1);
+      const [[stepKey, step]] = stepEntries;
+      assert.equal(stepKey, key);
+      assert.isAbove(step, 0);
+      assert.isBelow(step, steps);
+    });
+  });
 });
