@@ -48,7 +48,7 @@ module.exports = {
       describe: "Specify whether the migration will save on chain",
       type: "boolean",
       default: true,
-      hide: true
+      hidden: true
     }
   },
   help: {
@@ -111,8 +111,8 @@ module.exports = {
       },
       {
         option: "--save",
-        describe: "Specify whether the migration will save on chain",
-        hide: true
+        description: "Specify whether the migration will save on chain",
+        hidden: true
       }
     ],
     allowedGlobalOptions: ["network", "config", "quiet"]

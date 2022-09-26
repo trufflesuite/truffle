@@ -35,7 +35,7 @@ module.exports = async function (selectedCommand, subCommand, options) {
 
     console.log(`  Options: `);
     for (const option of allValidOptions) {
-      if (option.internal) {
+      if (option.hidden) {
         continue;
       }
 

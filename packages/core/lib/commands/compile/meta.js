@@ -41,7 +41,7 @@ module.exports = {
       },
       {
         option: "--save-intermediate <output-file>",
-        internal: true,
+        hidden: true,
         description:
           "Save the raw compiler results into <output-file>, overwriting any existing content."
       }
