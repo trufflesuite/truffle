@@ -1,19 +1,34 @@
-const { createInterfaceAdapter } = require("@truffle/interface-adapter");
-const web3Utils = require("web3-utils");
-const Config = require("@truffle/config");
-const Migrate = require("@truffle/migrate").default;
-const { Resolver } = require("@truffle/resolver");
-const expect = require("@truffle/expect");
-const util = require("util");
-const fs = require("fs");
-const path = require("path");
-const debug = require("debug")("lib:testing:testrunner");
-const Decoder = require("@truffle/decoder");
-const Codec = require("@truffle/codec");
-const OS = require("os");
+import { createInterfaceAdapter } from "@truffle/interface-adapter";
+import web3Utils from "web3-utils";
+import Config from "@truffle/config";
+import Migrate from "@truffle/migrate";
+import { Resolver } from "@truffle/resolver";
+import expect from "@truffle/expect";
+import util from "util";
+import fs from "fs";
+import path from "path";
+import debugModule from "debug";
+const debug = debugModule("lib:testing:testrunner");
+import Decoder from "@truffle/decoder";
+import Codec from "@truffle/codec";
+import OS from "os";
+import BN from "bn.js";
 
-class TestRunner {
-  constructor(options = {}) {
+export default class TestRunner {
+  public config: Config;
+  public logger: any;
+  public provider: any;
+  public can_snapshot: boolean;
+  public first_snapshot: boolean;
+  public initial_snapshot: any;
+  public interfaceAdapter: ReturnType<typeof createInterfaceAdapter>;
+  public decoder: null | Awaited<ReturnType<typeof Decoder.forProject>>;
+  public currentTestStartBlock: null | BN;
+  public BEFORE_TIMEOUT: number;
+  public TEST_TIMEOUT: number;
+  public disableChecks: boolean;
+
+  constructor(options: Config) {
     expect.options(options, [
       "resolver",
       "provider",
@@ -107,9 +122,10 @@ class TestRunner {
   }
 
   async startTest() {
-    let blockNumber = await this.interfaceAdapter.getBlockNumber();
-    let one = web3Utils.toBN(1);
-    blockNumber = web3Utils.toBN(blockNumber);
+    const blockNumber = web3Utils.toBN(
+      await this.interfaceAdapter.getBlockNumber()
+    );
+    const one = web3Utils.toBN(1);
 
     // Add one in base 10
     this.currentTestStartBlock = blockNumber.add(one);
@@ -121,12 +137,18 @@ class TestRunner {
       return;
     }
 
-    function indent(input, indentation, initialPrefix = "") {
+    function indent(
+      input: string,
+      indentation: number,
+      initialPrefix: string = ""
+    ) {
       const unindented = input.split(/\r?\n/);
       return unindented
         .map((line, index) =>
           index === 0
-            ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
+            ? initialPrefix +
+              " ".repeat(indentation - initialPrefix.length) +
+              line
             : " ".repeat(indentation) + line
         )
         .join(OS.EOL);
@@ -144,6 +166,16 @@ class TestRunner {
         }
       );
       return indent(inspected, indentation, initialPrefix);
+    }
+
+    if (this.decoder === null) {
+      throw new Error("Decoder has not yet been initialized.");
+    }
+    if (this.currentTestStartBlock === null) {
+      throw new Error(
+        "`currentTestStartBlock` has not been initialized. You must " +
+          "call `startTest` before calling `endTest`."
+      );
     }
 
     const logs = await this.decoder.events({
@@ -198,7 +230,7 @@ class TestRunner {
     await this.rpc("evm_revert", [snapshot_id]);
   }
 
-  async rpc(method, arg) {
+  async rpc(method: string, arg?: any) {
     let request = {
       jsonrpc: "2.0",
       method: method,
@@ -215,5 +247,3 @@ class TestRunner {
     return result;
   }
 }
-
-module.exports = TestRunner;

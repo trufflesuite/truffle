@@ -5,7 +5,7 @@ const { Compile } = require("@truffle/compile-solidity");
 const { Shims } = require("@truffle/compile-common");
 const debug = require("debug")("lib:testing:soliditytest");
 
-const SolidityTest = {
+export default {
   async define(abstraction, dependencyPaths, runner, mocha) {
     const self = this;
 
@@ -222,5 +222,3 @@ const SolidityTest = {
     debug("deployed %s", abstraction.contract_name);
   }
 };
-
-module.exports = SolidityTest;

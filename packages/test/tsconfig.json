@@ -14,7 +14,7 @@
     "outDir": "dist",
     "strictBindCallApply": true,
     "strictNullChecks": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "rootDir": ".",
   },
   "include": [

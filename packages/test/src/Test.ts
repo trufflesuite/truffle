@@ -1,23 +1,24 @@
-const colors = require("colors");
-const chai = require("chai");
-const path = require("path");
-const {
+import colors from "colors";
+import chai from "chai";
+import path = require("path");
+import {
   Web3Shim,
   createInterfaceAdapter
-} = require("@truffle/interface-adapter");
-const Config = require("@truffle/config");
-const WorkflowCompile = require("@truffle/workflow-compile").default;
-const { Resolver } = require("@truffle/resolver");
-const TestRunner = require("./TestRunner");
-const SolidityTest = require("./SolidityTest");
-const RangeUtils = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");
-const expect = require("@truffle/expect");
-const { Profiler } = require("@truffle/compile-solidity/dist/profiler");
-const Migrate = require("@truffle/migrate").default;
-const originalrequire = require("original-require");
-const Codec = require("@truffle/codec");
-const debug = require("debug")("lib:test");
-const Debugger = require("@truffle/debugger");
+} from "@truffle/interface-adapter";
+import Config from "@truffle/config";
+import WorkflowCompile from "@truffle/workflow-compile";
+import { Resolver } from "@truffle/resolver";
+import TestRunner from "./TestRunner";
+import SolidityTest from "./SolidityTest";
+import RangeUtils from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
+import expect from "@truffle/expect";
+import Migrate from "@truffle/migrate";
+import { Profiler } from "@truffle/compile-solidity/dist/profiler";
+import originalrequire from  "original-require";
+import Codec from "@truffle/codec";
+import debugModule from "debug";
+const debug = debugModule("lib:test");
+import Debugger from "@truffle/debugger";
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
@@ -273,10 +274,15 @@ const Test = {
     bugger, //for stacktracing
     generateDebug
   }) {
+    // @ts-ignore
     global.interfaceAdapter = interfaceAdapter;
+    // @ts-ignore
     global.web3 = web3;
+    // @ts-ignore
     global.assert = chai.assert;
+    // @ts-ignore
     global.expect = chai.expect;
+    // @ts-ignore
     global.artifacts = {
       require: importPath => {
         let contract = testResolver.require(importPath);
@@ -293,6 +299,7 @@ const Test = {
         return contract;
       }
     };
+    // @ts-ignore
     global.config = config.normalize(config);
 
     global[config.debugGlobal] = generateDebug({
@@ -304,15 +311,18 @@ const Test = {
     const template = function (tests) {
       this.timeout(runner.TEST_TIMEOUT);
 
+      // @ts-ignore
       before("prepare suite", async function () {
         this.timeout(runner.BEFORE_TIMEOUT);
         await runner.initialize();
       });
 
+      // @ts-ignore
       beforeEach("before test", async function () {
         await runner.startTest();
       });
 
+      // @ts-ignore
       afterEach("after test", async function () {
         await runner.endTest(this);
       });
@@ -320,18 +330,21 @@ const Test = {
       tests(accounts);
     };
 
+    // @ts-ignore
     global.contract = function (name, tests) {
       Mocha.describe("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
+    // @ts-ignore
     global.contract.only = function (name, tests) {
       Mocha.describe.only("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
+    // @ts-ignore
     global.contract.skip = function (name, tests) {
       Mocha.describe.skip("Contract: " + name, function () {
         template.bind(this, tests)();
