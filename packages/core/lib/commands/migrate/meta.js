@@ -18,6 +18,7 @@ module.exports = {
     },
     "--verbose-rpc": {
       describe: "Log communication between Truffle and the Ethereum client.",
+      type: "boolean",
       default: false
     },
     "dry-run": {
