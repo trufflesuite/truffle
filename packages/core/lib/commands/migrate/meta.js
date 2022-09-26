@@ -16,6 +16,10 @@ module.exports = {
       type: "boolean",
       default: false
     },
+    "--verbose-rpc": {
+      describe: "Log communication between Truffle and the Ethereum client.",
+      default: false
+    },
     "dry-run": {
       describe: "Run migrations against an in-memory fork, for testing",
       type: "boolean",
@@ -57,7 +61,7 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run] [--save <boolean>]",
+      "[--skip-dry-run] [--describe-json] [--dry-run]",
     options: [
       {
         option: "--reset",
