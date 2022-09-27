@@ -16,6 +16,11 @@ module.exports = {
       type: "boolean",
       default: false
     },
+    "--verbose-rpc": {
+      describe: "Log communication between Truffle and the Ethereum client.",
+      type: "boolean",
+      default: false
+    },
     "dry-run": {
       describe: "Run migrations against an in-memory fork, for testing",
       type: "boolean",
@@ -43,6 +48,12 @@ module.exports = {
       describe: "Adds extra verbosity to the status of an ongoing migration",
       type: "boolean",
       default: false
+    },
+    "save": {
+      describe: "Specify whether the migration will save on chain",
+      type: "boolean",
+      default: true,
+      hidden: true
     }
   },
   help: {
@@ -102,6 +113,11 @@ module.exports = {
         option: "--describe-json",
         description:
           "Adds extra verbosity to the status of an ongoing migration"
+      },
+      {
+        option: "--save",
+        description: "Specify whether the migration will save on chain",
+        hidden: true
       }
     ],
     allowedGlobalOptions: ["network", "config", "quiet"]
