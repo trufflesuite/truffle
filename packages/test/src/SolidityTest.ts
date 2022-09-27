@@ -1,6 +1,8 @@
+// @ts-ignore
 import TestCase from "mocha/lib/test.js";
+// @ts-ignore
 import Suite from "mocha/lib/suite.js";
-import Deployer from "@truffle/deployer";
+import * as Deployer from "@truffle/deployer";
 import { Compile } from "@truffle/compile-solidity";
 import { Shims } from "@truffle/compile-common";
 import type { Compilation, CompiledContract } from "@truffle/compile-common";
@@ -42,7 +44,7 @@ export default {
     });
 
     // Function that checks transaction logs to see if a test failed.
-    async function checkResultForFailure(result) {
+    async function checkResultForFailure(result: any) {
       const logs = result.receipt.rawLogs;
       for (const log of logs) {
         const decodings = await runner.decoder.decodeLog(log, {

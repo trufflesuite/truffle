@@ -19,9 +19,18 @@ import Debugger from "@truffle/debugger";
 import type { Compilation, CompiledContract } from "@truffle/compile-common";
 import Web3 from "web3";
 
-let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
+let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
+
+type GenerateDebug =
+ (
+    options: {
+      mochaRunner: any;
+      config: Config;
+      compilations: Compilation[];
+    }
+  ) => (operation: any) => any;
 
 interface SetJSTestGlobalsInterface {
   config: Config;
@@ -32,11 +41,11 @@ interface SetJSTestGlobalsInterface {
   runner: any;
   compilations: Compilation[];
   bugger: Debugger; //for stacktracing
-  generateDebug: () => () => any;
+  generateDebug: GenerateDebug;
 }
 
 const Test = {
-  run: async function (options, generateDebug) {
+  run: async function (options: Config, generateDebug: GenerateDebug) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -49,7 +58,7 @@ const Test = {
 
     const config = Config.default().merge(options);
 
-    config.test_files = config.test_files.map(testFile => {
+    config.test_files = config.test_files.map((testFile: string) => {
       return path.resolve(testFile);
     });
 
@@ -304,7 +313,7 @@ const Test = {
     global.expect = chai.expect;
     // @ts-ignore
     global.artifacts = {
-      require: importPath => {
+      require: (importPath: string) => {
         let contract = testResolver.require(importPath);
         //HACK: both of the following should go by means
         //of the provisioner, but I'm not sure how to make
@@ -322,13 +331,14 @@ const Test = {
     // @ts-ignore
     global.config = config.normalize(config);
 
+    // @ts-ignore
     global[config.debugGlobal] = generateDebug({
       compilations,
       mochaRunner: this.mochaRunner,
       config
     });
 
-    const template = function (tests) {
+    const template = function (tests: (accounts: string[]) => any) {
       this.timeout(runner.TEST_TIMEOUT);
 
       // @ts-ignore

@@ -17,8 +17,10 @@
     "noImplicitAny": true,
     "rootDir": ".",
   },
+  "types": ["node", "mocha"],
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "typings/*.d.ts"
   ],
   "exclude": [
     "node_modules",

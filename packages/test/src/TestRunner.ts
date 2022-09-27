@@ -9,7 +9,8 @@ import fs from "fs";
 import path from "path";
 import debugModule from "debug";
 const debug = debugModule("lib:testing:testrunner");
-import Decoder from "@truffle/decoder";
+import Decoder, { DecodedLog } from "@truffle/decoder";
+import type { LogDecoding } from "@truffle/codec";
 import Codec from "@truffle/codec";
 import OS from "os";
 import BN from "bn.js";
@@ -131,7 +132,7 @@ export default class TestRunner {
     this.currentTestStartBlock = blockNumber.add(one);
   }
 
-  async endTest(mocha) {
+  async endTest(mocha: any) {
     // Skip logging if test passes and `show-events` option is not true
     if (mocha.currentTest.state !== "failed" && !this.config["show-events"]) {
       return;
@@ -154,7 +155,7 @@ export default class TestRunner {
         .join(OS.EOL);
     }
 
-    function printEvent(decoding, indentation = 0, initialPrefix = "") {
+    function printEvent(decoding: LogDecoding, indentation = 0, initialPrefix = "") {
       debug("raw event: %O", decoding);
       const inspected = util.inspect(
         new Codec.Export.LogDecodingInspector(decoding),
@@ -178,7 +179,7 @@ export default class TestRunner {
       );
     }
 
-    const logs = await this.decoder.events({
+    const logs: DecodedLog[] = await this.decoder.events({
       //NOTE: block numbers shouldn't be over 2^53 so this
       //should be fine, but should change this once decoder
       //accepts more general types for blocks
@@ -187,7 +188,7 @@ export default class TestRunner {
       disableChecks: this.disableChecks //for Solidity testing
     });
 
-    const userDefinedEventLogs = logs.filter(log => {
+    const userDefinedEventLogs: DecodedLog[] = logs.filter(log => {
       return log.decodings.every(decoding => decoding.abi.name !== "TestEvent");
     });
 
@@ -226,7 +227,7 @@ export default class TestRunner {
     return (await this.rpc("evm_snapshot")).result;
   }
 
-  async revert(snapshot_id) {
+  async revert(snapshot_id: number) {
     await this.rpc("evm_revert", [snapshot_id]);
   }
 
