@@ -16,10 +16,10 @@ const memoryAdapter = {
   name: "memory" as const
 };
 
-const sqliteAdapter = {
-  name: "sqlite" as const,
+const indexedDbAdapter = {
+  name: "indexeddb" as const,
   settings: {
-    directory: path.join(tempDir.name, "sqlite")
+    directory: path.join(tempDir.name, "indexeddb")
   }
 };
 
@@ -42,19 +42,21 @@ describe("Memory-based Workspace", () => {
   });
 });
 
-describe("SQLite-based Workspace", () => {
+describe("IndexedDb-based Workspace", () => {
   it("does persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = attach({ adapter: sqliteAdapter });
+    const workspace1 = attach({ adapter: indexedDbAdapter });
     await workspace1.add("bytecodes", {
       bytecodes: [bytecode]
     });
+
+    console.log("db-path", indexedDbAdapter.settings.directory);
 
     // make sure we can get data out of that workspace
     expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = attach({ adapter: sqliteAdapter });
+    const workspace2 = attach({ adapter: indexedDbAdapter });
 
     // but DO get data out
     expect(await workspace2.get("bytecodes", id)).toBeDefined();

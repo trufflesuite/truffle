@@ -28,7 +28,7 @@ export class WorkspaceClient {
   constructor() {
     this.workspace = attach({
       adapter: {
-        name: "sqlite",
+        name: "indexeddb",
         settings: {
           directory: tempDir.name
         }

@@ -58,7 +58,7 @@ export type IncludeSettings = {
    * Force the underlying persistence adapter to disable use of certain
    * database indexes. This option exists for purposes of testing fallback
    * behavior for persistence query generation failure. You probably don't
-   * need to use this, but it may help diagnose problems when using the SQLite
+   * need to use this, but it may help diagnose problems when using the IndexedDb
    * adapter if you see errors about excessive SQL query parameters.
    *
    * @default false

@@ -36,7 +36,7 @@ mutable). Adding immutable resources is idempotent.
 
 ## Persistence
 
-@truffle/db supports persisting to SQLite databases, to folders of JSON files,
+@truffle/db supports persisting to IndexedDB databases, to folders of JSON files,
 or to memory. This persistence is currently implemented using
 [PouchDB](https://pouchdb.com) as adapter.
 

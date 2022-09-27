@@ -12,14 +12,16 @@ export interface DatabasesSettings {
 }
 
 export const getDefaultSettings: GetDefaultSettings = () => ({
-  directory: path.join(Config.getTruffleDataDirectory(), ".db", "sqlite")
+  directory: path.join(Config.getTruffleDataDirectory(), ".db")
 });
 
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;
 
   setup(settings: DatabasesSettings) {
-    this.directory = settings.directory;
+    // ensure db files reside in a path that ends with indexeddb
+    // whether specified in config, or using default
+    this.directory = path.join(settings.directory, "indexeddb");
     fse.ensureDirSync(this.directory);
   }
 
