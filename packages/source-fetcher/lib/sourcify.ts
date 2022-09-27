@@ -47,13 +47,15 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "kovan",
     "sepolia",
     "optimistic",
-    "kovan-optimistic",
+    "kovan-optimistic", //can no longer verify but can still fetch existing
     "goerli-optimistic",
     "arbitrum",
     "rinkeby-arbitrum",
+    "goerli-arbitrum",
     "polygon",
     "mumbai-polygon",
     "gnosis",
+    "optimism-gnosis",
     //sourcify does *not* support poa core...?
     "sokol-poa",
     "binance",
@@ -101,7 +103,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "godwoken",
     "testnet-godwoken",
     //sourcify does *not* support xinfin mainnet...?
-    "apothem-xinfin"
+    "apothem-xinfin",
+    "canto"
     //I'm excluding crystaleum as it has network ID different from chain ID
   ]);
 
