@@ -1,12 +1,19 @@
-const TestCase = require("mocha/lib/test.js");
-const Suite = require("mocha/lib/suite.js");
-const Deployer = require("@truffle/deployer");
-const { Compile } = require("@truffle/compile-solidity");
-const { Shims } = require("@truffle/compile-common");
-const debug = require("debug")("lib:testing:soliditytest");
+import TestCase from "mocha/lib/test.js";
+import Suite from "mocha/lib/suite.js";
+import Deployer from "@truffle/deployer";
+import { Compile } from "@truffle/compile-solidity";
+import { Shims } from "@truffle/compile-common";
+import type { Compilation, CompiledContract } from "@truffle/compile-common";
+import debugModule from "debug";
+const debug = debugModule("lib:testing:soliditytest");
 
 export default {
-  async define(abstraction, dependencyPaths, runner, mocha) {
+  async define(
+    abstraction: any,
+    dependencyPaths: string[],
+    runner: any,
+    mocha: any
+  ) {
     const self = this;
 
     const suite = new Suite(abstraction.contract_name, {});
@@ -110,7 +117,7 @@ export default {
     mocha.suite.addSuite(suite);
   },
 
-  async compileNewAbstractInterface(runner) {
+  async compileNewAbstractInterface(runner: any) {
     debug("compiling");
     const config = runner.config;
 
@@ -138,9 +145,12 @@ export default {
         quiet: true
       })
     });
-    const contracts = compilations.reduce((a, compilation) => {
-      return a.concat(compilation.contracts);
-    }, []);
+    const contracts = compilations.reduce(
+      (a: CompiledContract[], compilation: Compilation) => {
+        return a.concat(compilation.contracts);
+      },
+      []
+    );
 
     // Set network values.
     for (let contract of contracts) {
@@ -154,7 +164,11 @@ export default {
     debug("compiled");
   },
 
-  async deployTestDependencies(abstraction, dependencyPaths, runner) {
+  async deployTestDependencies(
+    abstraction: any,
+    dependencyPaths: string[],
+    runner: any
+  ) {
     debug("deploying %s", abstraction.contract_name);
     const deployer = new Deployer(
       runner.config.with({
