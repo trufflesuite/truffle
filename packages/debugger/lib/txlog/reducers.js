@@ -58,6 +58,29 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         }
       };
 
+    case actions.STORE:
+      //this case will likely need to be redone when decoding is added
+      //(likely split into multiple cases)
+      //for now, there is no combining of different writes, but when decoding
+      //is added there will need to be!
+      return {
+        byPointer: {
+          ...state.byPointer,
+          [pointer]: {
+            ...node,
+            actions: [...node.actions, newPointer]
+          },
+          [newPointer]: {
+            type: "write",
+            raw: {
+              [action.rawSlot]: action.rawValue
+            },
+            steps: {
+              [action.rawSlot]: step
+            }
+          }
+        }
+      };
     case actions.INTERNAL_CALL:
       return {
         byPointer: {
@@ -387,7 +410,7 @@ function currentNodePointer(state = "", action) {
     case actions.UNLOAD_TRANSACTION:
       return "";
     default:
-      //includes events
+      //includes events & stores
       return state;
   }
 }
@@ -408,7 +431,7 @@ function pointerStack(state = [], action) {
     case actions.UNLOAD_TRANSACTION:
       return [];
     default:
-      //includes events
+      //includes events & stores
       return state;
   }
 }

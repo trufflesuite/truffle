@@ -270,6 +270,28 @@ let txlog = createSelectorTree({
     isLog: createLeaf([evm.current.step.isLog], identity),
 
     /**
+     * txlog.current.isStore
+     */
+    isStore: createLeaf([evm.current.step.isStore], identity),
+
+    /**
+     * txlog.current.rawStorageSlot
+     * note we prepend 0x
+     */
+    rawStorageSlot: createLeaf(
+      [evm.current.step.isStore, evm.current.step.storageAffected],
+      (isStore, slot) => (isStore ? "0x" + slot : null)
+    ),
+
+    /**
+     * txlog.current.rawStorageValue
+     * note we prepend 0x
+     */
+    rawStorageValue: createLeaf([evm.current.step.valueStored], value =>
+      value !== null ? "0x" + value : null
+    ),
+
+    /**
      * txlog.current.rawEventInfo
      */
     rawEventInfo: {
