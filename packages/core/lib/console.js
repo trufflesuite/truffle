@@ -242,10 +242,8 @@ class Console extends EventEmitter {
     Object.keys(contextVars || {}).forEach(key => {
       if (overwriteReplContextVars) {
         this.repl.context[key] = contextVars[key];
-      } else {
-        if (this.repl.context[key] === undefined) {
-          this.repl.context[key] = contextVars[key];
-        }
+      } else if (this.repl.context[key] === undefined) {
+        this.repl.context[key] = contextVars[key];
       }
     });
   }
