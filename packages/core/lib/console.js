@@ -177,7 +177,8 @@ class Console extends EventEmitter {
     const truffleGlobals = {
       web3: this.web3,
       interfaceAdapter: this.interfaceAdapter,
-      accounts
+      accounts,
+      artifacts: this.options.resolver
     };
 
     // we insert user variables first so as to not clobber Truffle's
