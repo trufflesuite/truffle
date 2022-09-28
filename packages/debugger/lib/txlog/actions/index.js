@@ -211,7 +211,7 @@ export function logEvent(pointer, newPointer, step, decoding, rawEventInfo) {
   };
 }
 
-//this may be replaced once decoding info was added
+//this may be replaced once decoding info is added
 export const STORE = "TXLOG_STORE";
 export function store(pointer, newPointer, step, rawSlot, rawValue) {
   return {
