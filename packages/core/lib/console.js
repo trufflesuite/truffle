@@ -78,7 +78,7 @@ class Console extends EventEmitter {
       this.repl.displayPrompt();
 
       // hydrate the environment with the user's contracts
-      this.provision();
+      this.provision(false);
 
       this.repl.on("exit", () => {
         process.exit();
@@ -187,7 +187,9 @@ class Console extends EventEmitter {
     };
   }
 
-  provision() {
+  // overwriteReplContextVars is provided to allow us to avoid clobbering native
+  // Node objects (e.g. Buffer, number) on the first provision
+  provision(overwriteReplContextVars = true) {
     let files;
     try {
       const unfilteredFiles = fse.readdirSync(
@@ -222,11 +224,11 @@ class Console extends EventEmitter {
       return abstraction;
     });
 
-    this.resetContractsInConsoleContext(abstractions);
+    this.resetContractsInConsoleContext(abstractions, overwriteReplContextVars);
     return abstractions;
   }
 
-  resetContractsInConsoleContext(abstractions) {
+  resetContractsInConsoleContext(abstractions, overwriteReplContextVars) {
     abstractions = abstractions || [];
 
     const contextVars = {};
@@ -237,7 +239,13 @@ class Console extends EventEmitter {
 
     // make sure the repl gets the new contracts in its context
     Object.keys(contextVars || {}).forEach(key => {
-      this.repl.context[key] = contextVars[key];
+      if (overwriteReplContextVars) {
+        this.repl.context[key] = contextVars[key];
+      } else {
+        if (this.repl.context[key] === undefined) {
+          this.repl.context[key] = contextVars[key];
+        }
+      }
     });
   }
 
