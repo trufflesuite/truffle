@@ -171,6 +171,7 @@ export interface EventOptions {
    * the event -- should be returned.  Defaults to `"off"`.
    */
   extras?: ExtrasAllowed;
+  disableChecks?: boolean;
 }
 
 /**
