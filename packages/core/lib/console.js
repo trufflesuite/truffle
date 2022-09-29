@@ -47,6 +47,10 @@ class Console extends EventEmitter {
     this.options = options;
 
     this.repl = null;
+    // we need to keep tract of name conflicts that occur between contracts and
+    // repl context objects so as not to overwrite them - this is to prevent
+    // overwriting Node native objects like Buffer, number, etc.
+    this.replContextNameConflicts = [];
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
@@ -56,6 +60,14 @@ class Console extends EventEmitter {
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
+  }
+
+  detectNameConflicts(abstractions) {
+    for (const abstraction of abstractions) {
+      if (this.repl.context[abstraction.contract_name] !== undefined) {
+        this.replContextNameConflicts.push(abstraction.contract_name);
+      }
+    }
   }
 
   async start() {
@@ -78,7 +90,7 @@ class Console extends EventEmitter {
       this.repl.displayPrompt();
 
       // hydrate the environment with the user's contracts
-      this.provision(false);
+      this.provision(true);
 
       this.repl.on("exit", () => {
         process.exit();
@@ -188,9 +200,7 @@ class Console extends EventEmitter {
     };
   }
 
-  // overwriteReplContextVars is provided to allow us to avoid clobbering native
-  // Node objects (e.g. Buffer, number) on the first provision
-  provision(overwriteReplContextVars = true) {
+  provision(initialProvision = false) {
     let files;
     try {
       const unfilteredFiles = fse.readdirSync(
@@ -225,26 +235,30 @@ class Console extends EventEmitter {
       return abstraction;
     });
 
-    this.resetContractsInConsoleContext(abstractions, overwriteReplContextVars);
+    if (initialProvision) {
+      this.detectNameConflicts(abstractions);
+    }
+
+    this.resetContractsInConsoleContext(abstractions);
     return abstractions;
   }
 
-  resetContractsInConsoleContext(abstractions, overwriteReplContextVars) {
+  resetContractsInConsoleContext(abstractions) {
     abstractions = abstractions || [];
 
     const contextVars = {};
 
     abstractions.forEach(abstraction => {
-      contextVars[abstraction.contract_name] = abstraction;
+      // don't overwrite Node's native objects - we detect name conflicts
+      // on the first call to `provision`
+      if (!this.replContextNameConflicts.includes(abstraction.contract_name)) {
+        contextVars[abstraction.contract_name] = abstraction;
+      }
     });
 
     // make sure the repl gets the new contracts in its context
     Object.keys(contextVars || {}).forEach(key => {
-      if (overwriteReplContextVars) {
-        this.repl.context[key] = contextVars[key];
-      } else if (this.repl.context[key] === undefined) {
-        this.repl.context[key] = contextVars[key];
-      }
+      this.repl.context[key] = contextVars[key];
     });
   }
 
