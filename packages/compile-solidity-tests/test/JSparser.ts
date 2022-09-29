@@ -58,7 +58,7 @@ describe("JSparser", () => {
   });
 
   it("properly throws when passed an invalid parser value", async function () {
-    this.timeout(3000);
+    this.timeout(20000);
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 
