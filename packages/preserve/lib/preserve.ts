@@ -47,7 +47,7 @@ export async function* preserve(
     }
   }
 
-  // Filter out duplicates afterwards so that we only keep the first occurrance of the plugin
+  // Filter out duplicates afterwards so that we only keep the first occurrence of the plugin
   plan = plan.filter((plugin, index) => index === plan.findIndex(other => other.name === plugin.name));
 
   /*
