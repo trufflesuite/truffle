@@ -256,6 +256,21 @@ class Console extends EventEmitter {
       }
     });
 
+    if (this.replContextNameConflicts.length > 0) {
+      const contractNames =
+        this.replContextNameConflicts === 1
+          ? this.replContextNameConflicts[0]
+          : this.replContextNameConflicts.join(" ,");
+      console.log(
+        `\n > Warning: One or more of your contract(s) has a name conflict ` +
+          `with something in the current repl context and was not loaded by ` +
+          `default. \n > You can use 'artifacts.require("<artifactName>")' ` +
+          `to obtain a reference to your contract(s). \n > Truffle recommends ` +
+          `that you rename your contract to avoid problems. \n > The following ` +
+          `name conflicts exist: ${contractNames}.`
+      );
+    }
+
     // make sure the repl gets the new contracts in its context
     Object.keys(contextVars || {}).forEach(key => {
       this.repl.context[key] = contextVars[key];
