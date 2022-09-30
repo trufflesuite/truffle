@@ -8,7 +8,6 @@ const Web3 = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
-console.log(commands);
 const allowedConsoleCommands = Object.keys(commands).filter(
   cmd => !excludedCommands.has(cmd)
 );
