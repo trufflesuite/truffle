@@ -286,7 +286,7 @@ class Console extends EventEmitter {
     // processInput returns a sanitized string
     const processedInput = processInput(input);
     if (
-      processedInput in this.allowedCommands &&
+      this.allowedCommands.includes(processedInput.split(" ")[0]) &&
       getCommand({
         inputStrings: processedInput.split(" "),
         options: {},
