@@ -1075,13 +1075,103 @@ const data = createSelectorTree({
      * data.current.internalFunctionsTable
      */
     internalFunctionsTable: createLeaf(
-      [evm.current.isIR, "./functionsByProgramCounter"],
+      [evm.current.isIR, "./functionsByProgramCounter", "./functionsByIndex"],
       //for Solidity compiled with IR turned on, internal function pointers
-      //are encoded by index rather than by PC value.  unfortunately the
-      //indices are hard to predict and so at present we can't decode these
-      //(at least, not without a fair bit more effort).  As such we won't set
-      //up an internal functions table if IR is turned on.
-      (isIR, byPC) => (isIR ? undefined : byPC)
+      //are encoded in terms of an index rather than a PC value.
+      (isIR, byPC, byIndex) => (isIR ? byIndex : byPC)
+    ),
+
+    /**
+     * data.current.internalFunctionsTableKind
+     */
+    internalFunctionsTableKind: createLeaf(
+      [evm.current.isIR],
+      //index/strict doesn't exist yet; in the future that will be a possible
+      //return value as well
+      isIR => (isIR ? "index/loose" : "pcpair")
+    ),
+
+    /**
+     * data.current.functionsByIndex
+     */
+    functionsByIndex: createLeaf(
+      [evm.current.context, "./scopes/inlined"],
+      ({ linearizedBaseContracts, contractId, compilationId }, scopes) => {
+        let linearizedBaseContractsFromBase = linearizedBaseContracts
+          .slice()
+          .reverse(); //slice because reverse is in-place
+        linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
+        //the contract itself, because we want to treat that one specially
+        //now: put together the function nodes.  we want all *internal* functions that are
+        //visible from the current contract. we will group each function node together with
+        //certain additional information -- its contract node, and the JSON pointers for it
+        //and its contract.
+        const functionInfos = linearizedBaseContractsFromBase
+          .flatMap(baseContractId =>
+            scopes[baseContractId].definition.nodes
+              .filter(
+                //for the base contracts, that means visibilities public or internal;
+                //not external, because those aren't internal, and not private, because those
+                //aren't visible
+                node =>
+                  node.nodeType === "FunctionDefinition" &&
+                  (node.visibility === "public" ||
+                    node.visibility === "internal")
+              )
+              .map(node => ({
+                node,
+                contractNode: scopes[baseContractId].definition,
+                pointer: scopes[node.id].pointer,
+                contractPointer: scopes[baseContractId].pointer
+              }))
+          )
+          .concat(
+            scopes[contractId].definition.nodes
+              .filter(
+                //for the contract itself, any visibility except external is OK (the contract
+                //can see its own private functions)
+                node =>
+                  node.nodeType === "FunctionDefinition" &&
+                  node.visibility !== "external"
+              )
+              .map(node => ({
+                node,
+                contractNode: scopes[contractId].definition,
+                pointer: scopes[node.id].pointer,
+                contractPointer: scopes[contractId].pointer
+              }))
+          );
+        //now that we have the function nodes, we need to transform them into table entries.
+        let tableEntries = functionInfos.map(
+          ({ node, contractNode, pointer, contractPointer }) => ({
+            isDesignatedInvalid: false,
+            sourceIndex: Number(node.src.split(":")[2]), //to get the source index, we
+            //parse the node's source range, which has the form start:length:file
+            compilationId,
+            pointer,
+            node,
+            name: node.name,
+            id: node.id,
+            mutability: Codec.Ast.Utils.mutability(node),
+            contractPointer,
+            contractNode,
+            //note that we know that contractNode is not null, since we're not handling
+            //free functions here. this may need to change once we are...
+            contractName: contractNode.name,
+            contractId: contractNode.id,
+            contractKind: contractNode.contractKind,
+            contractPayable: Codec.Ast.Utils.isContractPayable(contractNode)
+          })
+        );
+        //we also need to prepend the entry for the designated invalid function, which
+        //receives index 0.  (the other functions begin at index 1.)
+        tableEntries.unshift({ isDesignatedInvalid: true });
+        //NOTE: we omit free functions, library functions, etc.
+        //that is because we don't presently know how to handle them.
+        //fortunately, they go on the end, so they don't screw up the indices we
+        //*are* including!
+        return tableEntries;
+      }
     ),
 
     /**
