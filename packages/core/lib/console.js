@@ -64,7 +64,11 @@ class Console extends EventEmitter {
 
   detectNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
-      if (this.repl.context[abstraction.contract_name] !== undefined) {
+      if (
+        Object.getOwnPropertyNames(this.repl.context.global).includes(
+          abstraction.contract_name
+        )
+      ) {
         this.replContextNameConflicts.push(abstraction.contract_name);
       }
     }
@@ -260,7 +264,7 @@ class Console extends EventEmitter {
       const contractNames =
         this.replContextNameConflicts === 1
           ? this.replContextNameConflicts[0]
-          : this.replContextNameConflicts.join(" ,");
+          : this.replContextNameConflicts.join(", ");
       console.log(
         `\n > Warning: One or more of your contract(s) has a name conflict ` +
           `with something in the current repl context and was not loaded by ` +
