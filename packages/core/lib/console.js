@@ -16,13 +16,16 @@ const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
 
-const processInput = input => {
-  const inputComponents = input.trim().split(" ");
-  if (inputComponents.length === 0) return input;
+const processInput = (input, allowedCommands) => {
+  const positionals = input.trim().split(" ");
+  if (positionals.length === 0) return input;
 
-  if (inputComponents[0] === "truffle") {
-    return inputComponents.slice(1).join(" ");
+  if (positionals[0] === "truffle") {
+    return allowedCommands.includes(positionals[1])
+      ? positionals.slice(1).join(" ") // remove truffle prefix
+      : ""; // treat disallowed command as empty string
   }
+
   return input.trim();
 };
 
@@ -283,8 +286,7 @@ class Console extends EventEmitter {
   }
 
   interpret(input, context, filename, callback) {
-    // processInput returns a sanitized string
-    const processedInput = processInput(input);
+    const processedInput = processInput(input, this.allowedCommands);
     if (
       this.allowedCommands.includes(processedInput.split(" ")[0]) &&
       getCommand({
