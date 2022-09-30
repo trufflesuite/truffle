@@ -8,11 +8,10 @@ const Web3 = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
-const consoleCommands = Object.keys(commands).reduce((acc, name) => {
-  return !excludedCommands.has(name)
-    ? Object.assign(acc, { [name]: commands[name] })
-    : acc;
-}, {});
+console.log(commands);
+const allowedConsoleCommands = Object.keys(commands).filter(
+  cmd => !excludedCommands.has(cmd)
+);
 let truffleConsole, consoleOptions;
 
 describe("Console", function () {
@@ -42,7 +41,7 @@ describe("Console", function () {
         { path: pathToMoreUserJs },
         { path: pathToUserJs, as: "namespace" }
       ];
-      truffleConsole = new Console(consoleCommands, consoleOptions);
+      truffleConsole = new Console(allowedConsoleCommands, consoleOptions);
       sinon
         .stub(truffleConsole.interfaceAdapter, "getAccounts")
         .returns(["0x0"]);
@@ -88,7 +87,10 @@ describe("Console", function () {
           "test/sources/moreUserVariables.js"
         );
         otherConsoleOptions["require-none"] = true;
-        otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
+        otherTruffleConsole = new Console(
+          allowedConsoleCommands,
+          otherConsoleOptions
+        );
       });
 
       it("won't load any user-defined JS", async function () {
@@ -117,7 +119,10 @@ describe("Console", function () {
           config.working_directory,
           "test/sources/nameConflicts.js"
         );
-        otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
+        otherTruffleConsole = new Console(
+          allowedConsoleCommands,
+          otherConsoleOptions
+        );
       });
 
       it("won't let users clobber Truffle variables", async function () {
@@ -143,7 +148,10 @@ describe("Console", function () {
           provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
-        otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
+        otherTruffleConsole = new Console(
+          allowedConsoleCommands,
+          otherConsoleOptions
+        );
       });
 
       it("accepts options.r", async function () {

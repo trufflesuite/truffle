@@ -27,7 +27,7 @@ const processInput = input => {
 };
 
 class Console extends EventEmitter {
-  constructor(tasks, options) {
+  constructor(allowedCommands, options) {
     super();
     EventEmitter.call(this);
 
@@ -44,6 +44,7 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
+    this.allowedCommands = allowedCommands;
     this.options = options;
 
     this.repl = null;
@@ -285,6 +286,7 @@ class Console extends EventEmitter {
     // processInput returns a sanitized string
     const processedInput = processInput(input);
     if (
+      processedInput in this.allowedCommands &&
       getCommand({
         inputStrings: processedInput.split(" "),
         options: {},
