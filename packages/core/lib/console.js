@@ -17,7 +17,7 @@ const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
 
 const processInput = (input, allowedCommands) => {
-  const positionals = input.trim().split(" ");
+  const positionals = input.trim().split(/\s+/);
   if (positionals.length === 0) return input;
 
   if (positionals[0] === "truffle") {
