@@ -41,6 +41,7 @@ export interface EvmInfo {
   contexts?: Contexts.Contexts;
   currentContext?: Contexts.Context;
   internalFunctionsTable?: InternalFunctions;
+  internalFunctionsTableKind?: "pcpair" | "index";
 }
 
 export interface AllocationInfo {
@@ -54,7 +55,7 @@ export interface AllocationInfo {
 }
 
 export interface InternalFunctions {
-  [pc: number]: InternalFunction;
+  [pcOrIndex: number]: InternalFunction;
 }
 
 export interface InternalFunction {
