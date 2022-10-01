@@ -17,13 +17,17 @@ const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
 
 const processInput = (input, allowedCommands) => {
-  const positionals = input.trim().split(/\s+/);
-  if (positionals.length === 0) return input;
+  const words = input.trim().split(/\s+/);
+  if (words.length === 0) return input;
 
-  if (positionals[0] === "truffle") {
-    return allowedCommands.includes(positionals[1])
-      ? positionals.slice(1).join(" ") // remove truffle prefix
-      : ""; // treat disallowed command as empty string
+  if (words[0] === "truffle") {
+    if (allowedCommands.includes(words[1])) {
+      return words.slice(1).join(" ");
+    }
+    // Log friendly information
+    // return console.info expression which, when processed, will not modify
+    // the `_` variable.
+    return `console.info("ℹ️ : 'truffle ${words[1]}' is not allowed within Truffle REPL")`;
   }
 
   return input.trim();
