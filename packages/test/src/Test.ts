@@ -8,11 +8,11 @@ import { Resolver } from "@truffle/resolver";
 import { TestRunner } from "./TestRunner";
 import { SolidityTest } from "./SolidityTest";
 import RangeUtils from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
-import expect from "@truffle/expect";
+import * as expect from "@truffle/expect";
 import Migrate from "@truffle/migrate";
 import { Profiler } from "@truffle/compile-solidity/dist/profiler";
 import originalrequire from "original-require";
-import Codec from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 import debugModule from "debug";
 const debug = debugModule("lib:test");
 import Debugger from "@truffle/debugger";
@@ -21,7 +21,7 @@ import Web3 from "web3";
 
 let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 
-chai.use(require("./assertions"));
+chai.use(require("./assertions").default);
 
 type GenerateDebug = (options: {
   mochaRunner: any;

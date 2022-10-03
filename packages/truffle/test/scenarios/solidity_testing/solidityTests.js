@@ -47,6 +47,7 @@ describe("Solidity Tests", function () {
           assert(output.includes("1 passing"));
         })
         .catch(error => {
+          console.log("the output is -- %o", logger.contents());
           assert(false, `An error occurred: ${error}`);
         });
     });

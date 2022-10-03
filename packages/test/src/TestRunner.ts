@@ -3,13 +3,13 @@ import web3Utils from "web3-utils";
 import Config from "@truffle/config";
 import Migrate from "@truffle/migrate";
 import { Resolver } from "@truffle/resolver";
-import expect from "@truffle/expect";
+import * as expect from "@truffle/expect";
 import util from "util";
 import fs from "fs";
 import path from "path";
 import debugModule from "debug";
 const debug = debugModule("lib:testing:testrunner");
-import Decoder, { DecodedLog } from "@truffle/decoder";
+import * as Decoder from "@truffle/decoder";
 import type { LogDecoding } from "@truffle/codec";
 import Codec from "@truffle/codec";
 import OS from "os";
@@ -183,7 +183,7 @@ export class TestRunner {
       );
     }
 
-    const logs: DecodedLog[] = await this.decoder.events({
+    const logs: Decoder.DecodedLog[] = await this.decoder.events({
       //NOTE: block numbers shouldn't be over 2^53 so this
       //should be fine, but should change this once decoder
       //accepts more general types for blocks
@@ -192,7 +192,7 @@ export class TestRunner {
       disableChecks: this.disableChecks //for Solidity testing
     });
 
-    const userDefinedEventLogs: DecodedLog[] = logs.filter(log => {
+    const userDefinedEventLogs: Decoder.DecodedLog[] = logs.filter(log => {
       return log.decodings.every(decoding => decoding.abi.name !== "TestEvent");
     });
 

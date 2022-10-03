@@ -2,7 +2,7 @@
 import TestCase from "mocha/lib/test.js";
 // @ts-ignore
 import Suite from "mocha/lib/suite.js";
-import * as Deployer from "@truffle/deployer";
+import Deployer from "@truffle/deployer";
 import { Compile } from "@truffle/compile-solidity";
 import { Shims } from "@truffle/compile-common";
 import type { Compilation, CompiledContract } from "@truffle/compile-common";
