@@ -713,8 +713,7 @@ function decodeInternalFunction(
       const error = {
         kind: "MalformedInternalFunctionError" as const,
         context,
-        deployedProgramCounter: 0,
-        constructorProgramCounter: constructorPc
+        rawInformation: raw
       };
       if (strict) {
         throw new StopDecodingError(error);
@@ -730,8 +729,7 @@ function decodeInternalFunction(
       const error = {
         kind: "DeployedFunctionInConstructorError" as const,
         context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: 0
+        rawInformation: raw
       };
       if (strict) {
         throw new StopDecodingError(error);
@@ -774,39 +772,19 @@ function decodeInternalFunction(
     } else {
       //otherwise, it is an error.  however, for technical reasons,
       //the kind of error it is depends on whether it's a pcpair or an index.
-      switch (raw.kind) {
-        case "pcpair": {
-          const error = {
-            kind: "NoSuchPcValueError" as const,
-            context,
-            deployedProgramCounter: raw.deployedProgramCounter,
-            constructorProgramCounter: raw.constructorProgramCounter
-          };
-          if (strict) {
-            throw new StopDecodingError(error);
-          }
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error
-          };
-        }
-        case "index": {
-          const error = {
-            kind: "NoSuchFunctionIndexError" as const,
-            context,
-            functionIndex: raw.functionIndex
-          };
-          if (strict) {
-            throw new StopDecodingError(error);
-          }
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error
-          };
-        }
+      const error = {
+        kind: "NoSuchInternalFunctionError" as const,
+        context,
+        rawInformation: raw
+      };
+      if (strict) {
+        throw new StopDecodingError(error);
       }
+      return {
+        type: dataType,
+        kind: "error" as const,
+        error
+      };
     }
   }
   //finally, the rest of this handles the case where we did find an entry,
