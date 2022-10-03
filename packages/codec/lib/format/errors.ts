@@ -712,7 +712,8 @@ export interface FunctionInternalErrorResult {
  */
 export type FunctionInternalError =
   | FunctionInternalPaddingError
-  | NoSuchInternalFunctionError
+  | NoSuchPcValueError
+  | NoSuchFunctionIndexError
   | DeployedFunctionInConstructorError
   | MalformedInternalFunctionError;
 
@@ -731,17 +732,29 @@ export interface FunctionInternalPaddingError {
 }
 
 /**
- * Indicates that the function pointer being decoded
- * fails to point to a valid function, and also is not one of the
- * default values
+ * Indicates that the function pointer being decoded (one given by PC value)
+ * fails to point to a valid function, and also is not one of the default
+ * values
  *
  * @Category Function types
  */
-export interface NoSuchInternalFunctionError {
-  kind: "NoSuchInternalFunctionError";
+export interface NoSuchPcValueError {
+  kind: "NoSuchPcValueError";
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
+}
+
+/**
+ * Indicates that the function pointer being decoded (one given by function
+ * index) fails to point to a valid function, and also is not zero
+ *
+ * @Category Function types
+ */
+export interface NoSuchFunctionIndexError {
+  kind: "NoSuchFunctionIndexError";
+  context: Types.ContractType;
+  functionIndex: number;
 }
 
 /**
