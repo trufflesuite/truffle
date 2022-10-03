@@ -1,3 +1,3 @@
-# @truffle/migrate
+# @truffle/test
 
-On-chain migrations management
+Infrastructure for the `truffle test` command.
