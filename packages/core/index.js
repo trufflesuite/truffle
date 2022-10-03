@@ -6,7 +6,7 @@ module.exports = {
   create: require("./lib/commands/create/helpers"),
   // TODO: update this to non-legacy the next breaking change
   contracts: require("@truffle/workflow-compile/legacy"),
-  test: require("./lib/testing/Test"),
+  test: require("@truffle/test").Test,
   version: pkg.version,
   ganache: require("ganache")
 };

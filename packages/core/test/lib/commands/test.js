@@ -5,7 +5,7 @@ const {
 const path = require("path");
 const fse = require("fs-extra");
 const WorkflowCompile = require("@truffle/workflow-compile").default;
-const Test = require("../../../lib/testing/Test");
+const { Test } = require("@truffle/test");
 const Config = require("@truffle/config");
 const tmp = require("tmp");
 let config;
