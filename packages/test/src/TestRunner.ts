@@ -15,7 +15,7 @@ import Codec from "@truffle/codec";
 import OS from "os";
 import BN from "bn.js";
 
-export default class TestRunner {
+export class TestRunner {
   public config: Config;
   public logger: any;
   public provider: any;
@@ -155,7 +155,11 @@ export default class TestRunner {
         .join(OS.EOL);
     }
 
-    function printEvent(decoding: LogDecoding, indentation = 0, initialPrefix = "") {
+    function printEvent(
+      decoding: LogDecoding,
+      indentation = 0,
+      initialPrefix = ""
+    ) {
       debug("raw event: %O", decoding);
       const inspected = util.inspect(
         new Codec.Export.LogDecodingInspector(decoding),

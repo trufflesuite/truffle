@@ -9,7 +9,7 @@ import type { Compilation, CompiledContract } from "@truffle/compile-common";
 import debugModule from "debug";
 const debug = debugModule("lib:testing:soliditytest");
 
-export default {
+export const SolidityTest = {
   async define(
     abstraction: any,
     dependencyPaths: string[],

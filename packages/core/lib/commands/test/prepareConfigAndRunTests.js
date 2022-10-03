@@ -22,7 +22,7 @@ const generateDebug = function ({ mochaRunner, compilations, config }) {
 
 const prepareConfigAndRunTests = ({ config, temporaryDirectory, files }) => {
   const Artifactor = require("@truffle/artifactor");
-  const Test = require("../../testing/Test");
+  const { Test } = require("@truffle/test");
   // Set a new artifactor; don't rely on the one created by Environments.
   // TODO: Make the test artifactor configurable.
   config.artifactor = new Artifactor(temporaryDirectory);

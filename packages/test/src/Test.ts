@@ -5,8 +5,8 @@ import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
 import Config from "@truffle/config";
 import WorkflowCompile from "@truffle/workflow-compile";
 import { Resolver } from "@truffle/resolver";
-import TestRunner from "./TestRunner";
-import SolidityTest from "./SolidityTest";
+import { TestRunner } from "./TestRunner";
+import { SolidityTest } from "./SolidityTest";
 import RangeUtils from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
 import expect from "@truffle/expect";
 import Migrate from "@truffle/migrate";
@@ -23,14 +23,11 @@ let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
-type GenerateDebug =
- (
-    options: {
-      mochaRunner: any;
-      config: Config;
-      compilations: Compilation[];
-    }
-  ) => (operation: any) => any;
+type GenerateDebug = (options: {
+  mochaRunner: any;
+  config: Config;
+  compilations: Compilation[];
+}) => (operation: any) => any;
 
 interface SetJSTestGlobalsInterface {
   config: Config;
@@ -44,7 +41,7 @@ interface SetJSTestGlobalsInterface {
   generateDebug: GenerateDebug;
 }
 
-const Test = {
+export const Test = {
   run: async function (options: Config, generateDebug: GenerateDebug) {
     expect.options(options, [
       "contracts_directory",
@@ -382,5 +379,3 @@ const Test = {
     };
   }
 };
-
-module.exports = Test;
