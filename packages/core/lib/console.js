@@ -91,10 +91,13 @@ class Console extends EventEmitter {
 
       // repl is ready - set and display prompt
       this.repl.setPrompt("truffle(" + this.options.network + ")> ");
-      this.repl.displayPrompt();
 
       // hydrate the environment with the user's contracts
       this.provision(true);
+
+      // provision first before displaying prompt so that if
+      // there is a warning the user will end up at the prompt
+      this.repl.displayPrompt();
 
       this.repl.on("exit", () => {
         process.exit();
