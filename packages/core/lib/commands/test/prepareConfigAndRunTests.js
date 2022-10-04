@@ -1,5 +1,9 @@
 const colors = require("colors");
-const generateDebug = function ({ mochaRunner, compilations, config }) {
+const createInTestDebugFunction = function ({
+  mochaRunner,
+  compilations,
+  config
+}) {
   return async operation => {
     if (!config.debug) {
       config.logger.log(
@@ -32,7 +36,7 @@ const prepareConfigAndRunTests = ({ config, temporaryDirectory, files }) => {
     contracts_build_directory: temporaryDirectory
   });
 
-  return Test.run(testConfig, generateDebug);
+  return Test.run(testConfig, createInTestDebugFunction);
 };
 
 module.exports = {

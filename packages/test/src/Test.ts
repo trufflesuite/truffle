@@ -23,7 +23,7 @@ let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions").default);
 
-type GenerateDebug = (options: {
+type CreateInTestDebugFunction = (options: {
   mochaRunner: any;
   config: Config;
   compilations: Compilation[];
@@ -38,11 +38,14 @@ interface SetJSTestGlobalsInterface {
   runner: any;
   compilations: Compilation[];
   bugger: Debugger; //for stacktracing
-  generateDebug: GenerateDebug;
+  createInTestDebugFunction: CreateInTestDebugFunction;
 }
 
 export const Test = {
-  run: async function (options: Config, generateDebug: GenerateDebug) {
+  run: async function (
+    options: Config,
+    createInTestDebugFunction: CreateInTestDebugFunction
+  ) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -165,7 +168,7 @@ export const Test = {
       runner,
       compilations: debuggerCompilations,
       bugger,
-      generateDebug
+      createInTestDebugFunction
     });
 
     // Finally, run mocha.
@@ -298,7 +301,7 @@ export const Test = {
     runner,
     compilations,
     bugger, //for stacktracing
-    generateDebug
+    createInTestDebugFunction
   }: SetJSTestGlobalsInterface) {
     // @ts-ignore
     global.interfaceAdapter = interfaceAdapter;
@@ -329,7 +332,7 @@ export const Test = {
     global.config = config.normalize(config);
 
     // @ts-ignore
-    global[config.debugGlobal] = generateDebug({
+    global[config.debugGlobal] = createInTestDebugFunction({
       compilations,
       mochaRunner: this.mochaRunner,
       config
