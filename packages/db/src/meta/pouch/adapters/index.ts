@@ -74,7 +74,7 @@ export const concretize = <C extends Collections, N extends AdapterName>(
     }
     case "sqlite":
       const sqliteWarning =
-        "Deprecated sqlite pouchdb adapter in truffle-config";
+        "Sqlite pouchdb adapter detected in truffle-config, using indexeddb instead.";
       debug(sqliteWarning);
       console.warn(sqliteWarning);
     // fall through and handle as indexeddb
