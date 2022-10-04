@@ -1,12 +1,12 @@
 import path from "path";
 import { attach } from "@truffle/db/system";
 import { generateId } from "./utils";
-import Debug from "debug";
+import debugModule from "debug";
 
 import tmp from "tmp";
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
 
-const debug = Debug("db:test:persistence");
+const debug = debugModule("db:test:persistence");
 
 const bytecode = {
   bytes: "deadbeef",
