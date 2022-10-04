@@ -336,15 +336,27 @@ export class ResultInspector {
                       );
                     }
                   case "exception":
-                    return coercedResult.value.deployedProgramCounter === 0
-                      ? options.stylize(`[Function: <zero>]`, "special")
-                      : options.stylize(
+                    switch (coercedResult.value.rawInformation.kind) {
+                      case "index":
+                        return options.stylize(
                           `[Function: <uninitialized>]`,
                           "special"
                         );
+                      case "pcpair":
+                        //see above for discussion of this distinction
+                        return coercedResult.value.rawInformation
+                          .deployedProgramCounter === 0
+                          ? options.stylize(`[Function: <zero>]`, "special")
+                          : options.stylize(
+                              `[Function: <uninitialized>]`,
+                              "special"
+                            );
+                    }
                   case "unknown":
-                    let firstLine = `[Function: decoding not supported (raw info:`;
-                    let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;
+                    let firstLine = `[Function: could not decode (raw info:`;
+                    let secondLine = `${formatInternalFunctionRawInfo(
+                      coercedResult.value.rawInformation
+                    )})]`;
                     let breakingSpace =
                       firstLine.length + secondLine.length + 1 >
                       options.breakLength
@@ -409,11 +421,13 @@ export class ResultInspector {
           case "FunctionInternalPaddingError":
             return `Internal function has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "NoSuchInternalFunctionError":
-            return `Invalid function (Deployed PC=${errorResult.error.deployedProgramCounter}, constructor PC=${errorResult.error.constructorProgramCounter}) of contract ${errorResult.error.context.typeName}`;
+            return `Invalid function (${formatInternalFunctionRawInfo(
+              errorResult.error.rawInformation
+            )}) of contract ${errorResult.error.context.typeName}`;
           case "DeployedFunctionInConstructorError":
-            return `Deployed-style function (PC=${errorResult.error.deployedProgramCounter}) in constructor`;
+            return `Deployed-style function (PC=${errorResult.error.rawInformation.deployedProgramCounter}) in constructor`;
           case "MalformedInternalFunctionError":
-            return `Malformed internal function w/constructor PC only (value: ${errorResult.error.constructorProgramCounter})`;
+            return `Malformed internal function w/constructor PC only (value: ${errorResult.error.rawInformation.constructorProgramCounter})`;
           case "IndexedReferenceTypeError": //for this one we'll bother with some line-wrapping
             let firstLine = `Cannot decode indexed parameter of reference type ${errorResult.error.type.typeClass}`;
             let secondLine = `(raw value ${errorResult.error.raw})`;
@@ -502,6 +516,17 @@ function enumTypeName(enumType: Format.Types.EnumType): string {
     (enumType.kind === "local" ? enumType.definingContractName + "." : "") +
     enumType.typeName
   );
+}
+
+function formatInternalFunctionRawInfo(
+  info: Format.Values.FunctionInternalRawInfo
+): string {
+  switch (info.kind) {
+    case "pcpair":
+      return `Deployed PC=${info.deployedProgramCounter}, Constructor PC=${info.constructorProgramCounter}`;
+    case "index":
+      return `Index=${info.functionIndex}`;
+  }
 }
 
 //this function will be used in the future for displaying circular
@@ -728,11 +753,20 @@ function unsafeNativizeWithTable(
                 return coercedResult.value.name;
               }
             case "exception":
-              return coercedResult.value.deployedProgramCounter === 0
-                ? `<zero>`
-                : `<uninitialized>`;
+              switch (coercedResult.value.rawInformation.kind) {
+                case "index":
+                  return `<uninitialized>`;
+                case "pcpair":
+                  //in this case, we'll distinguish between "zero" and "uninitialized",
+                  //on the basis that uninitialized internal function pointers in non-storage
+                  //locations are not zero.  in the index case this distinction doesn't come up.
+                  return coercedResult.value.rawInformation
+                    .deployedProgramCounter === 0
+                    ? `<zero>`
+                    : `<uninitialized>`;
+              }
             case "unknown":
-              return `<decoding not supported>`;
+              return `<could not decode>`;
           }
         }
       }
