@@ -24,7 +24,7 @@ const isPrivateKeyLike = (
   // this is added since parseInt(mnemonic) should equal NaN (unless it starts
   // with a-f) and private keys should parse into a valid number - this will
   // also parse with the largest hex value, namely "f" * 64
-  parseInt(credentials, 16) !== NaN &&
+  isFinite(parseInt(credentials, 16)) &&
   !credentials.includes(" ");
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
