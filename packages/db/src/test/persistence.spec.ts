@@ -1,9 +1,12 @@
 import path from "path";
 import { attach } from "@truffle/db/system";
 import { generateId } from "./utils";
+import Debug from "debug";
 
 import tmp from "tmp";
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
+
+const debug = Debug("db:test:persistence");
 
 const bytecode = {
   bytes: "deadbeef",
@@ -50,7 +53,7 @@ describe("IndexedDb-based Workspace", () => {
       bytecodes: [bytecode]
     });
 
-    console.log("db-path", indexedDbAdapter.settings.directory);
+    debug("db-path", indexedDbAdapter.settings.directory);
 
     // make sure we can get data out of that workspace
     expect(await workspace1.get("bytecodes", id)).toBeDefined();
