@@ -50,11 +50,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    # fallback to npm6 for node 16
-    - name: fallback to npm 6 on node 16
-      if: ${{ matrix.node-version == '16.x' }}
-      run: npm -g install npm@6
-
     - run: npm install -g yarn
 
     - run: yarn bootstrap
