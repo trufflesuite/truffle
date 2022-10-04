@@ -17,7 +17,7 @@
   "scripts": {
     "build": "ttsc",
     "prepare": "yarn build",
-    "test": "exit 0"
+    "test": "mocha --require ts-node/register --extension ts"
   },
   "dependencies": {
     "ethereum-cryptography": "1.1.2",
