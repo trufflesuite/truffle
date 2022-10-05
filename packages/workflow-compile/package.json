@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.34",
+  "version": "4.0.35",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -25,7 +25,7 @@
     "@truffle/compile-solidity": "^6.0.44",
     "@truffle/compile-vyper": "^3.1.79",
     "@truffle/config": "^1.3.38",
-    "@truffle/db-loader": "^0.1.33",
+    "@truffle/db-loader": "^0.2.0",
     "@truffle/expect": "^0.1.3",
     "@truffle/external-compile": "^2.0.57",
     "@truffle/resolver": "^9.0.17",
