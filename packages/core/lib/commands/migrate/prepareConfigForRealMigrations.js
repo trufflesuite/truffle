@@ -1,7 +1,7 @@
 module.exports = async function (buildDir, options) {
   const Artifactor = require("@truffle/artifactor");
   const { Resolver } = require("@truffle/resolver");
-  const Migrate = require("@truffle/migrate");
+  const Migrate = require("@truffle/migrate").default;
   const { Environment } = require("@truffle/environment");
   const Config = require("@truffle/config");
 

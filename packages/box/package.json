@@ -27,13 +27,13 @@
     "download-git-repo": "^3.0.2",
     "fs-extra": "^9.1.0",
     "ignore": "^5.1.8",
-    "inquirer": "8.2.2",
+    "inquirer": "8.2.4",
     "tmp": "^0.2.1",
     "vcsurl": "^0.1.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
-    "@types/inquirer": "6.0.3",
+    "@types/inquirer": "9.0.1",
     "@types/tmp": "^0.1.0",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",

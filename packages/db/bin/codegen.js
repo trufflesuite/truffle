@@ -70,7 +70,7 @@ const dataModel = generate(
 );
 
 fse.writeFileSync(
-  path.join(__dirname, "..", "types", "schema.d.ts"),
+  path.join(__dirname, "..", "typings", "schema.d.ts"),
   dataModel
 );
 
