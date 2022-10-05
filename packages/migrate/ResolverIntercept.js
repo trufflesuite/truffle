@@ -1,15 +1,10 @@
-import type Resolver from "@truffle/resolver";
-
-export class ResolverIntercept {
-  public resolver: Resolver;
-  public cache: object[];
-
-  constructor(resolver: Resolver) {
+class ResolverIntercept {
+  constructor(resolver) {
     this.resolver = resolver;
     this.cache = [];
   }
 
-  require(contractName: string) {
+  require(contractName) {
     // remove file extension if present on name
     const sanitizedContractName = contractName
       .replace(/^\.\//, "")
@@ -18,7 +13,6 @@ export class ResolverIntercept {
     // there may be more than one contract of the same name which will be
     // problematic - only return the first one found in the cache for now
     for (const contract of this.cache) {
-      // @ts-ignore
       if (contract.contract_name === sanitizedContractName) {
         return contract;
       }
@@ -36,3 +30,5 @@ export class ResolverIntercept {
     return this.cache;
   }
 }
+
+module.exports = ResolverIntercept;

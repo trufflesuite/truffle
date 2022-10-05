@@ -1,4 +1,4 @@
-const Migrate = require("@truffle/migrate").default;
+const Migrate = require("@truffle/migrate");
 
 module.exports = async function (config) {
   if (config.f) {

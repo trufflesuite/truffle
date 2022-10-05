@@ -1,7 +1,7 @@
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const web3Utils = require("web3-utils");
 const Config = require("@truffle/config");
-const Migrate = require("@truffle/migrate").default;
+const Migrate = require("@truffle/migrate");
 const { Resolver } = require("@truffle/resolver");
 const expect = require("@truffle/expect");
 const util = require("util");
