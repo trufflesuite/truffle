@@ -37,7 +37,7 @@
     "@truffle/db-loader": "^0.2.0",
     "@truffle/debugger": "^11.0.11",
     "app-module-path": "^2.2.0",
-    "ganache": "7.4.3",
+    "ganache": "7.4.4",
     "mocha": "9.2.2",
     "original-require": "^1.0.1"
   },
