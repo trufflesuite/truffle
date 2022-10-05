@@ -14,7 +14,7 @@ export interface RequireOptions {
   /**
    * The `@truffle/config` for the user's project
    */
-  config?: TruffleConfig;
+  config: TruffleConfig;
 
   context?: { [key: string]: any };
   resolver?: Resolver;

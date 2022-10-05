@@ -1,26 +1,22 @@
-import fs from "fs";
-import * as path from "path";
-import glob from "glob";
-import * as expect from "@truffle/expect";
-import Config from "@truffle/config";
-import { Migration } from "./Migration";
-import { emitEvent } from "./emitEvent";
-import inquirer from "inquirer";
-import type { Question } from "inquirer";
-import type { Resolver } from "@truffle/resolver";
-
-export { ResolverIntercept } from "./ResolverIntercept";
+const fs = require("fs");
+const path = require("path");
+const glob = require("glob");
+const expect = require("@truffle/expect");
+const Config = require("@truffle/config");
+const Migration = require("./Migration");
+const emitEvent = require("./emitEvent");
+const inquirer = require("inquirer");
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
  *  the `.runMigrations` method.
  */
-export default {
+const Migrate = {
   Migration: Migration,
   logger: null,
 
-  promptToAcceptDryRun: async function (options?: Config) {
-    const prompt: Question[] = [
+  promptToAcceptDryRun: async function (options) {
+    const prompt = [
       {
         type: "confirm",
         name: "proceed",
@@ -33,17 +29,15 @@ export default {
     if (answer.proceed) {
       return true;
     }
-    if (options) {
-      await emitEvent(options, "migrate:dryRun:notAccepted");
-    }
+    await emitEvent(options, "migrate:dryRun:notAccepted");
     return false;
   },
 
-  assemble: function (options: Config): Migration[] {
+  assemble: function (options) {
     const config = Config.detect(options);
     if (
       !fs.existsSync(config.migrations_directory) ||
-      !(fs.readdirSync(config.migrations_directory).length > 0)
+      !fs.readdirSync(config.migrations_directory).length > 0
     ) {
       return [];
     }
@@ -72,7 +66,7 @@ export default {
     return migrations;
   },
 
-  run: async function (options: Config) {
+  run: async function (options) {
     expect.options(options, [
       "working_directory",
       "migrations_directory",
@@ -97,8 +91,8 @@ export default {
     await this.runFrom(lastMigration + 1, options);
   },
 
-  runFrom: async function (number: number, options: Config) {
-    let migrations: Migration[] = this.assemble(options);
+  runFrom: async function (number, options) {
+    let migrations = this.assemble(options);
 
     while (migrations.length > 0) {
       if (migrations[0].number >= number) break;
@@ -113,15 +107,15 @@ export default {
     return await this.runMigrations(migrations, options);
   },
 
-  runAll: async function (options: Config) {
+  runAll: async function (options) {
     return await this.runFrom(0, options);
   },
 
-  runMigrations: async function (migrations: Migration[], options: Config) {
+  runMigrations: async function (migrations, options) {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
-    const clone: any = {};
+    const clone = {};
 
     Object.keys(options).forEach(key => (clone[key] = options[key]));
 
@@ -142,9 +136,7 @@ export default {
     });
 
     try {
-      // @ts-ignore
       global.artifacts = clone.resolver;
-      // @ts-ignore
       global.config = clone;
       for (const migration of migrations) {
         await migration.run(clone);
@@ -162,16 +154,14 @@ export default {
       });
       throw error;
     } finally {
-      // @ts-ignore
       delete global.artifacts;
-      // @ts-ignore
       delete global.config;
     }
   },
 
-  wrapResolver: function (resolver: Resolver, provider: any) {
+  wrapResolver: function (resolver, provider) {
     return {
-      require: function (import_path: string, search_path?: string) {
+      require: function (import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
         abstraction.setProvider(provider);
         return abstraction;
@@ -180,8 +170,8 @@ export default {
     };
   },
 
-  lastCompletedMigration: async function (options: Config): Promise<number> {
-    let Migrations: any; // I don't think we have a good type for this yet
+  lastCompletedMigration: async function (options) {
+    let Migrations;
 
     try {
       Migrations = options.resolver.require("Migrations");
@@ -192,14 +182,14 @@ export default {
 
     if (Migrations.isDeployed() === false) return 0;
 
-    const migrationsOnChain = async (migrationsAddress: string) => {
+    const migrationsOnChain = async migrationsAddress => {
       return (
         (await Migrations.interfaceAdapter.getCode(migrationsAddress)) !== "0x"
       );
     };
 
     // Two possible Migrations.sol's (lintable/unlintable)
-    const lastCompletedMigration = (migrationsInstance: any) => {
+    const lastCompletedMigration = migrationsInstance => {
       try {
         return migrationsInstance.last_completed_migration.call();
       } catch (error) {
@@ -219,12 +209,12 @@ export default {
     return parseInt(completedMigration);
   },
 
-  needsMigrating: function (options: Config) {
+  needsMigrating: function (options) {
     return new Promise((resolve, reject) => {
       if (options.reset === true) return resolve(true);
 
       return this.lastCompletedMigration(options)
-        .then((number: number) => {
+        .then(number => {
           const migrations = this.assemble(options);
           while (migrations.length > 0) {
             if (migrations[0].number >= number) break;
@@ -235,7 +225,9 @@ export default {
             migrations.length > 1 || (migrations.length && number === 0)
           );
         })
-        .catch((error: Error) => reject(error));
+        .catch(error => reject(error));
     });
   }
 };
+
+module.exports = Migrate;

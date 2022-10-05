@@ -1,45 +1,24 @@
-import * as path from "path";
-import Deployer from "@truffle/deployer";
-import * as Require from "@truffle/require";
-import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
-import { ResolverIntercept } from "./ResolverIntercept";
-import { getTruffleDb } from "@truffle/db-loader";
-import { emitEvent } from "./emitEvent";
-import type Config from "@truffle/config";
-import type { InterfaceAdapter } from "@truffle/interface-adapter";
-import type Web3 from "web3";
+const debug = require("debug")("migrate:Migration");
+const path = require("path");
+const Deployer = require("@truffle/deployer");
+const Require = require("@truffle/require");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
+const ResolverIntercept = require("./ResolverIntercept");
+const { getTruffleDb } = require("@truffle/db-loader");
+const emitEvent = require("./emitEvent");
 
-// this is kind of a hacky interface to use to make TS happy until
-// @truffle/deployer is converted to TS and has its own types
-interface DeployerInterface {
-  start: () => void;
-  then: () => void;
-  finish: () => void;
-}
-
-type MigrationContext = {
-  web3: Web3;
-  interfaceAdapter: InterfaceAdapter;
-  config: Config;
-};
-
-export class Migration {
-  public file: string;
-  public number: number;
-  public isFirst: boolean;
-  public isLast: boolean;
-  public dryRun: boolean;
-  public interactive: boolean;
-  public config: Config;
-
-  constructor(file: string, config: Config) {
+class Migration {
+  constructor(file, config) {
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = config.dryRun;
     this.interactive = config.interactive;
-    this.config = config;
+    this.config = config || {};
   }
 
   // ------------------------------------- Private -------------------------------------------------
@@ -50,12 +29,7 @@ export class Migration {
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
-  async _load(
-    options: Config,
-    context: MigrationContext,
-    deployer: DeployerInterface,
-    resolver: ResolverIntercept
-  ) {
+  async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
     const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
@@ -65,10 +39,6 @@ export class Migration {
       args: [deployer]
     };
 
-    // in the above options, resolver is actually an instance of
-    // ResolverIntercept - adding that type to @truffle/require causes a
-    // circular dependency - for now we'll just do a ts-ignore
-    // @ts-ignore
     const fn = Require.file(requireOptions);
 
     const unRunnable = !fn || !fn.length || fn.length == 0;
@@ -93,19 +63,12 @@ export class Migration {
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
-  async _deploy(
-    options: Config,
-    context: MigrationContext,
-    deployer: DeployerInterface,
-    resolver: ResolverIntercept,
-    migrateFn: any
-  ) {
+  async _deploy(options, context, deployer, resolver, migrateFn) {
     try {
       await deployer.start();
       // Allow migrations method to be async and
       // deploy to use await
       if (migrateFn && migrateFn.then !== undefined) {
-        // @ts-ignore
         await deployer.then(() => migrateFn);
       }
 
@@ -153,7 +116,7 @@ export class Migration {
 
       let artifacts = resolver
         .contracts()
-        .map((abstraction: any) => abstraction._json);
+        .map(abstraction => abstraction._json);
       if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();
@@ -218,7 +181,7 @@ export class Migration {
    * and launches a migration file's deployment sequence
    * @param  {Object}   options  config and command-line
    */
-  async run(options: Config) {
+  async run(options) {
     const { interfaceAdapter, resolver, context, deployer } =
       this.prepareForMigrations(options);
 
@@ -239,7 +202,7 @@ export class Migration {
     await this._load(options, context, deployer, resolver);
   }
 
-  prepareForMigrations(options: Config) {
+  prepareForMigrations(options) {
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -259,7 +222,11 @@ export class Migration {
     return { interfaceAdapter, resolver, context, deployer };
   }
 
-  serializeable(): object {
+  /**
+   * Returns a serializable version of `this`
+   * @returns  {Object}
+   */
+  serializeable() {
     return {
       file: this.file,
       number: this.number,
@@ -270,3 +237,5 @@ export class Migration {
     };
   }
 }
+
+module.exports = Migration;

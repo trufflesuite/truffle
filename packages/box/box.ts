@@ -4,7 +4,6 @@ import path from "path";
 import Config from "@truffle/config";
 import fse from "fs-extra";
 import inquirer from "inquirer";
-import type { Question } from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 import debugModule from "debug";
 
@@ -47,32 +46,30 @@ export const normalizeSourcePath = (url = defaultPath) => {
     // digits and the underscore. Note \w has to be \\w to escape the backslash
     // in a string literal.
     //
-    const protocolRex = new RegExp(
-      [
-        // match either `htps://` or `git@`
-        "(?<protocol>(https://|git@))",
+    const protocolRex = new RegExp([
+      // match either `htps://` or `git@`
+      "(?<protocol>(https://|git@))",
 
-        // service is 1 or many (word, dot or dash)
-        "(?<service>[\\w.-]+)",
+      // service is 1 or many (word, dot or dash)
+      "(?<service>[\\w.-]+)",
 
-        // match either `/` or `:`
-        "(/|:)",
+      // match either `/` or `:`
+      "(/|:)",
 
-        // org is 1 or many (word, dot or dash)
-        "(?<org>[\\w.-]+)",
+      // org is 1 or many (word, dot or dash)
+      "(?<org>[\\w.-]+)",
 
-        "/",
+      "/",
 
-        // repo is 1 or many (word, dot or dash)
-        "(?<repo>[\\w.-]+)",
+      // repo is 1 or many (word, dot or dash)
+      "(?<repo>[\\w.-]+)",
 
-        // branch is 1 or many (word, dot or dash) and can be optional
-        "(?<branch>#[\\w./-]+)?",
+      // branch is 1 or many (word, dot or dash) and can be optional
+      "(?<branch>#[\\w./-]+)?",
 
-        // the input string must be consumed fully at this point to match
-        "$"
-      ].join("")
-    );
+      // the input string must be consumed fully at this point to match
+      "$",
+    ].join(""));
 
     const match = url.match(protocolRex);
     if (match) {
@@ -83,7 +80,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
         debug({
           in: url,
           error: "InvalidFormat (protocol)",
-          hint: "branch is malformed"
+          hint: "branch is malformed",
         });
         throw new Error("Box specified with invalid format (git/https)");
       }
@@ -97,31 +94,29 @@ export const normalizeSourcePath = (url = defaultPath) => {
     debug({
       in: url,
       error: "InvalidFormat (protocol)",
-      hint: "did not match protocol"
+      hint: "did not match protocol",
     });
     throw new Error("Box specified with invalid format (git/https)");
   }
 
   // default case: process [org/] + repo + [ #branch/name/with/slashes ]
   //
-  const orgRepoBranchRex = new RegExp(
-    [
-      // start match at beginning
-      "^",
+  const orgRepoBranchRex = new RegExp([
+    // start match at beginning
+    "^",
 
-      // org is 1 or many (word, dot or dash) followed by a slash. org can be
-      // optional
-      "(?<org>[\\w.-]+/)?",
+    // org is 1 or many (word, dot or dash) followed by a slash. org can be
+    // optional
+    "(?<org>[\\w.-]+/)?",
 
-      // repo is 1 or many (word, dot or dash)
-      "(?<repo>[\\w.-]+)",
+    // repo is 1 or many (word, dot or dash)
+    "(?<repo>[\\w.-]+)",
 
-      // optional branch (undefined if unmatched)
-      "(?<branch>#[\\w./-]+)?",
+    // optional branch (undefined if unmatched)
+    "(?<branch>#[\\w./-]+)?",
 
-      "$"
-    ].join("")
-  );
+    "$",
+  ].join(""));
 
   const match = url.match(orgRepoBranchRex);
   if (match) {
@@ -135,7 +130,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
       debug({
         in: url,
         error: "InvalidFormat (orgRepoBranch)",
-        hint: "branch is malformed"
+        hint: "branch is malformed",
       });
       throw new Error("Box specified with invalid format");
     }
@@ -144,7 +139,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
 
     // Official Truffle boxes should have a `-box` suffix
     if (org.toLowerCase().startsWith("truffle-box")) {
-      repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+        repo = repo.endsWith("-box") ? repo : `${repo}-box`;
     }
 
     const result = `https://github.com:${org}${repo}${branch}`;
@@ -166,7 +161,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: false,
       setGracefulCleanup: false,
       logger: console,
-      force: false
+      force: false,
     };
   } else if (typeof options === "object") {
     return {
@@ -174,7 +169,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: options.unsafeCleanup || false,
       setGracefulCleanup: options.setGracefulCleanup || false,
       logger: options.logger || console,
-      force: options.force || false
+      force: options.force || false,
     };
   }
 };
@@ -184,13 +179,14 @@ const Box = {
     url: string,
     destination: string,
     options: unboxOptions = {},
-    config: any
+    config: any,
   ) => {
     const { events } = config;
     let tempDirCleanup;
+    const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
-      force: options.force
+      force: options.force,
     };
 
     try {
@@ -209,7 +205,7 @@ const Box = {
         tempDirPath,
         destination,
         boxConfig,
-        unpackBoxOptions
+        unpackBoxOptions,
       );
 
       events.emit("unbox:cleaningTempFiles:start");
@@ -232,13 +228,13 @@ const Box = {
       const unboxDir = fse.readdirSync(destination);
       if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
-        const prompt: Question[] = [
+        const prompt: inquirer.Questions = [
           {
             type: "confirm",
             name: "proceed",
             message: `Proceed anyway?`,
-            default: true
-          }
+            default: true,
+          },
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
@@ -254,8 +250,13 @@ const Box = {
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: async (options: sandboxOptions) => {
-    const { name, unsafeCleanup, setGracefulCleanup, logger, force } =
-      parseSandboxOptions(options);
+    const {
+      name,
+      unsafeCleanup,
+      setGracefulCleanup,
+      logger,
+      force,
+    } = parseSandboxOptions(options);
 
     const boxPath = name.replace(/^default(?=#|$)/, defaultPath);
     //ordinarily, this line will have no effect.  however, if the name is "default",
@@ -270,7 +271,7 @@ const Box = {
     const unboxOptions = { logger, force };
     await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
-  }
+  },
 };
 
 export default Box;
