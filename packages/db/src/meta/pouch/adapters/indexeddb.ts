@@ -1,10 +1,6 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:meta:pouch:adapters:sqlite");
-
 import path from "path";
 import fse from "fs-extra";
 import PouchDB from "pouchdb";
-import PouchDBNodeWebSQLAdapter from "pouchdb-adapter-node-websql";
 
 import type { Collections } from "@truffle/db/meta/collections";
 import type { GetDefaultSettings } from "./types";
@@ -16,21 +12,21 @@ export interface DatabasesSettings {
 }
 
 export const getDefaultSettings: GetDefaultSettings = () => ({
-  directory: path.join(Config.getTruffleDataDirectory(), ".db", "sqlite")
+  directory: path.join(Config.getTruffleDataDirectory(), ".db")
 });
 
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;
 
   setup(settings: DatabasesSettings) {
-    this.directory = settings.directory;
+    // ensure db files reside in a path that ends with indexeddb
+    // whether specified in config, or using default
+    this.directory = path.join(settings.directory, "indexeddb");
     fse.ensureDirSync(this.directory);
-
-    PouchDB.plugin(PouchDBNodeWebSQLAdapter);
   }
 
   createDatabase(resource) {
     const savePath = path.resolve(this.directory, resource);
-    return new PouchDB(savePath, { adapter: "websql" });
+    return new PouchDB(savePath); // uses IndexedDB
   }
 }

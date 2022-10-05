@@ -52,7 +52,6 @@
     "pluralize": "^8.0.0",
     "pouchdb": "7.3.0",
     "pouchdb-adapter-memory": "^7.1.1",
-    "pouchdb-adapter-node-websql": "^7.0.0",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "web3-utils": "1.7.4"

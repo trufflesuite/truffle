@@ -4,8 +4,6 @@ import {
 } from "ethereum-cryptography/bip39";
 import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
-import ethJSWallet from "ethereumjs-wallet";
-import { hdkey as EthereumHDKey, default as Wallet } from "ethereumjs-wallet";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
@@ -34,6 +32,10 @@ import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
 import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
+import {
+  createAccountGeneratorFromSeedAndPath,
+  uncompressedPublicKeyToAddress
+} from "@truffle/hdwallet";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -45,9 +47,8 @@ import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 const singletonNonceSubProvider = new NonceSubProvider();
 
 class HDWalletProvider {
-  private hdwallet?: EthereumHDKey;
   private walletHdpath: string;
-  private wallets: { [address: string]: ethJSWallet };
+  private wallets: { [address: string]: Buffer };
   private addresses: string[];
   private chainId?: ChainId;
   private chainSettings: ChainSettings;
@@ -155,7 +156,7 @@ class HDWalletProvider {
             cb("Account not found");
             return;
           } else {
-            cb(null, tmpWallets[address].getPrivateKey().toString("hex"));
+            cb(null, tmpWallets[address].toString("hex"));
           }
         },
         async signTransaction(txParams: any, cb: any) {
@@ -167,7 +168,7 @@ class HDWalletProvider {
           let pkey;
           const from = txParams.from.toLowerCase();
           if (tmpWallets[from]) {
-            pkey = tmpWallets[from].getPrivateKey();
+            pkey = tmpWallets[from];
           } else {
             cb("Account not found");
             return;
@@ -214,7 +215,7 @@ class HDWalletProvider {
             cb("Account not found");
             return;
           }
-          let pkey = tmpWallets[from].getPrivateKey();
+          let pkey = tmpWallets[from];
           const dataBuff = EthUtil.toBuffer(dataIfExists);
           const msgHashBuff = EthUtil.hashPersonalMessage(dataBuff);
           const sig = EthUtil.ecsign(msgHashBuff, pkey);
@@ -240,7 +241,7 @@ class HDWalletProvider {
           }
           const signature = signTypedData({
             data: JSON.parse(data),
-            privateKey: tmpWallets[fromAddress].getPrivateKey(),
+            privateKey: tmpWallets[fromAddress],
             version: SignTypedDataVersion.V4
           });
           cb(null, signature);
@@ -324,18 +325,19 @@ class HDWalletProvider {
       throw new Error("Mnemonic invalid or undefined");
     }
 
-    this.hdwallet = EthereumHDKey.fromMasterSeed(
-      Buffer.from(mnemonicToSeedSync(phrase, password))
+    const hdwallet = createAccountGeneratorFromSeedAndPath(
+      mnemonicToSeedSync(phrase, password),
+      this.walletHdpath.replace(/\/$/, "").split("/")
     );
 
     // crank the addresses out
     for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
-      const wallet: Wallet = this.hdwallet
-        .derivePath(this.walletHdpath + i)
-        .getWallet();
-      const addr = `0x${wallet.getAddress().toString("hex")}`;
+      const wallet = hdwallet(i);
+      const addr = `0x${Buffer.from(
+        uncompressedPublicKeyToAddress(wallet.publicKey)
+      ).toString("hex")}`;
       this.addresses.push(addr);
-      this.wallets[addr] = wallet;
+      this.wallets[addr] = wallet.privateKey;
     }
   }
 
@@ -351,10 +353,10 @@ class HDWalletProvider {
     for (let i = addressIndex; i < privateKeys.length; i++) {
       const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
       if (EthUtil.isValidPrivate(privateKey)) {
-        const wallet = ethJSWallet.fromPrivateKey(privateKey);
-        const address = wallet.getAddressString();
+        const wallet = EthUtil.privateToAddress(privateKey);
+        const address = `0x${wallet.toString("hex")}`;
         this.addresses.push(address);
-        this.wallets[address] = wallet;
+        this.wallets[address] = privateKey;
       }
     }
   }

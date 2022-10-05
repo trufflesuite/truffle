@@ -14,8 +14,8 @@ export { Couch };
 import * as Memory from "./memory";
 export { Memory };
 
-import * as Sqlite from "./sqlite";
-export { Sqlite };
+import * as IndexedDb from "./indexeddb";
+export { IndexedDb };
 
 export type Adapters = {
   couch: {
@@ -26,9 +26,9 @@ export type Adapters = {
     databases: typeof Memory.Databases;
     settings: Memory.DatabasesSettings;
   };
-  sqlite: {
-    databases: typeof Sqlite.Databases;
-    settings: Sqlite.DatabasesSettings;
+  indexeddb: {
+    databases: typeof IndexedDb.Databases;
+    settings: IndexedDb.DatabasesSettings;
   };
 };
 
@@ -62,7 +62,7 @@ export type ConcretizeResult<
 export const concretize = <C extends Collections, N extends AdapterName>(
   options: AttachOptions<N> = {}
 ): ConcretizeResult<C, N> => {
-  const { adapter: { name, settings } = { name: "sqlite" } } = options;
+  const { adapter: { name, settings } = { name: "indexeddb" } } = options;
 
   debug("Selecting %s adapter", name);
   switch (name) {
@@ -72,10 +72,16 @@ export const concretize = <C extends Collections, N extends AdapterName>(
         settings: settings || Couch.getDefaultSettings()
       };
     }
-    case "sqlite": {
+    case "sqlite":
+      const sqliteWarning =
+        "Sqlite pouchdb adapter detected in truffle-config, using indexeddb instead.";
+      debug(sqliteWarning);
+      console.warn(sqliteWarning);
+    // fall through and handle as indexeddb
+    case "indexeddb": {
       return {
-        constructor: Sqlite.Databases,
-        settings: settings || Sqlite.getDefaultSettings()
+        constructor: IndexedDb.Databases,
+        settings: settings || IndexedDb.getDefaultSettings()
       };
     }
     case "memory": {

@@ -39,7 +39,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
@@ -49,11 +49,6 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-
-    # fallback to npm6 for node 16
-    - name: fallback to npm 6 on node 16
-      if: ${{ matrix.node-version == '16.x' }}
-      run: npm -g install npm@6
 
     - run: npm install -g yarn
 

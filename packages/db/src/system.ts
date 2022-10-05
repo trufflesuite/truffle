@@ -27,8 +27,8 @@ import {
  *         settings?: Meta.Pouch.Adapters.Memory.DatabasesSettings;
  *       }
  *     | {
- *         name: "sqlite";
- *         settings?: Meta.Pouch.Adapters.Sqlite.DatabasesSettings;
+ *         name: "indexeddb";
+ *         settings?: Meta.Pouch.Adapters.IndexedDb.DatabasesSettings;
  *       }
  * };
  * ```
@@ -37,11 +37,11 @@ import {
  *   - [[Meta.Pouch.Adapters.Couch.DatabasesSettings]]
  *   - [[Meta.Pouch.Adapters.Fs.DatabasesSettings]]
  *   - [[Meta.Pouch.Adapters.Memory.DatabasesSettings]]
- *   - [[Meta.Pouch.Adapters.Sqlite.DatabasesSettings]]
+ *   - [[Meta.Pouch.Adapters.IndexedDb.DatabasesSettings]]
  *
- * Default adapter: `{ name: "sqlite" }`
+ * Default adapter: `{ name: "indexeddb" }`
  *
- * We recommend using only `"sqlite"` and `"couch"` at this time.
+ * We recommend using only `"indexeddb"` and `"couch"` at this time.
  */
 export type ConnectOptions = Meta.ConnectOptions<Collections>;
 
