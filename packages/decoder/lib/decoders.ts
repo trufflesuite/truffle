@@ -1499,9 +1499,14 @@ export class ContractInstanceDecoder {
     //some sort of fake table if we don't have a source map, or if any ASTs are missing
     //(if a whole *source* is missing, we'll consider that OK)
     //note: we don't attempt to handle Vyper source maps!
+    //we also (for now) don't attempt this if viaIR is set, since we can't
+    //currently handle decoding by index
     const compiler = this.compilation.compiler || this.contract.compiler;
+    const viaIR =
+      this.compilation?.settings?.viaIR || this.contract?.settings?.viaIR;
     if (
       !this.compilation.unreliableSourceOrder &&
+      !viaIR &&
       this.contract.deployedSourceMap &&
       compiler.name === "solc" &&
       this.compilation.sources.every(source => !source || source.ast)
