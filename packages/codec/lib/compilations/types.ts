@@ -43,6 +43,11 @@ export interface Compilation {
    * specified on each source and contract, but please don't actually do that.
    */
   compiler?: Compiler.CompilerVersion;
+  /**
+   * The settings used in the compilation.  Works similarly to the compiler field.
+   * May be omitted.
+   */
+  settings?: Compiler.Settings;
 }
 
 /**
@@ -78,6 +83,12 @@ export interface Source {
    * compilation as a whole; please don't do that.)
    */
   compiler?: Compiler.CompilerVersion; //compatibility hack!
+  /**
+   * This field is a compatibility hack only intended for internal use.
+   * (It allows the settings to be set on a source if none is set on the
+   * compilation as a whole; please don't do that.)
+   */
+  settings?: Compiler.Settings; //compatibility hack!
 }
 
 /**
@@ -123,6 +134,12 @@ export interface Contract {
    * compilation as a whole; please don't do that.)
    */
   compiler?: Compiler.CompilerVersion; //compatibility hack!
+  /**
+   * This field is a compatibility hack only intended for internal use.
+   * (It allows the settings to be set on a source if none is set on the
+   * compilation as a whole; please don't do that.)
+   */
+  settings?: Compiler.Settings; //compatibility hack!
   /**
    * The ID of the contract's primary source.
    */

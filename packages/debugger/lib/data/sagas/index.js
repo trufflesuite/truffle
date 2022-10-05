@@ -1047,7 +1047,7 @@ export function* decode(definition, ref, compilationId) {
   const contexts = yield select(data.views.contexts);
   const currentContext = yield select(data.current.context);
   const internalFunctionsTable = yield select(
-    data.current.functionsByProgramCounter
+    data.current.internalFunctionsTable
   );
 
   debug("definition: %o");
@@ -1105,7 +1105,7 @@ export function* decodeReturnValue() {
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
   const errorId = yield select(data.current.errorId);
   const internalFunctionsTable = yield select(
-    data.current.functionsByProgramCounter
+    data.current.internalFunctionsTable
   );
   debug("returnAllocation: %O", returnAllocation);
 
@@ -1218,7 +1218,7 @@ export function* decodeLog() {
   const currentContext = yield select(data.current.context);
   const eventId = yield select(data.current.eventId);
   const internalFunctionsTable = yield select(
-    data.current.functionsByProgramCounter
+    data.current.internalFunctionsTable
   );
 
   const decoder = Codec.decodeEvent(

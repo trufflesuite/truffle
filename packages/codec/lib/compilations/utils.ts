@@ -68,6 +68,7 @@ interface CompilationOptions {
   sources?: Common.Source[];
   shimmedCompilationId?: string;
   compiler?: Compiler.CompilerVersion;
+  settings?: Compiler.Settings;
 }
 
 interface CompilationAndContract {
@@ -108,7 +109,8 @@ export function shimContracts(
       abi,
       compiler,
       generatedSources,
-      deployedGeneratedSources
+      deployedGeneratedSources,
+      metadata
     } = artifact;
 
     if ((<Artifact>artifact).contract_name) {
@@ -143,6 +145,18 @@ export function shimContracts(
       language: inferLanguage(<AstNode>ast, compiler, sourcePath)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
+
+    if (metadata) {
+      try {
+        const parsedMetadata: any = JSON.parse(metadata); //sorry
+        const settings: Compiler.Settings = parsedMetadata.settings;
+        const viaIR = settings.viaIR;
+        contractObject.settings = { viaIR };
+        sourceObject.settings = { viaIR };
+      } catch {
+        //if metadata doesn't parse, or we hit undefineds, ignore it
+      }
+    }
 
     //if files or sources was passed, trust that to determine the source index
     //(assuming we have a sourcePath! currently it will be absent when dealing with
@@ -230,6 +244,15 @@ export function shimContracts(
     compiler = contracts[0].compiler;
   }
 
+  let settings: Compiler.Settings; //we'll do the same thing with settings
+  if (options.settings) {
+    settings = options.settings;
+  } else if (!unreliableSourceOrder && contracts.length > 0) {
+    //if things were actually compiled together, we should just be able
+    //to pick an arbitrary one
+    settings = contracts[0].settings;
+  }
+
   //if input sources was passed, set up the sources object directly :)
   if (inputSources) {
     sources = inputSources.map(
@@ -249,7 +272,8 @@ export function shimContracts(
     unreliableSourceOrder,
     sources,
     contracts,
-    compiler
+    compiler,
+    settings
   };
 }
 

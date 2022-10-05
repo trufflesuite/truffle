@@ -15,3 +15,10 @@ export type SolidityFamily =
   | "0.8.x"
   | "0.8.7+"
   | "0.8.9+";
+
+export interface Settings {
+  //this type is deliberately incomplete,
+  //it only includes the settings that Codec cares about,
+  //of which at present this is the only one.
+  viaIR?: boolean;
+}
