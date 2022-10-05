@@ -450,12 +450,20 @@ var SourceMapUtils = {
         return null;
       }
       index++;
-      while (instructions[index].name.match(/^PUSH\d*/)) {
+      while (
+        instructions[index] &&
+        instructions[index].name.match(/^PUSH\d*/)
+      ) {
         index++;
         if (index > startingIndex + 3) {
           //check: are there more than 2 PUSHes?
           return null;
         }
+      }
+      if (!instructions[index]) {
+        //covers both the case where we ran off already,
+        //and where we're about to run off
+        return null;
       }
       if (instructions[index].name === "JUMP") {
         if (index === startingIndex + 1) {
