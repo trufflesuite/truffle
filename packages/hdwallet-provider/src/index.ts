@@ -48,8 +48,8 @@ const singletonNonceSubProvider = new NonceSubProvider();
 
 class HDWalletProvider {
   private walletHdpath: string;
-  private wallets: { [address: string]: Buffer };
-  private addresses: string[];
+  #wallets: { [address: string]: Buffer };
+  #addresses: string[];
   private chainId?: ChainId;
   private chainSettings: ChainSettings;
   private hardfork: Hardfork;
@@ -78,8 +78,8 @@ class HDWalletProvider {
     const privateKeys = getPrivateKeys(signingAuthority);
 
     this.walletHdpath = derivationPath;
-    this.wallets = {};
-    this.addresses = [];
+    this.#wallets = {};
+    this.#addresses = [];
     this.chainSettings = chainSettings;
     this.engine = new ProviderEngine({
       pollingInterval
@@ -99,7 +99,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-            "ws, or wss protocol.",
+          "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -116,15 +116,15 @@ class HDWalletProvider {
       this.ethUtilValidation(options);
     } // no need to handle else case here, since matchesNewOptions() covers it
 
-    if (this.addresses.length === 0) {
+    if (this.#addresses.length === 0) {
       throw new Error(
         `Could not create addresses from your mnemonic or private key(s). ` +
-          `Please check that your inputs are correct.`
+        `Please check that your inputs are correct.`
       );
     }
 
-    const tmpAccounts = this.addresses;
-    const tmpWallets = this.wallets;
+    const tmpAccounts = this.#addresses;
+    const tmpWallets = this.#wallets;
 
     // if user supplied the chain id, use that - otherwise fetch it
     if (
@@ -336,8 +336,8 @@ class HDWalletProvider {
       const addr = `0x${Buffer.from(
         uncompressedPublicKeyToAddress(wallet.publicKey)
       ).toString("hex")}`;
-      this.addresses.push(addr);
-      this.wallets[addr] = wallet.privateKey;
+      this.#addresses.push(addr);
+      this.#wallets[addr] = wallet.privateKey;
     }
   }
 
@@ -355,8 +355,8 @@ class HDWalletProvider {
       if (EthUtil.isValidPrivate(privateKey)) {
         const wallet = EthUtil.privateToAddress(privateKey);
         const address = `0x${wallet.toString("hex")}`;
-        this.addresses.push(address);
-        this.wallets[address] = privateKey;
+        this.#addresses.push(address);
+        this.#wallets[address] = privateKey;
       }
     }
   }
@@ -382,14 +382,14 @@ class HDWalletProvider {
 
   public getAddress(idx?: number): string {
     if (!idx) {
-      return this.addresses[0];
+      return this.#addresses[0];
     } else {
-      return this.addresses[idx];
+      return this.#addresses[idx];
     }
   }
 
   public getAddresses(): string[] {
-    return this.addresses;
+    return this.#addresses;
   }
 
   public static isValidProvider(provider: any): boolean {
