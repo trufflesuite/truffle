@@ -3,13 +3,11 @@ module.exports = async function (options) {
   const util = require("util");
   const { Environment } = require("@truffle/environment");
   const OS = require("os");
-  //const Web3 = require("web3");
   const Codec = require("@truffle/codec");
   const Encoder = require("@truffle/encoder");
   const Decoder = require("@truffle/decoder");
   const TruffleError = require("@truffle/error");
   const { fetchAndCompile } = require("@truffle/fetch-and-compile");
-  //const reason = require("@truffle/contract/lib/reason");
   const loadConfig = require("../../loadConfig");
 
   if (options.url && options.network) {
@@ -40,13 +38,12 @@ module.exports = async function (options) {
   ));
 
   if (functionEntry.stateMutability !== "view") {
-    console.error("WARNING!!! The function called is not read-only");
+    console.log("WARNING!!! The function called is not read-only");
   }
 
   // wrap provider for lazy EIP-1193 compatibility
   // replace the legacy provider API with EIP-1193?
   const provider = new Encoder.ProviderAdapter(config.provider);
-
   const result = await provider.request({
     method: "eth_call",
     params: [
@@ -57,23 +54,11 @@ module.exports = async function (options) {
       },
       config.blockNumber
     ]
-    //fields we don't allow overriding: to, data
   });
 
   // Error handling for 0 returned value
   // Handles cases for more than 1 returned values
   const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
-  //console.log("Decoding Result: ", decoding);
-
-  // Use ReturndataDecodingInspector for logging
-  config.logger.log(
-    util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
-      colors: true,
-      depth: null,
-      maxArrayLength: null,
-      breakLength: 79
-    })
-  );
 
   // Alternative for ReturndataDecodingInspector, use ResultInspector for logging
   for (const { value: result } of decoding.arguments) {
@@ -159,13 +144,19 @@ module.exports = async function (options) {
       provider: config.provider,
       projectInfo
     });
-    const encoder = await projectEncoder.forAddress(contractNameOrAddress);
+    const encoder = await projectEncoder.forAddress(
+      contractNameOrAddress,
+      config.blockNumber
+    );
 
     const projectDecoder = await Decoder.forProject({
       provider: config.provider,
       projectInfo
     });
-    const decoder = await projectDecoder.forAddress(contractNameOrAddress);
+    const decoder = await projectDecoder.forAddress(
+      contractNameOrAddress,
+      config.blockNumber
+    );
 
     return { encoder, decoder };
   }
