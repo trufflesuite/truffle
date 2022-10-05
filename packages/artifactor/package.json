@@ -33,7 +33,7 @@
     "@types/node": "~12.12.0",
     "chai": "^4.2.0",
     "debug": "^4.3.1",
-    "ganache": "7.4.3",
+    "ganache": "7.4.4",
     "mocha": "9.2.2",
     "require-nocache": "^1.0.0",
     "sinon": "^9.0.2",

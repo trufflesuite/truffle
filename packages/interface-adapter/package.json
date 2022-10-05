@@ -33,7 +33,7 @@
     "@types/chai": "^4.2.22",
     "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
-    "ganache": "7.4.3",
+    "ganache": "7.4.4",
     "mocha": "9.2.2",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4"
