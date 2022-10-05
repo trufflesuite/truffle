@@ -10,7 +10,7 @@ const Codec = require("@truffle/codec");
 const { prepareContracts } = require("../../helpers");
 
 describe("nativize (ethers format)", function () {
-  this.timeout(20000);
+  this.timeout(30000);
 
   let provider;
   let abstractions;
@@ -39,7 +39,6 @@ describe("nativize (ethers format)", function () {
   });
 
   it("should compatibly nativize return values and event arguments", async function () {
-    this.timeout(4000);
     const { CompatibleNativizeTest } = abstractions;
     const instance = await CompatibleNativizeTest.new();
 
