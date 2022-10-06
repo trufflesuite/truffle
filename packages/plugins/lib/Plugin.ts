@@ -59,6 +59,24 @@ export class Plugin {
   }
 
   /*
+   * compiler
+   */
+
+  definesCompiler(): boolean {
+    return !!this.definition.compile;
+  }
+
+  loadCompiler(): any {
+    if (!this.definesCompiler()) {
+      throw new TruffleError(
+        `Plugin ${this.module} does not define a \`truffle plugin\` compiler.`
+      );
+    }
+
+    return this.loadModule(this.definition.compile).Compile;
+  }
+
+  /*
    * internals
    */
 
