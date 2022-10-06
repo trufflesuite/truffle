@@ -3,6 +3,6 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "types/schema.d.ts"
+    "typings/*.d.ts"
   ]
 }
