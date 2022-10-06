@@ -62,7 +62,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   }, [isConnected]);
 
   useEffect(() => {
-    const updateChangeInfo = () => {
+    const updateChainInfo = () => {
       const data: State["chainInfo"] = { id: null, name: null };
 
       if (chain) {
@@ -82,7 +82,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       dispatch({ type: "set-chain-info", data });
     };
 
-    updateChangeInfo();
+    updateChainInfo();
   }, [chain]);
 
   const operations = {
