@@ -3,7 +3,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: "npm" # this section is for version update PRs
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
@@ -11,3 +11,10 @@ updates:
       - dependency-name: "ganache"
     reviewers:
       - "trufflesuite/truffle-core-devs"
+  - package-ecosystem: "npm" # this section is for security update PRs
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    # Disable version updates for npm dependencies
+    # see https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates#overriding-the-default-behavior-with-a-configuration-file
+    open-pull-requests-limit: 0
