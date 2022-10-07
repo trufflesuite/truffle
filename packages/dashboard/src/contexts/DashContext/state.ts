@@ -1,3 +1,4 @@
+import { openDB } from "idb";
 import { providers } from "ethers";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
@@ -15,7 +16,10 @@ import {
   rejectMessage,
   confirmMessage
 } from "src/utils/dash";
-import type { State, Action } from "src/contexts/DashContext";
+import type { State, Action, Schema } from "src/contexts/DashContext";
+
+const DB_NAME = "TruffleDashboard";
+const DB_VERSION = 1;
 
 export const initialState: State = {
   busClient: new DashboardMessageBusClient({
@@ -24,6 +28,16 @@ export const initialState: State = {
       process.env.NODE_ENV === "development"
         ? 24012
         : Number(window.location.port)
+  }),
+  dbPromise: openDB<Schema>(DB_NAME, DB_VERSION, {
+    upgrade(db) {
+      const compilationStore = db.createObjectStore("Compilation", {
+        keyPath: "dataHash"
+      });
+      compilationStore.createIndex("TimeAdded", "timeAdded", {
+        unique: false
+      });
+    }
   }),
   // @ts-ignore
   provider: new providers.Web3Provider(window.ethereum),
