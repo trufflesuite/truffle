@@ -11,13 +11,14 @@ describe("truffle console", () => {
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/console");
 
-  before(async () => {
+  before(async () => await Server.start());
+  after(async () => await Server.stop());
+
+  beforeEach(async () => {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    await Server.start();
   });
-  after(async () => await Server.stop());
 
   describe("when runs with network option with a config", () => {
     it("displays the network name in the prompt", async () => {
@@ -32,6 +33,39 @@ describe("truffle console", () => {
 
       const output = logger.contents();
       const expectedValue = `truffle(${networkName})>`;
+      assert(
+        output.includes(expectedValue),
+        `Expected "${expectedValue}" in output`
+      );
+    }).timeout(90000);
+  });
+
+  // the following is a test to ensure it warns the user when contracts have
+  // names that conflict with some of Node's native objects
+  describe("name conflicts between contracts and context objects", function () {
+    let projectWithConflicts;
+    beforeEach(async function () {
+      projectWithConflicts = path.join(
+        __dirname,
+        "../../sources/consoleWithConflicts"
+      );
+      config = await sandbox.create(projectWithConflicts);
+      config.network = "development";
+      config.logger = logger;
+    });
+
+    it("warns the user", async function () {
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: [],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+
+      const output = logger.contents();
+      const expectedValue = `The following name conflicts exist: Buffer.`;
       assert(
         output.includes(expectedValue),
         `Expected "${expectedValue}" in output`
