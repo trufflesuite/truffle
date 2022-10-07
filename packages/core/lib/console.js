@@ -50,7 +50,7 @@ class Console extends EventEmitter {
     // we need to keep track of name conflicts that occur between contracts and
     // repl context objects so as not to overwrite them - this is to prevent
     // overwriting Node native objects like Buffer, number, etc.
-    this.replContextNameConflicts = [];
+    this.replContextNameConflicts = {};
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
@@ -62,14 +62,27 @@ class Console extends EventEmitter {
     });
   }
 
+  // we only want to record a conflict the first time we try and load a contract
+  // into the repl context because we need to overwrite them when they change
   recordNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
       if (
+        this.replContextNameConflicts[abstraction.contract_name] ===
+          undefined &&
         Object.getOwnPropertyNames(this.repl.context.global).includes(
           abstraction.contract_name
         )
       ) {
-        this.replContextNameConflicts.push(abstraction.contract_name);
+        this.replContextNameConflicts[abstraction.contract_name] = {
+          conflict: true,
+          warned: false
+        };
+      } else if (
+        this.replContextNameConflicts[abstraction.contract_name] === undefined
+      ) {
+        this.replContextNameConflicts[abstraction.contract_name] = {
+          conflict: false
+        };
       }
     }
   }
@@ -93,7 +106,7 @@ class Console extends EventEmitter {
       this.repl.setPrompt("truffle(" + this.options.network + ")> ");
 
       // hydrate the environment with the user's contracts
-      this.provision(true);
+      this.provision();
 
       // provision first before displaying prompt so that if
       // there is a warning the user will end up at the prompt
@@ -207,7 +220,7 @@ class Console extends EventEmitter {
     };
   }
 
-  provision(recordNameConflicts = false) {
+  provision() {
     let files;
     try {
       const unfilteredFiles = fse.readdirSync(
@@ -242,9 +255,7 @@ class Console extends EventEmitter {
       return abstraction;
     });
 
-    if (recordNameConflicts) {
-      this.recordNameConflicts(abstractions);
-    }
+    this.recordNameConflicts(abstractions);
 
     this.resetContractsInConsoleContext(abstractions);
     return abstractions;
@@ -256,25 +267,38 @@ class Console extends EventEmitter {
     const contextVars = {};
 
     abstractions.forEach(abstraction => {
-      // don't overwrite Node's native objects - we record name conflicts
-      // on the first call to `provision`
-      if (!this.replContextNameConflicts.includes(abstraction.contract_name)) {
+      // don't overwrite Node's native objects - only load contracts
+      // into the repl context when no conflict exists
+      if (
+        this.replContextNameConflicts[abstraction.contract_name].conflict ===
+        false
+      ) {
         contextVars[abstraction.contract_name] = abstraction;
       }
     });
 
-    if (this.replContextNameConflicts.length > 0) {
-      const contractNames =
-        this.replContextNameConflicts === 1
-          ? this.replContextNameConflicts[0]
-          : this.replContextNameConflicts.join(", ");
+    if (
+      Object.entries(this.replContextNameConflicts).some(
+        ([_key, value]) => value.conflict === true && value.warned === false
+      )
+    ) {
+      let contractNames = [];
+      for (const name in this.replContextNameConflicts) {
+        if (
+          this.replContextNameConflicts[name].conflict === true &&
+          this.replContextNameConflicts[name].warned === false
+        ) {
+          this.replContextNameConflicts[name].warned = true;
+          contractNames.push(name);
+        }
+      }
       console.log(
         `\n > Warning: One or more of your contract(s) has a name conflict ` +
           `with something in the current repl context and was not loaded by ` +
           `default. \n > You can use 'artifacts.require("<artifactName>")' ` +
           `to obtain a reference to your contract(s). \n > Truffle recommends ` +
           `that you rename your contract to avoid problems. \n > The following ` +
-          `name conflicts exist: ${contractNames}.`
+          `name conflicts exist: ${contractNames.join(", ")}.`
       );
     }
 
