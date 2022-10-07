@@ -207,7 +207,7 @@ class Console extends EventEmitter {
     };
   }
 
-  provision(initialProvision = false) {
+  provision(recordNameConflicts = false) {
     let files;
     try {
       const unfilteredFiles = fse.readdirSync(
@@ -242,7 +242,7 @@ class Console extends EventEmitter {
       return abstraction;
     });
 
-    if (initialProvision) {
+    if (recordNameConflicts) {
       this.recordNameConflicts(abstractions);
     }
 
