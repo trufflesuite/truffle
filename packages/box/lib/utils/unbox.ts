@@ -6,6 +6,7 @@ import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
+import type { Question } from "inquirer";
 import type { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
@@ -28,10 +29,7 @@ async function verifyVCSURL(url: string) {
 
   const repoUrl = `https://${configURL.host}${configURL.path}`;
   try {
-    await axios.head(
-      repoUrl,
-      { maxRedirects: 50 }
-    );
+    await axios.head(repoUrl, { maxRedirects: 50 });
   } catch (error) {
     if (error.response && error.response.status === 404) {
       throw new Error(
@@ -39,7 +37,7 @@ async function verifyVCSURL(url: string) {
       );
     } else {
       const prefix = `Error connecting to ${repoUrl}. Please check your internet connection and try again.`;
-      error.message = `${prefix}\n\n${error.message || ''}`;
+      error.message = `${prefix}\n\n${error.message || ""}`;
       throw error;
     }
   }
@@ -96,7 +94,7 @@ async function promptOverwrites(
 
   for (const file of contentCollisions) {
     logger.log(`${file} already exists in this directory...`);
-    const overwriting: inquirer.Questions = [
+    const overwriting: Question[] = [
       {
         type: "confirm",
         name: "overwrite",

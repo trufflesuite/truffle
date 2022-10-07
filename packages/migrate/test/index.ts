@@ -1,8 +1,14 @@
-const Migrate = require("../index");
-const Config = require("@truffle/config");
-const assert = require("assert");
-const sinon = require("sinon");
-let options, migrations;
+import Migrate from "../src";
+import Config from "@truffle/config";
+import assert from "assert";
+import * as sinon from "sinon";
+import { Migration } from "../src/Migration";
+let options: Config, migrations: Migration[], fakeMigration: Migration;
+
+const unstub = (stubbedThing: object, methodName: string) => {
+  // @ts-ignore
+  stubbedThing[methodName].restore();
+};
 
 describe("Migrate", () => {
   before(() => {
@@ -26,11 +32,12 @@ describe("Migrate", () => {
         sinon.stub(Migrate, "runAll");
       });
       afterEach(() => {
-        Migrate.runAll.restore();
+        unstub(Migrate, "runAll");
       });
 
       it("calls runAll then the callback", async function () {
         await Migrate.run(options);
+        // @ts-ignore
         assert(Migrate.runAll.calledWith(options));
       });
     });
@@ -44,12 +51,13 @@ describe("Migrate", () => {
         sinon.stub(Migrate, "runFrom");
       });
       afterEach(() => {
-        Migrate.lastCompletedMigration.restore();
-        Migrate.runFrom.restore();
+        unstub(Migrate, "lastCompletedMigration");
+        unstub(Migrate, "runFrom");
       });
 
       it("calls runFrom with the proper migration number", async function () {
         await Migrate.run(options);
+        // @ts-ignore
         assert(Migrate.runFrom.calledWith(667));
       });
     });
@@ -58,43 +66,34 @@ describe("Migrate", () => {
   describe("runMigrations(migrations, options)", function () {
     beforeEach(() => {
       sinon.stub(Migrate, "wrapResolver");
-      migrations = [
-        {
-          run: () => {
-            return Promise.resolve();
-          }
-        }
-      ];
+      fakeMigration = new Migration("", Config.default());
+      fakeMigration.run = () => Promise.resolve();
+      migrations = [fakeMigration];
     });
     afterEach(() => {
-      Migrate.wrapResolver.restore();
+      unstub(Migrate, "wrapResolver");
     });
 
     it("calls wrapResolver with the resolver and the wrapped provider", async function () {
       await Migrate.runMigrations(migrations, options);
       assert(
+        // @ts-ignore
         Migrate.wrapResolver.calledWith(options.resolver, options.provider)
       );
     });
 
     describe("when an error occurs in a migration", function () {
       beforeEach(() => {
-        migrations = [
-          {
-            run: () => {
-              return Promise.reject(new Error("Somethin bad!"));
-            }
-          }
-        ];
+        fakeMigration = new Migration("", Config.default());
+        fakeMigration.run = () => Promise.reject("Somethin bad!");
+        migrations = [fakeMigration];
       });
 
-      it("returns a resolved Promise after running migrations", async function () {
-        try {
-          await Migrate.runMigrations(migrations, options);
-          assert(false, "This code should not run");
-        } catch (error) {
-          assert(error.message === "Somethin bad!");
-        }
+      it("throws an error", async function () {
+        assert.rejects(
+          async () => await Migrate.runMigrations(migrations, options),
+          "Somethin bad!"
+        );
       });
     });
   });
