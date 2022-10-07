@@ -24,20 +24,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const initCalled = useRef(false);
 
   window.devLog({ state });
-  useEffect(() => {
-    async function init() {
-      // This obviates the need for a cleanup callback
-      if (initCalled.current) {
-        return;
-      }
-      initCalled.current = true;
 
+  useEffect(() => {
+    const initBusClient = async () => {
       const { busClient, provider } = state;
       await busClient.ready();
       const { host, port } = busClient.options;
       window.devLog(`Connected to message bus at ws://${host}:${port}`);
 
-      // Client subscribes to and handles messages
+      // Message bus client subscribes to and handles messages
       const subscription = busClient.subscribe({});
       const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
         void dispatch({
@@ -45,7 +40,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
           data: { lifecycle, provider }
         });
       subscription.on("message", messageHandler);
-    }
+    };
+
+    const init = async () => {
+      // This obviates the need for a cleanup callback
+      if (initCalled.current) return;
+      initCalled.current = true;
+
+      await initBusClient();
+    };
 
     init();
   }, [state]);
