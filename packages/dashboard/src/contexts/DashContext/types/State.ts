@@ -7,10 +7,8 @@ import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-co
 import type { NoticeContent } from "src/components/composed/Notice/content/types";
 
 export interface State {
-  host: string;
-  port: number;
+  busClient: DashboardMessageBusClient;
   provider: providers.Web3Provider;
-  client: DashboardMessageBusClient;
   providerMessages: Map<
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>

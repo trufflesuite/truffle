@@ -17,16 +17,16 @@ import {
 } from "src/utils/dash";
 import type { State, Action } from "src/contexts/DashContext";
 
-const host = window.location.hostname;
-const port =
-  process.env.NODE_ENV === "development" ? 24012 : Number(window.location.port);
-
 export const initialState: State = {
-  host,
-  port,
+  busClient: new DashboardMessageBusClient({
+    host: window.location.hostname,
+    port:
+      process.env.NODE_ENV === "development"
+        ? 24012
+        : Number(window.location.port)
+  }),
   // @ts-ignore
   provider: new providers.Web3Provider(window.ethereum),
-  client: new DashboardMessageBusClient({ host, port }),
   providerMessages: new Map(),
   chainInfo: {
     id: null,

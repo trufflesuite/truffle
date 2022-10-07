@@ -32,12 +32,13 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       }
       initCalled.current = true;
 
-      const { host, port, client, provider } = state;
-      await client.ready();
+      const { busClient, provider } = state;
+      await busClient.ready();
+      const { host, port } = busClient.options;
       window.devLog(`Connected to message bus at ws://${host}:${port}`);
 
       // Client subscribes to and handles messages
-      const subscription = client.subscribe({});
+      const subscription = busClient.subscribe({});
       const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
         void dispatch({
           type: "handle-message",
