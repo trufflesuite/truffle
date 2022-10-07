@@ -1,4 +1,5 @@
 import { providers } from "ethers";
+import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
@@ -16,15 +17,16 @@ import {
 } from "src/utils/dash";
 import type { State, Action } from "src/contexts/DashContext";
 
+const host = window.location.hostname;
+const port =
+  process.env.NODE_ENV === "development" ? 24012 : Number(window.location.port);
+
 export const initialState: State = {
-  host: window.location.hostname,
-  port:
-    process.env.NODE_ENV === "development"
-      ? 24012
-      : Number(window.location.port),
+  host,
+  port,
   // @ts-ignore
   provider: new providers.Web3Provider(window.ethereum),
-  client: null,
+  client: new DashboardMessageBusClient({ host, port }),
   providerMessages: new Map(),
   chainInfo: {
     id: null,
@@ -39,8 +41,6 @@ export const initialState: State = {
 export const reducer = (state: State, action: Action): State => {
   const { type, data } = action;
   switch (type) {
-    case "set-client":
-      return { ...state, client: data };
     case "set-chain-info":
       return { ...state, chainInfo: data };
     case "set-notice":

@@ -1,6 +1,5 @@
 import { useReducer, useEffect, useRef } from "react";
 import { useAccount, useNetwork } from "wagmi";
-import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type {
   Message,
@@ -33,12 +32,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       }
       initCalled.current = true;
 
-      window.devLog("Initializing message bus client");
-      // Create message bus client
-      const { host, port, provider } = state;
-      const client = new DashboardMessageBusClient({ host, port });
+      const { host, port, client, provider } = state;
       await client.ready();
-      dispatch({ type: "set-client", data: client });
       window.devLog(`Connected to message bus at ws://${host}:${port}`);
 
       // Client subscribes to and handles messages

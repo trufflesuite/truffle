@@ -1,24 +1,12 @@
 import type { providers } from "ethers";
-import type {
-  DashboardMessageBusClient,
-  ReceivedMessageLifecycle
-} from "@truffle/dashboard-message-bus-client";
+import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { Message } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
 
-export type ActionType =
-  | "set-client"
-  | "set-chain-info"
-  | "set-notice"
-  | "handle-message";
+export type ActionType = "set-chain-info" | "set-notice" | "handle-message";
 
 export interface BaseAction {
   type: ActionType;
-}
-
-export interface SetClientAction extends BaseAction {
-  type: "set-client";
-  data: DashboardMessageBusClient;
 }
 
 export interface SetChainInfoAction extends BaseAction {
@@ -39,8 +27,4 @@ export interface HandleMessageAction extends BaseAction {
   };
 }
 
-export type Action =
-  | SetClientAction
-  | SetChainInfoAction
-  | SetNoticeAction
-  | HandleMessageAction;
+export type Action = SetChainInfoAction | SetNoticeAction | HandleMessageAction;

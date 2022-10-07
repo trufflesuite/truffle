@@ -10,7 +10,7 @@ export interface State {
   host: string;
   port: number;
   provider: providers.Web3Provider;
-  client: DashboardMessageBusClient | null;
+  client: DashboardMessageBusClient;
   providerMessages: Map<
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>
