@@ -47,7 +47,7 @@ class Console extends EventEmitter {
     this.options = options;
 
     this.repl = null;
-    // we need to keep tract of name conflicts that occur between contracts and
+    // we need to keep track of name conflicts that occur between contracts and
     // repl context objects so as not to overwrite them - this is to prevent
     // overwriting Node native objects like Buffer, number, etc.
     this.replContextNameConflicts = [];
@@ -62,7 +62,7 @@ class Console extends EventEmitter {
     });
   }
 
-  detectNameConflicts(abstractions) {
+  recordNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
       if (
         Object.getOwnPropertyNames(this.repl.context.global).includes(
@@ -243,7 +243,7 @@ class Console extends EventEmitter {
     });
 
     if (initialProvision) {
-      this.detectNameConflicts(abstractions);
+      this.recordNameConflicts(abstractions);
     }
 
     this.resetContractsInConsoleContext(abstractions);
@@ -256,7 +256,7 @@ class Console extends EventEmitter {
     const contextVars = {};
 
     abstractions.forEach(abstraction => {
-      // don't overwrite Node's native objects - we detect name conflicts
+      // don't overwrite Node's native objects - we record name conflicts
       // on the first call to `provision`
       if (!this.replContextNameConflicts.includes(abstraction.contract_name)) {
         contextVars[abstraction.contract_name] = abstraction;
