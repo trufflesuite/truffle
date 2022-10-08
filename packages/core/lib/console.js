@@ -15,19 +15,24 @@ const spawnSync = require("child_process").spawnSync;
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
+const validTruffleCommands = require("./commands/commands");
+
+// Create an expression that returns a string when evaluated
+// by the REPL
+const makeIIFE = str => `(() => "${str}")()`;
 
 const processInput = (input, allowedCommands) => {
   const words = input.trim().split(/\s+/);
   if (words.length === 0) return input;
 
   if (words[0] === "truffle") {
-    if (allowedCommands.includes(words[1])) {
-      return words.slice(1).join(" ");
+    const cmd = words[1];
+    if (validTruffleCommands.includes(cmd)) {
+      return allowedCommands.includes(cmd)
+        ? words.slice(1).join(" ")
+        : makeIIFE("ℹ️ : 'truffle ${cmd}' is not allowed within Truffle REPL");
     }
-    // Log friendly information
-    // return console.info expression which, when processed, will not modify
-    // the `_` variable.
-    return `console.info("ℹ️ : 'truffle ${words[1]}' is not allowed within Truffle REPL")`;
+    return makeIIFE("ℹ️ : 'truffle ${cmd}' is not a valid Truffle command");
   }
 
   return input.trim();
