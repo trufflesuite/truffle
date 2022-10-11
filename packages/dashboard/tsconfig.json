@@ -29,5 +29,10 @@
     "isolatedModules": true,
     "noEmit": true
   },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "include": ["src"]
 }
