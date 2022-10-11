@@ -12,7 +12,7 @@ updates:
     reviewers:
       - "trufflesuite/truffle-core-devs"
   - package-ecosystem: "npm" # this section is for security update PRs
-    directory: "/" # Location of package manifests
+    directory: "./" # Location of package manifests
     schedule:
       interval: "weekly"
     # Disable version updates for npm dependencies
