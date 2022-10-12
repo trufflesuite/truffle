@@ -1,6 +1,6 @@
 {
   "name": "@truffle/promise-tracker",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A tool for wrangling async operations that need to complete before the truffle process exits",
   "main": "dist/index.js",
   "scripts": {
