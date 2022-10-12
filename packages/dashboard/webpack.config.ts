@@ -1,9 +1,9 @@
-import type { Configuration } from "webpack";
+import * as webpack from "webpack";
 import type WebpackDevServer from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import path from "path";
 
-const config: Configuration = {
+const config: webpack.Configuration = {
   mode: process.env.NODE_ENV === "production" ? "production" : "development",
   entry: "./src/index.tsx",
   output: {
@@ -14,6 +14,13 @@ const config: Configuration = {
     extensions: [".ts", ".tsx", ".js", ".jsx"],
     alias: {
       src: path.resolve("src")
+    },
+    fallback: {
+      crypto: require.resolve("crypto-browserify"),
+      os: require.resolve("os-browserify/browser"),
+      path: require.resolve("path-browserify"),
+      stream: require.resolve("stream-browserify"),
+      vm: require.resolve("vm-browserify")
     }
   },
   devtool: "source-map",
@@ -35,6 +42,12 @@ const config: Configuration = {
     ]
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      process: "process/browser"
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"]
+    }),
     new HtmlWebpackPlugin({
       template: "./public/index.html",
       favicon: "./public/favicon.ico"
