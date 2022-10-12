@@ -199,4 +199,38 @@ describe("Plugin", () => {
       expect(() => plugin.loadRecipe()).toThrow(expectedError);
     });
   });
+
+  describe("loadCompiler()", () => {
+    it("should load compiler defined in the plugin definition", () => {
+      const plugin = new Plugin({
+        module: "dummy-compiler",
+        definition: { compile: "index.js" }
+      });
+
+      const loadedCompiler = plugin.loadCompiler();
+      const expectedResult = "Successfully called dummy-compiler:compile()";
+      expect(loadedCompiler.compile()).toEqual(expectedResult);
+    });
+
+    it("should throw when compiler plugin definition is an absolute path", () => {
+      const plugin = new Plugin({
+        module: "dummy-compiler",
+        definition: { compile: "/index.js" }
+      });
+
+      const expectedError = "Absolute paths not allowed!";
+      expect(() => plugin.loadCompiler()).toThrow(expectedError);
+    });
+
+    it("should throw when compiler plugin definition is missing", () => {
+      const plugin = new Plugin({
+        module: "dummy-noDefinition",
+        definition: {}
+      });
+
+      const expectedError =
+        "Plugin dummy-noDefinition does not define a `truffle plugin` compiler.";
+      expect(() => plugin.loadCompiler()).toThrow(expectedError);
+    });
+  });
 });
