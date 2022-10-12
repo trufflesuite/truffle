@@ -58,6 +58,17 @@ export class Plugins {
     return recipes;
   }
 
+  /**
+   * Given a truffle-config-like, find and return all plugins that define a compiler
+   */
+  static listAllCompilers(config: TruffleConfig): Plugin[] {
+    const allPlugins = Plugins.listAll(config);
+
+    const compilers = allPlugins.filter(plugin => plugin.definesCompiler());
+
+    return compilers;
+  }
+
   /*
    * internals
    */
