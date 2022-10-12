@@ -7,6 +7,10 @@ const options = {
   rpc: true,
   autoOpen: false
 };
-
 const dashboardServer = new DashboardServer(options);
-dashboardServer.start();
+
+async function startServer() {
+  await dashboardServer.start();
+}
+
+startServer();

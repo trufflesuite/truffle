@@ -23,13 +23,12 @@
   "scripts": {
     "build": "yarn build:react && yarn build:server && yarn copy:react",
     "build:react": "cross-env NODE_ENV=\"production\" webpack",
-    "build:server": "tsc -p tsconfig.server.json",
+    "build:server": "tsc --project tsconfig.server.json",
     "copy:react": "cpy build/** dist/lib/dashboard-frontend/ --parents --dot",
     "prepare": "yarn build",
-    "start": "concurrently --kill-others \"yarn start:dev-server\" \"yarn start:react\"",
-    "start:dev-server": "ts-node --project tsconfig.server.json bin/start-dev-server.ts",
-    "start:prebuilt": "node dist/bin/start-dev-server.js",
-    "start:react": "webpack serve",
+    "start": "concurrently --kill-others \"yarn start:server\" \"yarn start:react\"",
+    "start:react": "ts-node --project tsconfig.server.json ./dev-server/webpack.ts",
+    "start:server": "ts-node --project tsconfig.server.json ./dev-server/dashboard.ts",
     "test": "jest --passWithNoTests"
   },
   "types": "dist/lib/index.d.ts",
