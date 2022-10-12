@@ -12,7 +12,12 @@ describe("Plugins", () => {
     it("should list all plugins defined in a Truffle config object", () => {
       const config = {
         working_directory: __dirname,
-        plugins: ["dummy-plugin-1", "dummy-plugin-2", "dummy-recipe"]
+        plugins: [
+          "dummy-plugin-1",
+          "dummy-plugin-2",
+          "dummy-recipe",
+          "dummy-compiler"
+        ]
       };
 
       const allPlugins = Plugins.listAll(config);
@@ -32,6 +37,10 @@ describe("Plugins", () => {
             tag: "dummy-recipe",
             preserve: { tag: "dummy-recipe", recipe: "." }
           }
+        }),
+        new Plugin({
+          module: "dummy-compiler",
+          definition: { compile: "index.js" }
         })
       ];
 
@@ -40,7 +49,7 @@ describe("Plugins", () => {
 
     it("should list no plugins if none are defined in a Truffle config object", () => {
       const config = {
-        working_directory: __dirname,
+        working_directory: __dirname
       };
 
       const allPlugins = Plugins.listAll(config as TruffleConfig);
@@ -72,7 +81,8 @@ describe("Plugins", () => {
         plugins: ["non-existent-plugin"]
       };
 
-      const expectedError = /listed as a plugin, but not found in global or local node modules/;
+      const expectedError =
+        /listed as a plugin, but not found in global or local node modules/;
 
       expect(() => Plugins.listAll(config)).toThrow(expectedError);
     });
@@ -179,6 +189,26 @@ describe("Plugins", () => {
           definition: {
             preserve: { recipe: "." }
           }
+        })
+      ];
+
+      expect(foundPlugins).toEqual(expectedPlugins);
+    });
+  });
+
+  describe("listAllCompilers()", () => {
+    it("should list all plugins that implement a compiler", () => {
+      const config = {
+        working_directory: __dirname,
+        plugins: ["dummy-compiler"]
+      };
+
+      const foundPlugins = Plugins.listAllCompilers(config);
+
+      const expectedPlugins = [
+        new Plugin({
+          module: "dummy-compiler",
+          definition: { compile: "index.js" }
         })
       ];
 
