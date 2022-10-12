@@ -21,10 +21,9 @@
     "dist/lib"
   ],
   "scripts": {
-    "build": "yarn build:react && yarn build:server && yarn copy:react",
+    "build": "yarn build:server && yarn build:react --output-path ./dist/lib/dashboard-frontend/build",
     "build:react": "cross-env NODE_ENV=\"production\" webpack",
     "build:server": "tsc --project tsconfig.server.json",
-    "copy:react": "cpy build/** dist/lib/dashboard-frontend/ --parents --dot",
     "prepare": "yarn build",
     "start": "concurrently --kill-others \"yarn start:server\" \"yarn start:react\"",
     "start:react": "ts-node --project tsconfig.server.json ./dev-server/webpack.ts",
