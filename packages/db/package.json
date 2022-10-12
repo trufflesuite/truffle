@@ -81,7 +81,7 @@
     "madge": "^5.0.1",
     "ts-jest": "28.0.7",
     "ts-node": "10.7.0",
-    "ts-node-dev": "^1.0.0-pre.32",
+    "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^3.9.0",
     "ttypescript": "1.5.13",
     "typedoc": "0.22.18",
