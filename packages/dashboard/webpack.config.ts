@@ -1,6 +1,7 @@
 import * as webpack from "webpack";
 import type WebpackDevServer from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import EslintWebpackPlugin from "eslint-webpack-plugin";
 import path from "path";
 
 const config: webpack.Configuration = {
@@ -26,7 +27,13 @@ const config: webpack.Configuration = {
   devtool: "source-map",
   devServer: {
     port: 3000,
-    historyApiFallback: true
+    historyApiFallback: true,
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false
+      }
+    }
   },
   module: {
     rules: [
@@ -51,6 +58,9 @@ const config: webpack.Configuration = {
     new HtmlWebpackPlugin({
       template: "./public/index.html",
       favicon: "./public/favicon.ico"
+    }),
+    new EslintWebpackPlugin({
+      extensions: [".ts", ".tsx", ".js", ".jsx"]
     })
   ]
 };
