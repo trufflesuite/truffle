@@ -1,0 +1,7 @@
+{
+  "name": "dummy-compiler",
+  "version": "0.1.0",
+  "description": "Dummy compiler for testing",
+  "main": "index.js",
+  "license": "MIT"
+}
