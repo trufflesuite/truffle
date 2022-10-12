@@ -6,7 +6,7 @@ import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "./artifacts";
 import { generateId } from "@truffle/db/system";
-import Migrate from "@truffle/migrate";
+const Migrate = require("@truffle/migrate").default;
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
 import Web3 from "web3";
