@@ -27,7 +27,7 @@ module.exports = {
 
     /* overwrite method */
     provider.send = this.send(originalSend, preHook, postHook);
-
+    provider.sendAsync = this.send(originalSend, preHook, postHook);
     /* mark as wrapped */
     provider._alreadyWrapped = true;
 
