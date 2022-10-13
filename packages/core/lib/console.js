@@ -30,9 +30,9 @@ const processInput = (input, allowedCommands) => {
     if (validTruffleCommands.includes(cmd)) {
       return allowedCommands.includes(cmd)
         ? words.slice(1).join(" ")
-        : makeIIFE("ℹ️ : 'truffle ${cmd}' is not allowed within Truffle REPL");
+        : makeIIFE(`ℹ️ : 'truffle ${cmd}' is not allowed within Truffle REPL`);
     }
-    return makeIIFE("ℹ️ : 'truffle ${cmd}' is not a valid Truffle command");
+    return makeIIFE(`ℹ️ : 'truffle ${cmd}' is not a valid Truffle command`);
   }
 
   return input.trim();
