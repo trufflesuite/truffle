@@ -51,6 +51,8 @@ class Console extends EventEmitter {
     // repl context objects so as not to overwrite them - this is to prevent
     // overwriting Node native objects like Buffer, number, etc.
     this.replContextNameConflicts = {};
+    // if we find name conflicts with globals we need to warn the user
+    this.warnUserOfConflicts = false;
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
@@ -66,22 +68,17 @@ class Console extends EventEmitter {
   // into the repl context because we need to overwrite them when they change
   recordNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
-      if (
-        this.replContextNameConflicts[abstraction.contract_name] ===
-          undefined &&
-        Object.getOwnPropertyNames(this.repl.context.global).includes(
-          abstraction.contract_name
-        )
-      ) {
-        this.replContextNameConflicts[abstraction.contract_name] = {
-          conflict: true,
+      const globals = Object.getOwnPropertyNames(this.repl.context.global);
+      const name = abstraction.contract_name;
+      if (this.replContextNameConflicts[name] === undefined) {
+        const conflict = globals.includes(name);
+        // note that we need to warn the user later
+        if (conflict) {
+          this.warnUserOfConflicts = true;
+        }
+        this.replContextNameConflicts[name] = {
+          conflict,
           warned: false
-        };
-      } else if (
-        this.replContextNameConflicts[abstraction.contract_name] === undefined
-      ) {
-        this.replContextNameConflicts[abstraction.contract_name] = {
-          conflict: false
         };
       }
     }
@@ -277,11 +274,7 @@ class Console extends EventEmitter {
       }
     });
 
-    if (
-      Object.entries(this.replContextNameConflicts).some(
-        ([_key, value]) => value.conflict === true && value.warned === false
-      )
-    ) {
+    if (this.warnUserOfConflicts) {
       let contractNames = [];
       for (const name in this.replContextNameConflicts) {
         if (
@@ -300,6 +293,7 @@ class Console extends EventEmitter {
           `that you rename your contract to avoid problems. \n > The following ` +
           `name conflicts exist: ${contractNames.join(", ")}.`
       );
+      this.warnUserOfConflicts = false;
     }
 
     // make sure the repl gets the new contracts in its context
