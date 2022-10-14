@@ -50,9 +50,9 @@ class Console extends EventEmitter {
     // we need to keep track of name conflicts that occur between contracts and
     // repl context objects so as not to overwrite them - this is to prevent
     // overwriting Node native objects like Buffer, number, etc.
-    this.replContextNameConflicts = {};
-    // if we find name conflicts with globals we need to warn the user
-    this.warnUserOfConflicts = false;
+    this.replGlobals = new Set();
+    this.knownReplNameConflicts = new Set();
+    this.newReplNameConflicts = new Set();
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
@@ -64,22 +64,14 @@ class Console extends EventEmitter {
     });
   }
 
-  // we only want to record a conflict the first time we try and load a contract
-  // into the repl context because we need to overwrite them when they change
   recordNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
-      const globals = Object.getOwnPropertyNames(this.repl.context.global);
       const name = abstraction.contract_name;
-      if (this.replContextNameConflicts[name] === undefined) {
-        const conflict = globals.includes(name);
-        // note that we need to warn the user later
-        if (conflict) {
-          this.warnUserOfConflicts = true;
-        }
-        this.replContextNameConflicts[name] = {
-          conflict,
-          warned: false
-        };
+      if (this.knownReplNameConflicts.has(name)) {
+        continue;
+      } else if (this.replGlobals.has(name)) {
+        this.newReplNameConflicts.add(name);
+        this.knownReplNameConflicts.add(name);
       }
     }
   }
@@ -98,6 +90,11 @@ class Console extends EventEmitter {
       Object.entries(truffleAndUserGlobals).forEach(([key, value]) => {
         this.repl.context[key] = value;
       });
+
+      // record name conflicts to avoid clobbering globals with contracts
+      this.replGlobals = new Set(
+        Object.getOwnPropertyNames(this.repl.context.global)
+      );
 
       // repl is ready - set and display prompt
       this.repl.setPrompt("truffle(" + this.options.network + ")> ");
@@ -264,27 +261,21 @@ class Console extends EventEmitter {
     const contextVars = {};
 
     abstractions.forEach(abstraction => {
+      const name = abstraction.contract_name;
       // don't overwrite Node's native objects - only load contracts
       // into the repl context when no conflict exists
-      if (
-        this.replContextNameConflicts[abstraction.contract_name].conflict ===
-        false
-      ) {
-        contextVars[abstraction.contract_name] = abstraction;
+      if (!this.knownReplNameConflicts.has(name)) {
+        contextVars[name] = abstraction;
       }
     });
 
-    if (this.warnUserOfConflicts) {
+    if (this.newReplNameConflicts.size > 0) {
       let contractNames = [];
-      for (const name in this.replContextNameConflicts) {
-        if (
-          this.replContextNameConflicts[name].conflict === true &&
-          this.replContextNameConflicts[name].warned === false
-        ) {
-          this.replContextNameConflicts[name].warned = true;
-          contractNames.push(name);
-        }
+      for (const name of this.newReplNameConflicts.entries()) {
+        // when iterating like this, each item is of the form [value, value]
+        contractNames.push(name[0]);
       }
+      this.newReplNameConflicts.clear();
       console.log(
         `\n > Warning: One or more of your contract(s) has a name conflict ` +
           `with something in the current repl context and was not loaded by ` +
@@ -293,7 +284,6 @@ class Console extends EventEmitter {
           `that you rename your contract to avoid problems. \n > The following ` +
           `name conflicts exist: ${contractNames.join(", ")}.`
       );
-      this.warnUserOfConflicts = false;
     }
 
     // make sure the repl gets the new contracts in its context
