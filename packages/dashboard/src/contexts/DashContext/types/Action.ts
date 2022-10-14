@@ -1,4 +1,3 @@
-import type { providers } from "ethers";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { Message } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
@@ -30,10 +29,7 @@ export interface SetNoticeAction extends BaseAction {
 
 export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
-  data: {
-    lifecycle: ReceivedMessageLifecycle<Message>;
-    provider: providers.Web3Provider;
-  };
+  data: ReceivedMessageLifecycle<Message>;
 }
 
 export type Action =

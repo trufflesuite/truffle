@@ -28,7 +28,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
   useEffect(() => {
     const initBusClient = async () => {
-      const { busClient, provider } = state;
+      const { busClient } = state;
       await busClient.ready();
       const { host, port } = busClient.options;
       window.devLog(`Connected to message bus at ws://${host}:${port}`);
@@ -38,7 +38,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
         void dispatch({
           type: "handle-message",
-          data: { lifecycle, provider }
+          data: lifecycle
         });
       subscription.on("message", messageHandler);
     };

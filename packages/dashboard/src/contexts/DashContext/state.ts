@@ -63,7 +63,7 @@ export const reducer = (state: State, action: Action): State => {
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
     case "handle-message":
-      const { lifecycle, provider } = data;
+      const lifecycle = data;
       const { message } = lifecycle;
       const { id } = message;
       const updatedProviderMessages = new Map(state.providerMessages);
@@ -82,7 +82,7 @@ export const reducer = (state: State, action: Action): State => {
           updatedProviderMessages.set(id, strictlyTypedLifecycle);
         } else {
           // Confirm supported and non-interactive messages
-          confirmMessage(strictlyTypedLifecycle, provider);
+          confirmMessage(strictlyTypedLifecycle, state.provider);
         }
       } else if (isWorkflowCompileResultMessage(message)) {
         window.devLog("Received workflow-compile-result message", message);
