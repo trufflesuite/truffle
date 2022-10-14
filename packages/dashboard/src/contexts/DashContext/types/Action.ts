@@ -14,7 +14,8 @@ export interface BaseAction {
 
 export interface SetDecoderAction extends BaseAction {
   type: "set-decoder";
-  data: State["decoder"];
+  data: Pick<State, "decoder"> &
+    Partial<Pick<State, "decoderCompilations" | "decoderCompilationHashes">>;
 }
 
 export interface SetChainInfoAction extends BaseAction {

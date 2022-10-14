@@ -13,6 +13,10 @@ export interface State {
   busClient: DashboardMessageBusClient;
   dbPromise: Promise<IDBPDatabase<Schema>>;
   decoder: ProjectDecoder | null;
+  decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
+  decoderCompilationHashes: Set<
+    Schema["Compilation"]["value"]["dataHash"]
+  > | null;
   provider: providers.Web3Provider;
   providerMessages: Map<
     number,

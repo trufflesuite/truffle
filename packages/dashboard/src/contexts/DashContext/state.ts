@@ -1,5 +1,6 @@
-import { openDB } from "idb";
 import { providers } from "ethers";
+import { openDB } from "idb";
+import { sha1 } from "object-hash";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
@@ -40,6 +41,8 @@ export const initialState: State = {
     }
   }),
   decoder: null,
+  decoderCompilations: null,
+  decoderCompilationHashes: null,
   // @ts-ignore
   provider: new providers.Web3Provider(window.ethereum),
   providerMessages: new Map(),
@@ -57,7 +60,7 @@ export const reducer = (state: State, action: Action): State => {
   const { type, data } = action;
   switch (type) {
     case "set-decoder":
-      return { ...state, decoder: data };
+      return { ...state, ...data };
     case "set-chain-info":
       return { ...state, chainInfo: data };
     case "set-notice":
@@ -65,10 +68,12 @@ export const reducer = (state: State, action: Action): State => {
     case "handle-message":
       const lifecycle = data;
       const { message } = lifecycle;
-      const { id } = message;
-      const updatedProviderMessages = new Map(state.providerMessages);
+      const newState: State = {
+        ...state,
+        providerMessages: new Map(state.providerMessages)
+      };
 
-      // Determine message type
+      // Determine message type and optionally modify new state
       if (isDashboardProviderMessage(message)) {
         window.devLog(
           `Received provider message: ${message.payload.method}`,
@@ -79,26 +84,43 @@ export const reducer = (state: State, action: Action): State => {
         if (messageIsUnsupported(message)) {
           rejectMessage(strictlyTypedLifecycle, "UNSUPPORTED");
         } else if (messageNeedsInteraction(message)) {
-          updatedProviderMessages.set(id, strictlyTypedLifecycle);
+          newState.providerMessages.set(message.id, strictlyTypedLifecycle);
         } else {
           // Confirm supported and non-interactive messages
           confirmMessage(strictlyTypedLifecycle, state.provider);
         }
-      } else if (isWorkflowCompileResultMessage(message)) {
-        window.devLog("Received workflow-compile-result message", message);
       } else if (isInvalidateMessage(message)) {
         window.devLog("Received invalidate message", message);
         const invalidatedID = message.payload;
-        updatedProviderMessages.delete(invalidatedID);
+        newState.providerMessages.delete(invalidatedID);
       } else if (isLogMessage(message)) {
         window.devLog(`Received log message`, message);
         lifecycle.respond({ payload: undefined });
       } else if (isDebugMessage(message)) {
         window.devLog("Received debug message", message);
         lifecycle.respond({ payload: undefined });
+      } else if (isWorkflowCompileResultMessage(message)) {
+        window.devLog("Received workflow-compile-result message", message);
+        if (message.payload.compilations.length > 0) {
+          const decoderCompilations = [...state.decoderCompilations!];
+          const decoderCompilationHashes = new Set(
+            state.decoderCompilationHashes
+          );
+          message.payload.compilations.forEach(compilation => {
+            const hash = sha1(compilation);
+            if (!decoderCompilationHashes.has(hash)) {
+              decoderCompilations.push(compilation);
+              decoderCompilationHashes.add(hash);
+            }
+          });
+          Object.assign(newState, {
+            decoderCompilations,
+            decoderCompilationHashes
+          });
+        }
       }
 
-      return { ...state, providerMessages: updatedProviderMessages };
+      return newState;
     default:
       throw new Error("Undefined reducer action type");
   }

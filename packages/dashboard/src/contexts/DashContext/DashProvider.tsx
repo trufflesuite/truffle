@@ -23,6 +23,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
+  const initFinished = useRef(false);
 
   window.devLog({ state });
 
@@ -48,34 +49,56 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const compilationStore = await (await dbPromise).getAll("Compilation");
       window.devLog(`Compilation store`, compilationStore);
 
+      const decoderCompilations: State["decoderCompilations"] = new Array(
+        compilationStore.length
+      );
+      const decoderCompilationHashes: State["decoderCompilationHashes"] =
+        new Set();
+      compilationStore.forEach(row => {
+        decoderCompilations.push(row.data);
+        decoderCompilationHashes.add(row.dataHash);
+      });
+
       const decoder = await forProject({
-        projectInfo: {
-          commonCompilations: compilationStore.map(ele => ele.data)
-        },
+        projectInfo: { commonCompilations: decoderCompilations },
         // @ts-ignore
         provider
       });
-      dispatch({ type: "set-decoder", data: decoder });
+      dispatch({
+        type: "set-decoder",
+        data: {
+          decoder,
+          decoderCompilations,
+          decoderCompilationHashes
+        }
+      });
     };
 
     const init = async () => {
       // This obviates the need for a cleanup callback
       if (initCalled.current) return;
-      initCalled.current = true;
 
+      initCalled.current = true;
       await initBusClient();
       await initDecoder();
+      initFinished.current = true;
     };
 
     init();
   }, [state]);
 
   useEffect(() => {
-    dispatch({
-      type: "set-notice",
-      data: { show: !isConnected, type: "CONNECT" }
-    });
-  }, [isConnected]);
+    const updateDecoder = async () => {
+      const newDecoder = await forProject({
+        projectInfo: { commonCompilations: state.decoderCompilations! },
+        // @ts-ignore
+        provider: state.provider
+      });
+      dispatch({ type: "set-decoder", data: { decoder: newDecoder } });
+    };
+
+    if (initFinished.current) updateDecoder();
+  }, [state.decoderCompilations, state.provider]);
 
   useEffect(() => {
     const updateChainInfo = () => {
@@ -100,6 +123,13 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
     updateChainInfo();
   }, [chain]);
+
+  useEffect(() => {
+    dispatch({
+      type: "set-notice",
+      data: { show: !isConnected, type: "CONNECT" }
+    });
+  }, [isConnected]);
 
   const operations = {
     userConfirmMessage: async (
