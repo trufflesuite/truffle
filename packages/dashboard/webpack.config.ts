@@ -29,12 +29,14 @@ const config: webpack.Configuration = {
     port: 3000,
     historyApiFallback: true,
     client: {
+      reconnect: false,
       overlay: {
         errors: true,
         warnings: false
       }
     }
   },
+  stats: "minimal",
   module: {
     rules: [
       {
