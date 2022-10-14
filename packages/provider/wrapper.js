@@ -1,5 +1,5 @@
-var debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
-var ProviderError = require("./error");
+const debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
+const ProviderError = require("./error");
 
 module.exports = {
   /*
@@ -20,16 +20,16 @@ module.exports = {
     options.verbose = options.verbose || options.verboseRpc || false;
 
     /* create wrapper functions for before/after send/sendAsync */
-    var preHook = this.preHook(options);
-    var postHook = this.postHook(options);
+    const preHook = this.preHook(options);
+    const postHook = this.postHook(options);
 
-    var originalSend = provider.send.bind(provider);
+    const originalSend = provider.send.bind(provider);
 
     /* overwrite method */
     provider.send = this.send(originalSend, preHook, postHook);
     // path sendAsync when sendAsync is used.
     if (provider.sendAsync) {
-      let originalSendAsync = provider.sendAsync.bind(provider);
+      const originalSendAsync = provider.sendAsync.bind(provider);
       provider.sendAsync = this.send(originalSendAsync, preHook, postHook);
     }
     /* mark as wrapped */
@@ -115,7 +115,7 @@ module.exports = {
       payload = preHook(payload);
 
       originalSend(payload, function (error, result) {
-        var modified = postHook(payload, error, result);
+        const modified = postHook(payload, error, result);
         payload = modified[0];
         error = modified[1];
         result = modified[2];
