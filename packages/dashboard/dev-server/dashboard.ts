@@ -11,6 +11,9 @@ const dashboardServer = new DashboardServer(options);
 
 async function startServer() {
   await dashboardServer.start();
+  console.log(
+    `Dashboard server running at http://${options.host}:${options.port}`
+  );
 }
 
 startServer();
