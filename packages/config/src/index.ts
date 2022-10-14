@@ -4,9 +4,9 @@ import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";
 import TruffleError from "@truffle/error";
-import originalRequire from "original-require";
 import { getInitialConfig, configProps } from "./configDefaults";
 import { EventManager } from "@truffle/events";
+const originalRequire = eval("require");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename

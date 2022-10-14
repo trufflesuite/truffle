@@ -71,7 +71,6 @@
     "lodash": "^4.17.21",
     "mocha": "9.2.2",
     "node-emoji": "^1.8.1",
-    "original-require": "^1.0.1",
     "sane": "^4.0.2",
     "semver": "7.3.7",
     "source-map-support": "^0.5.19",

@@ -1,6 +1,6 @@
 import { Plugin, Plugins, TruffleConfig } from "../lib";
 import path from "path";
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 
 describe("Plugins", () => {
   // Add fixture folder to require path so dummy plugins can be found
@@ -40,7 +40,7 @@ describe("Plugins", () => {
 
     it("should list no plugins if none are defined in a Truffle config object", () => {
       const config = {
-        working_directory: __dirname,
+        working_directory: __dirname
       };
 
       const allPlugins = Plugins.listAll(config as TruffleConfig);
@@ -72,7 +72,8 @@ describe("Plugins", () => {
         plugins: ["non-existent-plugin"]
       };
 
-      const expectedError = /listed as a plugin, but not found in global or local node modules/;
+      const expectedError =
+        /listed as a plugin, but not found in global or local node modules/;
 
       expect(() => Plugins.listAll(config)).toThrow(expectedError);
     });

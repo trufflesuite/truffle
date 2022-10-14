@@ -25,8 +25,7 @@
   "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.1.1",
-    "app-module-path": "^2.2.0",
-    "original-require": "^1.0.1"
+    "app-module-path": "^2.2.0"
   },
   "devDependencies": {
     "@types/jest": "27.4.1",

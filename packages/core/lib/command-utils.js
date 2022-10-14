@@ -67,7 +67,7 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
     const filePath = path.join(__dirname, `${chosenCommand}.bundled.js`);
     // we need to use this library to bypass webpack's require which can't
     // access the user's filesystem
-    const originalRequire = require("original-require");
+    const originalRequire = eval("require");
     command = originalRequire(filePath);
   } else {
     const filePath = `./commands/${chosenCommand}`;

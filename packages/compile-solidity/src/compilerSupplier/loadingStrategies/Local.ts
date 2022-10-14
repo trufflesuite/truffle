@@ -1,7 +1,7 @@
 import path from "path";
-import originalRequire from "original-require";
 import solcWrap from "solc/wrapper";
 import { observeListeners } from "../observeListeners";
+const originalRequire = eval("require");
 
 export class Local {
   load(localPath: string) {

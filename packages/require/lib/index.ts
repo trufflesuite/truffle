@@ -6,14 +6,13 @@ import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
 import vm from "vm";
 import Module from "module";
 
-import originalRequire from "original-require";
-
 import { ExecOptions, RequireOptions } from "./types";
 import { compile } from "./typescript";
 
 import Debug from "debug";
 
 const debug = Debug("require:index");
+const originalRequire = eval("require");
 
 export function file(options: RequireOptions) {
   const sourceFilePath = path.resolve(options.file);

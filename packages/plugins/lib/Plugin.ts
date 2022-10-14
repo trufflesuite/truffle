@@ -1,5 +1,5 @@
 const TruffleError = require("@truffle/error");
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 import path from "path";
 import type { PluginConstructorOptions, PluginDefinition } from "./types";
 

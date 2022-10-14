@@ -1,7 +1,7 @@
 const assert = require("assert");
 const sinon = require("sinon");
 const path = require("path");
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 const runHandler = require("../../lib/commands/run/runHandler");
 
 describe("run handler", () => {

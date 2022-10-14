@@ -4,13 +4,12 @@ import type TSNode from "ts-node";
 import TruffleConfig from "@truffle/config";
 import { readFileSync } from "fs";
 
-import originalRequire from "original-require";
-
 import { TsNodeDependencyError } from "./types";
 
 import Debug from "debug";
 
 const debug = Debug("require:typescript");
+const originalRequire = eval("require");
 
 const _tsExtensionExpr = /^\.(cts|tsx?)$/i;
 

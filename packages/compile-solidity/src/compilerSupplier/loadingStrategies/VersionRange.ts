@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("compile:compilerSupplier");
+const originalRequire = eval("require");
 
 import requireFromString from "require-from-string";
-import originalRequire from "original-require";
 
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
