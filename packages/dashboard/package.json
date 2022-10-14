@@ -21,7 +21,7 @@
     "dist/lib"
   ],
   "scripts": {
-    "build": "yarn build:server && yarn build:react --output-path ./dist/lib/dashboard-frontend/build",
+    "build": "yarn build:server && yarn build:react --output-path ./dist/lib/dashboard-frontend",
     "build:react": "cross-env NODE_ENV=\"production\" webpack",
     "build:server": "tsc --project tsconfig.server.json",
     "prepare": "yarn build",
