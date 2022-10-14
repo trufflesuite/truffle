@@ -148,10 +148,6 @@ module.exports = {
   },
 
   externals: [
-    // truffle-config uses the original-require module.
-    // Here, we leave it as an external, and use the original-require
-    // module that's a dependency of Truffle instead.
-    /^original-require$/,
     /^mocha$/,
     /^@truffle\/debugger/, //no longer part of the bundle to keep size down
     /^@truffle\/db/,
@@ -175,7 +171,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      scrypt: "js-scrypt"
+      "scrypt": "js-scrypt"
     }
   },
 
