@@ -19,7 +19,7 @@ module.exports = {
     // to see what web3 is sending and receiving.
     options.verbose = options.verbose || options.verboseRpc || false;
 
-    /* create wrapper functions for before/after send */
+    /* create wrapper functions for before/after send/sendAsync */
     var preHook = this.preHook(options);
     var postHook = this.postHook(options);
 
@@ -27,7 +27,11 @@ module.exports = {
 
     /* overwrite method */
     provider.send = this.send(originalSend, preHook, postHook);
-    provider.sendAsync = this.send(originalSend, preHook, postHook);
+    // path sendAsync when sendAsync is used.
+    if (provider.sendAsync) {
+      let originalSendAsync = provider.sendAsync.bind(provider);
+      provider.sendAsync = this.send(originalSendAsync, preHook, postHook);
+    }
     /* mark as wrapped */
     provider._alreadyWrapped = true;
 
