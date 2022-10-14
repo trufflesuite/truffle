@@ -3,10 +3,19 @@ import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-cl
 import type { Message } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
 
-export type ActionType = "set-chain-info" | "set-notice" | "handle-message";
+export type ActionType =
+  | "set-decoder"
+  | "set-chain-info"
+  | "set-notice"
+  | "handle-message";
 
 export interface BaseAction {
   type: ActionType;
+}
+
+export interface SetDecoderAction extends BaseAction {
+  type: "set-decoder";
+  data: State["decoder"];
 }
 
 export interface SetChainInfoAction extends BaseAction {
@@ -27,4 +36,8 @@ export interface HandleMessageAction extends BaseAction {
   };
 }
 
-export type Action = SetChainInfoAction | SetNoticeAction | HandleMessageAction;
+export type Action =
+  | SetDecoderAction
+  | SetChainInfoAction
+  | SetNoticeAction
+  | HandleMessageAction;

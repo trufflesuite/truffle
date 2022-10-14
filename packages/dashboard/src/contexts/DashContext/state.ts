@@ -39,6 +39,7 @@ export const initialState: State = {
       });
     }
   }),
+  decoder: null,
   // @ts-ignore
   provider: new providers.Web3Provider(window.ethereum),
   providerMessages: new Map(),
@@ -55,6 +56,8 @@ export const initialState: State = {
 export const reducer = (state: State, action: Action): State => {
   const { type, data } = action;
   switch (type) {
+    case "set-decoder":
+      return { ...state, decoder: data };
     case "set-chain-info":
       return { ...state, chainInfo: data };
     case "set-notice":

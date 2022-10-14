@@ -5,6 +5,7 @@ import type {
   Message,
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
+import { forProject } from "@truffle/decoder";
 import { DashContext, reducer, initialState } from "src/contexts/DashContext";
 import type { State } from "src/contexts/DashContext";
 import {
@@ -42,12 +43,28 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       subscription.on("message", messageHandler);
     };
 
+    const initDecoder = async () => {
+      const { dbPromise, provider } = state;
+      const compilationStore = await (await dbPromise).getAll("Compilation");
+      window.devLog(`Compilation store`, compilationStore);
+
+      const decoder = await forProject({
+        projectInfo: {
+          commonCompilations: compilationStore.map(ele => ele.data)
+        },
+        // @ts-ignore
+        provider
+      });
+      dispatch({ type: "set-decoder", data: decoder });
+    };
+
     const init = async () => {
       // This obviates the need for a cleanup callback
       if (initCalled.current) return;
       initCalled.current = true;
 
       await initBusClient();
+      await initDecoder();
     };
 
     init();

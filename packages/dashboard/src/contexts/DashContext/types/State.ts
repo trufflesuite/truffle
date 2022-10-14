@@ -1,5 +1,6 @@
 import type { IDBPDatabase } from "idb";
 import type { providers } from "ethers";
+import type { ProjectDecoder } from "@truffle/decoder";
 import type {
   DashboardMessageBusClient,
   ReceivedMessageLifecycle
@@ -11,6 +12,7 @@ import type { NoticeContent } from "src/components/composed/Notice/content/types
 export interface State {
   busClient: DashboardMessageBusClient;
   dbPromise: Promise<IDBPDatabase<Schema>>;
+  decoder: ProjectDecoder | null;
   provider: providers.Web3Provider;
   providerMessages: Map<
     number,
