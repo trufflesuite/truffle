@@ -67,9 +67,10 @@ class Console extends EventEmitter {
   recordNameConflicts(abstractions) {
     for (const abstraction of abstractions) {
       const name = abstraction.contract_name;
-      if (this.knownReplNameConflicts.has(name)) {
-        continue;
-      } else if (this.replGlobals.has(name)) {
+      if (
+        !this.knownReplNameConflicts.has(name) &&
+        this.replGlobals.has(name)
+      ) {
         this.newReplNameConflicts.add(name);
         this.knownReplNameConflicts.add(name);
       }
@@ -271,9 +272,8 @@ class Console extends EventEmitter {
 
     if (this.newReplNameConflicts.size > 0) {
       let contractNames = [];
-      for (const name of this.newReplNameConflicts.entries()) {
-        // when iterating like this, each item is of the form [value, value]
-        contractNames.push(name[0]);
+      for (const name of this.newReplNameConflicts.keys()) {
+        contractNames.push(name);
       }
       this.newReplNameConflicts.clear();
       console.log(
