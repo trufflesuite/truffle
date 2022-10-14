@@ -11301,19 +11301,20 @@ concat-stream@^2.0.0:
     readable-stream "^3.0.2"
     typedarray "^0.0.6"
 
-concurrently@^6.5.1:
-  version "6.5.1"
-  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-6.5.1.tgz#4518c67f7ac680cf5c34d5adf399a2a2047edc8c"
-  integrity sha512-FlSwNpGjWQfRwPLXvJ/OgysbBxPkWpiVjy1042b0U7on7S7qwwMIILRj7WTN1mTgqa582bG6NFuScOoh6Zgdag==
+concurrently@^7.4.0:
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-7.4.0.tgz#bb0e344964bc172673577c420db21e963f2f7368"
+  integrity sha512-M6AfrueDt/GEna/Vg9BqQ+93yuvzkSKmoTixnwEJkH0LlcGrRC2eCmjeG1tLLHIYfpYJABokqSGyMcXjm96AFA==
   dependencies:
     chalk "^4.1.0"
-    date-fns "^2.16.1"
+    date-fns "^2.29.1"
     lodash "^4.17.21"
-    rxjs "^6.6.3"
+    rxjs "^7.0.0"
+    shell-quote "^1.7.3"
     spawn-command "^0.0.2-1"
     supports-color "^8.1.0"
     tree-kill "^1.2.2"
-    yargs "^16.2.0"
+    yargs "^17.3.1"
 
 conf@^10.0.2:
   version "10.0.2"
@@ -11878,10 +11879,10 @@ dataloader@2.0.0:
   resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-2.0.0.tgz#41eaf123db115987e21ca93c005cd7753c55fe6f"
   integrity sha512-YzhyDAwA4TaQIhM5go+vCLmU0UikghC/t9DTQYZR2M/UvZ1MdOhPezSDZcjj9uqQJOMqjLcpWtyW2iNINdlatQ==
 
-date-fns@^2.16.1:
-  version "2.28.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.28.0.tgz#9570d656f5fc13143e50c975a3b6bbeb46cd08b2"
-  integrity sha512-8d35hViGYx/QH0icHYCeLmsLmMUheMmTyV9Fcm6gvNwdw31yXXH+O85sOBJ+OLnLQMKZowvpKb6FgMIQjcpvQw==
+date-fns@^2.29.1:
+  version "2.29.3"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.29.3.tgz#27402d2fc67eb442b511b70bbdf98e6411cd68a8"
+  integrity sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==
 
 dateformat@^3.0.0:
   version "3.0.3"
@@ -23120,6 +23121,13 @@ rxjs@^6.6.2, rxjs@^6.6.3:
   dependencies:
     tslib "^1.9.0"
 
+rxjs@^7.0.0:
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.7.tgz#2ec0d57fdc89ece220d2e702730ae8f1e49def39"
+  integrity sha512-z9MzKh/UcOqB3i20H6rtrlaE/CgjLOvheWK/9ILrbhROGTweAi1BaFsTT9FbwZi5Trr1qNRs+MXkhmR06awzQA==
+  dependencies:
+    tslib "^2.1.0"
+
 rxjs@^7.2.0:
   version "7.5.6"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.6.tgz#0446577557862afd6903517ce7cae79ecb9662bc"
@@ -23592,6 +23600,11 @@ shell-quote@^1.6.1:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.7.3.tgz#aa40edac170445b9a431e17bb62c0b881b9c4123"
   integrity sha512-Vpfqwm4EnqGdlsBFNmHhxhElJYrdfcxPThu+ryKS5J8L/fhAwLazFZtq+S+TWZ9ANj2piSQLGj6NQg+lKPmxrw==
+
+shell-quote@^1.7.3:
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.7.4.tgz#33fe15dee71ab2a81fcbd3a52106c5cfb9fb75d8"
+  integrity sha512-8o/QEhSSRb1a5i7TFR0iM4G16Z0vYB2OQVs4G3aAFXjn3T6yEx8AZxy1PgDF7I00LZHYA3WxaSYIf5e5sAX8Rw==
 
 shiki@^0.10.1:
   version "0.10.1"
