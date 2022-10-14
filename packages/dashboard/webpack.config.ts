@@ -4,6 +4,23 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import EslintWebpackPlugin from "eslint-webpack-plugin";
 import path from "path";
 
+const progressHandler = (function () {
+  let lastLoggedPercent = -1;
+  const minInterval = 15;
+
+  return {
+    log(percent: number, _message: string, ..._args: string[]) {
+      percent = Math.round(percent * 1000) / 10;
+      if (lastLoggedPercent < 0 || percent - lastLoggedPercent >= minInterval) {
+        lastLoggedPercent = percent;
+        console.log(`Compiling: ${percent}%`);
+      } else if (percent === 100) {
+        console.log(`Finished compiling`);
+      }
+    }
+  };
+})();
+
 const config: webpack.Configuration = {
   mode: process.env.NODE_ENV === "production" ? "production" : "development",
   entry: "./src/index.tsx",
@@ -63,7 +80,8 @@ const config: webpack.Configuration = {
     }),
     new EslintWebpackPlugin({
       extensions: [".ts", ".tsx", ".js", ".jsx"]
-    })
+    }),
+    new webpack.ProgressPlugin(progressHandler.log)
   ]
 };
 
