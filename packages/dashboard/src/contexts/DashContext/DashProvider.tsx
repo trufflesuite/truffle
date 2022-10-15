@@ -79,8 +79,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       if (initCalled.current) return;
 
       initCalled.current = true;
-      await initBusClient();
       await initDecoder();
+      await initBusClient();
       initFinished.current = true;
     };
 
