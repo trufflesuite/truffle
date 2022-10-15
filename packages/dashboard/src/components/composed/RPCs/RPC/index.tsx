@@ -31,7 +31,6 @@ type RPCProps = {
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
-  const [_decoding, setDecoding] = useState<Codec.CalldataDecoding>();
   const [decodingInspected, setDecodingInspected] = useState<string>();
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
@@ -60,7 +59,6 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
         gasPrice: params.gasPrice
       });
       if (res.kind !== "unknown") {
-        setDecoding(res);
         const resInspected = inspect(
           new Codec.Export.CalldataDecodingInspector(res),
           { quoteStyle: "double" }
