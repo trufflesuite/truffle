@@ -23,18 +23,30 @@ const makeIIFE = str => `(() => "${str}")()`;
 
 const processInput = (input, allowedCommands) => {
   const words = input.trim().split(/\s+/);
+
+  // empty input
   if (words.length === 0) return input;
 
-  if (words[0] === "truffle") {
+  // maybe truffle command
+  if (words[0].toLowerCase() === "truffle") {
     const cmd = words[1];
-    if (validTruffleCommands.includes(cmd)) {
-      return allowedCommands.includes(cmd)
-        ? words.slice(1).join(" ")
-        : makeIIFE(`ℹ️ : 'truffle ${cmd}' is not allowed within Truffle REPL`);
+
+    if (cmd === undefined) {
+      return makeIIFE(
+        `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+      );
     }
-    return makeIIFE(`ℹ️ : 'truffle ${cmd}' is not a valid Truffle command`);
+
+    const normalizedCommand = cmd.toLowerCase();
+    if (validTruffleCommands.includes(normalizedCommand)) {
+      return allowedCommands.includes(normalizedCommand)
+        ? words.slice(1).join(" ")
+        : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
+    }
+    return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
   }
 
+  // an expression
   return input.trim();
 };
 

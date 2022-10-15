@@ -74,15 +74,23 @@ describe("truffle develop", function () {
     [
       {
         cmd: "console",
-        expectedError: `ℹ️ : 'truffle console' is not allowed within Truffle REPL`
+        expectedError: `ℹ️ : 'console' is not allowed within Truffle REPL`
+      },
+      {
+        cmd: "CONSOLE",
+        expectedError: `ℹ️ : 'CONSOLE' is not allowed within Truffle REPL`
       },
       {
         cmd: "develop",
-        expectedError: `ℹ️ : 'truffle develop' is not allowed within Truffle REPL`
+        expectedError: `ℹ️ : 'develop' is not allowed within Truffle REPL`
       },
       {
         cmd: "alakazam",
-        expectedError: `ℹ️ : 'truffle alakazam' is not a valid Truffle command`
+        expectedError: `ℹ️ : 'alakazam' is not a valid Truffle command`
+      },
+      {
+        cmd: "",
+        expectedError: `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
       }
     ].forEach(({ cmd, expectedError }) => {
       it(`alerts on 'truffle ${cmd}'`, async function () {
