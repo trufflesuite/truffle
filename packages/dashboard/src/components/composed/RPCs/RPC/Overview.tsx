@@ -1,4 +1,4 @@
-import { Group, Button, Text, createStyles } from "@mantine/core";
+import { Group, Stack, Button, Badge, Text, createStyles } from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
@@ -8,6 +8,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
   const { colors, colorScheme, white, radius, fontFamilyMonospace, fn } = theme;
   return {
     container: {
+      flexWrap: "nowrap",
       backgroundColor:
         colorScheme === "dark"
           ? fn.rgba(colors["truffle-beige"][8], 0.12)
@@ -37,13 +38,27 @@ const useStyles = createStyles((theme, _params, getRef) => {
         }
       }
     },
-    methodName: {
+    methodBadge: {
+      textTransform: "initial",
+      cursor: "pointer",
+      transition: "background-color 0.2s"
+    },
+    activeMethodBadge: {
+      backgroundColor:
+        colorScheme === "dark"
+          ? fn.darken(colors["truffle-beige"][9], 0.56)
+          : colors["yellow"][1]
+    },
+    decoding: {
       fontFamily: fontFamilyMonospace,
       fontWeight: 700,
       color:
         colorScheme === "dark"
           ? colors["truffle-beige"][3]
           : colors["truffle-beige"][8]
+    },
+    buttons: {
+      minWidth: 234
     },
     button: {
       ref: getRef("button"),
@@ -62,6 +77,8 @@ const useStyles = createStyles((theme, _params, getRef) => {
 
 type OverviewProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  decodingInspected: string | undefined;
+  decodingInspectedFallback?: string;
   active: boolean;
   onBackClick: React.MouseEventHandler<HTMLDivElement>;
   onBackEnter: React.MouseEventHandler<HTMLDivElement>;
@@ -74,6 +91,8 @@ type OverviewProps = {
 
 function Overview({
   lifecycle,
+  decodingInspected,
+  decodingInspectedFallback = "?",
   active,
   onBackClick,
   onBackEnter,
@@ -108,10 +127,23 @@ function Overview({
       }`}
       tabIndex={0}
     >
-      <Text size="xl" className={classes.methodName}>
-        {method}
-      </Text>
-      <Group>
+      <Stack align="flex-start" spacing="xs">
+        <Badge
+          size="lg"
+          variant="outline"
+          color="truffle-beige"
+          radius="sm"
+          className={`${classes.methodBadge} ${
+            active ? classes.activeMethodBadge : ""
+          }`}
+        >
+          {method}
+        </Badge>
+        <Text size="xl" className={classes.decoding} lineClamp={1}>
+          {decodingInspected ?? decodingInspectedFallback}
+        </Text>
+      </Stack>
+      <Group className={classes.buttons}>
         <Button
           size="md"
           onClick={onRejectButtonClick}

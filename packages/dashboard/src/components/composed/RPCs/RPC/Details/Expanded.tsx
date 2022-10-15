@@ -26,17 +26,33 @@ const useStyles = createStyles((theme, _params, _getRef) => {
 
 type ExpandedProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  decodingInspected: string | undefined;
+  decodingInspectedFallback: string;
 };
 
-function Expanded({ lifecycle }: ExpandedProps): JSX.Element {
+function Expanded({
+  lifecycle,
+  decodingInspected,
+  decodingInspectedFallback
+}: ExpandedProps): JSX.Element {
   const { params } = lifecycle.message.payload;
   const paramsStringified = JSON.stringify(params, null, 2);
   const { classes } = useStyles();
 
   return (
-    <Stack spacing="xs" px="xl" pt="sm" pb="xl" className={classes.container}>
+    <Stack spacing="md" px="xl" pt="sm" pb="xl" className={classes.container}>
       <Text size="sm" color="teal" weight={700}>
-        Parameters
+        Decoded transaction
+      </Text>
+      <Prism
+        language="javascript"
+        copyLabel="Copy to clipboard"
+        classNames={{ code: classes.code }}
+      >
+        {decodingInspected ?? decodingInspectedFallback}
+      </Prism>
+      <Text size="sm" color="teal" weight={700}>
+        Raw transaction
       </Text>
       <Prism
         language="json"

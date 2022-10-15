@@ -1,9 +1,13 @@
+import { useEffect, useState } from "react";
 import { createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import * as Codec from "@truffle/codec";
+import inspect from "object-inspect";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
 import Details from "src/components/composed/RPCs/RPC/Details";
+import { useDash } from "src/hooks";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius, fn } = theme;
@@ -26,6 +30,9 @@ type RPCProps = {
 };
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
+  const { decoder } = useDash()!.state;
+  const [_decoding, setDecoding] = useState<Codec.CalldataDecoding>();
+  const [decodingInspected, setDecodingInspected] = useState<string>();
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
     useDisclosure(false);
@@ -39,10 +46,37 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
 
   const detailsView = clicked ? "expanded" : "collapsed";
 
+  useEffect(() => {
+    const decode = async () => {
+      const params = lifecycle.message.payload.params[0];
+      const res = await decoder!.decodeTransaction({
+        from: params.from,
+        to: params.to || null,
+        input: params.data,
+        value: params.value,
+        blockNumber: null,
+        nonce: params.nonce,
+        gas: params.gas,
+        gasPrice: params.gasPrice
+      });
+      if (res.kind !== "unknown") {
+        setDecoding(res);
+        const resInspected = inspect(
+          new Codec.Export.CalldataDecodingInspector(res),
+          { quoteStyle: "double" }
+        );
+        setDecodingInspected(resInspected);
+      }
+    };
+
+    decode();
+  }, [lifecycle.message.payload.params, decoder]);
+
   return (
     <div className={classes.container}>
       <Overview
         lifecycle={lifecycle}
+        decodingInspected={decodingInspected}
         active={
           clicked ||
           overviewBackHovered ||
@@ -59,6 +93,7 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       />
       <Details
         lifecycle={lifecycle}
+        decodingInspected={decodingInspected}
         view={detailsView}
         hoverState={{
           overviewBackHovered,
