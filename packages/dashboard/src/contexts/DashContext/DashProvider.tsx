@@ -2,7 +2,11 @@ import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAccount, useNetwork } from "wagmi";
 import { sha1 } from "object-hash";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
-import { isWorkflowCompileResultMessage } from "@truffle/dashboard-message-bus-common";
+import {
+  isWorkflowCompileResultMessage,
+  isLogMessage,
+  isDebugMessage
+} from "@truffle/dashboard-message-bus-common";
 import type {
   Message,
   DashboardProviderMessage,
@@ -77,8 +81,6 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
   const handleWorkflowCompileResultMessage = useCallback(
     async (message: WorkflowCompileResultMessage) => {
-      window.devLog("Received workflow-compile-result message", message);
-
       const { compilations } = message.payload;
 
       if (compilations.length === 0 || !stateRef.current.decoder) return;
@@ -152,13 +154,23 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const messageHandler = async (
         lifecycle: ReceivedMessageLifecycle<Message>
       ) => {
-        if (isWorkflowCompileResultMessage(lifecycle.message)) {
+        const { message } = lifecycle;
+        if (isWorkflowCompileResultMessage(message)) {
           // Handle WorkflowCompileResultMessage separately because:
           // a) Db operations are async
           // b) Avoid duplicate work (e.g. loop, hash)
-          handleWorkflowCompileResultMessage(lifecycle.message);
+          window.devLog("Received workflow-compile-result message", message);
+          handleWorkflowCompileResultMessage(message);
+        } else if (isLogMessage(message)) {
+          // Log messages do not alter state, not sending to reducer
+          window.devLog(`Received log message`, message);
+          lifecycle.respond({ payload: undefined });
+        } else if (isDebugMessage(message)) {
+          // Debug messages do not alter state, not sending to reducer
+          window.devLog("Received debug message", message);
+          lifecycle.respond({ payload: undefined });
         } else {
-          // Handle other types of message in reducer
+          // Other messages do alter state
           dispatch({
             type: "handle-message",
             data: lifecycle

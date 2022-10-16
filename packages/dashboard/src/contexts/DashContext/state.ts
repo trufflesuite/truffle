@@ -4,9 +4,7 @@ import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
-  isInvalidateMessage,
-  isLogMessage,
-  isDebugMessage
+  isInvalidateMessage
 } from "@truffle/dashboard-message-bus-common";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
@@ -64,23 +62,12 @@ export const reducer = (state: State, action: Action): State => {
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
     case "handle-message":
+      // Copy state,
+      // modify it depending on message type,
+      // return new state.
       const lifecycle = data;
       const { message } = lifecycle;
 
-      // Determine message type
-
-      // Return state directly for certain messages
-      if (isLogMessage(message)) {
-        window.devLog(`Received log message`, message);
-        lifecycle.respond({ payload: undefined });
-        return state;
-      } else if (isDebugMessage(message)) {
-        window.devLog("Received debug message", message);
-        lifecycle.respond({ payload: undefined });
-        return state;
-      }
-
-      // Copy, modify, and return new state for other messages
       const newState: State = {
         ...state,
         providerMessages: new Map(state.providerMessages)
