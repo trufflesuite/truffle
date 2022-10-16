@@ -196,7 +196,7 @@ export function shimContracts(
         debug("else; index: %d", index);
       }
       //whether needed adding or not, set the source ID on the contract object
-      contractObject.primarySourceId = index.toString(); //HACK
+      contractObject.primarySourceId = index?.toString(); //HACK
       debug("(no index unless mentioned)");
     }
 
