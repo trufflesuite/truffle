@@ -64,10 +64,10 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         const transaction = dbProxy.transaction("Compilation", "readwrite");
         const index = transaction.store.index("TimeAdded");
 
-        keepPruning: for await (const cursor of index.iterate(null, "next")) {
+        for await (const cursor of index.iterate(null, "next")) {
           await cursor.delete();
           if (await this.canInsert()) {
-            break keepPruning;
+            break;
           }
         }
       }
