@@ -54,8 +54,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       );
       const decoderCompilationHashes: State["decoderCompilationHashes"] =
         new Set();
-      compilationStore.forEach(row => {
-        decoderCompilations.push(row.data);
+      compilationStore.forEach((row, index) => {
+        decoderCompilations[index] = row.data;
         decoderCompilationHashes.add(row.dataHash);
       });
 
