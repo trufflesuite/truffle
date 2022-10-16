@@ -1,11 +1,9 @@
 import { providers } from "ethers";
 import { openDB } from "idb";
-import { sha1 } from "object-hash";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
-  isWorkflowCompileResultMessage,
   isInvalidateMessage,
   isLogMessage,
   isDebugMessage
@@ -68,12 +66,26 @@ export const reducer = (state: State, action: Action): State => {
     case "handle-message":
       const lifecycle = data;
       const { message } = lifecycle;
+
+      // Determine message type
+
+      // Return state directly for certain messages
+      if (isLogMessage(message)) {
+        window.devLog(`Received log message`, message);
+        lifecycle.respond({ payload: undefined });
+        return state;
+      } else if (isDebugMessage(message)) {
+        window.devLog("Received debug message", message);
+        lifecycle.respond({ payload: undefined });
+        return state;
+      }
+
+      // Copy, modify, and return new state for other messages
       const newState: State = {
         ...state,
         providerMessages: new Map(state.providerMessages)
       };
 
-      // Determine message type and optionally modify new state
       if (isDashboardProviderMessage(message)) {
         window.devLog(
           `Received provider message: ${message.payload.method}`,
@@ -93,31 +105,6 @@ export const reducer = (state: State, action: Action): State => {
         window.devLog("Received invalidate message", message);
         const invalidatedID = message.payload;
         newState.providerMessages.delete(invalidatedID);
-      } else if (isLogMessage(message)) {
-        window.devLog(`Received log message`, message);
-        lifecycle.respond({ payload: undefined });
-      } else if (isDebugMessage(message)) {
-        window.devLog("Received debug message", message);
-        lifecycle.respond({ payload: undefined });
-      } else if (isWorkflowCompileResultMessage(message)) {
-        window.devLog("Received workflow-compile-result message", message);
-        if (message.payload.compilations.length > 0) {
-          const decoderCompilations = [...state.decoderCompilations!];
-          const decoderCompilationHashes = new Set(
-            state.decoderCompilationHashes
-          );
-          message.payload.compilations.forEach(compilation => {
-            const hash = sha1(compilation);
-            if (!decoderCompilationHashes.has(hash)) {
-              decoderCompilations.push(compilation);
-              decoderCompilationHashes.add(hash);
-            }
-          });
-          Object.assign(newState, {
-            decoderCompilations,
-            decoderCompilationHashes
-          });
-        }
       }
 
       return newState;

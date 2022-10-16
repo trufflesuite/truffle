@@ -1,11 +1,15 @@
-import { useReducer, useEffect, useRef } from "react";
+import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAccount, useNetwork } from "wagmi";
+import { sha1 } from "object-hash";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
+import { isWorkflowCompileResultMessage } from "@truffle/dashboard-message-bus-common";
 import type {
   Message,
-  DashboardProviderMessage
+  DashboardProviderMessage,
+  WorkflowCompileResultMessage
 } from "@truffle/dashboard-message-bus-common";
 import { forProject } from "@truffle/decoder";
+import type { Compilation } from "@truffle/compile-common";
 import { DashContext, reducer, initialState } from "src/contexts/DashContext";
 import type { State } from "src/contexts/DashContext";
 import {
@@ -13,6 +17,9 @@ import {
   rejectMessage,
   getChainNameByID
 } from "src/utils/dash";
+
+const ARBITRARY_DB_MAX_BYTES = 500_000_000;
+const ARBITRARY_DB_MAX_PERCENT = 0.8;
 
 type DashProviderProps = {
   children: React.ReactNode;
@@ -23,11 +30,117 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
-  const initFinished = useRef(false);
+  const stateRef = useRef<State>(state);
+  stateRef.current = state;
 
   window.devLog({ state });
 
+  const dbHelper = useMemo(
+    () => ({
+      dbPromise: stateRef.current.dbPromise,
+      async has(hash: string) {
+        return !!(await (await this.dbPromise).getKey("Compilation", hash));
+      },
+      async insert(hash: string, compilation: Compilation) {
+        (await this.dbPromise).put("Compilation", {
+          dataHash: hash,
+          data: compilation,
+          timeAdded: Date.now()
+        });
+      },
+      async canInsert() {
+        const { usage, quota } = await navigator.storage.estimate();
+        if (usage && quota) {
+          return (
+            usage / quota < ARBITRARY_DB_MAX_PERCENT &&
+            usage < ARBITRARY_DB_MAX_BYTES
+          );
+        }
+      },
+      async prune() {
+        if (await this.canInsert()) return;
+
+        const dbProxy = await this.dbPromise;
+        const transaction = dbProxy.transaction("Compilation", "readwrite");
+        const index = transaction.store.index("TimeAdded");
+
+        keepPruning: for await (const cursor of index.iterate(null, "next")) {
+          await cursor.delete();
+          if (await this.canInsert()) {
+            break keepPruning;
+          }
+        }
+      }
+    }),
+    []
+  );
+
+  const handleWorkflowCompileResultMessage = useCallback(
+    async (message: WorkflowCompileResultMessage) => {
+      window.devLog("Received workflow-compile-result message", message);
+
+      const { compilations } = message.payload;
+
+      if (compilations.length === 0 || !stateRef.current.decoder) return;
+
+      let decoderNeedsUpdate = false;
+      const decoderCompilations = [...stateRef.current.decoderCompilations!];
+      const decoderCompilationHashes = new Set(
+        stateRef.current.decoderCompilationHashes
+      );
+
+      // Iterate over incoming compilations and determine if they are useful to
+      // in-memory decoder or db.
+      // This _can_ be optimized by batch inserting into db.
+      // Do not optimize by mirroring some kind of db state,
+      // which may fall out of sync (hint: when there are >1 tabs)
+      for (const compilation of compilations) {
+        const hash = sha1(compilation);
+
+        // If the in-memory decoder doesn't have this compilation,
+        // save it for decoder re-init after this for-loop ends.
+        const isNewToDecoder =
+          !stateRef.current.decoderCompilationHashes!.has(hash) &&
+          !decoderCompilationHashes.has(hash);
+        if (isNewToDecoder) {
+          decoderCompilations.push(compilation);
+          decoderCompilationHashes.add(hash);
+          decoderNeedsUpdate = true;
+        }
+
+        // If db doesn't have this compilation,
+        // delete old compilations (if necessary) and insert.
+        const isNewToDb = !(await dbHelper.has(hash));
+        if (isNewToDb) {
+          await dbHelper.prune();
+          await dbHelper.insert(hash, compilation);
+        }
+      }
+
+      if (decoderNeedsUpdate) {
+        const decoder = await forProject({
+          projectInfo: { commonCompilations: decoderCompilations },
+          // @ts-ignore
+          provider: stateRef.current.provider
+        });
+        dispatch({
+          type: "set-decoder",
+          data: {
+            decoder,
+            decoderCompilations,
+            decoderCompilationHashes
+          }
+        });
+      }
+    },
+    [dbHelper]
+  );
+
   useEffect(() => {
+    // This obviates the need for a cleanup callback
+    if (initCalled.current) return;
+    initCalled.current = true;
+
     const initBusClient = async () => {
       const { busClient } = state;
       await busClient.ready();
@@ -36,11 +149,22 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
       // Message bus client subscribes to and handles messages
       const subscription = busClient.subscribe({});
-      const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
-        void dispatch({
-          type: "handle-message",
-          data: lifecycle
-        });
+      const messageHandler = async (
+        lifecycle: ReceivedMessageLifecycle<Message>
+      ) => {
+        if (isWorkflowCompileResultMessage(lifecycle.message)) {
+          // Handle WorkflowCompileResultMessage separately because:
+          // a) Db operations are async
+          // b) Avoid duplicate work (e.g. loop, hash)
+          handleWorkflowCompileResultMessage(lifecycle.message);
+        } else {
+          // Handle other types of message in reducer
+          dispatch({
+            type: "handle-message",
+            data: lifecycle
+          });
+        }
+      };
       subscription.on("message", messageHandler);
     };
 
@@ -75,30 +199,12 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     };
 
     const init = async () => {
-      // This obviates the need for a cleanup callback
-      if (initCalled.current) return;
-
-      initCalled.current = true;
       await initDecoder();
       await initBusClient();
-      initFinished.current = true;
     };
 
     init();
-  }, [state]);
-
-  useEffect(() => {
-    const updateDecoder = async () => {
-      const newDecoder = await forProject({
-        projectInfo: { commonCompilations: state.decoderCompilations! },
-        // @ts-ignore
-        provider: state.provider
-      });
-      dispatch({ type: "set-decoder", data: { decoder: newDecoder } });
-    };
-
-    if (initFinished.current) updateDecoder();
-  }, [state.decoderCompilations, state.provider]);
+  }, [state, handleWorkflowCompileResultMessage]);
 
   useEffect(() => {
     const updateChainInfo = () => {
