@@ -271,10 +271,7 @@ class Console extends EventEmitter {
     });
 
     if (this.newReplNameConflicts.size > 0) {
-      let contractNames = [];
-      for (const name of this.newReplNameConflicts.keys()) {
-        contractNames.push(name);
-      }
+      const contractNames = [...this.newReplNameConflicts.keys()];
       this.newReplNameConflicts.clear();
       console.log(
         `\n > Warning: One or more of your contract(s) has a name conflict ` +
@@ -282,7 +279,7 @@ class Console extends EventEmitter {
           `default. \n > You can use 'artifacts.require("<artifactName>")' ` +
           `to obtain a reference to your contract(s). \n > Truffle recommends ` +
           `that you rename your contract to avoid problems. \n > The following ` +
-          `name conflicts exist: ${contractNames.join(", ")}.`
+          `name conflicts exist: ${contractNames.join(", ")}.\n`
       );
     }
 
