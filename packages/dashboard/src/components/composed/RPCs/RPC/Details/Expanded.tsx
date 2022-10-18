@@ -42,6 +42,11 @@ function Expanded({
   return (
     <Stack spacing="md" px="xl" pt="sm" pb="xl" className={classes.container}>
       <Text size="sm" color="teal" weight={700}>
+        {(!decodingInspected ||
+          /^Created contract could not be identified\.$/.test(
+            decodingInspected
+          )) &&
+          "⚠️ "}
         Decoded transaction
       </Text>
       <Prism
