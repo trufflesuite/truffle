@@ -49,8 +49,9 @@ const useStyles = createStyles((theme, _params, _getRef) => {
 
 type DetailsProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  showDecoding: boolean;
   decodingInspected: string | undefined;
-  decodingInspectedFallback?: string;
+  decodingSucceeded: boolean;
   view: DetailsView;
   hoverState: HoverState;
   onCollapsedClick: React.MouseEventHandler<HTMLDivElement>;
@@ -60,8 +61,9 @@ type DetailsProps = {
 
 function Details({
   lifecycle,
+  showDecoding,
   decodingInspected,
-  decodingInspectedFallback = "?",
+  decodingSucceeded,
   view,
   hoverState,
   onCollapsedClick,
@@ -97,7 +99,12 @@ function Details({
             }
           >
             <Expanded
-              {...{ lifecycle, decodingInspected, decodingInspectedFallback }}
+              {...{
+                lifecycle,
+                showDecoding,
+                decodingInspected,
+                decodingSucceeded
+              }}
             />
           </Suspense>
         </>

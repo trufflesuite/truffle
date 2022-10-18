@@ -77,8 +77,10 @@ const useStyles = createStyles((theme, _params, getRef) => {
 
 type OverviewProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  showDecoding: boolean;
   decodingInspected: string | undefined;
   decodingInspectedFallback?: string;
+  decodingSucceeded: boolean;
   active: boolean;
   onBackClick: React.MouseEventHandler<HTMLDivElement>;
   onBackEnter: React.MouseEventHandler<HTMLDivElement>;
@@ -91,8 +93,10 @@ type OverviewProps = {
 
 function Overview({
   lifecycle,
+  showDecoding,
   decodingInspected,
   decodingInspectedFallback = "?",
+  decodingSucceeded,
   active,
   onBackClick,
   onBackEnter,
@@ -139,9 +143,11 @@ function Overview({
         >
           {method}
         </Badge>
-        <Text size="xl" className={classes.decoding} lineClamp={1}>
-          {decodingInspected ?? decodingInspectedFallback}
-        </Text>
+        {showDecoding && (
+          <Text size="xl" className={classes.decoding} lineClamp={1}>
+            {decodingSucceeded ? decodingInspected : decodingInspectedFallback}
+          </Text>
+        )}
       </Stack>
       <Group className={classes.buttons}>
         <Button

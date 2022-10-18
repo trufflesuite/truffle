@@ -32,6 +32,7 @@ type RPCProps = {
 function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
   const [decodingInspected, setDecodingInspected] = useState<string>();
+  const [decodingSucceeded, setDecodingSucceeded] = useState(true);
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
     useDisclosure(false);
@@ -44,6 +45,9 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { classes } = useStyles();
 
   const detailsView = clicked ? "expanded" : "collapsed";
+
+  const isSendTransaction =
+    lifecycle.message.payload.method === "eth_sendTransaction";
 
   useEffect(() => {
     const decode = async () => {
@@ -58,25 +62,28 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
         gas: params.gas,
         gasPrice: params.gasPrice
       });
-      if (res.kind !== "unknown") {
-        const resInspected = inspect(
-          new Codec.Export.CalldataDecodingInspector(res),
-          { quoteStyle: "double" }
+      const resInspected = inspect(
+        new Codec.Export.CalldataDecodingInspector(res),
+        { quoteStyle: "double" }
+      );
+      const failed =
+        /^(Created|Receiving) contract could not be identified\.$/.test(
+          resInspected
         );
-        setDecodingInspected(resInspected);
-      }
+      setDecodingInspected(resInspected);
+      setDecodingSucceeded(!failed);
     };
 
-    if (lifecycle.message.payload.method === "eth_sendTransaction") {
-      decode();
-    }
-  }, [lifecycle.message.payload.params, decoder]);
+    if (isSendTransaction) decode();
+  }, [decoder, isSendTransaction, lifecycle.message.payload.params]);
 
   return (
     <div className={classes.container}>
       <Overview
         lifecycle={lifecycle}
+        showDecoding={isSendTransaction}
         decodingInspected={decodingInspected}
+        decodingSucceeded={decodingSucceeded}
         active={
           clicked ||
           overviewBackHovered ||
@@ -93,7 +100,9 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       />
       <Details
         lifecycle={lifecycle}
+        showDecoding={isSendTransaction}
         decodingInspected={decodingInspected}
+        decodingSucceeded={decodingSucceeded}
         view={detailsView}
         hoverState={{
           overviewBackHovered,
