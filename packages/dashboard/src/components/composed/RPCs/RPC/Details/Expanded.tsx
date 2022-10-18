@@ -47,7 +47,7 @@ function Expanded({
             decodingInspected
           )) &&
           "⚠️ "}
-        Decoded transaction
+        Decoded parameters
       </Text>
       <Prism
         language="javascript"
@@ -57,7 +57,7 @@ function Expanded({
         {decodingInspected ?? decodingInspectedFallback}
       </Prism>
       <Text size="sm" color="teal" weight={700}>
-        Raw transaction
+        Raw parameters
       </Text>
       <Prism
         language="json"
