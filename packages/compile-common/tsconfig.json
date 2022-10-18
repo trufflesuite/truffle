@@ -5,6 +5,8 @@
     "declaration": true,
     "target": "es2016",
     "noImplicitAny": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",

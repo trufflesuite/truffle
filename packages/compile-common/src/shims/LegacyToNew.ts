@@ -38,8 +38,10 @@ export function forContract(contract: any): CompiledContract {
     ast,
     abi,
     metadata,
-    bytecode: forBytecode(bytecode),
-    deployedBytecode: forBytecode(deployedBytecode),
+    bytecode: bytecode ? forBytecode(bytecode) : undefined,
+    deployedBytecode: deployedBytecode
+      ? forBytecode(deployedBytecode)
+      : undefined,
     compiler,
     devdoc,
     userdoc,
@@ -51,9 +53,6 @@ export function forContract(contract: any): CompiledContract {
 }
 
 export function forBytecode(bytecode: string): Bytecode {
-  if (!bytecode) {
-    return undefined;
-  }
   if (typeof bytecode === "object") {
     return bytecode;
   }
@@ -63,7 +62,12 @@ export function forBytecode(bytecode: string): Bytecode {
   const bytes = bytecode
     .slice(2) // remove 0x prefix
     .replace(/__[^_]+_*/g, (linkReference, characterOffset) => {
-      const [, name] = linkReference.match(/__([^_]+)_*/);
+      const match = linkReference.match(/__([^_]+)_*/);
+      if (match === null) {
+        //this can't actually happen, but strictNullChecks requires it
+        throw new Error("Could not extract link reference name");
+      }
+      const name = match[1];
 
       const characterLength = linkReference.length;
 
