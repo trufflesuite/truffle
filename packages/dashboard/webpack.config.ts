@@ -32,7 +32,7 @@ const config: webpack.Configuration = {
     path: path.resolve("build")
   },
   optimization: {
-    minimize: true,
+    minimize: isProduction,
     minimizer: [
       new TerserWebpackPlugin({
         terserOptions: {
