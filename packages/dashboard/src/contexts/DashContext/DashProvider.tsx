@@ -93,9 +93,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
       // Iterate over incoming compilations and determine if they are useful to
       // in-memory decoder or db.
-      // This _can_ be optimized by batch inserting into db.
-      // Do not optimize by mirroring some kind of db state,
-      // which may fall out of sync (hint: when there are >1 tabs)
+      // Do not try to optimize by:
+      // - Batch inserting.
+      // - Mirroring some kind of db state.
       for (const compilation of compilations) {
         const hash = sha1(compilation);
 
