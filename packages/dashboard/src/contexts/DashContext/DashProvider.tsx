@@ -115,7 +115,11 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         const isNewToDb = !(await dbHelper.has(hash));
         if (isNewToDb) {
           await dbHelper.prune();
-          await dbHelper.insert(hash, compilation);
+          try {
+            await dbHelper.insert(hash, compilation);
+          } catch (err) {
+            console.error(err);
+          }
         }
       }
 
