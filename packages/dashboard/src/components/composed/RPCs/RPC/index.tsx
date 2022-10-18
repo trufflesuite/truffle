@@ -67,7 +67,9 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       }
     };
 
-    decode();
+    if (lifecycle.message.payload.method === "eth_sendTransaction") {
+      decode();
+    }
   }, [lifecycle.message.payload.params, decoder]);
 
   return (
