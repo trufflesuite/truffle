@@ -89,6 +89,7 @@
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
+    "terser-webpack-plugin": "^5.3.6",
     "ts-jest": "29.0.3",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4",
