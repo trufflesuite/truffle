@@ -74,7 +74,7 @@ export const reducer = (state: State, action: Action): State => {
       };
 
       if (isDashboardProviderMessage(message)) {
-        window.devLog(
+        console.debug(
           `Received provider message: ${message.payload.method}`,
           message
         );
@@ -89,7 +89,7 @@ export const reducer = (state: State, action: Action): State => {
           confirmMessage(strictlyTypedLifecycle, state.provider);
         }
       } else if (isInvalidateMessage(message)) {
-        window.devLog("Received invalidate message", message);
+        console.debug("Received invalidate message", message);
         const invalidatedID = message.payload;
         newState.providerMessages.delete(invalidatedID);
       }

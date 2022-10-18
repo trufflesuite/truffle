@@ -37,7 +37,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const stateRef = useRef<State>(state);
   stateRef.current = state;
 
-  window.devLog({ state });
+  console.debug({ state });
 
   const dbHelper = useMemo(
     () => ({
@@ -147,7 +147,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const { busClient } = state;
       await busClient.ready();
       const { host, port } = busClient.options;
-      window.devLog(`Connected to message bus at ws://${host}:${port}`);
+      console.debug(`Connected to message bus at ws://${host}:${port}`);
 
       // Message bus client subscribes to and handles messages
       const subscription = busClient.subscribe({});
@@ -159,15 +159,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
           // Handle WorkflowCompileResultMessage separately because:
           // a) Db operations are async
           // b) Avoid duplicate work (e.g. loop, hash)
-          window.devLog("Received workflow-compile-result message", message);
+          console.debug("Received workflow-compile-result message", message);
           handleWorkflowCompileResultMessage(message);
         } else if (isLogMessage(message)) {
           // Log messages do not alter state, not sending to reducer
-          window.devLog(`Received log message`, message);
+          console.debug(`Received log message`, message);
           lifecycle.respond({ payload: undefined });
         } else if (isDebugMessage(message)) {
           // Debug messages do not alter state, not sending to reducer
-          window.devLog("Received debug message", message);
+          console.debug("Received debug message", message);
           lifecycle.respond({ payload: undefined });
         } else {
           // Other messages do alter state
@@ -183,7 +183,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     const initDecoder = async () => {
       const { dbPromise, provider } = state;
       const compilationStore = await (await dbPromise).getAll("Compilation");
-      window.devLog(`Compilation store`, compilationStore);
+      console.debug(`Compilation store`, compilationStore);
 
       const decoderCompilations: State["decoderCompilations"] = new Array(
         compilationStore.length

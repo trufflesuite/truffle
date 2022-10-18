@@ -2,7 +2,10 @@ import * as webpack from "webpack";
 import type WebpackDevServer from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import EslintWebpackPlugin from "eslint-webpack-plugin";
+import TerserWebpackPlugin from "terser-webpack-plugin";
 import path from "path";
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const progressHandler = (function () {
   let lastLoggedPercent = -1;
@@ -22,11 +25,23 @@ const progressHandler = (function () {
 })();
 
 const config: webpack.Configuration = {
-  mode: process.env.NODE_ENV === "production" ? "production" : "development",
+  mode: isProduction ? "production" : "development",
   entry: "./src/index.tsx",
   output: {
     filename: "bundle.js",
     path: path.resolve("build")
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserWebpackPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: isProduction
+          }
+        }
+      })
+    ]
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx"],
