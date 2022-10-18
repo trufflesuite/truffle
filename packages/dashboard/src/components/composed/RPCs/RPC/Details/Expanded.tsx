@@ -1,13 +1,17 @@
-import { Stack, Text, createStyles } from "@mantine/core";
+import { Stack, Group, Text, createStyles } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import { AlertTriangle } from "react-feather";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, fn } = theme;
   return {
     container: {
       minHeight: 26
+    },
+    alert: {
+      color: colors.orange[6]
     },
     code: {
       backgroundColor:
@@ -45,10 +49,14 @@ function Expanded({
     <Stack spacing="md" px="xl" pt="sm" pb="xl" className={classes.container}>
       {showDecoding && (
         <>
-          <Text size="sm" color="teal" weight={700}>
-            {!decodingSucceeded && "⚠️ "}
-            Decoded parameters
-          </Text>
+          <Group spacing={6}>
+            <Text size="sm" color="teal" weight={700}>
+              Decoded parameters
+            </Text>
+            {!decodingSucceeded && (
+              <AlertTriangle size={16} className={classes.alert} />
+            )}
+          </Group>
           <Prism
             language="javascript"
             copyLabel="Copy to clipboard"
