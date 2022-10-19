@@ -27,7 +27,7 @@ module.exports = {
 
     /* overwrite method */
     provider.send = this.send(originalSend, preHook, postHook);
-    // path sendAsync when sendAsync is used.
+    // overwrite sendAsync only when sendAsync is used.
     if (provider.sendAsync) {
       const originalSendAsync = provider.sendAsync.bind(provider);
       provider.sendAsync = this.send(originalSendAsync, preHook, postHook);
