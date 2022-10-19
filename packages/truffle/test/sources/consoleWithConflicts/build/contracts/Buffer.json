@@ -1,0 +1,116 @@
+{
+  "contractName": "Buffer",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Buffer.sol\":\"Buffer\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Buffer.sol\":{\"keccak256\":\"0x8d7320bab7da7b3242c1974d1aedd140d88cdbd9e6c1402381aa888659d7f1f8\",\"urls\":[\"bzz-raw://7cd4609ec3ae5b1968f20f00d68a60595b6f34b8022bf42dd241a1a98c760f3f\",\"dweb:/ipfs/QmRbyGrEHX4RvG1VUbfPogxh5RkAcKjsvotk8d5h9H7gDQ\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820b747e2d0eadbf379334d5117f6d60b7ebffe62830beba83dfe7784cf26bfb10964736f6c63430005100032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820b747e2d0eadbf379334d5117f6d60b7ebffe62830beba83dfe7784cf26bfb10964736f6c63430005100032",
+  "sourceMap": "25:18:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:18:0;;;;;;;",
+  "deployedSourceMap": "25:18:0:-;;;;;",
+  "source": "pragma solidity >0.5.0;\n\ncontract Buffer {}\n",
+  "sourcePath": "/Users/radish/projects/truffle/packages/truffle/test/sources/consoleWithConflicts/contracts/Buffer.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/Buffer.sol",
+    "exportedSymbols": {
+      "Buffer": [
+        2
+      ]
+    },
+    "id": 3,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          ">",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2,
+        "linearizedBaseContracts": [
+          2
+        ],
+        "name": "Buffer",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 3,
+        "src": "25:18:0"
+      }
+    ],
+    "src": "0:44:0"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "project:/contracts/Buffer.sol",
+      "exportedSymbols": {
+        "Buffer": [
+          2
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            ">",
+            "0.5",
+            ".0"
+          ]
+        },
+        "id": 1,
+        "name": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            2
+          ],
+          "name": "Buffer",
+          "nodes": [
+            null
+          ],
+          "scope": 3
+        },
+        "id": 2,
+        "name": "ContractDefinition",
+        "src": "25:18:0"
+      }
+    ],
+    "id": 3,
+    "name": "SourceUnit",
+    "src": "0:44:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-10-07T17:15:45.263Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
