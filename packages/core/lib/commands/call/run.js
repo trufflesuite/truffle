@@ -44,32 +44,40 @@ module.exports = async function (options) {
   // wrap provider for lazy EIP-1193 compatibility
   // replace the legacy provider API with EIP-1193?
   const provider = new Encoder.ProviderAdapter(config.provider);
-  const result = await provider.request({
-    method: "eth_call",
-    params: [
-      {
-        from: options.from,
-        to: transaction.to,
-        data: transaction.data
-      },
-      config.blockNumber
-    ]
-  });
+  let result;
+  try {
+    result = await provider.request({
+      method: "eth_call",
+      params: [
+        {
+          from: config.from,
+          to: transaction.to,
+          data: transaction.data
+        },
+        config.blockNumber
+      ]
+    });
+    console.log("Result: ", result);
+  } catch (error) {
+    console.log("Error: ", error.message);
+  }
 
   // Error handling for 0 returned value
   // Handles cases for more than 1 returned values
-  const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
+  if (result) {
+    const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
 
-  // Alternative for ReturndataDecodingInspector, use ResultInspector for logging
-  for (const { value: result } of decoding.arguments) {
-    console.log(
-      util.inspect(new Codec.Export.ResultInspector(result), {
-        colors: true,
-        depth: null,
-        maxArrayLength: null,
-        breakLength: 79
-      })
-    );
+    // Alternative for ReturndataDecodingInspector, use ResultInspector for logging
+    for (const { value: result } of decoding.arguments) {
+      console.log(
+        util.inspect(new Codec.Export.ResultInspector(result), {
+          colors: true,
+          depth: null,
+          maxArrayLength: null,
+          breakLength: 79
+        })
+      );
+    }
   }
 
   async function sourceFromLocal(contractNameOrAddress, config) {
