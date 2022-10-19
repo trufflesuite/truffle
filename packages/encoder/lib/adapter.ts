@@ -189,12 +189,6 @@ export class ProviderAdapter {
             params
           },
           ((error: Error, response: JsonRPCResponse) => {
-            /*if (error) {
-              return reject(error);
-            }
-
-            const { result: res } = response;
-            accept(res);*/
             if (error) {
               return reject(error);
             }

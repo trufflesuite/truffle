@@ -57,7 +57,6 @@ module.exports = async function (options) {
         config.blockNumber
       ]
     });
-    console.log("Result: ", result);
   } catch (error) {
     console.log("Error: ", error.message);
   }
