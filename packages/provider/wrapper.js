@@ -1,5 +1,5 @@
-var debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
-var ProviderError = require("./error");
+const debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
+const ProviderError = require("./error");
 
 module.exports = {
   /*
@@ -19,15 +19,19 @@ module.exports = {
     // to see what web3 is sending and receiving.
     options.verbose = options.verbose || options.verboseRpc || false;
 
-    /* create wrapper functions for before/after send */
-    var preHook = this.preHook(options);
-    var postHook = this.postHook(options);
+    /* create wrapper functions for before/after send/sendAsync */
+    const preHook = this.preHook(options);
+    const postHook = this.postHook(options);
 
-    var originalSend = provider.send.bind(provider);
+    const originalSend = provider.send.bind(provider);
 
     /* overwrite method */
     provider.send = this.send(originalSend, preHook, postHook);
-
+    // overwrite sendAsync only when sendAsync is used.
+    if (provider.sendAsync) {
+      const originalSendAsync = provider.sendAsync.bind(provider);
+      provider.sendAsync = this.send(originalSendAsync, preHook, postHook);
+    }
     /* mark as wrapped */
     provider._alreadyWrapped = true;
 
@@ -111,7 +115,7 @@ module.exports = {
       payload = preHook(payload);
 
       originalSend(payload, function (error, result) {
-        var modified = postHook(payload, error, result);
+        const modified = postHook(payload, error, result);
         payload = modified[0];
         error = modified[1];
         result = modified[2];
