@@ -12,15 +12,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.58",
+  "version": "2.0.59",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.8.1",
-    "@truffle/config": "^1.3.39",
+    "@truffle/compile-common": "^0.9.0",
+    "@truffle/config": "^1.3.40",
     "@truffle/contract-schema": "^3.4.10",
     "@truffle/expect": "^0.1.3",
     "debug": "^4.3.1",
