@@ -24,6 +24,7 @@ import * as Initialize from "./initialize";
 import * as AssignNames from "./assignNames";
 import * as LoadCompile from "./loadCompile";
 import * as LoadMigrate from "./loadMigrate";
+export * as Test from "./test";
 export { Initialize, AssignNames, LoadCompile, LoadMigrate };
 
 export type InitializeOptions = {
@@ -89,9 +90,7 @@ export class Project {
    *
    * @category Truffle-specific
    */
-  async loadCompile(options: {
-    result: WorkflowCompileResult;
-  }): Promise<{
+  async loadCompile(options: { result: WorkflowCompileResult }): Promise<{
     compilations: LoadCompile.Compilation[];
     contracts: LoadCompile.Contract[];
   }> {

@@ -1,0 +1,1 @@
+export { ArtifactsLoader } from "./artifacts";

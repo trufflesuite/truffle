@@ -1,5 +1,3 @@
 dist
 types/schema.d.ts
 node_modules
-src/loaders/schema/test/workflowCompileOutputMock
-src/loaders/schema/test/compilationSources/build/contracts
