@@ -56,7 +56,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "mumbai-polygon",
     "gnosis",
     "optimism-gnosis",
-    //sourcify does *not* support poa core...?
+    "core-poa",
     "sokol-poa",
     "binance",
     "testnet-binance",
