@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abify");
 
-import * as Format from "@truffle/codec/format";
-import * as Common from "@truffle/codec/common";
+import * as Format from "./format";
+import * as Common from "./common";
 import type {
   CalldataDecoding,
   LogDecoding,
   ReturndataDecoding
-} from "@truffle/codec/types";
-import * as Conversion from "@truffle/codec/conversion";
+} from "./types";
+import * as Conversion from "./conversion";
 
 /** @category ABIfication */
 export function abifyType(
@@ -230,7 +230,8 @@ export function abifyResult(
         case "value":
           return abifyResult(coercedResult.value, userDefinedTypes);
         case "error":
-          return <Format.Errors.BuiltInValueErrorResult>{ //I have no idea what TS is thinking here
+          return <Format.Errors.BuiltInValueErrorResult>{
+            //I have no idea what TS is thinking here
             ...coercedResult,
             type: abifyType(result.type, userDefinedTypes)
           };

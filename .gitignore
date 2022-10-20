@@ -1,7 +1,12 @@
 dependency-graph.pdf
 lerna-debug.log
+**/*.backup
 packages/**/node_modules
 node_modules
+packages/*/dist
+packages/*/dist-browser
+packages/*/build
+packages/*/frontend-build
 yarn-error.log
 .vscode
 .idea
@@ -10,7 +15,6 @@ Thumbs.db
 $RECYCLE.BIN/
 
 # truffle
-packages/truffle/build
 packages/truffle/stats.json
 packages/truffle/.DS_Store
 packages/truffle/Thumbs.db
@@ -23,3 +27,5 @@ packages/debugger/.tmp
 
 # @truffle/contract
 packages/contract/browser-dist
+
+tsconfig.tsbuildinfo

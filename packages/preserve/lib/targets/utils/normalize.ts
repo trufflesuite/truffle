@@ -1,4 +1,5 @@
 import * as Common from "..";
+import TruffleError from "@truffle/error";
 
 export namespace Normalized {
   export namespace Sources {
@@ -74,6 +75,8 @@ const normalizeContent = (
   if (Common.Sources.Contents.isAsyncIterable(content)) {
     return normalizeAsyncIterable(content);
   }
+
+  throw new TruffleError(`Unknown content type: ${content}`);
 };
 
 const normalizeString = (content: string): Normalized.Sources.Content => {

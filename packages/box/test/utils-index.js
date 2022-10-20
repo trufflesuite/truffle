@@ -1,5 +1,5 @@
 const assert = require("assert");
-const utils = require("../dist/lib/utils");
+const utils = require("../dist/utils");
 const sinon = require("sinon");
 const tmp = require("tmp");
 

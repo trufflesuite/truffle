@@ -1,22 +1,27 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react",
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es6",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "rootDir": ".",
     "baseUrl": ".",
-    "types": ["jest", "react", "node"]
+    "rootDirs": ["./lib", "./bin"],
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["jest", "react", "node"],
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@truffle/dashboard": ["./lib", "./bin", "./src"],
+      "@truffle/dashboard/*": ["./lib/*", "./bin/*", "./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": ["lib/**/*", "bin/**/*"]
+  "include": ["lib/**/*", "bin/**/*"],
+  "references": [
+    { "path": "../dashboard-message-bus" },
+    { "path": "../dashboard-message-bus-client" },
+    { "path": "../dashboard-message-bus-common" }
+  ]
 }

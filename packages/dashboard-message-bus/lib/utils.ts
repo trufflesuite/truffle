@@ -42,7 +42,7 @@ export const broadcastAndAwaitFirst = async (
   message: Message
 ) => {
   const promises = sockets.map(socket => sendAndAwait(socket, message));
-  const result = await Promise.any(promises);
+  const result = await (Promise as any).any(promises);
   return result;
 };
 

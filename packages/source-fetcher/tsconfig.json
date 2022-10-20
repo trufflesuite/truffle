@@ -1,23 +1,24 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "downlevelIteration": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["debug", "node"],
+    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "useUnknownInCatchVariables": false,
     "paths": {
+      "@truffle/source-fetcher": ["./lib"],
+      "@truffle/source-fetcher/*": ["./lib/*"]
     },
-    "rootDir": "lib",
-    "types": ["debug", "node"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts"
-  ]
 
+  "include": ["./lib/**/*.ts"]
 }

@@ -13,21 +13,26 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.2.63",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "prepare": "exit 0",
-    "test": "mocha"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build",
+    "test": "mocha --require source-map-support/register"
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.1.1",
-    "@truffle/interface-adapter": "^0.5.24",
-    "debug": "^4.3.1",
-    "web3": "1.7.4"
+    "@truffle/interface-adapter": "^0.5.24"
   },
   "devDependencies": {
+    "@types/webpack": "~5.28.0",
+    "debug": "^4.3.1",
     "ganache": "7.5.0",
-    "mocha": "10.1.0"
+    "mocha": "10.1.0",
+    "web3": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "ethereum",

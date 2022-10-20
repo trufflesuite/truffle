@@ -266,7 +266,8 @@ const debug = debugModule("db");
 import * as Network from "./network";
 export { Network };
 
-export { DataModel, Db } from "./resources";
+export { DataModel } from "./resources";
+export type { Db } from "./resources";
 
 import * as Project from "./project";
 export { Project };
@@ -274,7 +275,7 @@ export { Project };
 import * as Resources from "./resources";
 export { Resources };
 
-export { ConnectOptions } from "./system";
+export type { ConnectOptions } from "./system";
 import * as _System from "./system";
 
 /**

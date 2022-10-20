@@ -27,7 +27,7 @@ export class TestRunner {
   public currentTestStartBlock: null | BN;
   public beforeTimeout: number;
   public testTimeout: number;
-  public disableChecks: boolean;
+  public disableChecks: boolean = false;
 
   constructor(options: Config) {
     expect.options(options, [

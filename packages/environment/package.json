@@ -14,9 +14,10 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.2.130",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "prepare": "exit 0",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build",
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
@@ -26,13 +27,17 @@
     "@truffle/interface-adapter": "^0.5.24",
     "@truffle/provider": "^0.2.63",
     "@truffle/resolver": "^9.0.23",
-    "ganache": "7.5.0",
-    "node-ipc": "9.2.1",
-    "source-map-support": "^0.5.19",
-    "web3": "1.7.4"
+    "ganache": "7.5.0"
   },
   "devDependencies": {
-    "debug": "^4.3.1"
+    "@types/webpack": "~5.28.0",
+    "debug": "^4.3.1",
+    "node-ipc": "9.2.1",
+    "source-map-support": "^0.5.19",
+    "web3": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "publishConfig": {
     "access": "public"

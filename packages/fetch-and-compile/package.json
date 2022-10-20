@@ -18,22 +18,23 @@
     "dist"
   ],
   "directories": {
-    "lib": "lib"
+    "lib": "dist",
+    "src": "lib"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "run-s build:compile build:bundle",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "build:compile": "ttsc -b .",
     "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts --timeout 35000"
+    "test": "run-s build test:execute",
+    "test:execute": "mocha --exit -r ts-node/register test/**/*.test.ts --timeout 35000"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/codec": "^0.14.9",
     "@truffle/compile-solidity": "^6.0.50",
     "@truffle/config": "^1.3.44",
-    "@truffle/source-fetcher": "^1.0.22",
-    "debug": "^4.3.2",
-    "semver": "7.3.7",
-    "web3-utils": "1.7.4"
+    "@truffle/source-fetcher": "^1.0.22"
   },
   "devDependencies": {
     "@truffle/compile-common": "^0.9.0",
@@ -42,10 +43,17 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "~12.12.0",
     "@types/semver": "^7.3.9",
+    "@types/webpack": "~5.28.0",
     "chai": "^4.2.0",
+    "debug": "^4.3.2",
     "mocha": "9.2.2",
+    "semver": "7.3.7",
     "ts-node": "10.7.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "web3-utils": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "compile",

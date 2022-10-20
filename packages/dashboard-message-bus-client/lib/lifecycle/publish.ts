@@ -3,7 +3,7 @@ import {
   invalidateMessageType,
   Message
 } from "@truffle/dashboard-message-bus-common";
-import { DashboardMessageBusConnection } from "lib/connection";
+import { DashboardMessageBusConnection } from "../connection";
 
 import debugModule from "debug";
 
@@ -35,7 +35,7 @@ export class PublishMessageLifecycle<
   private _abandoned: boolean = false;
   private _responsePromiseResolve: (
     value: ResponseType | PromiseLike<ResponseType | null> | null
-  ) => void;
+  ) => void = () => null;
 
   constructor({ message, connection }: PublishMessageLifecycleOptions) {
     this.message = message as MessageType;

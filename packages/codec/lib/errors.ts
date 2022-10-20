@@ -1,4 +1,4 @@
-import * as Format from "@truffle/codec/format";
+import * as Format from "./format";
 
 //For when we need to throw an error, here's a wrapper class that extends Error.
 //Apologies about the confusing name, but I wanted something that would make

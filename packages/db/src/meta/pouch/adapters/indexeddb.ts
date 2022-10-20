@@ -18,7 +18,7 @@ export const getDefaultSettings: GetDefaultSettings = () => ({
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;
 
-  setup(settings: DatabasesSettings) {
+  override setup(settings: DatabasesSettings) {
     // ensure db files reside in a path that ends with indexeddb
     // whether specified in config, or using default
     this.directory = path.join(settings.directory, "indexeddb");

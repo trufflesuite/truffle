@@ -305,7 +305,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   }
 
   private static extractSettings(result: EtherscanResult): Types.SolcSettings {
-    const evmVersion: string =
+    const evmVersion: string | undefined =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
     const optimizer = {
       enabled: result.OptimizationUsed === "1",
@@ -345,7 +345,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private static extractVyperSettings(
     result: EtherscanResult
   ): Types.VyperSettings {
-    const evmVersion: string =
+    const evmVersion: string | undefined =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
     //the optimize flag is not currently supported by etherscan;
     //any Vyper contract currently verified on etherscan necessarily has

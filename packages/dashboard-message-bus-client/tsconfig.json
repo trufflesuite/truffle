@@ -1,27 +1,23 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "declaration": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "lib": ["es2019"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "outDir": "dist",
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
     "paths": {
+      "@truffle/dashboard-message-bus-client": ["./lib"],
+      "@truffle/dashboard-message-bus-client/*": ["./lib/*"]
     },
-    "rootDir": "lib",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "target": "es2016",
-    "types": ["node"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"],
+  "references": [
+    { "path": "../dashboard-message-bus-common" },
+    { "path": "../promise-tracker" }
   ]
-
 }

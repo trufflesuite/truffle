@@ -1,3 +1,6 @@
-export { useConfig, UseConfigOptions } from "./useConfig";
-export { useDb, UseDbOptions, DbNotEnabledError } from "./useDb";
-export { useDecoder, UseDecoderOptions } from "./useDecoder";
+export { useConfig } from "./useConfig";
+export type { UseConfigOptions } from "./useConfig";
+export { useDb, DbNotEnabledError } from "./useDb";
+export type { UseDbOptions } from "./useDb";
+export { useDecoder } from "./useDecoder";
+export type { UseDecoderOptions } from "./useDecoder";

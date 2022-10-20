@@ -9,13 +9,13 @@ import type {
 } from "@truffle/db/meta/collections";
 import type { IdObject } from "./types";
 
-export {
+export type {
   GenerateId,
   SpecificGenerateId,
   IdObject,
   StrictIdInput
 } from "./types";
-export { Definition, Definitions } from "./definitions";
+export type { Definition, Definitions } from "./definitions";
 export { forDefinitions } from "./generateId";
 
 export const toIdObject = <
@@ -31,7 +31,7 @@ export const toIdObject = <
   // @ts-ignore since this runtime check doesn't seem to play nice with the
   // generic
   resource
-    ? (({
+    ? ({
         id: resource.id
-      } as unknown) as IdObject<C, N, R>)
+      } as unknown as IdObject<C, N, R>)
     : undefined;

@@ -1,28 +1,29 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "downlevelIteration": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "noUncheckedIndexedAccess": false,
     "paths": {
+      "@truffle/require": ["./lib"],
+      "@truffle/require/*": ["./lib/*"]
     },
-    "rootDir": "lib",
-    "types": ["node", "mocha"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
-  ],
-  "exclude": [
-    "./lib/sandboxGlobalContextTypes.ts"
+
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"],
+  "exclude": ["./lib/sandboxGlobalContextTypes.ts"],
+  "references": [
+    { "path": "../config" },
+    { "path": "../error" },
+    { "path": "../expect" },
+    { "path": "../interface-adapter" },
+    { "path": "../resolver" }
   ]
 }

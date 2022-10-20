@@ -1,8 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "typings/*.d.ts"
+  "include": ["src/**/*", "test/**/*.ts", "typings/*.d.ts"],
+  "references": [
+    { "path": "../abi-utils" },
+    { "path": "../code-utils" },
+    { "path": "../config" },
+    { "path": "../compile-common" },
+    { "path": "../resolver" }
   ]
 }

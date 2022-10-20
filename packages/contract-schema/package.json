@@ -13,24 +13,28 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "3.4.10",
-  "main": "index.js",
+  "main": "dist/index.js",
   "directories": {
     "spec": "./spec"
   },
   "scripts": {
-    "build": "sh ./scripts/generate-declarations",
+    "build": "run-s build:declarations build:webpack",
+    "build:declarations": "sh ./scripts/generate-declarations",
+    "build:webpack": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "prepare": "yarn run build",
     "test": "mocha"
   },
-  "typings": "./typings/index.d.ts",
-  "dependencies": {
-    "ajv": "^6.10.0",
-    "debug": "^4.3.1"
-  },
+  "types": "./typings/index.d.ts",
   "devDependencies": {
+    "@types/webpack": "~5.28.0",
+    "ajv": "^6.10.0",
+    "debug": "^4.3.1",
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "10.1.0",
-    "solc": "0.8.17"
+    "solc": "0.8.17",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "artifacts",

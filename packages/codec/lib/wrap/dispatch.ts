@@ -3,7 +3,7 @@ const debug = debugModule("codec:wrap:dispatch");
 
 import * as Format from "@truffle/codec/format";
 import { TypeMismatchError } from "./errors";
-import type { WrapRequest, WrapResponse } from "../types";
+import type { WrapResponse } from "../types";
 import type { Case, WrapOptions } from "./types";
 
 export function* wrapWithCases<
@@ -38,12 +38,19 @@ export function* wrapWithCases<
   if (bestError && bestError.specificity < specificityFloor) {
     bestError.specificity = specificityFloor; //mutating this should be fine, right?
   }
-  throw bestError || new TypeMismatchError( //last-resort error
-    dataType,
-    input,
-    wrapOptions.name,
-    specificityFloor, //it doesn't matter, but we'll make this error lowest specificity
-    `Input for ${wrapOptions.name} was not recognizable as type ${Format.Types.typeStringWithoutLocation(dataType)}`
+  throw (
+    bestError ||
+    new TypeMismatchError( //last-resort error
+      dataType,
+      input,
+      wrapOptions.name,
+      specificityFloor, //it doesn't matter, but we'll make this error lowest specificity
+      `Input for ${
+        wrapOptions.name
+      } was not recognizable as type ${Format.Types.typeStringWithoutLocation(
+        dataType
+      )}`
+    )
   );
   //(note: we don't actually want to rely on the last-resort error, we'll
   //instead prefer last-resort cases that just throw an error so we can get

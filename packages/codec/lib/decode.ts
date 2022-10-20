@@ -1,19 +1,19 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
-import * as AstConstant from "@truffle/codec/ast-constant";
-import * as AbiData from "@truffle/codec/abi-data";
-import * as Compiler from "@truffle/codec/compiler";
-import * as Format from "@truffle/codec/format";
-import type * as Pointer from "@truffle/codec/pointer";
-import * as Basic from "@truffle/codec/basic";
-import type * as Evm from "@truffle/codec/evm";
-import type { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
-import * as Memory from "@truffle/codec/memory";
-import * as Special from "@truffle/codec/special";
-import * as Stack from "@truffle/codec/stack";
-import * as Storage from "@truffle/codec/storage";
-import * as Topic from "@truffle/codec/topic";
+import * as AstConstant from "./ast-constant";
+import * as AbiData from "./abi-data";
+import * as Compiler from "./compiler";
+import * as Format from "./format";
+import type * as Pointer from "./pointer";
+import * as Basic from "./basic";
+import type * as Evm from "./evm";
+import type { DecoderRequest, DecoderOptions } from "./types";
+import * as Memory from "./memory";
+import * as Special from "./special";
+import * as Stack from "./stack";
+import * as Storage from "./storage";
+import * as Topic from "./topic";
 
 export default function* decode(
   dataType: Format.Types.Type,

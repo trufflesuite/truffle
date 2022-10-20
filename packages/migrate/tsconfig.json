@@ -1,29 +1,28 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "lib": ["esnext"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "rootDir": ".",
-    "types": [ "mocha" ]
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
+    "noUncheckedIndexedAccess": false,
+    "useUnknownInCatchVariables": false,
+    "paths": {
+      "@truffle/migrate": ["./src"],
+      "@truffle/migrate/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "src/**/*",
-    "typings"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
+  "include": ["./src/**/*.ts"],
+  "references": [
+    { "path": "../config" },
+    { "path": "../db-loader" },
+    { "path": "../expect" },
+    { "path": "../require" },
+    { "path": "../resolver" },
   ]
 }

@@ -193,7 +193,9 @@ function prepareCompilerInput({
  */
 function prepareSources({ sources }: PrepareSourcesArgs): PreparedSources {
   return Object.entries(sources)
-    .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
+    .map(([sourcePath, content]: [string, string]) => ({
+      [sourcePath]: { content }
+    }))
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 

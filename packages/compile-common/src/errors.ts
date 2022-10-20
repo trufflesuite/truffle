@@ -2,7 +2,7 @@ import colors from "colors";
 import TruffleError from "@truffle/error";
 
 export class CompileError extends TruffleError {
-  public message: string;
+  public override message: string;
   constructor(message: string) {
     // Note we trim() because solc likes to add extra whitespace.
     var fancy_message =

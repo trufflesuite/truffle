@@ -1,28 +1,31 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "downlevelIteration": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
-    "rootDir": "lib",
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
     "paths": {
-      "web3": [
-        "node_modules/web3/index",
-        "../../node_modules/@types/web3/index"
-      ]
+      "@truffle/decoder": ["../decoder/lib"],
+      "@truffle/decoder/*": ["../decoder/lib/*"]
     },
-    "types": ["node", "mocha"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./lib/**/*.ts"],
 
+  "references": [
+    { "path": "../abi-utils" },
+    { "path": "../codec" },
+    { "path": "../compile-common" },
+    { "path": "../encoder" },
+    { "path": "../config" },
+    { "path": "../migrate" },
+    { "path": "../workflow-compile" }
+  ]
 }

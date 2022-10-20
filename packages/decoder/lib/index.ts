@@ -174,9 +174,10 @@ import type {
 } from "./types";
 
 import { Compilations } from "@truffle/codec";
+import type { Provider } from "@truffle/encoder";
 
 type ProjectInfo = Compilations.ProjectInfo;
-export { ProjectInfo };
+export type { ProjectInfo };
 
 /**
  * **This function is asynchronous.**
@@ -238,7 +239,7 @@ export async function forContract(
   settings: DecoderSettings = {}
 ): Promise<ContractDecoder> {
   return await forArtifact(contract, {
-    provider: contract.web3.currentProvider,
+    provider: contract.web3.currentProvider as Provider,
     ...settings
   });
 }

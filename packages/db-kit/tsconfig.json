@@ -1,42 +1,42 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react",
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
+    "baseUrl": ".",
+    "rootDirs": ["./src", "./bin"],
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["jest", "react", "node"],
     "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
+    "jsx": "react",
+
+    // when this was added there weren't any unused params in the source for
+    // this module, however the build would still fail due to there being unused
+    // params in the hkts module. I tried excluding it, skipping lib checks,
+    // etc - nothing seemed to prevent it from evaluating and erroring out on
+    // the hkts module :-(
+    "noUnusedParameters": false,
+
+    "noUncheckedIndexedAccess": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noImplicitReturns": false,
+    "noImplicitAny": false,
     "paths": {
       "@truffle/db-kit": ["./src"],
-      "@truffle/db-kit/*": ["./src/*"],
-      "test/*": ["./test/*"]
+      "@truffle/db-kit/*": ["./src/*"]
     },
-    "rootDir": ".",
-    "baseUrl": ".",
-    "types": [
-      "jest",
-      "react",
-      "node"
-    ],
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [
-    "src/**/*",
-    "bin/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules"
+  "include": ["src/**/*", "bin/**/*"],
+  "references": [
+    { "path": "../codec" },
+    { "path": "../compile-common" },
+    { "path": "../compile-solidity" },
+    { "path": "../config" },
+    { "path": "../db" },
+    { "path": "../decoder" },
+    { "path": "../fetch-and-compile" }
   ]
 }

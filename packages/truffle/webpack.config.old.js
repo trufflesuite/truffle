@@ -175,7 +175,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      scrypt: "js-scrypt"
+      "scrypt": "js-scrypt"
     }
   },
 

@@ -7,7 +7,7 @@ import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
 import type { Question } from "inquirer";
-import type { boxConfig, unboxOptions } from "typings";
+import type { boxConfig, unboxOptions } from "../types";
 import { promisify } from "util";
 import ignore from "ignore";
 

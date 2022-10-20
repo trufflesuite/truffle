@@ -10,8 +10,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta");
 
-export { IdObject, toIdObject } from "./id";
-export {
+export type { IdObject } from "./id";
+export { toIdObject } from "./id";
+export type {
   Collections,
   CollectionName,
   NamedCollectionName,
@@ -23,9 +24,9 @@ export {
   NamedResource,
   SavedInput
 } from "./collections";
-export { Db, ConnectOptions } from "./interface";
-export { Workspace } from "./data";
-export { Definition, Definitions } from "./definitions";
+export type { Db, ConnectOptions } from "./interface";
+export type { Workspace } from "./data";
+export type { Definition, Definitions } from "./definitions";
 
 import * as Graph from "./graph";
 export { Graph };

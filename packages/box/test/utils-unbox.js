@@ -1,5 +1,5 @@
 const assert = require("assert");
-const utils = require("../dist/lib/utils/unbox");
+const utils = require("../dist/utils/unbox");
 const axios = require("axios");
 const sinon = require("sinon");
 

@@ -2,13 +2,15 @@
   "name": "@truffle/error",
   "version": "0.1.1",
   "description": "Simple module that allows native Error objects to be extended",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "run-s build:compile build:bundle",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "prepare": "yarn build"
   },
   "repository": {
@@ -32,6 +34,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "typescript": "^4.7.4"
+    "@types/webpack": "~5.28.0",
+    "typescript": "^4.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   }
 }

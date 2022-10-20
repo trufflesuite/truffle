@@ -1,26 +1,30 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "downlevelIteration": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
+    "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "useUnknownInCatchVariables": false,
     "paths": {
+      "@truffle/fetch-and-compile": ["./lib"],
+      "@truffle/fetch-and-compile/*": ["./lib/*"]
     },
-    "rootDir": "lib",
-    "types": ["node"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterdeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+  "include": ["./lib/**/*.ts"],
+  "references": [
+    { "path": "../codec" },
+    { "path": "../compile-solidity" },
+    { "path": "../config" },
+    { "path": "../source-fetcher" },
+    { "path": "../compile-common" }
   ]
-
 }

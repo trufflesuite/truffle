@@ -1,28 +1,29 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "rootDir": "./src",
     "baseUrl": ".",
-    "types": [ "mocha" ],
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "paths": {
+      "@truffle/workflow-compile": ["./src"],
+      "@truffle/workflow-compile/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
+    "noImplicitAny": false,
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../artifactor" },
+    { "path": "../compile-common" },
+    { "path": "../compile-solidity" },
+    { "path": "../config" },
+    { "path": "../db-loader" },
+    { "path": "../expect" },
+    { "path": "../resolver" }
   ]
 }

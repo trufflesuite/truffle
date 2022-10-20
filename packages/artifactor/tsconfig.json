@@ -1,28 +1,18 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": [
-      "es2019"
-    ],
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
     "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
-      ]
+      "@truffle/artifactor": ["./src"],
+      "@truffle/artifactor/*": ["./src/*"]
     },
-    "rootDir": ".",
-    "types": ["node", "mocha"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

@@ -1,35 +1,32 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "declaration": true,
-    "target": "es2016",
-    "downlevelIteration": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": [
-      "es2019"
-    ],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
     "paths": {
-      "@truffle/codec": [
-        "./lib"
-      ],
-      "@truffle/codec/*": [
-        "./lib/*"
-      ]
+      "@truffle/codec": ["./lib"],
+      "@truffle/codec/*": ["./lib/*"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ],
-    "rootDir": ".",
-    "types": ["node"]
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noImplicitReturns": false,
+    "useUnknownInCatchVariables": false,
+    "noFallthroughCasesInSwitch": false,
+    "allowUnreachableCode": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+  "include": ["./lib/**/*.ts"],
+  "references": [
+    { "path": "../abi-utils" },
+    { "path": "../compile-common" }
   ]
 }

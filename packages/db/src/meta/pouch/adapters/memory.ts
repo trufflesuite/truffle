@@ -15,7 +15,7 @@ export const getDefaultSettings: GetDefaultSettings = () => ({});
 export class Databases<C extends Collections> extends Base.Databases<C> {
   static counter: number = 0;
 
-  setup(settings: DatabasesSettings) {
+  override setup(settings: DatabasesSettings) {
     PouchDB.plugin(PouchDBMemoryAdapter);
 
     super.setup(settings);

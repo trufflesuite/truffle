@@ -14,6 +14,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "bin": {
     "db-kit": "./dist/bin/cli.js"
   },
@@ -24,8 +25,9 @@
     "dist": "dist"
   },
   "scripts": {
-    "build": "yarn build:dist && yarn build:docs",
-    "build:dist": "ttsc",
+    "build": "run-s build:compile build:bundle build:docs",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "build:docs": "typedoc",
     "clean": "rm -rf ./dist",
     "madge": "madge ./src/index.ts",
@@ -40,7 +42,15 @@
     "@truffle/db": "^2.0.6",
     "@truffle/decoder": "^5.3.0",
     "@truffle/environment": "^0.2.130",
-    "@truffle/fetch-and-compile": "^0.5.26",
+    "@truffle/fetch-and-compile": "^0.5.26"
+  },
+  "devDependencies": {
+    "@types/jest": "27.4.1",
+    "@types/node": "~12.12.0",
+    "@types/react": "^16.8.0",
+    "@types/web3": "^1.0.20",
+    "@types/webpack": "~5.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
     "graphql": "^15.3.0",
     "graphql-tag": "^2.12.6",
     "ink": "^3.0.8",
@@ -50,19 +60,11 @@
     "ink-spinner": "^4.0.1",
     "ink-syntax-highlight": "^1.0.1",
     "ink-text-input": "^4.0.1",
+    "jest": "29.1.2",
+    "madge": "^5.0.1",
     "meow": "^9.0.0",
     "react": "^16.8.0",
     "source-map-support": "^0.5.19",
-    "web3": "1.7.4"
-  },
-  "devDependencies": {
-    "@types/jest": "27.4.1",
-    "@types/node": "~12.12.0",
-    "@types/react": "^16.8.0",
-    "@types/web3": "^1.0.20",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "jest": "29.1.2",
-    "madge": "^5.0.1",
     "ts-jest": "29.0.3",
     "ts-node": "10.7.0",
     "tsconfig-paths": "^3.9.0",
@@ -70,7 +72,11 @@
     "typedoc": "0.22.18",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1",
-    "web3-core": "1.7.4"
+    "web3": "1.7.4",
+    "web3-core": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "smart-contract",

@@ -6,13 +6,13 @@ import type {
 } from "web3/eth/types";
 import type { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
 
-export {
+export type {
   Block as EvmBlock,
   BlockType as EvmBlockType,
   Tx as EvmTransaction
 } from "web3/eth/types";
-export { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
-export { provider as Provider } from "web3-core/types";
+export type { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
+export type { provider as Provider } from "web3-core/types";
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
@@ -43,9 +43,9 @@ export interface InterfaceAdapter {
   estimateGas(
     transactionConfig: Transaction,
     stacktrace: boolean
-  ): Promise<number> | null;
+  ): Promise<number | null>;
   getTransactionCostReport(
     receipt: TransactionReceipt
-  ): Promise<TransactionCostReport>;
+  ): Promise<TransactionCostReport | null>;
   displayCost(value: BN): string;
 }

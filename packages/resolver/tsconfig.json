@@ -1,23 +1,27 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "declaration": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noUnusedLocals": false,
     "paths": {
+      "@truffle/resolver": ["./lib"],
+      "@truffle/resolver/*": ["./lib/*"]
     },
-    "rootDir": ".",
-    "types": ["node", "mocha"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./test/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./lib/**/*.ts"],
+  /*"references": [
+    { "path": "../compile-solidity" },
+    { "path": "../expect" },
+    { "path": "../provisioner" }
+  ]*/
 }

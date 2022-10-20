@@ -1,20 +1,22 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2016",
-    "noImplicitAny": true,
-    "declaration": true,
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "lib": [
-      "es2019"
-    ],
-    "outDir": "dist",
     "baseUrl": ".",
-    "types": [ "node", "mocha" ]
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "noUncheckedIndexedAccess": false,
+    "noImplicitReturns": false,
+    "paths": {
+      "@truffle/hdwallet-provider": ["./src"],
+      "@truffle/hdwallet-provider/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./src/**/*.ts"
-  ]
+  "include": ["./src/**/*.ts"],
+  "references": [{ "path": "../hdwallet" }]
 }

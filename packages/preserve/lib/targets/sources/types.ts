@@ -12,7 +12,7 @@ export interface Container {
 export type Source = Content | Container;
 
 export const isContainer = (source: Source): source is Container =>
-  source &&
+  !!source &&
   typeof source === "object" &&
   "entries" in source &&
   typeof source.entries === "object";

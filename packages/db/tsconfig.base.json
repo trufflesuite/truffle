@@ -1,41 +1,35 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es6",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
+    "baseUrl": ".",
+    "rootDirs": ["./src", "./test"],
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["express", "jest", "node", "pouchdb"],
+    "noImplicitAny": false,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "strictPropertyInitialization": false,
+    "noFallthroughCasesInSwitch": false,
     "paths": {
       "@truffle/db": ["./src"],
       "@truffle/db/*": ["./src/*"],
       "test/*": ["./test/*"]
     },
-    "rootDir": ".",
-    "baseUrl": ".",
-    "types": [
-      "express",
-      "jest",
-      "node",
-      "pouchdb"
-    ],
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules"
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../abi-utils" },
+    { "path": "../code-utils" },
+    { "path": "../config" },
+    { "path": "../compile-common" },
+    { "path": "../resolver" }
   ]
 }

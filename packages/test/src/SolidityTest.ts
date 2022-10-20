@@ -156,8 +156,7 @@ export const SolidityTest = {
 
     // Set network values.
     for (let contract of contracts) {
-      contract.network_id = config.network_id;
-      contract.default_network = config.default_network;
+      contract.network_id = config.network_id as string;
     }
 
     await config.artifactor.saveAll(

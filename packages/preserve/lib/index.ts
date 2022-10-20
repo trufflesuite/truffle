@@ -5,11 +5,11 @@
 export * from "./ConsoleReporter";
 export * from "./preserve";
 
-export { Controls, Process } from "./control";
+export type { Controls, Process } from "./control";
 import * as Control from "./control";
 export { Control };
 
-export { Target } from "./targets";
+export type { Target } from "./targets";
 import * as Targets from "./targets";
 export { Targets };
 

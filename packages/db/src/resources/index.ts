@@ -39,9 +39,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources");
 
-export {
+export type {
   Collections,
-  DataModel,
   Db,
   Definition,
   Definitions,
@@ -53,9 +52,10 @@ export {
   Resource,
   IdFields,
   IdObject,
-  toIdObject,
   Workspace
 } from "./types";
+
+export { DataModel, toIdObject } from "./types";
 
 import type { Definitions } from "./types";
 

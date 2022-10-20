@@ -65,7 +65,7 @@
 //So, what shall codec export...?
 
 //First: export the data format
-import * as Format from "@truffle/codec/format";
+import * as Format from "./format";
 export { Format };
 
 //now... various low-level stuff we want to export!

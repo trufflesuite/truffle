@@ -14,34 +14,41 @@
   },
   "version": "2.1.1",
   "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
-  },
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "run-s build:compile build:bundle",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build",
+    "test": "run-s build test:execute",
+    "test:execute": "mocha --exit -r ts-node/register test/**/*.test.ts"
+  },
   "dependencies": {
+    "@truffle/hdwallet": "^0.1.0"
+  },
+  "devDependencies": {
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "4.0.1",
-    "@truffle/hdwallet": "^0.1.0",
-    "@types/web3": "^1.0.20",
-    "ethereum-cryptography": "1.1.2",
-    "ethereum-protocol": "^1.0.1",
-    "ethereumjs-util": "^7.1.5",
-    "web3": "1.7.4",
-    "web3-provider-engine": "16.0.3"
-  },
-  "devDependencies": {
     "@types/bip39": "^2.4.2",
     "@types/ethereum-protocol": "^1.0.0",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
+    "@types/web3": "^1.0.20",
     "@types/web3-provider-engine": "^14.0.0",
+    "@types/webpack": "~5.28.0",
+    "ethereum-cryptography": "1.1.2",
+    "ethereum-protocol": "^1.0.1",
+    "ethereumjs-util": "^7.1.5",
     "ganache": "7.5.0",
     "mocha": "10.1.0",
     "ts-node": "10.7.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "web3": "1.7.4",
+    "web3-provider-engine": "16.0.3",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "ethereum",

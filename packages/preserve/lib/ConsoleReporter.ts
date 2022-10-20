@@ -40,7 +40,7 @@ export class ConsoleReporter {
 
     const options: Partial<SpinnerOptions> = error
       ? {
-          text: `${text}\n${" ".repeat(indent)}${chalk.red(errorMessage)}`,
+          text: `${text}\n${" ".repeat(indent ?? 0)}${chalk.red(errorMessage)}`,
           textColor: "white"
         }
       : {
@@ -139,14 +139,16 @@ export class ConsoleReporter {
 
     const { text } = this.spinners[key];
 
-    const [name] = text.split(":");
+    if (text !== undefined) {
+      const [name] = text.split(":");
 
-    const options = payload ? { text: `${name}: ${payload}` } : { text };
+      const options = payload ? { text: `${name}: ${payload}` } : { text };
 
-    this.spinners[key].stop({
-      ...options,
-      status: "stopped"
-    });
+      this.spinners[key].stop({
+        ...options,
+        status: "stopped"
+      });
+    }
   }
 
   private update(event: Control.Events.Update) {
@@ -158,10 +160,12 @@ export class ConsoleReporter {
 
     if (!payload && !message) return;
 
-    const [name] = text.split(":");
+    if (text !== undefined) {
+      const [name] = text.split(":");
 
-    // Update the value resolution with a payload or the step with message
-    this.spinners[key].text = message ? message : `${name}: ${payload}`;
+      // Update the value resolution with a payload or the step with message
+      this.spinners[key].text = message ? message : `${name}: ${payload}`;
+    }
   }
 }
 

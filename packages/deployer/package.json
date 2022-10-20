@@ -13,27 +13,33 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "3.2.104",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "prepare": "exit 0",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build",
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
-    "@ensdomains/ensjs": "^2.1.0",
     "@truffle/contract": "^4.6.7",
-    "@truffle/expect": "^0.1.3",
-    "debug": "^4.3.1",
-    "eth-ens-namehash": "^2.0.8",
-    "web3-utils": "1.7.4"
+    "@truffle/expect": "^0.1.3"
   },
   "devDependencies": {
+    "@ensdomains/ensjs": "^2.1.0",
     "@truffle/config": "^1.3.44",
     "@truffle/environment": "^0.2.130",
     "@truffle/workflow-compile": "^4.0.41",
+    "@types/webpack": "~5.28.0",
+    "debug": "^4.3.1",
+    "eth-ens-namehash": "^2.0.8",
     "ganache": "7.5.0",
     "mocha": "10.1.0",
     "sinon": "^9.0.2",
-    "web3": "1.7.4"
+    "web3": "1.7.4",
+    "web3-utils": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "contracts",

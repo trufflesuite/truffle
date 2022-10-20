@@ -1,13 +1,20 @@
 {
-    "compilerOptions": {
-      "target": "es2016",
-      "module": "commonjs",
-      "declaration": true,
-      "sourceMap": true,
-      "outDir": "./dist",
-      "rootDir": "./",
-      "strict": true,
-      "esModuleInterop": true,
-      "types": ["node"]
-    }
-  }
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
+    "paths": {
+      "@truffle/provisioner": ["./src"],
+      "@truffle/provisioner/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [ "./src/**/*.ts" ],
+  "references": [{ "path": "../config" }]
+}

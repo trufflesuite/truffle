@@ -1,5 +1,4 @@
 import * as webpack from "webpack";
-import type WebpackDevServer from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import EslintWebpackPlugin from "eslint-webpack-plugin";
 import TerserWebpackPlugin from "terser-webpack-plugin";
@@ -26,10 +25,11 @@ const progressHandler = (function () {
 
 const config: webpack.Configuration = {
   mode: isProduction ? "production" : "development",
-  entry: "./src/index.tsx",
+  entry: "./frontend-build/index.js",
+  target: "web",
   output: {
-    filename: "bundle.js",
-    path: path.resolve("build")
+    filename: "index.js",
+    path: path.resolve(__dirname, "dist", "dashboard-frontend")
   },
   optimization: {
     minimize: isProduction,
@@ -44,19 +44,42 @@ const config: webpack.Configuration = {
     ]
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx"],
+    extensions: [".js", ".jsx", ".json"],
     alias: {
-      src: path.resolve("src")
+      "@truffle/dashboard-message-bus-client": path.resolve(
+        __dirname,
+        "..",
+        "dashboard-message-bus-client",
+        "build"
+      ),
+      "@truffle/dashboard-message-bus-common": path.resolve(
+        __dirname,
+        "..",
+        "dashboard-message-bus-common",
+        "build"
+      ),
+      "src": path.resolve(__dirname, "src")
     },
     fallback: {
+      buffer: require.resolve("buffer"),
       crypto: require.resolve("crypto-browserify"),
+      fs: false,
+      http: require.resolve("stream-http"),
+      https: require.resolve("https-browserify"),
+      net: false,
       os: require.resolve("os-browserify/browser"),
       path: require.resolve("path-browserify"),
       stream: require.resolve("stream-browserify"),
-      vm: require.resolve("vm-browserify")
+      tls: false,
+      tty: require.resolve("tty-browserify"),
+      vm: require.resolve("vm-browserify"),
+      zlib: require.resolve("zlib-browserify")
     }
   },
-  devtool: "nosources-source-map",
+  // Would use "nosources-source-map" but this doesn't work properly with
+  // terser. For more info, see:
+  // https://webpack.js.org/plugins/terser-webpack-plugin/#note-about-source-maps
+  devtool: "source-map",
   devServer: {
     port: 3000,
     historyApiFallback: true,
@@ -71,30 +94,37 @@ const config: webpack.Configuration = {
   stats: "minimal",
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        use: ["ts-loader"],
-        exclude: /node_modules/
-      },
+      /*{
+        test: /\.js$/,
+        enforce: "pre",
+        use: ["source-map-loader"]
+      },*/
       {
         test: /\.(png|ttf)$/,
         type: "asset/resource"
       }
     ]
   },
+  ignoreWarnings: [/Failed to parse source map/],
   plugins: [
-    new webpack.ProvidePlugin({
-      process: "process/browser"
+    new webpack.IgnorePlugin({
+      resourceRegExp: /\.d\.tsx?$/,
+      contextRegExp: /.*/
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /\.map$/,
+      contextRegExp: /.*/
     }),
     new webpack.ProvidePlugin({
+      process: "process/browser",
       Buffer: ["buffer", "Buffer"]
     }),
     new HtmlWebpackPlugin({
-      template: "./public/index.html",
-      favicon: "./public/favicon.ico"
+      template: path.resolve(__dirname, "public", "index.html"),
+      favicon: path.resolve(__dirname, "public", "favicon.ico")
     }),
     new EslintWebpackPlugin({
-      extensions: [".ts", ".tsx", ".js", ".jsx"]
+      extensions: [".js", ".jsx"]
     }),
     new webpack.ProgressPlugin(progressHandler.log)
   ]

@@ -38,7 +38,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
   private _port: number;
   private _publishPort: number | undefined;
   private _subscribePort: number | undefined;
-  private _connecting: boolean;
+  private _connecting: boolean = false;
 
   constructor({
     host,
@@ -312,11 +312,14 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
   private _registerEventHandlers(handlers: SocketEventHandlerMap) {
     let wrappedHandlers: SocketEventHandlerMap = {};
     for (const eventType in handlers) {
-      wrappedHandlers[eventType] = ((...args: any[]) => {
-        handlers[eventType].call(this, ...args);
+      const handler = ((...args: any[]) => {
+        handlers[eventType]?.call(this, ...args);
         this._cleanUpEventHandlers(wrappedHandlers);
       }).bind(this);
-      this._socket?.addEventListener(eventType, wrappedHandlers[eventType]);
+
+      wrappedHandlers[eventType] = handler;
+
+      this._socket?.addEventListener(eventType, handler);
     }
   }
   private _cleanUpEventHandlers(handlers: SocketEventHandlerMap) {

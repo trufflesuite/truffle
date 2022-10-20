@@ -1,23 +1,21 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react",
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es6",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "rootDir": ".",
     "baseUrl": ".",
-    "types": ["node"]
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
+    "noImplicitAny": false,
+    "paths": {
+      "@truffle/dashboard-message-bus": ["./lib"],
+      "@truffle/dashboard-message-bus/*": ["./lib/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
   "include": ["lib/**/*"],
-  "exclude": ["node_modules"]
+  "references": [{ "path": "../dashboard-message-bus-common" }]
 }

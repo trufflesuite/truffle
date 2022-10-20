@@ -2,7 +2,7 @@ export * from "./control";
 export * from "./events";
 export * from "./types";
 
-export { Scope } from "./scopes";
+export type { Scope } from "./scopes";
 import * as Scopes from "./scopes";
 export { Scopes };
 

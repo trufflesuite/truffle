@@ -16,7 +16,7 @@ const initInterface = async (web3Shim: Web3Shim) => {
     })
   );
 
-  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  networkTypes.get(web3Shim.networkType)?.initNetworkType(web3Shim);
 };
 
 // March 13, 2019 - Mike Seese:

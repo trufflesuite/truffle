@@ -1,13 +1,18 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./",
-    "strict": true,
-    "esModuleInterop": true,
-    "types": ["node"]
-  }
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "paths": {
+      "@truffle/error": ["./src"],
+      "@truffle/error/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [ "./src/**/*.ts" ]
 }

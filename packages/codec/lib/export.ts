@@ -3,15 +3,15 @@ const debug = debugModule("codec:export");
 
 import OS from "os";
 import util from "util";
-import * as Format from "@truffle/codec/format";
+import * as Format from "./format";
 import type {
   CalldataDecoding,
   LogDecoding,
   ReturndataDecoding,
   AbiArgument,
   CallInterpretationInfo
-} from "@truffle/codec/types";
-import * as Conversion from "@truffle/codec/conversion";
+} from "./types";
+import * as Conversion from "./conversion";
 
 import {
   ResultInspector,
@@ -19,7 +19,7 @@ import {
   unsafeNativizeVariables,
   InspectOptions,
   nativizeAccessList
-} from "@truffle/codec/format/utils/inspect";
+} from "./format/utils/inspect";
 export {
   ResultInspector,
   unsafeNativize,

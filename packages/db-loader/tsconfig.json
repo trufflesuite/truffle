@@ -1,17 +1,19 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "declaration": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-    "lib": ["es2019"],
-    "paths": {},
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
     "types": ["node"],
+    "paths": {
+      "@truffle/db-loader": ["./src"],
+      "@truffle/db-loader/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
 }

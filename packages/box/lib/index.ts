@@ -1,12 +1,20 @@
-import utils from "./lib/utils";
+import utils from "./utils";
 import tmp from "tmp";
 import path from "path";
 import Config from "@truffle/config";
 import fse from "fs-extra";
 import inquirer from "inquirer";
 import type { Question } from "inquirer";
-import { sandboxOptions, unboxOptions } from "typings";
+import type { sandboxOptions, unboxOptions } from "./types";
 import debugModule from "debug";
+
+export type {
+  boxConfig,
+  sandboxOptions,
+  sandboxOptionsObject,
+  sandboxOptionsString,
+  unboxOptions
+} from "./types";
 
 const debug = debugModule("unbox");
 const defaultPath = "git@github.com:trufflesuite/truffle-init-default";

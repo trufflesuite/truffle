@@ -30,7 +30,7 @@ import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
-import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
+import type { ChainId, Hardfork } from "./constructor/types";
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import {
   createAccountGeneratorFromSeedAndPath,
@@ -51,7 +51,6 @@ class HDWalletProvider {
   #wallets: { [address: string]: Buffer };
   #addresses: string[];
   private chainId?: ChainId;
-  private chainSettings: ChainSettings;
   private hardfork: Hardfork;
   private initialized: Promise<void>;
 
@@ -80,7 +79,6 @@ class HDWalletProvider {
     this.walletHdpath = derivationPath;
     this.#wallets = {};
     this.#addresses = [];
-    this.chainSettings = chainSettings;
     this.engine = new ProviderEngine({
       pollingInterval
     });
@@ -99,7 +97,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-          "ws, or wss protocol.",
+            "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -119,7 +117,7 @@ class HDWalletProvider {
     if (this.#addresses.length === 0) {
       throw new Error(
         `Could not create addresses from your mnemonic or private key(s). ` +
-        `Please check that your inputs are correct.`
+          `Please check that your inputs are correct.`
       );
     }
 

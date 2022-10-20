@@ -64,6 +64,7 @@ export type CompiledContract = {
   generatedSources?: GeneratedSource[];
   deployedGeneratedSources?: GeneratedSource[];
   db?: {};
+  network_id?: string;
 };
 
 export interface WorkflowCompileResult {

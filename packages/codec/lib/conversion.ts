@@ -4,8 +4,8 @@ const debug = debugModule("codec:conversion");
 import BN from "bn.js";
 import Big from "big.js";
 import utf8 from "utf8";
-import type * as Types from "@truffle/codec/format/types";
-import type * as Values from "@truffle/codec/format/values";
+import type * as Types from "./format/types";
+import type * as Values from "./format/values";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big

@@ -4,11 +4,11 @@ const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const { default: Box, normalizeSourcePath } = require("../");
+const { default: Box } = require("../dist");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
 const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
-const utils = require("../dist/lib/utils");
+const utils = require("../dist/utils");
 let options, cleanupCallback, config;
 
 describe("@truffle/box Box", () => {
@@ -41,28 +41,27 @@ describe("@truffle/box Box", () => {
           TRUFFLE_BOX_DEFAULT,
           destination,
           {},
-          config,
+          config
         );
         assert.ok(truffleConfig);
         assert(
           fse.existsSync(path.join(destination, "truffle-config.js")),
-          "Unboxed project should have truffle config.",
+          "Unboxed project should have truffle config."
         );
       });
 
       it("from GitHub branch with lots of slashes", async () => {
-        const branchWithSlashes =
-          `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
+        const branchWithSlashes = `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
         const truffleConfig = await Box.unbox(
           branchWithSlashes,
           destination,
           {},
-          config,
+          config
         );
         assert.ok(truffleConfig);
         assert(
           fse.existsSync(path.join(destination, "truffle-config.js")),
-          "Unboxed project should have truffle config.",
+          "Unboxed project should have truffle config."
         );
       });
     });
@@ -72,29 +71,29 @@ describe("@truffle/box Box", () => {
         LOCAL_TRUFFLE_BOX,
         destination,
         {},
-        config,
+        config
       );
       assert.ok(truffleConfig);
 
       assert(
         fse.existsSync(path.join(destination, "truffle-config.js")),
-        "Unboxed project should have truffle config.",
+        "Unboxed project should have truffle config."
       );
 
       // Assert the file is not there first.
       assert(
         fse.existsSync(path.join(destination, "truffle-init.json")) === false,
-        "truffle-init.json shouldn't be available to the user!",
+        "truffle-init.json shouldn't be available to the user!"
       );
 
       assert(
         fse.existsSync(path.join(destination, "build")) === false,
-        "shouldn't not copy files mentioned in .gitignore",
+        "shouldn't not copy files mentioned in .gitignore"
       );
 
       assert(
         fse.existsSync(path.join(destination, ".env")) === false,
-        "shouldn't not copy files mentioned in .gitignore",
+        "shouldn't not copy files mentioned in .gitignore"
       );
     });
 
@@ -102,17 +101,17 @@ describe("@truffle/box Box", () => {
       // Assert the file is not there first.
       assert(
         fse.existsSync(path.join(destination, "truffle-init.json")) === false,
-        "truffle-init.json shouldn't be available to the user!",
+        "truffle-init.json shouldn't be available to the user!"
       );
 
       // Now assert the README.md and the .gitignore file were removed.
       assert(
         fse.existsSync(path.join(destination, "README.md")) === false,
-        "README.md didn't get removed!",
+        "README.md didn't get removed!"
       );
       assert(
         fse.existsSync(path.join(destination, ".gitignore")) === false,
-        ".gitignore didn't get removed!",
+        ".gitignore didn't get removed!"
       );
     });
 
@@ -122,7 +121,7 @@ describe("@truffle/box Box", () => {
         sinon.stub(utils, "downloadBox").throws();
         sinon.stub(utils, "setUpTempDirectory").returns({
           path: destination,
-          cleanupCallback,
+          cleanupCallback
         });
       });
 
@@ -152,14 +151,19 @@ describe("@truffle/box Box", () => {
     });
 
     it("unboxes truffle box when used", async () => {
-      truffleConfig = await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {
-        force: true,
-      }, config);
+      const truffleConfig = await Box.unbox(
+        TRUFFLE_BOX_DEFAULT,
+        destination,
+        {
+          force: true
+        },
+        config
+      );
       assert.ok(truffleConfig);
 
       assert(
         fse.existsSync(path.join(destination, "truffle-config.js")),
-        "Unboxed project should have truffle config.",
+        "Unboxed project should have truffle config."
       );
     });
 
@@ -168,7 +172,7 @@ describe("@truffle/box Box", () => {
         TRUFFLE_BOX_DEFAULT,
         destination,
         { force: true },
-        config,
+        config
       );
       assert.strictEqual(inquirer.prompt.called, false);
     });
@@ -180,11 +184,11 @@ describe("@truffle/box Box", () => {
       fse.writeFileSync(
         truffleConfigPath,
         "this truffle-config.js file is different than the default box file",
-        "utf8",
+        "utf8"
       );
       assert(
         fse.existsSync(truffleConfigPath),
-        "mock truffle-config.js wasn't created!",
+        "mock truffle-config.js wasn't created!"
       );
 
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
@@ -192,18 +196,15 @@ describe("@truffle/box Box", () => {
         TRUFFLE_BOX_DEFAULT,
         destination,
         { force: true },
-        config,
+        config
       );
 
       assert(
         fse.existsSync(truffleConfigPath),
-        "truffle-config.js wasn't recreated!",
+        "truffle-config.js wasn't recreated!"
       );
       const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
-      assert(
-        newConfig !== mockConfig,
-        "truffle-config.js wasn't overwritten!",
-      );
+      assert(newConfig !== mockConfig, "truffle-config.js wasn't overwritten!");
     });
   });
 
@@ -219,7 +220,7 @@ describe("@truffle/box Box", () => {
       fse.ensureDirSync(contractDirPath);
       assert(
         fse.existsSync(contractDirPath),
-        "contracts folder wasn't created!",
+        "contracts folder wasn't created!"
       );
     });
 
@@ -238,7 +239,7 @@ describe("@truffle/box Box", () => {
       await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config);
       assert(
         inquirer.prompt.getCall(0).args[0],
-        "Prompt questions weren't called!",
+        "Prompt questions weren't called!"
       );
     });
 
@@ -249,11 +250,11 @@ describe("@truffle/box Box", () => {
       fse.writeFileSync(
         truffleConfigPath,
         "this truffle-config.js file is different than the default box file",
-        "utf8",
+        "utf8"
       );
       assert(
         fse.existsSync(truffleConfigPath),
-        "mock truffle-config.js wasn't created!",
+        "mock truffle-config.js wasn't created!"
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
@@ -261,13 +262,10 @@ describe("@truffle/box Box", () => {
       assert(inquirer.prompt.called);
       assert(
         fse.existsSync(truffleConfigPath),
-        "truffle-config.js wasn't recreated!",
+        "truffle-config.js wasn't recreated!"
       );
       const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
-      assert(
-        newConfig !== mockConfig,
-        "truffle-config.js wasn't overwritten!",
-      );
+      assert(newConfig !== mockConfig, "truffle-config.js wasn't overwritten!");
     });
   });
 
@@ -277,8 +275,8 @@ describe("@truffle/box Box", () => {
         log(stringToLog) {
           this.loggedStuff = this.loggedStuff + stringToLog;
         },
-        loggedStuff: "",
-      },
+        loggedStuff: ""
+      }
     };
 
     beforeEach(() => {

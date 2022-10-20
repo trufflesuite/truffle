@@ -2,10 +2,10 @@ import debugModule from "debug";
 const debug = debugModule("codec:core");
 
 import type * as Abi from "@truffle/abi-utils";
-import * as Ast from "@truffle/codec/ast";
-import * as AbiData from "@truffle/codec/abi-data";
-import * as Topic from "@truffle/codec/topic";
-import type * as Pointer from "@truffle/codec/pointer";
+import * as Ast from "./ast";
+import * as AbiData from "./abi-data";
+import * as Topic from "./topic";
+import type * as Pointer from "./pointer";
 import type {
   DecoderRequest,
   StateVariable,
@@ -17,15 +17,15 @@ import type {
   AbiArgument,
   LogDecoding,
   LogOptions
-} from "@truffle/codec/types";
-import * as Evm from "@truffle/codec/evm";
-import * as Contexts from "@truffle/codec/contexts";
-import { abifyType, abifyResult } from "@truffle/codec/abify";
-import * as Conversion from "@truffle/codec/conversion";
-import type * as Format from "@truffle/codec/format";
-import { StopDecodingError } from "@truffle/codec/errors";
-import read from "@truffle/codec/read";
-import decode from "@truffle/codec/decode";
+} from "./types";
+import * as Evm from "./evm";
+import * as Contexts from "./contexts";
+import { abifyType, abifyResult } from "./abify";
+import * as Conversion from "./conversion";
+import type * as Format from "./format";
+import { StopDecodingError } from "./errors";
+import read from "./read";
+import decode from "./decode";
 import Web3Utils from "web3-utils";
 
 /**

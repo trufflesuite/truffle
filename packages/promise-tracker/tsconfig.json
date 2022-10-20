@@ -1,27 +1,20 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "declaration": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "lib": ["es2019"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "outDir": "dist",
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "jest"],
+    "noImplicitThis": false,
     "paths": {
+      "@truffle/promise-tracker": ["./lib"],
+      "@truffle/promise-tracker/*": ["./lib/*"]
     },
-    "rootDir": "lib",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "target": "es2016",
-    "types": [ "node", "jest" ]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
-
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"]
 }

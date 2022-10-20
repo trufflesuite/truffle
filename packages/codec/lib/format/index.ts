@@ -169,12 +169,10 @@
  *
  * @packageDocumentation
  */
-import { Types, Values, Errors } from "./common";
+import { Types } from "./common";
+import type { Values, Errors } from "./common";
 import * as Utils from "./utils";
 
-export {
-  Types,
-  Values,
-  Errors,
-  Utils
-};
+export { Types, Utils };
+
+export type { Values, Errors };

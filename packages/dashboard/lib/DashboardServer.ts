@@ -70,7 +70,7 @@ export class DashboardServer {
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
-    this.frontendPath = path.join(__dirname, "dashboard-frontend");
+    this.frontendPath = path.resolve(__dirname, "..", "dashboard-frontend");
 
     this.boundTerminateListener = () => this.stop();
   }

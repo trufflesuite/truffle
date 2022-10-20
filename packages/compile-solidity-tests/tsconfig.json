@@ -1,29 +1,30 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "rootDir": "test",
     "baseUrl": ".",
-    "types": [
-      "mocha",
-      "node",
-      "sinon"
+    "rootDir": "test",
+    "outDir": "./dist",
+    "types": ["mocha", "node", "sinon"],
+    "allowJs": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "useUnknownInCatchVariables": false,
+    "paths": {
+      "@truffle/compile-solidity-tests": ["./test"],
+      "@truffle/compile-solidity-tests/*": ["./test/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [ "test/**/*.ts", "test/*.ts" ],
-  "exclude": [
-    "node_modules", "dist"
+  "include": ["test/**/*.ts", "test/*.ts"],
+  "references": [
+    { "path": "../artifactor" },
+    { "path": "../compile-solidity" },
+    { "path": "../config" },
+    { "path": "../resolver" },
   ]
 }

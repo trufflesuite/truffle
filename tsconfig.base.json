@@ -1,0 +1,64 @@
+{
+  "compilerOptions": {
+    // modules
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "paths": {
+      "@truffle/*": ["./packages/*"],
+    },
+
+    // type checking
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictBindCallApply": false,
+    "strictFunctionTypes": false,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    // "disableSourceOfProjectReferenceRedirect": true,
+
+    //emit
+    "declaration": true,
+    "declarationMap": false,
+    "downlevelIteration": true,
+    "preserveConstEnums": true,
+    "preserveValueImports": false,
+    "removeComments": false,
+    "sourceMap": true,
+    "stripInternal": false,
+    
+    //interop constraints
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    
+    // language and environment
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": [ "es2019" ],
+    "moduleDetection": "auto",
+    "target": "es2016",
+    "useDefineForClassFields": false,
+    
+    // completeness
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    
+    // projects
+    "composite": true,
+    "incremental": true,
+  },
+  "include": []
+}

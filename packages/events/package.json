@@ -2,7 +2,7 @@
   "name": "@truffle/events",
   "version": "0.1.18",
   "description": "Event system for Truffle",
-  "main": "index.js",
+  "main": "dist/index.js",
   "keywords": [],
   "author": "Nick D'Andrea and Tyler Feickert",
   "license": "ISC",
@@ -16,16 +16,23 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "scripts": {
-    "prepare": "exit 0"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-client": "^0.1.8",
-    "@truffle/spinners": "^0.2.2",
+    "@truffle/spinners": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/webpack": "~5.28.0",
     "debug": "^4.3.1",
     "emittery": "^0.4.1",
-    "web3-utils": "1.7.4"
+    "web3-utils": "1.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   }
 }

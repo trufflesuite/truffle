@@ -3,7 +3,6 @@ import fse from "fs-extra";
 import path from "path";
 import OS from "os";
 import { writeArtifact, finalizeArtifact } from "./utils";
-const debug = require("debug")("artifactor");
 
 class Artifactor {
   destination: string;
@@ -34,7 +33,7 @@ class Artifactor {
       writeArtifact(completeArtifact, outputPath);
     } catch (e) {
       // if artifact doesn't already exist, write new file
-      if (e.code === "ENOENT")
+      if (e instanceof Error && (e as any).code === "ENOENT")
         return writeArtifact(normalizedNewArtifact, outputPath);
       else if (e instanceof SyntaxError) throw e; // catches improperly formatted artifact json
       throw e; // catch all other errors
@@ -64,7 +63,7 @@ class Artifactor {
     try {
       fse.statSync(this.destination); // check if destination exists
     } catch (e) {
-      if (e.code === "ENOENT")
+      if (e instanceof Error && (e as any).code === "ENOENT")
         // if destination doesn't exist, throw error
         throw new Error(`Destination "${this.destination}" doesn't exist!`);
       throw e; // throw on all other errors

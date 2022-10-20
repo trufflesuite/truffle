@@ -23,7 +23,7 @@ export const getDefaultSettings: GetDefaultSettings = () => ({
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private _createDatabase: (resource) => PouchDB.Database;
 
-  setup(settings: DatabasesSettings) {
+  override setup(settings: DatabasesSettings) {
     const { auth } = settings;
 
     let { url } = settings;

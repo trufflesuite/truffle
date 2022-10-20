@@ -2,9 +2,11 @@
   "name": "@truffle/contract-sources",
   "version": "0.2.0",
   "description": "Utility for finding all contracts within a directory",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "prepare": "exit 0"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "prepare": "yarn build"
   },
   "repository": {
     "type": "git",
@@ -23,9 +25,13 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources#readme",
-  "dependencies": {
+  "devDependencies": {
+    "@types/webpack": "~5.28.0",
     "debug": "^4.3.1",
-    "glob": "^7.1.6"
+    "glob": "^7.1.6",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "publishConfig": {
     "access": "public"

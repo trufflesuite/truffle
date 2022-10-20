@@ -1,30 +1,31 @@
-const path = require("path");
-const webpack = require("webpack");
+import { join as pathJoin } from "path";
+import { Configuration, ProvidePlugin } from "webpack";
+import { merge } from "webpack-merge";
+import baseConfig from "../../webpack/webpack.config.base";
 
 //TODO: there's probably a better way to do this where webpack is called once
 //and it will generate both production and development packs
 const suffix = process.env.NODE_ENV === "production" ? ".min" : "";
 const entryName = `truffle-contract${suffix}`;
 
-module.exports = {
-  context: path.resolve(__dirname),
+const config: Configuration = merge(baseConfig, {
   entry: {
     [entryName]: "./index.js"
   },
+  context: __dirname,
   output: {
     filename: "[name].js",
-    path: path.resolve(__dirname, "browser-dist"),
+    path: pathJoin(__dirname, "browser-dist"),
     library: {
       name: "TruffleContract",
       type: "global"
     }
   },
-  devtool: "source-map",
   plugins: [
-    new webpack.ProvidePlugin({
+    new ProvidePlugin({
       Buffer: ["buffer", "Buffer"]
     }),
-    new webpack.ProvidePlugin({
+    new ProvidePlugin({
       process: "process/browser"
     })
   ],
@@ -41,4 +42,6 @@ module.exports = {
       vm: require.resolve("vm-browserify")
     }
   }
-};
+});
+
+export default config;

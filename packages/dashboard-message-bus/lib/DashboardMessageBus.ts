@@ -19,12 +19,12 @@ interface UnfulfilledRequest {
 }
 
 export class DashboardMessageBus extends EventEmitter {
-  private publishServer: WebSocket.Server;
-  private subscribeServer: WebSocket.Server;
+  private publishServer?: WebSocket.Server;
+  private subscribeServer?: WebSocket.Server;
   private publishers: WebSocket[] = [];
   private subscribers: WebSocket[] = [];
-  private readyPromise: Promise<void>;
-  private resolveReadyPromise: () => void;
+  private readyPromise?: Promise<void>;
+  private resolveReadyPromise?: () => void;
 
   private unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
@@ -75,7 +75,10 @@ export class DashboardMessageBus extends EventEmitter {
    * (i.e. having any subscribers).
    */
   get ready(): Promise<void> {
-    return this.readyPromise;
+    if (!this.readyPromise) {
+      this.resetReadyState();
+    }
+    return this.readyPromise!;
   }
 
   /**
@@ -83,8 +86,8 @@ export class DashboardMessageBus extends EventEmitter {
    * @dev Emits a "terminate" event
    */
   async terminate() {
-    await promisify(this.publishServer.close.bind(this.publishServer))();
-    await promisify(this.subscribeServer.close.bind(this.subscribeServer))();
+    await promisify(this.publishServer?.close.bind(this.publishServer))();
+    await promisify(this.subscribeServer?.close.bind(this.subscribeServer))();
     this.emit("terminate");
   }
 
@@ -145,15 +148,6 @@ export class DashboardMessageBus extends EventEmitter {
     this.logTo(logMessage, this.publishers, namespace);
   }
 
-  private logToSubscribers(logMessage: any, namespace?: string) {
-    this.logTo(logMessage, this.subscribers, namespace);
-  }
-
-  private logToAll(logMessage: any, namespace?: string) {
-    this.logToPublishers(logMessage, namespace);
-    this.logToSubscribers(logMessage, namespace);
-  }
-
   private logTo(logMessage: any, receivers: WebSocket[], namespace?: string) {
     const payload = {
       namespace: "dashboard-message-bus",
@@ -182,7 +176,7 @@ export class DashboardMessageBus extends EventEmitter {
     this.subscribers.push(newSubscriber);
 
     if (this.subscribers.length == 1) {
-      this.resolveReadyPromise();
+      this.resolveReadyPromise!();
     }
   }
 

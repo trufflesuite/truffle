@@ -1,4 +1,4 @@
-const { sandbox } = require("../").default;
+const { sandbox } = require("../dist").default;
 const assert = require("assert");
 
 describe("Box.sandbox", () => {

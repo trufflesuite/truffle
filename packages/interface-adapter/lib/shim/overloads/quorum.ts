@@ -108,8 +108,6 @@ const overrides = {
   // is that the 'Out of Gas?' zero/null bytes guard has been removed and any
   // falsy bytes are interpreted as a zero value.
   decodeParameters: (web3: Web3Shim) => {
-    const _oldDecodeParameters = web3.eth.abi.decodeParameters;
-
     const ethersAbiCoder = new EthersAbi((type, value) => {
       if (
         type.match(/^u?int/) &&

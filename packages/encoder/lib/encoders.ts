@@ -23,6 +23,7 @@ import {
 } from "./errors";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { Shims } from "@truffle/compile-common";
+import type { CalldataArgumentAllocation } from "@truffle/codec/lib/abi-data/allocate/types";
 //sorry for untyped imports!
 const { default: ENS, getEnsAddress } = require("@ensdomains/ensjs");
 
@@ -1371,7 +1372,10 @@ export class ContractEncoder {
             <string>this.constructorContextHash
           ].input;
         const inputs = allocation.arguments.map(
-          input => ({ type: input.type, name: input.name || undefined }) //convert "" to undefined
+          (input: CalldataArgumentAllocation) => ({
+            type: input.type,
+            name: input.name || undefined
+          }) //convert "" to undefined
         );
         return {
           selector: this.constructorBinary,

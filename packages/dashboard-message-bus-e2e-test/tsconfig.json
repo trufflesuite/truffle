@@ -1,22 +1,25 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "declaration": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "lib": ["es2019"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "outDir": "dist",
+    "rootDir": "./test",
+     // test project - no need to emit files
+    "noEmit": true,
+    "types": ["jest", "node"],
     "paths": {
+      "@truffle/dashboard-message-bus-e2e-test": ["./test"],
+      "@truffle/dashboard-message-bus-e2e-test/*": ["./test/*"]
     },
-    "rootDir": "test",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "target": "es2016",
-    "types": ["jest", "node"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
   },
-  "include": [ "./test/**/*.ts" ]
+  "include": [ "./test/**/*.ts" ],
+  "references": [
+    { "path": "../dashboard" },
+    { "path": "../dashboard-message-bus" },
+    { "path": "../dashboard-message-bus-client" },
+    { "path": "../dashboard-message-bus-common" }
+  ]
 }

@@ -3,7 +3,7 @@ import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
 import path from "path";
-import type { boxConfig, unboxOptions } from "typings";
+import type { boxConfig, unboxOptions } from "../types";
 
 export = {
   downloadBox: async (source: string, destination: string, events: any) => {

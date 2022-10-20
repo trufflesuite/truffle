@@ -13,27 +13,32 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.1.3",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "yarn build:dist",
-    "build:dist": "ttsc",
+    "build": "run-s build:compile build:bundle",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "clean": "rm -rf ./dist",
     "prepare": "yarn build",
-    "test": "yarn test:types && yarn test:code",
+    "test": "run-s test:types test:code",
     "test:code": "mocha",
     "test:types": "tsd"
   },
-  "types": "dist/src/index.d.ts",
   "devDependencies": {
     "@types/node": "~12.12.0",
+    "@types/webpack": "~5.28.0",
     "mocha": "10.1.0",
     "tsd": "^0.15.1",
     "ttypescript": "1.5.13",
     "typescript": "^4.7.4",
-    "typescript-transform-paths": "3.3.1"
+    "typescript-transform-paths": "3.3.1",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
   },
   "keywords": [
     "ethereum",

@@ -1,6 +1,6 @@
-export { queryCompilation, QueryCompilationOptions } from "./queryCompilation";
-export {
-  prepareProjectInfo,
-  PrepareProjectInfoOptions
-} from "./prepareProjectInfo";
-export { fetchExternal, FetchExternalOptions } from "./fetchExternal";
+export { queryCompilation } from "./queryCompilation";
+export type { QueryCompilationOptions } from "./queryCompilation";
+export { prepareProjectInfo } from "./prepareProjectInfo";
+export type { PrepareProjectInfoOptions } from "./prepareProjectInfo";
+export { fetchExternal } from "./fetchExternal";
+export type { FetchExternalOptions } from "./fetchExternal";

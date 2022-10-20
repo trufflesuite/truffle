@@ -1,39 +1,20 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": ["esnext"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node"],
+    "useUnknownInCatchVariables": false,
     "paths": {
       "@truffle/expect": ["./src"],
-      "@truffle/expect/*": ["./src/*"],
-      "test/*": ["./test/*"]
+      "@truffle/expect/*": ["./src/*"]
     },
-    "rootDir": ".",
-    "baseUrl": ".",
-    "types": [
-      "node"
-    ],
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [
-    "src/**/*",
-    "bin/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*"]
 }

@@ -1,26 +1,23 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "useUnknownInCatchVariables": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noImplicitReturns": false,
     "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
-      ]
+      "@truffle/box": ["./lib"],
+      "@truffle/box/*": ["./lib/*"]
     },
-    "rootDir": "."
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": [
-    "./**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"],
+  "references": [{ "path": "../config" }]
 }

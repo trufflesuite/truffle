@@ -71,7 +71,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
 
   public async getTransactionCostReport(
     receipt: TransactionReceipt
-  ): Promise<TransactionCostReport> {
+  ): Promise<TransactionCostReport | null> {
     const tx = await this.getTransaction(receipt.transactionHash);
     const block = await this.getBlock(receipt.blockNumber);
 

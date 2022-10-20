@@ -23,9 +23,9 @@ export const isBytes = (content: Content): content is Bytes =>
   ArrayBuffer.isView(content);
 
 export const isIterable = (content: Content): content is Iterable<Bytes> =>
-  content && typeof content === "object" && Symbol.iterator in content;
+  !!content && typeof content === "object" && Symbol.iterator in content;
 
 export const isAsyncIterable = (
   content: Content
 ): content is AsyncIterable<Bytes> =>
-  content && typeof content === "object" && Symbol.asyncIterator in content;
+  !!content && typeof content === "object" && Symbol.asyncIterator in content;

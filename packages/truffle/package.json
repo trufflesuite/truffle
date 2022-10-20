@@ -13,14 +13,14 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "5.6.6",
-  "main": "./build/library.bundled.js",
+  "main": "./dist/library.bundled.js",
   "bin": {
-    "truffle": "./build/cli.bundled.js"
+    "truffle": "./dist/cli.bundled.js"
   },
   "scripts": {
     "analyze": "./scripts/analyze.sh",
     "build": "yarn build:cli",
-    "build:cli": "NODE_OPTIONS=\"--max-old-space-size=8192\" webpack --config ./webpack.config.js",
+    "build:cli": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" webpack --config ./webpack.config.ts",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
@@ -28,7 +28,7 @@
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test": "./scripts/test.sh",
-    "test:raw": "NO_BUILD=true mocha"
+    "test:raw": "cross-env NO_BUILD=true mocha"
   },
   "optionalDependencies": {
     "@truffle/db": "^2.0.6"
@@ -36,20 +36,20 @@
   "dependencies": {
     "@truffle/db-loader": "^0.2.6",
     "@truffle/debugger": "^11.0.17",
-    "app-module-path": "^2.2.0",
-    "ganache": "7.5.0",
-    "mocha": "10.1.0",
-    "original-require": "^1.0.1"
-  },
-  "devDependencies": {
     "@truffle/box": "^2.1.64",
     "@truffle/config": "^1.3.44",
     "@truffle/contract": "^4.6.7",
     "@truffle/core": "^5.6.6",
     "@truffle/interface-adapter": "^0.5.24",
+    "ganache": "7.5.0",
+    "mocha": "10.1.0",
+    "original-require": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/webpack": "~5.28.0",
+    "app-module-path": "^2.2.0",
     "chai": "^4.2.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^7.0.0",
+    "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.4.1",
     "fs-extra": "^9.1.0",
     "glob": "^7.1.6",

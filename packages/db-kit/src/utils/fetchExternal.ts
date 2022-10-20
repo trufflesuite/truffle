@@ -1,6 +1,4 @@
-const { Compile } = require("@truffle/compile-solidity");
 import type TruffleConfig from "@truffle/config";
-import type { WorkflowCompileResult } from "@truffle/compile-common";
 import * as Common from "@truffle/compile-common";
 import type { Project } from "@truffle/db";
 import { fetchAndCompile } from "@truffle/fetch-and-compile";

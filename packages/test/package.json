@@ -13,9 +13,12 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.1.2",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "run-s build:compile build:bundle",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "prepare": "yarn build"
   },
   "dependencies": {

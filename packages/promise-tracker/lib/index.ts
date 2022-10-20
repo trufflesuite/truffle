@@ -3,7 +3,7 @@ const _outstandingPromiseMap = new Map<Promise<any>, boolean>();
 
 export function tracked<T extends Object>(
   target: T,
-  key: string | Symbol,
+  _: string | Symbol,
   descriptor: PropertyDescriptor
 ) {
   if (typeof descriptor.value !== "function" || !target.constructor) {

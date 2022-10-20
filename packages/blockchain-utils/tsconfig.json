@@ -1,32 +1,20 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
-    "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
-      ]
-    },
-    "rootDir": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
     "types": ["node", "mocha"],
-    "typeRoots": [
-      "./typings",
-      "../../node_modules/@types/node",
-      "../../node_modules/@types/mocha",
-      "../../node_modules/@types/assert"
+    "noImplicitThis": false,
+    "paths": {
+      "@truffle/blockchain-utils": ["./src"],
+      "@truffle/blockchain-utils/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [
-    "./**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./src/**/*.ts"]
 }

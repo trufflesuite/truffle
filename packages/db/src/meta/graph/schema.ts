@@ -291,7 +291,7 @@ class ImmutableDefinitionSchema<
   C extends Collections,
   N extends CollectionName<C>
 > extends DefinitionSchema<C, N> {
-  get resolvers() {
+  override get resolvers() {
     const log = debug.extend(`${this.resource}:resolvers`);
     log("Generating...");
 
@@ -323,7 +323,7 @@ class MutableDefinitionSchema<
   C extends Collections,
   M extends MutableCollectionName<C>
 > extends DefinitionSchema<C, M> {
-  get resolvers() {
+  override get resolvers() {
     const log = debug.extend(`${this.resource}:resolvers`);
     log("Generating...");
 

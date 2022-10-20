@@ -1,5 +1,5 @@
 import fse from "fs-extra";
-import type { boxConfig } from "typings";
+import type { boxConfig } from "./types";
 
 function setDefaults(config: any = {}): boxConfig {
   const hooks = config.hooks || {};

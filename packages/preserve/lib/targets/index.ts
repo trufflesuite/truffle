@@ -1,4 +1,4 @@
-export { Source } from "./sources";
+export type { Source } from "./sources";
 import * as Sources from "./sources";
 export { Sources };
 

@@ -1,5 +1,3 @@
-import Console from "console";
-
 export type sandboxOptionsObject = {
   name?: string;
   unsafeCleanup?: boolean;

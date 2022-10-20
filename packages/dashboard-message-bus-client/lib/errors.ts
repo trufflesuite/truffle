@@ -24,7 +24,7 @@ export class MessageBusConnectionError extends Error {
     super(message);
     this.cause = cause;
   }
-  toString(): string {
+  override toString(): string {
     return this.cause
       ? `${super.toString()}\ncaused by: ${this.cause.toString()}`
       : super.toString();

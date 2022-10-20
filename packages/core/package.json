@@ -54,8 +54,14 @@
     "@truffle/spinners": "^0.2.2",
     "@truffle/test": "^0.1.2",
     "@truffle/workflow-compile": "^4.0.41",
+    "original-require": "^1.0.1"
+  },
+  "devDependencies": {
+    "@truffle/blockchain-utils": "^0.1.4",
     "address": "^1.1.2",
+    "app-module-path": "^2.2.0",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "colors": "1.4.0",
     "command-exists": "^1.2.8",
     "conf": "^10.0.2",
@@ -70,11 +76,12 @@
     "inquirer": "8.2.2",
     "js-interpreter": "2.2.0",
     "lodash": "^4.17.21",
+    "memorystream": "^0.3.1",
     "mocha": "10.1.0",
     "node-emoji": "^1.8.1",
-    "original-require": "^1.0.1",
     "sane": "^4.0.2",
     "semver": "7.3.7",
+    "sinon": "^9.0.2",
     "source-map-support": "^0.5.19",
     "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
@@ -83,13 +90,6 @@
     "web3-utils": "1.7.4",
     "xregexp": "^4.2.4",
     "yargs": "^13.3.0"
-  },
-  "devDependencies": {
-    "@truffle/blockchain-utils": "^0.1.4",
-    "app-module-path": "^2.2.0",
-    "chai-as-promised": "^7.1.1",
-    "memorystream": "^0.3.1",
-    "sinon": "^9.0.2"
   },
   "publishConfig": {
     "access": "public"

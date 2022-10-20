@@ -1,13 +1,13 @@
-import * as StorageRead from "@truffle/codec/storage/read";
-import * as StackRead from "@truffle/codec/stack/read";
-import * as BytesRead from "@truffle/codec/bytes/read";
-import * as AstConstantRead from "@truffle/codec/ast-constant/read";
-import * as TopicRead from "@truffle/codec/topic/read";
-import * as SpecialRead from "@truffle/codec/special/read";
-import * as Pointer from "@truffle/codec/pointer";
-import type { DecoderRequest } from "@truffle/codec/types";
-import { DecodingError } from "@truffle/codec/errors";
-import * as Evm from "@truffle/codec/evm";
+import * as StorageRead from "./storage/read";
+import * as StackRead from "./stack/read";
+import * as BytesRead from "./bytes/read";
+import * as AstConstantRead from "./ast-constant/read";
+import * as TopicRead from "./topic/read";
+import * as SpecialRead from "./special/read";
+import * as Pointer from "./pointer";
+import type { DecoderRequest } from "./types";
+import { DecodingError } from "./errors";
+import * as Evm from "./evm";
 
 export default function* read(
   pointer: Pointer.DataPointer,

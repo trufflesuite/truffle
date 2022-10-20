@@ -1,5 +1,5 @@
 import { Message, Response } from "@truffle/dashboard-message-bus-common";
-import { DashboardMessageBusConnection } from "lib/connection";
+import { DashboardMessageBusConnection } from "../connection";
 import { AlreadyRespondedError } from "../errors";
 import debugModule from "debug";
 import { TypedEmitter } from "tiny-typed-emitter";
@@ -24,7 +24,6 @@ export class DashboardMessageBusSubscription<
   MessageType extends Message = Message
 > extends TypedEmitter<DashboardMessageBusSubscriptionEvents<MessageType>> {
   private _predicate: (message: Message) => boolean;
-  private _ended: boolean = false;
 
   constructor({ id, type }: SubscriptionOptions) {
     super();
@@ -47,7 +46,6 @@ export class DashboardMessageBusSubscription<
   }
 
   _end() {
-    this._ended = true;
     this.emit("end");
     this.removeAllListeners();
   }

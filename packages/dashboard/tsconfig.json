@@ -15,7 +15,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
-    "outDir": "./build",
+    "outDir": "./frontend-build",
     "strictBindCallApply": true,
     "strictNullChecks": true,
     "baseUrl": ".",
@@ -26,11 +26,21 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false
+    "paths": {
+      "@truffle/dashboard": ["./src"],
+      "@truffle/dashboard/*": ["./src/*"],
+      "src": [ "./src" ],
+      "src/*": [ "./src/*" ]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
   "ts-node": {
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "commonjs",
+      "suppressExcessPropertyErrors": true
     }
   },
   "include": ["src"]

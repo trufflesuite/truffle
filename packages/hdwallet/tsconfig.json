@@ -1,29 +1,19 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
-    "allowJs": false,
-    "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
-    "skipLibCheck": true,
-    "target": "es2016",
-    "moduleResolution": "node",
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strictBindCallApply": true,
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["mocha", "node"],
     "paths": {
       "@truffle/hdwallet": ["./src"],
-      "@truffle/hdwallet/*": ["./src/*"],
-      "test/*": ["./test/*"]
+      "@truffle/hdwallet/*": ["./src/*"]
     },
-    "rootDir": ".",
-    "baseUrl": ".",
-    "typeRoots": ["../../node_modules/@types/node"],
-    "types": ["mocha"]
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["src/**/*"]
 }

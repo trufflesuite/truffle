@@ -1520,7 +1520,6 @@ export class ContractInstanceDecoder {
   private contexts: Contexts.Contexts = {}; //deployed contexts only
   private additionalContexts: Contexts.Contexts = {}; //for passing to project decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Codec.Evm.AllocationInfo;
 
@@ -1549,7 +1548,6 @@ export class ContractInstanceDecoder {
       this.contractAddress = Web3Utils.toChecksumAddress(address);
     }
 
-    this.referenceDeclarations = this.projectDecoder.getReferenceDeclarations();
     this.userDefinedTypes = this.projectDecoder.getUserDefinedTypes();
     this.contexts = this.projectDecoder.getDeployedContexts();
     let artifact: Artifact;

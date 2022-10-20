@@ -1,27 +1,21 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2016",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "declaration": true,
-    "strict": true,
-    "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019", "dom"],
     "rootDir": "./src",
+    "outDir": "./build",
+    "declarationDir": "./dist",
     "types": ["node", "mocha"],
-    "typeRoots": [
-      "./typings",
-      "node_modules/@types/node",
-      "../../node_modules/@types/mocha",
-      "../../node_modules/@types/node"
+    "paths": {
+      "@truffle/config": ["./src"],
+      "@truffle/config/*": ["./src/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": [
-    "./src/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./src/**/*.ts", "./typings/**/*.d.ts"],
+
+  "references": [{ "path": "../error" }]
 }
