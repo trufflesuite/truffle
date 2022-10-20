@@ -139,6 +139,7 @@ export default class Session {
         );
       }
       const compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
+      const settings = compilation.settings; //same note
       sources.user[compilation.id] = [];
       contracts[compilation.id] = {};
       for (let index in compilation.sources) {
@@ -157,6 +158,7 @@ export default class Session {
           ...source,
           ast,
           compiler: source.compiler || compiler,
+          settings: source.settings || settings,
           compilationId: compilation.id,
           index,
           id: makeSourceId(compilation.id, null, index),
@@ -174,6 +176,7 @@ export default class Session {
           immutableReferences,
           abi,
           compiler,
+          settings,
           primarySourceId,
           generatedSources,
           deployedGeneratedSources
@@ -260,6 +263,7 @@ export default class Session {
             primarySource: primarySourceIndex,
             abi,
             compiler,
+            settings,
             compilationId: compilation.id,
             contractId,
             contractKind,
@@ -277,6 +281,7 @@ export default class Session {
                 sources.internal[contextHash][index] = {
                   ...source,
                   compiler: source.compiler || compiler,
+                  settings: source.settings || settings,
                   compilationId: compilation.id,
                   index,
                   id: makeSourceId(compilation.id, contextHash, index),
@@ -308,6 +313,7 @@ export default class Session {
             immutableReferences,
             abi,
             compiler,
+            settings,
             compilationId: compilation.id,
             contractId,
             contractKind,
@@ -325,6 +331,7 @@ export default class Session {
                 sources.internal[contextHash][index] = {
                   ...source,
                   compiler: source.compiler || compiler,
+                  settings: source.settings || settings,
                   compilationId: compilation.id,
                   index,
                   id: makeSourceId(compilation.id, contextHash, index),

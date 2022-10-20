@@ -607,6 +607,16 @@ const evm = createSelectorTree({
     ),
 
     /**
+     * evm.current.isIR
+     * was the current context compield with IR on?
+     * currently, this defaults to false; in the future the default
+     * may depend on the Solidity version
+     */
+    isIR: createLeaf(["./context"], context =>
+      context.settings ? Boolean(context.settings.viaIR) : false
+    ),
+
+    /**
      * evm.current.state
      *
      * evm state info: as of last operation, before op defined in step

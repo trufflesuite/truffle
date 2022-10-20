@@ -1058,6 +1058,19 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.internalFunctionsTable
+     */
+    internalFunctionsTable: createLeaf(
+      [evm.current.isIR, "./functionsByProgramCounter"],
+      //for Solidity compiled with IR turned on, internal function pointers
+      //are encoded by index rather than by PC value.  unfortunately the
+      //indices are hard to predict and so at present we can't decode these
+      //(at least, not without a fair bit more effort).  As such we won't set
+      //up an internal functions table if IR is turned on.
+      (isIR, byPC) => (isIR ? undefined : byPC)
+    ),
+
+    /**
      * data.current.context
      */
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
