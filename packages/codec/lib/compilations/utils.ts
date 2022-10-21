@@ -440,8 +440,6 @@ function getIndexToAddAt(
     };
   } else {
     debug("already present, not adding");
-    //note that index may be undefined in this case if it was passed
-    //in as undefined
     return {
       index: existingIndex,
       needsAdding: false,
