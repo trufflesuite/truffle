@@ -402,22 +402,22 @@ function getIndexToAddAt(
   sources: Source[],
   unreliableSourceOrder: boolean
 ): { index: number; needsAdding: boolean; unreliableSourceOrder: boolean } {
-  //first: is this already there? only add it if it's not.
-  //(we determine this by sourcePath if present, and the actual source
-  //contents if not)
   debug("sourcePath: %s", sourceObject.sourcePath);
   debug("given index: %d", index);
   debug(
     "sources: %o",
     sources.map(source => source.sourcePath)
   );
+  //first: is this already there? only add it if it's not.
+  //(we determine this by sourcePath if present, and the actual source
+  //contents if not)
   const existingIndex = sources.findIndex(
     existingSource =>
-      (existingSource &&
-        existingSource.sourcePath !== sourceObject.sourcePath) ||
-      (!sourceObject.sourcePath &&
-        !existingSource.sourcePath &&
-        existingSource.source !== sourceObject.source)
+      existingSource &&
+      (existingSource.sourcePath === sourceObject.sourcePath ||
+        (!sourceObject.sourcePath &&
+          !existingSource.sourcePath &&
+          existingSource.source === sourceObject.source))
   );
   if (existingIndex === -1) {
     //it's not already there, let's add it
