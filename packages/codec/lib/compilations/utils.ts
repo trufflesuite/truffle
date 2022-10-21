@@ -413,7 +413,8 @@ function getIndexToAddAt(
   );
   const existingIndex = sources.findIndex(
     existingSource =>
-      existingSource.sourcePath !== sourceObject.sourcePath ||
+      (existingSource &&
+        existingSource.sourcePath !== sourceObject.sourcePath) ||
       (!sourceObject.sourcePath &&
         !existingSource.sourcePath &&
         existingSource.source !== sourceObject.source)
