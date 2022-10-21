@@ -180,7 +180,7 @@ export function shimContracts(
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
-      let index: number;
+      let index: number | undefined;
       let needsAdding: boolean;
       if (sourceObject.ast) {
         //note: this works for both Solidity and Vyper
@@ -422,51 +422,51 @@ function inferLanguage(
 
 function getIndexToAddAt(
   sourceObject: Source,
-  index: number,
+  index: number | undefined,
   sources: Source[],
   unreliableSourceOrder: boolean
 ): { index: number; needsAdding: boolean; unreliableSourceOrder: boolean } {
-  //first: is this already there? only add it if it's not.
-  //(we determine this by sourcePath if present, and the actual source
-  //contents if not)
   debug("sourcePath: %s", sourceObject.sourcePath);
   debug("given index: %d", index);
   debug(
     "sources: %o",
     sources.map(source => source.sourcePath)
   );
-  if (
-    sources.every(
-      existingSource =>
-        existingSource.sourcePath !== sourceObject.sourcePath ||
+  //first: is this already there? only add it if it's not.
+  //(we determine this by sourcePath if present, and the actual source
+  //contents if not)
+  const existingIndex = sources.findIndex(
+    existingSource =>
+      existingSource && //findIndex treats absent as undefined, so we need this guard
+      // (array may be sparse)
+      (existingSource.sourcePath === sourceObject.sourcePath ||
         (!sourceObject.sourcePath &&
           !existingSource.sourcePath &&
-          existingSource.source !== sourceObject.source)
-    )
-  ) {
+          existingSource.source === sourceObject.source))
+  );
+  if (existingIndex === -1) {
+    //it's not already there, let's add it
     if (unreliableSourceOrder || index === undefined || index in sources) {
       //if we can't add it at the correct spot, set the
       //unreliable source order flag
       debug("collision!");
       unreliableSourceOrder = true;
     }
-    //otherwise, just leave things alone
     if (unreliableSourceOrder) {
       //in case of unreliable source order, we'll ignore what indices
       //things are *supposed* to have and just append things to the end
       index = sources.length;
     }
+    //otherwise, just leave things alone
     return {
       index,
       needsAdding: true,
       unreliableSourceOrder
     };
   } else {
-    //return index: null indicates don't add this because it's
-    //already present
     debug("already present, not adding");
     return {
-      index,
+      index: existingIndex,
       needsAdding: false,
       unreliableSourceOrder
     };
