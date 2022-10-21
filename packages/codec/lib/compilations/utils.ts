@@ -413,7 +413,8 @@ function getIndexToAddAt(
   //contents if not)
   const existingIndex = sources.findIndex(
     existingSource =>
-      existingSource &&
+      existingSource && //findIndex treats absent as undefined, so we need this guard
+      // (array may be sparse)
       (existingSource.sourcePath === sourceObject.sourcePath ||
         (!sourceObject.sourcePath &&
           !existingSource.sourcePath &&
