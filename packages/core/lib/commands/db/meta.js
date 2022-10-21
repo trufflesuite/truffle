@@ -22,14 +22,8 @@ module.exports = {
   },
 
   subCommands: {
-    serve: {
-      help: serveCommand.help,
-      description: serveCommand.meta
-    },
-    query: {
-      help: queryCommand.help,
-      description: queryCommand.meta
-    }
+    serve: serveCommand,
+    query: queryCommand
   },
 
   help: {
