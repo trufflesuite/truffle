@@ -1,7 +1,11 @@
+const path = require("path");
+// ***IMPORTANT**: The following line should be added to the very
+//                 beginning of your main script!
+// Add mockPlugins folder to require path so stub plugins can be found
+require("app-module-path").addPath(path.resolve(__dirname, "../mockPlugins"));
+
 const assert = require("assert");
 const sinon = require("sinon");
-const path = require("path");
-const originalRequire = eval("require");
 const runHandler = require("../../lib/commands/run/runHandler");
 
 describe("run handler", () => {
@@ -11,11 +15,6 @@ describe("run handler", () => {
     spyDone;
 
   before(() => {
-    // Add mockPlugins folder to require path so stub plugins can be found
-    originalRequire("app-module-path").addPath(
-      path.resolve(__dirname, "../mockPlugins")
-    );
-
     // plugins that don't support "truffle run stub"
     nonCommandPluginsConfig = {
       plugins: ["truffle-mock", "truffle-other-mock"],
