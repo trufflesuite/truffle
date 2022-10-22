@@ -19,8 +19,10 @@ jobs:
   yarncheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - run: npm install -g yarn
       - run: yarn install --ignore-scripts --ignore-engines
       - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
@@ -44,9 +46,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
 
