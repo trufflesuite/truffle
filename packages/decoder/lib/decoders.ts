@@ -134,6 +134,81 @@ export class ProjectDecoder {
   }
 
   /**
+   * **This function is asynchronous.**
+   *
+   * Adds compilations to the decoder after it has started.  Note it is
+   * only presently possible to do this with a `ProjectDecoder` and not
+   * with the other decoder classes.
+   *
+   * @param compilations The compilations to be added.  Take care that these
+   * have IDs distinct from those the decoder already has.
+   */
+  public async addCompilations(
+    compilations: Compilations.Compilation[]
+  ): Promise<void> {
+    this.compilations = [...this.compilations, ...compilations];
+
+    const {
+      definitions: referenceDeclarations,
+      typesByCompilation: userDefinedTypesByCompilation,
+      types: userDefinedTypes
+    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(
+      compilations
+    );
+
+    Object.assign(this.referenceDeclarations, referenceDeclarations);
+    Object.assign(
+      this.userDefinedTypesByCompilation,
+      userDefinedTypesByCompilation
+    );
+    Object.assign(this.userDefinedTypes, userDefinedTypes);
+
+    const { contexts, deployedContexts, contractsAndContexts, allocationInfo } =
+      AbiData.Allocate.Utils.collectAllocationInfo(compilations);
+    Object.assign(this.contexts, contexts);
+    Object.assign(this.deployedContexts, deployedContexts);
+    this.contractsAndContexts = [
+      ...this.contractsAndContexts,
+      ...contractsAndContexts
+    ];
+
+    let allocations: Evm.AllocationInfo;
+    allocations.abi = AbiData.Allocate.getAbiAllocations(userDefinedTypes);
+    allocations.storage = Storage.Allocate.getStorageAllocations(
+      userDefinedTypesByCompilation
+    );
+    allocations.calldata = AbiData.Allocate.getCalldataAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      allocations.abi
+    );
+    allocations.returndata = AbiData.Allocate.getReturndataAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      allocations.abi
+    );
+    allocations.eventdata = AbiData.Allocate.getEventAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      allocations.abi
+    );
+    allocations.state = Storage.Allocate.getStateAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      allocations.storage
+    );
+
+    this.allocations = Evm.Merge.mergeAllocations(
+      this.allocations,
+      allocations
+    );
+  }
+
+  /**
    * @protected
    */
   public async getCode(
