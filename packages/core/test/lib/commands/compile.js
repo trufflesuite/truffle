@@ -100,7 +100,9 @@ describe("compile", function () {
     });
 
     it("prints a list of docker tags", async function () {
-      this.timeout(20000);
+      this.timeout(
+        60000 * 2  // oh boy!
+      );
       const options = {
         list: "docker"
       };
