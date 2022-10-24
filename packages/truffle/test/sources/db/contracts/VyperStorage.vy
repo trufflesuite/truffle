@@ -1,10 +1,10 @@
 stored_data: uint256
 
-@public
+@external
 def set(new_value : uint256):
     self.stored_data = new_value
 
-@public
-@constant
+@external
+@view
 def get() -> uint256:
     return self.stored_data
