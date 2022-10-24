@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { createStyles } from "@mantine/core";
+import { Text, Code, createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { showNotification, updateNotification } from "@mantine/notifications";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import * as Codec from "@truffle/codec";
@@ -72,10 +73,35 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
         );
       setDecodingInspected(resInspected);
       setDecodingSucceeded(!failed);
+
+      const id = `decode-transaction-${lifecycle.message.payload.id}`;
+      if (failed) {
+        showNotification({
+          id,
+          title: "Cannot decode transaction",
+          message: (
+            <Text>
+              Try running&nbsp;
+              <Code color="truffle-teal">truffle compile --all</Code>
+              &nbsp;in your Truffle project.
+            </Text>
+          ),
+          autoClose: false,
+          color: "yellow"
+        });
+      } else {
+        updateNotification({
+          id,
+          title: "Transaction decoded",
+          message: "",
+          autoClose: 2000,
+          color: "truffle-teal"
+        });
+      }
     };
 
     if (isSendTransaction) decode();
-  }, [decoder, isSendTransaction, lifecycle.message.payload.params]);
+  }, [decoder, isSendTransaction, lifecycle.message.payload]);
 
   return (
     <div className={classes.container}>

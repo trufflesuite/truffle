@@ -23,7 +23,7 @@ function MantineGlobal(): JSX.Element {
   return (
     <Global
       styles={theme => {
-        const { colors, colorScheme } = theme;
+        const { colors, colorScheme, white } = theme;
         return [
           ...fonts,
           {
@@ -48,6 +48,14 @@ function MantineGlobal(): JSX.Element {
               "> svg": {
                 height: 28,
                 width: 28
+              }
+            },
+            ".mantine-Notification-root": {
+              "backgroundColor":
+                colorScheme === "dark" ? colors["dark"][4] : white,
+              "padding": "1rem 1rem 1rem 2rem",
+              ".mantine-Notification-title": {
+                fontSize: 15
               }
             }
           }
