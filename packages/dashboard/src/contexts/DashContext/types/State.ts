@@ -1,4 +1,4 @@
-import type { IDBPDatabase } from "idb";
+import type { IDBPDatabase } from "idb/with-async-ittr";
 import type { providers } from "ethers";
 import type { ProjectDecoder } from "@truffle/decoder";
 import type {

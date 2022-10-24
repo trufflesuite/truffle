@@ -1,5 +1,5 @@
 import { providers } from "ethers";
-import { openDB } from "idb";
+import { openDB } from "idb/with-async-ittr";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {

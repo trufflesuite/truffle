@@ -1,4 +1,4 @@
-import type { DBSchema } from "idb";
+import type { DBSchema } from "idb/with-async-ittr";
 import type { Compilation } from "@truffle/compile-common";
 
 export interface Schema extends DBSchema {
