@@ -2,19 +2,28 @@ const path = require("path");
 const Db = require("@truffle/db");
 const { assert } = require("chai");
 const CommandRunner = require("../commandRunner");
-const Server = require("../server");
+const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 const gql = require("graphql-tag");
-let config, project;
+let config, project, server1, server2;
 
 describe("truffle db", function () {
   before(async function () {
     this.timeout(60000);
     const projectPath = path.join(__dirname, "..", "..", "sources", "db");
     config = await sandbox.create(projectPath);
-
-    await Server.start({ port: 8545 });
-    await Server.start({ port: 9545 });
+    server1 = await Ganache.server({
+      logging: {
+        quiet: true
+      }
+    });
+    server2 = await Ganache.server({
+      logging: {
+        quiet: true
+      }
+    });
+    await server1.listen(8545);
+    await server2.listen(9545);
     await CommandRunner.run("migrate --network network1 --quiet", config);
     await CommandRunner.run("migrate --network network2 --quiet", config);
     const db = Db.connect(config.db);
@@ -27,7 +36,8 @@ describe("truffle db", function () {
   });
 
   after(async function () {
-    await Server.stop();
+    await server1.close();
+    await server2.close();
   });
 
   it("creates a project", async function () {

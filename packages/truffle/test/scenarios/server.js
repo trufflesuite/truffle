@@ -1,11 +1,13 @@
 const Ganache = require("ganache");
+const fs = require("fs-extra");
+const glob = require("glob");
+let server = null;
 
 module.exports = {
-  servers: [],
-
-  start: async function ({ port }) {
+  start: async function () {
+    await this.stop();
     if (!process.env.GETH) {
-      const server = Ganache.server({
+      server = Ganache.server({
         gasLimit: 6721975,
         logging: {
           quiet: true
@@ -14,20 +16,26 @@ module.exports = {
           instamine: "strict"
         }
       });
-      this.servers.push(server);
-      if (port) {
-        await server.listen(port);
-      } else {
-        await server.listen();
-      }
+      await server.listen(8545);
     }
   },
 
   stop: async function () {
-    if (this.servers.length > 0) {
-      for (const server of this.servers) {
-        await server.close();
-      }
+    if (server) {
+      await server.close();
+      server = null;
     }
+    await this.cleanUp();
+  },
+
+  cleanUp: function () {
+    return new Promise((resolve, reject) => {
+      glob("tmp-*", (err, files) => {
+        if (err) reject(err);
+
+        files.forEach(file => fs.removeSync(file));
+        resolve();
+      });
+    });
   }
 };
