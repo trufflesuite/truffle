@@ -1,1 +1,0 @@
-export { ArtifactsLoader } from "./artifacts";
