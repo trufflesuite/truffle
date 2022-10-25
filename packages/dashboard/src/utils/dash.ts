@@ -1,5 +1,6 @@
 import inspect from "object-inspect";
 import * as Codec from "@truffle/codec";
+import { Buffer } from "buffer";
 import type { ProjectDecoder } from "@truffle/decoder";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
