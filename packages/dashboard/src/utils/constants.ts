@@ -3,14 +3,20 @@ import chainIDtoNameJson from "src/assets/chainIDtoName.json";
 export const EMOTION_KEY = "trfl";
 export const COLOR_SCHEME_KEY = "trfl.dash.color-scheme";
 
-export const INTERACTIVE_RPC_METHODS_ARR = [
+export const DECODABLE_RPC_METHODS_ARR = [
   "eth_sendTransaction",
+  "personal_sign"
+] as const;
+export const DECODABLE_RPC_METHODS = new Set(DECODABLE_RPC_METHODS_ARR);
+export type DECODABLE_RPC_METHOD = typeof DECODABLE_RPC_METHODS_ARR[number];
+
+export const INTERACTIVE_RPC_METHODS_ARR = [
+  ...DECODABLE_RPC_METHODS_ARR,
   "eth_decrypt",
   "eth_signTypedData",
   "eth_signTypedData_v1",
   "eth_signTypedData_v3",
-  "eth_signTypedData_v4",
-  "personal_sign"
+  "eth_signTypedData_v4"
 ] as const;
 export const INTERACTIVE_RPC_METHODS = new Set(INTERACTIVE_RPC_METHODS_ARR);
 export type INTERACTIVE_RPC_METHOD = typeof INTERACTIVE_RPC_METHODS_ARR[number];

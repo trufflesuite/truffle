@@ -1,13 +1,24 @@
+import inspect from "object-inspect";
+import * as Codec from "@truffle/codec";
+import type { ProjectDecoder } from "@truffle/decoder";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
+  DECODABLE_RPC_METHODS,
   INTERACTIVE_RPC_METHODS,
   UNSUPPORTED_RPC_METHODS,
   unsupportedMessageResponse,
-  chainIDtoName,
+  chainIDtoName
+} from "src/utils/constants";
+import type {
+  DECODABLE_RPC_METHOD,
+  UNSUPPORTED_RPC_METHOD,
   knownChainID
 } from "src/utils/constants";
-import type { UNSUPPORTED_RPC_METHOD } from "src/utils/constants";
+
+export function messageIsDecodable(message: DashboardProviderMessage) {
+  return (DECODABLE_RPC_METHODS as Set<string>).has(message.payload.method);
+}
 
 export function messageNeedsInteraction(message: DashboardProviderMessage) {
   return (INTERACTIVE_RPC_METHODS as Set<string>).has(message.payload.method);
@@ -64,6 +75,50 @@ export async function confirmMessage(
     }
   }
   return payload;
+}
+
+export async function decodeMessage(
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
+  decoder: ProjectDecoder
+) {
+  const method = lifecycle.message.payload.method as DECODABLE_RPC_METHOD;
+
+  switch (method) {
+    case "eth_sendTransaction": {
+      const params = lifecycle.message.payload.params[0];
+      const result = await decoder.decodeTransaction({
+        from: params.from,
+        to: params.to || null,
+        input: params.data,
+        value: params.value,
+        blockNumber: null,
+        nonce: params.nonce,
+        gas: params.gas,
+        gasPrice: params.gasPrice
+      });
+      const resultInspected = inspect(
+        new Codec.Export.CalldataDecodingInspector(result),
+        { quoteStyle: "double" }
+      );
+      const failed =
+        /^(Created|Receiving) contract could not be identified\.$/.test(
+          resultInspected
+        );
+      return { method, result, resultInspected, failed };
+    }
+
+    case "personal_sign": {
+      const hex = lifecycle.message.payload.params[0];
+      const hexIsValid = /^0x[0-9a-f]*$/i.test(hex);
+      const utf8 = Buffer.from(hex.slice(2), "hex").toString();
+      return {
+        method,
+        result: utf8,
+        resultInspected: utf8,
+        failed: !hexIsValid
+      };
+    }
+  }
 }
 
 export function getChainNameByID(id: number) {

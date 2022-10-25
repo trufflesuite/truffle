@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Text, Code, createStyles } from "@mantine/core";
+import { createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { showNotification, updateNotification } from "@mantine/notifications";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import * as Codec from "@truffle/codec";
-import inspect from "object-inspect";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
 import Details from "src/components/composed/RPCs/RPC/Details";
 import { useDash } from "src/hooks";
+import { messageIsDecodable, decodeMessage } from "src/utils/dash";
+import { decodeNotifications } from "src/utils/notifications";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius, fn } = theme;
@@ -47,67 +47,34 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
 
   const detailsView = clicked ? "expanded" : "collapsed";
 
-  const isSendTransaction =
-    lifecycle.message.payload.method === "eth_sendTransaction";
+  const decodable = messageIsDecodable(lifecycle.message);
 
   useEffect(() => {
     const decode = async () => {
-      const params = lifecycle.message.payload.params[0];
-      const res = await decoder!.decodeTransaction({
-        from: params.from,
-        to: params.to || null,
-        input: params.data,
-        value: params.value,
-        blockNumber: null,
-        nonce: params.nonce,
-        gas: params.gas,
-        gasPrice: params.gasPrice
-      });
-      const resInspected = inspect(
-        new Codec.Export.CalldataDecodingInspector(res),
-        { quoteStyle: "double" }
+      const { method, resultInspected, failed } = await decodeMessage(
+        lifecycle,
+        decoder!
       );
-      const failed =
-        /^(Created|Receiving) contract could not be identified\.$/.test(
-          resInspected
-        );
-      setDecodingInspected(resInspected);
+
+      setDecodingInspected(resultInspected);
       setDecodingSucceeded(!failed);
 
-      const id = `decode-transaction-${lifecycle.message.payload.id}`;
+      const id = `decode-rpc-request-${lifecycle.message.payload.id}`;
       if (failed) {
-        showNotification({
-          id,
-          title: "Cannot decode transaction",
-          message: (
-            <Text>
-              Try running&nbsp;
-              <Code color="truffle-teal">truffle compile --all</Code>
-              &nbsp;in your Truffle project.
-            </Text>
-          ),
-          autoClose: false,
-          color: "yellow"
-        });
+        showNotification({ ...decodeNotifications[method]["fail"], id });
       } else {
-        updateNotification({
-          id,
-          title: "Transaction decoded",
-          message: "",
-          autoClose: 2000,
-          color: "truffle-teal"
-        });
+        updateNotification({ ...decodeNotifications[method]["success"], id });
       }
     };
 
-    if (isSendTransaction) decode();
-  }, [decoder, isSendTransaction, lifecycle.message.payload]);
+    if (decodable) decode();
+  }, [decoder, decodable, lifecycle]);
 
   return (
     <div className={classes.container}>
       <Overview
         lifecycle={lifecycle}
-        showDecoding={isSendTransaction}
+        showDecoding={decodable}
         decodingInspected={decodingInspected}
         decodingSucceeded={decodingSucceeded}
         active={
@@ -126,7 +93,7 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       />
       <Details
         lifecycle={lifecycle}
-        showDecoding={isSendTransaction}
+        showDecoding={decodable}
         decodingInspected={decodingInspected}
         decodingSucceeded={decodingSucceeded}
         view={detailsView}
