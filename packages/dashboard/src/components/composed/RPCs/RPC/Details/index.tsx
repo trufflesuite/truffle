@@ -50,7 +50,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
 type DetailsProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decodingInspected: string | undefined;
+  decodingInspected: string;
   decodingSucceeded: boolean;
   view: DetailsView;
   hoverState: HoverState;

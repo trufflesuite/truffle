@@ -78,7 +78,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
 type OverviewProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decodingInspected: string | undefined;
+  decodingInspected: string;
   decodingInspectedFallback?: string;
   decodingSucceeded: boolean;
   active: boolean;
