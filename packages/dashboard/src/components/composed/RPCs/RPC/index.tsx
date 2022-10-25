@@ -32,7 +32,7 @@ type RPCProps = {
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
-  const [decodingInspected, setDecodingInspected] = useState<string>();
+  const [decodingInspected, setDecodingInspected] = useState("");
   const [decodingSucceeded, setDecodingSucceeded] = useState(true);
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
