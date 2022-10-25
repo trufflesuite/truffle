@@ -69,7 +69,7 @@ export async function confirmMessage(
     await lifecycle.respond({ payload });
   } catch (err: any) {
     const muteErrPattern =
-      /A response has already been sent for message id.*of type "provider"./;
+      /^A response has already been sent for message id .* of type "provider"\.$/;
     if (!muteErrPattern.test(err.message)) {
       console.error(err);
     }
