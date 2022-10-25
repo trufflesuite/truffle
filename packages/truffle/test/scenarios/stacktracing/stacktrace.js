@@ -26,11 +26,11 @@ module.exports = function(deployer) {
 `;
 
 describe("Stack tracing", function () {
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
 
   before(async function () {
-    ({ config, cleanupCallback } = await sandbox.create(
+    ({ config, cleanupSandboxDir } = await sandbox.create(
       path.join(__dirname, "../../sources/init")
     ));
     config.network = "development";
@@ -57,7 +57,7 @@ describe("Stack tracing", function () {
   });
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("runs tests and produces stacktraces", async function () {

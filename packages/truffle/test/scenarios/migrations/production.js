@@ -9,13 +9,13 @@ describe("production", function () {
   describe("{ production: true, confirmations: 2 } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
-    let config, cleanupCallback, web3, networkId;
+    let config, cleanupSandboxDir, web3, networkId;
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
     before(async function () {
       this.timeout(10000);
-      ({ config, cleanupCallback } = await sandbox.create(project));
+      ({ config, cleanupSandboxDir } = await sandbox.create(project));
       config.network = "ropsten";
       config.logger = logger;
       web3 = new Web3("http://localhost:8545");
@@ -23,7 +23,7 @@ describe("production", function () {
     });
 
     after(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("auto dry-runs and honors confirmations option", async function () {

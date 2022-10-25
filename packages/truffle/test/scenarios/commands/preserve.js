@@ -5,18 +5,18 @@ const sandbox = require("../sandbox");
 const path = require("path");
 
 const logger = new MemoryLogger();
-let config, project, cleanupCallback;
+let config, project, cleanupSandboxDir;
 
 const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  ({ cleanupCallback, config } = await sandbox.load(project));
+  ({ cleanupSandboxDir, config } = await sandbox.load(project));
   config.logger = logger;
   return config;
 };
 
 describe("truffle preserve [ @standalone @>=12 ]", () => {
   afterEach(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   // These tests are basically duplicates from "truffle run", but for "truffle preserve"

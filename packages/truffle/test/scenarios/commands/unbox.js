@@ -7,7 +7,7 @@ const path = require("path");
 const Config = require("@truffle/config");
 
 describe("truffle unbox [ @standalone ]", () => {
-  let config, cleanupCallback, tempDir;
+  let config, cleanupSandboxDir, tempDir;
   const logger = new MemoryLogger();
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe("truffle unbox [ @standalone ]", () => {
   });
 
   afterEach(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run without arguments", () => {

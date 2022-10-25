@@ -12,20 +12,20 @@ describe("`truffle compile` as external", function () {
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
 
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/external_compile");
   const logger = new MemoryLogger();
 
   before(async function () {
     this.timeout(10000);
     await Server.start();
-    ({ cleanupCallback, config } = await sandbox.create(project));
+    ({ cleanupSandboxDir, config } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
   });
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("compiles", async function () {

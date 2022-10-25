@@ -5,11 +5,11 @@ const path = require("path");
 const { assert } = require("chai");
 
 describe("truffle migrate", () => {
-  let config, projectPath, cleanupCallback;
+  let config, projectPath, cleanupSandboxDir;
 
   before(async function () {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
-    ({ config, cleanupCallback } = await sandbox.create(projectPath));
+    ({ config, cleanupSandboxDir } = await sandbox.create(projectPath));
     config.network = "development";
     config.logger = {
       log: function (stuffToLog) {
@@ -21,7 +21,7 @@ describe("truffle migrate", () => {
   });
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run on the most basic truffle project", () => {

@@ -5,17 +5,17 @@ const sandbox = require("../sandbox");
 const path = require("path");
 
 const logger = new MemoryLogger();
-let config, cleanupCallback, project;
+let config, cleanupSandboxDir, project;
 
 const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  ({ config, cleanupCallback } = await sandbox.load(project));
+  ({ config, cleanupSandboxDir } = await sandbox.load(project));
   config.logger = logger;
 };
 
 describe("truffle run [ @standalone ]", () => {
   afterEach(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run without arguments", () => {

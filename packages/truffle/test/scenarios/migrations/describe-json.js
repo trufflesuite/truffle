@@ -76,12 +76,12 @@ function verifyMigrationStatuses(statuses, deployingStatusString) {
 }
 
 describe("truffle migrate --describe-json", () => {
-  let config, projectPath, cleanupCallback;
+  let config, projectPath, cleanupSandboxDir;
   let logger = new MemoryLogger();
 
   before(async function () {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
-    ({ cleanupCallback, config } = await sandbox.create(projectPath));
+    ({ cleanupSandboxDir, config } = await sandbox.create(projectPath));
     config.network = "development";
     config.logger = logger;
     await Server.start();
@@ -89,7 +89,7 @@ describe("truffle migrate --describe-json", () => {
 
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run on the most basic truffle project without --describe-json", () => {
@@ -129,13 +129,13 @@ describe("truffle migrate --describe-json", () => {
 
       before(async () => {
         projectPath = path.join(__dirname, "../../sources/migrations/init");
-        ({ config, cleanupCallback } = await sandbox.create(projectPath));
+        ({ config, cleanupSandboxDir } = await sandbox.create(projectPath));
         config.network = "development";
         config.logger = logger;
       });
 
       after(function () {
-        cleanupCallback();
+        cleanupSandboxDir();
       });
 
       it("runs the migration without throwing", async () => {

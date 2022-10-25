@@ -8,7 +8,7 @@ const sandbox = require("../sandbox");
 
 describe("Solidity Tests", function () {
   const logger = new MemoryLogger();
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
 
   /**
    * Installs a bare truffle project and deposits a solidity test target
@@ -17,7 +17,7 @@ describe("Solidity Tests", function () {
    * @param  {String}   file Solidity test target
    */
   async function initSandbox(file) {
-    ({ config, cleanupCallback } = await sandbox.create(
+    ({ config, cleanupSandboxDir } = await sandbox.create(
       path.join(__dirname, "../../sources/init")
     ));
     config.logger = logger;
@@ -40,7 +40,7 @@ describe("Solidity Tests", function () {
       await initSandbox("TestWithBalance.sol");
     });
     after(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("runs the tests and has the correct balance", function () {

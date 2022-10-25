@@ -4,18 +4,18 @@ const Server = require("../server");
 const path = require("path");
 
 describe("truffle deploy (alias for migrate)", () => {
-  let config, projectPath, cleanupCallback;
+  let config, projectPath, cleanupSandboxDir;
 
   before(async function () {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
-    ({ config, cleanupCallback } = await sandbox.create(projectPath));
+    ({ config, cleanupSandboxDir } = await sandbox.create(projectPath));
     config.network = "development";
     config.logger = { log: () => {} };
     await Server.start();
   });
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run on the most basic truffle project", () => {

@@ -5,7 +5,7 @@ const assert = require("assert");
 const sandbox = require("../sandbox");
 
 const logger = new MemoryLogger();
-let config, project, cleanupCallback;
+let config, project, cleanupSandboxDir;
 
 //prepare a helpful message to standout in CI log noise
 const formatLines = lines =>
@@ -19,13 +19,13 @@ describe("truffle develop", function () {
 
   before(async function () {
     this.timeout(10000);
-    ({ config, cleanupCallback } = await sandbox.create(project));
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
   });
 
   after(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("Globals", function () {

@@ -17,7 +17,7 @@ module.exports = {
     );
     return {
       config,
-      cleanupCallback: tempDir.removeCallback
+      cleanupSandboxDir: tempDir.removeCallback
     };
   },
 

@@ -9,7 +9,7 @@ const { connect } = require("@truffle/db");
 const gql = require("graphql-tag");
 const pascalCase = require("pascal-case");
 const Config = require("@truffle/config");
-let config, artifactPaths, initialTimes, finalTimes, output, cleanupCallback;
+let config, artifactPaths, initialTimes, finalTimes, output, cleanupSandboxDir;
 
 describe("repeated compilation of contracts with inheritance [ @standalone ]", function () {
   const mapping = {};
@@ -73,7 +73,7 @@ describe("repeated compilation of contracts with inheritance [ @standalone ]", f
 
   beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
-    ({ config, cleanupCallback } = await sandbox.create(project));
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
 
@@ -104,7 +104,7 @@ describe("repeated compilation of contracts with inheritance [ @standalone ]", f
   });
 
   afterEach(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   // -------------Inheritance Graph -----------------------------
@@ -344,7 +344,7 @@ describe("compilation with db enabled", async () => {
     this.timeout(30000);
 
     project = path.join(__dirname, "../../sources/db_enabled");
-    ({ config, cleanupCallback } = await sandbox.create(project));
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
 
     try {
       await CommandRunner.run("compile", config);
@@ -356,7 +356,7 @@ describe("compilation with db enabled", async () => {
   });
 
   afterEach(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("creates a populated .db directory when db is enabled", async function () {

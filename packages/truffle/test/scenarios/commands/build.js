@@ -6,7 +6,7 @@ const path = require("path");
 
 describe("truffle build [ @standalone ]", () => {
   const logger = new MemoryLogger();
-  let config, project, cleanupCallback;
+  let config, project, cleanupSandboxDir;
 
   describe("when there is no build script in config", () => {
     beforeEach("set up sandbox", async function () {
@@ -14,12 +14,12 @@ describe("truffle build [ @standalone ]", () => {
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
       );
-      ({ config, cleanupCallback } = await sandbox.create(project));
+      ({ config, cleanupSandboxDir } = await sandbox.create(project));
       config.logger = logger;
     });
 
     afterEach(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("should not error", async () => {
@@ -43,12 +43,12 @@ describe("truffle build [ @standalone ]", () => {
         __dirname,
         "../../sources/build/projectWithBuildScript"
       );
-      ({ config, cleanupCallback } = await sandbox.create(project));
+      ({ config, cleanupSandboxDir } = await sandbox.create(project));
       config.logger = logger;
     });
 
     afterEach(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("runs the build script", async function () {
@@ -64,12 +64,12 @@ describe("truffle build [ @standalone ]", () => {
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
       );
-      ({ config, cleanupCallback } = await sandbox.create(project));
+      ({ config, cleanupSandboxDir } = await sandbox.create(project));
       config.logger = logger;
     });
 
     afterEach(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("tells the user it shouldn't use an object", async function () {

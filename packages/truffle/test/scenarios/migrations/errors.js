@@ -6,20 +6,20 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("migration errors", function () {
-  let config, networkId, cleanupCallback;
+  let config, networkId, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/migrations/error");
   const logger = new MemoryLogger(true);
 
   before(async function () {
     this.timeout(10000);
     await Server.start();
-    ({ config, cleanupCallback } = await sandbox.create(project));
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
   });
   after(async function () {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("errors and stops", async function () {

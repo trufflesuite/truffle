@@ -7,11 +7,11 @@ const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 
 describe("Cyclic Dependencies [ @standalone ]", function () {
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
 
   before("set up sandbox", async () => {
-    ({ config, cleanupCallback } = await sandbox.create(
+    ({ config, cleanupSandboxDir } = await sandbox.create(
       path.join(__dirname, "../../sources/init")
     ));
     config.logger = logger;
@@ -39,7 +39,7 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
   });
 
   after(function () {
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("compiles cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {

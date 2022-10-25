@@ -6,7 +6,7 @@ const path = require("path");
 const assert = require("assert");
 const sandbox = require("../sandbox");
 
-let logger, config, project, compilersCacheDirectory, cleanupCallback;
+let logger, config, project, compilersCacheDirectory, cleanupSandboxDir;
 
 describe("truffle obtain", function () {
   project = path.join(__dirname, "../../sources/obtain");
@@ -18,7 +18,7 @@ describe("truffle obtain", function () {
       "node_modules"
     );
     this.timeout(10000);
-    ({ cleanupCallback, config } = await sandbox.create(project));
+    ({ cleanupSandboxDir, config } = await sandbox.create(project));
     logger = new MemoryLogger();
     config.logger = logger;
 
@@ -32,7 +32,7 @@ describe("truffle obtain", function () {
     if (fse.existsSync(compilersCacheDirectory)) {
       fse.removeSync(compilersCacheDirectory);
     }
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   it("fetches the solc version specified", async function () {

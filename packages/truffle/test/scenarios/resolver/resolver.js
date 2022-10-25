@@ -6,7 +6,7 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("Solidity Imports [ @standalone ]", function () {
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/monorepo");
   const logger = new MemoryLogger();
 
@@ -47,7 +47,7 @@ describe("Solidity Imports [ @standalone ]", function () {
   describe("success", function () {
     before(async function () {
       this.timeout(10000);
-      ({ config, cleanupCallback } = await sandbox.create(
+      ({ config, cleanupSandboxDir } = await sandbox.create(
         project,
         "truffleproject"
       ));
@@ -56,7 +56,7 @@ describe("Solidity Imports [ @standalone ]", function () {
     });
 
     after(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("resolves solidity imports located outside the working directory", async function () {
@@ -76,7 +76,7 @@ describe("Solidity Imports [ @standalone ]", function () {
   describe("failure", function () {
     before(async function () {
       this.timeout(10000);
-      ({ config, cleanupCallback } = await sandbox.create(
+      ({ config, cleanupSandboxDir } = await sandbox.create(
         project,
         "errorproject"
       ));
@@ -85,7 +85,7 @@ describe("Solidity Imports [ @standalone ]", function () {
     });
 
     after(function () {
-      cleanupCallback();
+      cleanupSandboxDir();
     });
 
     it("exposes compile error if an import is not found", async function () {

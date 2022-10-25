@@ -7,19 +7,19 @@ const sandbox = require("../sandbox");
 const tmp = require("tmp");
 
 describe("truffle debug", () => {
-  let config, cleanupCallback;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/debug");
 
   before(async () => {
-    ({ config, cleanupCallback } = await sandbox.create(project));
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     await Server.start();
   });
   after(async () => {
     await Server.stop();
-    cleanupCallback();
+    cleanupSandboxDir();
   });
 
   describe("when run with network option with a config", () => {
