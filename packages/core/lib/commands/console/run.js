@@ -20,13 +20,14 @@ module.exports = async function (options) {
 
   let config = loadConfig(options);
 
-  const consoleCommands = commands.reduce((acc, name) => {
-    return !excludedCommands.has(name)
-      ? Object.assign(acc, { [name]: commands[name] })
-      : acc;
-  }, {});
+  const allowedConsoleCommands = commands.filter(
+    cmd => !excludedCommands.has(cmd)
+  );
 
   await Environment.detect(config);
-  const c = new Console(consoleCommands, config.with({ noAliases: true }));
+  const c = new Console(
+    allowedConsoleCommands,
+    config.with({ noAliases: true })
+  );
   return await c.start();
 };

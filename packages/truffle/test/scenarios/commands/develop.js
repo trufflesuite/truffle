@@ -68,6 +68,50 @@ describe("truffle develop", function () {
     });
   });
 
+  describe("Improper truffle commands", async function () {
+    this.timeout(7000);
+
+    [
+      {
+        cmd: "console",
+        expectedError: `ℹ️ : 'console' is not allowed within Truffle REPL`
+      },
+      {
+        cmd: "CONSOLE",
+        expectedError: `ℹ️ : 'CONSOLE' is not allowed within Truffle REPL`
+      },
+      {
+        cmd: "develop",
+        expectedError: `ℹ️ : 'develop' is not allowed within Truffle REPL`
+      },
+      {
+        cmd: "alakazam",
+        expectedError: `ℹ️ : 'alakazam' is not a valid Truffle command`
+      },
+      {
+        cmd: "",
+        expectedError: `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+      }
+    ].forEach(({ cmd, expectedError }) => {
+      it(`alerts on 'truffle ${cmd}'`, async function () {
+        await CommandRunner.runInREPL({
+          inputCommands: [`truffle ${cmd}`],
+          config,
+          executableCommand: "develop",
+          displayHost: "develop"
+        });
+
+        const output = logger.contents();
+        assert(
+          output.includes(expectedError),
+          `Expected string in output: "${expectedError}"\n${formatLines(
+            output
+          )}`
+        );
+      });
+    });
+  });
+
   it("handles awaits", async function () {
     this.timeout(70000);
     const input = "await Promise.resolve(`${6*7} is probably not a prime`)";

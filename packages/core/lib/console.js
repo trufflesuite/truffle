@@ -15,19 +15,43 @@ const spawnSync = require("child_process").spawnSync;
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
+const validTruffleCommands = require("./commands/commands");
 
-const processInput = input => {
-  const inputComponents = input.trim().split(" ");
-  if (inputComponents.length === 0) return input;
+// Create an expression that returns a string when evaluated
+// by the REPL
+const makeIIFE = str => `(() => "${str}")()`;
 
-  if (inputComponents[0] === "truffle") {
-    return inputComponents.slice(1).join(" ");
+const processInput = (input, allowedCommands) => {
+  const words = input.trim().split(/\s+/);
+
+  // empty input
+  if (words.length === 0) return input;
+
+  // maybe truffle command
+  if (words[0].toLowerCase() === "truffle") {
+    const cmd = words[1];
+
+    if (cmd === undefined) {
+      return makeIIFE(
+        `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+      );
+    }
+
+    const normalizedCommand = cmd.toLowerCase();
+    if (validTruffleCommands.includes(normalizedCommand)) {
+      return allowedCommands.includes(normalizedCommand)
+        ? words.slice(1).join(" ")
+        : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
+    }
+    return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
   }
+
+  // an expression
   return input.trim();
 };
 
 class Console extends EventEmitter {
-  constructor(tasks, options) {
+  constructor(allowedCommands, options) {
     super();
     EventEmitter.call(this);
 
@@ -44,6 +68,7 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
+    this.allowedCommands = allowedCommands;
     this.options = options;
 
     this.repl = null;
@@ -330,9 +355,9 @@ class Console extends EventEmitter {
   }
 
   interpret(input, context, filename, callback) {
-    // processInput returns a sanitized string
-    const processedInput = processInput(input);
+    const processedInput = processInput(input, this.allowedCommands);
     if (
+      this.allowedCommands.includes(processedInput.split(" ")[0]) &&
       getCommand({
         inputStrings: processedInput.split(" "),
         options: {},

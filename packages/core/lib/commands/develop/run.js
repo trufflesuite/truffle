@@ -10,15 +10,15 @@ const runConsole = async (config, ganacheOptions) => {
   const { Environment } = require("@truffle/environment");
 
   const commands = require("../commands");
-
-  const consoleCommands = commands.reduce((acc, name) => {
-    return !excludedCommands.has(name)
-      ? Object.assign(acc, { [name]: commands[name] })
-      : acc;
-  }, {});
+  const allowedConsoleCommands = commands.filter(
+    cmd => !excludedCommands.has(cmd)
+  );
 
   await Environment.develop(config, ganacheOptions);
-  const c = new Console(consoleCommands, config.with({ noAliases: true }));
+  const c = new Console(
+    allowedConsoleCommands,
+    config.with({ noAliases: true })
+  );
   c.on("exit", () => process.exit());
   return await c.start();
 };
