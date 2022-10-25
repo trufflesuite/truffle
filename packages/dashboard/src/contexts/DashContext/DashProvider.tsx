@@ -127,7 +127,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         const decoder = await forProject({
           projectInfo: { commonCompilations: decoderCompilations },
           // @ts-ignore
-          provider: stateRef.current.provider
+          provider: window.ethereum
         });
         dispatch({
           type: "set-decoder",
@@ -202,7 +202,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const decoder = await forProject({
         projectInfo: { commonCompilations: decoderCompilations },
         // @ts-ignore
-        provider
+        provider: window.ethereum
       });
       dispatch({
         type: "set-decoder",
