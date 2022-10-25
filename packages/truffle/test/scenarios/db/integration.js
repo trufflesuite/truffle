@@ -1,66 +1,108 @@
 const path = require("path");
+const fs = require("fs/promises");
 const Db = require("@truffle/db");
 const { assert } = require("chai");
 const CommandRunner = require("../commandRunner");
 const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 const gql = require("graphql-tag");
-let config, project, server1, server2;
+const { Resolver } = require("@truffle/resolver");
+let config, server1, server2, run;
 
 describe("truffle db", function () {
+  // we really don't need to test this when running CI against Geth - there is
+  // also a more complex setup since it requires 2 test nets to be running
+  if (process.env.GETH) return;
+
   before(async function () {
     this.timeout(60000);
     const projectPath = path.join(__dirname, "..", "..", "sources", "db");
     config = await sandbox.create(projectPath);
-    // only start Ganache if we're not running the Geth tests
-    if (!process.env.GETH) {
-      server1 = await Ganache.server({
-        logging: {
-          quiet: true
-        }
-      });
-      server2 = await Ganache.server({
-        logging: {
-          quiet: true
-        }
-      });
-      await server1.listen(8545);
-      await server2.listen(9545);
-    }
+    server1 = await Ganache.server({
+      logging: {
+        quiet: true
+      }
+    });
+    server2 = await Ganache.server({
+      logging: {
+        quiet: true
+      }
+    });
+    await server1.listen(8545);
+    await server2.listen(9545);
     await CommandRunner.run("migrate --network network1 --quiet", config);
     await CommandRunner.run("migrate --network network2 --quiet", config);
     const db = Db.connect(config.db);
-    project = await Db.Project.initialize({
-      project: {
-        directory: config.working_directory
-      },
-      db
-    });
+    ({ run } = Db.Process.Run.forDb(db));
+    config.resolver = new Resolver(config);
   });
 
   after(async function () {
-    if (!process.env.GETH) {
-      await server1.close();
-      await server2.close();
-    }
+    await server1.close();
+    await server2.close();
   });
 
   it("creates a project", async function () {
-    const projects = await project.run(
+    const projects = await run(
       Db.Process.resources.all,
       "projects",
       gql`
-        fragment myProject on Project {
+        fragment myCoolProject on Project {
+          id
           directory
         }
       `
     );
     assert(projects.length === 1);
-    assert(projects[0].directory === config.working_directory);
+    assert.equal(
+      await fs.realpath(projects[0].directory),
+      await fs.realpath(config.working_directory)
+    );
   });
 
-  it("can retrieve saved compilations", async function () {
-    const compilations = await project.run(
+  it("retrieves contract instances by project", async function () {
+    const projectId = Db.generateId("projects", {
+      directory: await fs.realpath(config.working_directory)
+    });
+    const contractNames = ["VyperStorage", "MagicSquare", "SquareLib"];
+    const networkNames = ["network1", "network2"];
+    for (const networkName of networkNames) {
+      for (const contractName of contractNames) {
+        const project = await run(
+          Db.Process.resources.get,
+          "projects",
+          projectId,
+          // contractName and networkName is appended below just to stop
+          // warnings about not having a unique fragment name
+          gql`
+            fragment myZanyProject${contractName}${networkName} on Project {
+              contractInstance (
+                contract: {
+                  name: "${contractName}"
+                }
+                network: {
+                  name: "${networkName}"
+                }
+              ) {
+                address
+                network {
+                  networkId
+                }
+              }
+            }
+          `
+        );
+        const deployedAddress =
+          config.resolver.require(contractName)._json.networks[
+            project.contractInstance.network.networkId
+          ].address;
+        assert.equal(project.contractInstance.address, deployedAddress);
+      }
+    }
+  });
+
+  it("retrieves saved compilations", async function () {
+    const compilations = await run(
       Db.Process.resources.all,
       "compilations",
       gql`
@@ -79,7 +121,7 @@ describe("truffle db", function () {
   });
 
   it("creates contract records", async function () {
-    const contracts = await project.run(
+    const contracts = await run(
       Db.Process.resources.all,
       "contracts",
       gql`
@@ -89,11 +131,11 @@ describe("truffle db", function () {
         }
       `
     );
-    assert.equal(contracts.length, 4);
+    assert.equal(contracts.length, 3);
   });
 
   it("loads contract sources", async function () {
-    const sources = await project.run(
+    const sources = await run(
       Db.Process.resources.all,
       "sources",
       gql`
@@ -111,7 +153,7 @@ describe("truffle db", function () {
   });
 
   it("loads bytecodes", async function () {
-    const bytecodes = await project.run(
+    const bytecodes = await run(
       Db.Process.resources.all,
       "bytecodes",
       gql`
@@ -128,7 +170,7 @@ describe("truffle db", function () {
     );
     assert.equal(
       bytecodes.length,
-      8,
+      6,
       "there should be 8 bytecodes, a create bytecode and a call bytecode per contract"
     );
   });
