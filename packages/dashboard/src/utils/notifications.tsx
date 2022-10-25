@@ -1,9 +1,9 @@
 import { Text, Code } from "@mantine/core";
 import type { NotificationProps } from "@mantine/notifications";
-import type { DECODABLE_RPC_METHOD } from "src/utils/constants";
+import type { DecodableRpcMethod } from "src/utils/constants";
 
 export const decodeNotifications: Record<
-  DECODABLE_RPC_METHOD,
+  DecodableRpcMethod,
   {
     fail: NotificationProps;
     success: NotificationProps;

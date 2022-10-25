@@ -4,28 +4,28 @@ import type { ProjectDecoder } from "@truffle/decoder";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
-  DECODABLE_RPC_METHODS,
-  INTERACTIVE_RPC_METHODS,
-  UNSUPPORTED_RPC_METHODS,
+  decodableRpcMethods,
+  interactiveRpcMethods,
+  unsupportedRpcMethods,
   unsupportedMessageResponse,
   chainIDtoName
 } from "src/utils/constants";
 import type {
-  DECODABLE_RPC_METHOD,
-  UNSUPPORTED_RPC_METHOD,
+  DecodableRpcMethod,
+  UnsupportedRpcMethod,
   knownChainID
 } from "src/utils/constants";
 
 export function messageIsDecodable(message: DashboardProviderMessage) {
-  return (DECODABLE_RPC_METHODS as Set<string>).has(message.payload.method);
+  return (decodableRpcMethods as Set<string>).has(message.payload.method);
 }
 
 export function messageNeedsInteraction(message: DashboardProviderMessage) {
-  return (INTERACTIVE_RPC_METHODS as Set<string>).has(message.payload.method);
+  return (interactiveRpcMethods as Set<string>).has(message.payload.method);
 }
 
 export function messageIsUnsupported(message: DashboardProviderMessage) {
-  return (UNSUPPORTED_RPC_METHODS as Set<string>).has(message.payload.method);
+  return (unsupportedRpcMethods as Set<string>).has(message.payload.method);
 }
 
 export function rejectMessage(
@@ -37,7 +37,7 @@ export function rejectMessage(
   switch (reason) {
     case "UNSUPPORTED":
       message = unsupportedMessageResponse.get(
-        lifecycle.message.payload.method as UNSUPPORTED_RPC_METHOD
+        lifecycle.message.payload.method as UnsupportedRpcMethod
       )!;
       break;
     case "USER":
@@ -81,7 +81,7 @@ export async function decodeMessage(
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
   decoder: ProjectDecoder
 ) {
-  const method = lifecycle.message.payload.method as DECODABLE_RPC_METHOD;
+  const method = lifecycle.message.payload.method as DecodableRpcMethod;
 
   switch (method) {
     case "eth_sendTransaction": {
