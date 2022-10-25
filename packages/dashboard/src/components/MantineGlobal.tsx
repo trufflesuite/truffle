@@ -23,7 +23,7 @@ function MantineGlobal(): JSX.Element {
   return (
     <Global
       styles={theme => {
-        const { colors, colorScheme, white } = theme;
+        const { colors, colorScheme, white, fn } = theme;
         return [
           ...fonts,
           {
@@ -57,6 +57,18 @@ function MantineGlobal(): JSX.Element {
               ".mantine-Notification-title": {
                 fontSize: 15
               }
+            },
+            ".mantine-Prism-code": {
+              backgroundColor:
+                colorScheme === "dark"
+                  ? `${fn.darken(colors["truffle-brown"][9], 0.1)} !important`
+                  : `${colors["truffle-beige"][0]} !important`
+            },
+            ".mantine-Prism-lineNumber": {
+              color:
+                colorScheme === "dark"
+                  ? colors["truffle-brown"][5]
+                  : colors["truffle-beige"][5]
             }
           }
         ];
