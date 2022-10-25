@@ -6,19 +6,20 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("TestEvents and mixed sol/js testing", function () {
-  let config;
+  let config, cleanupCallback;
   const project = path.join(__dirname, "../../sources/mixed_testing");
   const logger = new MemoryLogger();
 
   before(async function () {
     this.timeout(10000);
     await Server.start();
-    config = await sandbox.create(project);
+    ({ config, cleanupCallback } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
   });
   after(async function () {
     await Server.stop();
+    cleanupCallback();
   });
 
   it("will correctly decode events as appropriate", async function () {

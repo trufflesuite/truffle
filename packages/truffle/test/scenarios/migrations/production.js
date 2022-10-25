@@ -9,19 +9,21 @@ describe("production", function () {
   describe("{ production: true, confirmations: 2 } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
-    let config;
-    let web3;
-    let networkId;
+    let config, cleanupCallback, web3, networkId;
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
     before(async function () {
       this.timeout(10000);
-      config = await sandbox.create(project);
+      ({ config, cleanupCallback } = await sandbox.create(project));
       config.network = "ropsten";
       config.logger = logger;
       web3 = new Web3("http://localhost:8545");
       networkId = await web3.eth.net.getId();
+    });
+
+    after(function () {
+      cleanupCallback();
     });
 
     it("auto dry-runs and honors confirmations option", async function () {

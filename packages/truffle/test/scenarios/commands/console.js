@@ -7,7 +7,7 @@ const sandbox = require("../sandbox");
 const tmp = require("tmp");
 
 describe("truffle console", () => {
-  let config;
+  let config, cleanupCallback;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/console");
 
@@ -15,9 +15,13 @@ describe("truffle console", () => {
   after(async () => await Server.stop());
 
   beforeEach(async () => {
-    config = await sandbox.create(project);
+    ({ config, cleanupCallback } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
+  });
+
+  afterEach(function () {
+    cleanupCallback();
   });
 
   describe("when runs with network option with a config", () => {

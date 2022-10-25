@@ -7,11 +7,13 @@ const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 
 describe("Cyclic Dependencies [ @standalone ]", function () {
-  let config;
+  let config, cleanupCallback;
   const logger = new MemoryLogger();
 
   before("set up sandbox", async () => {
-    config = await sandbox.create(path.join(__dirname, "../../sources/init"));
+    ({ config, cleanupCallback } = await sandbox.create(
+      path.join(__dirname, "../../sources/init")
+    ));
     config.logger = logger;
     config.networks = {
       development: {
@@ -34,6 +36,10 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
       path.join(__dirname, "Pong.sol"),
       path.join(config.contracts_directory, "Pong.sol")
     );
+  });
+
+  after(function () {
+    cleanupCallback();
   });
 
   it("compiles cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {

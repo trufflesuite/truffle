@@ -7,17 +7,22 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("truffle exec [ @standalone ]", function () {
-  let config;
+  let config, cleanupCallback;
   const project = path.join(__dirname, "../../sources/exec");
   const logger = new MemoryLogger();
 
   beforeEach(async function () {
     this.timeout(10000);
-    config = await sandbox.create(project);
+    ({ config, cleanupCallback } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     await Server.start();
   });
+
+  afterEach(function () {
+    cleanupCallback();
+  });
+
   after(async function () {
     await Server.stop();
   });

@@ -8,7 +8,7 @@ const fs = require("fs-extra");
 
 describe("Genesis time config for truffle test, failing tests [ @standalone ]", function () {
   const logger = new MemoryLogger();
-  let config;
+  let config, cleanupCallback;
 
   before(async function () {
     await Server.start();
@@ -24,11 +24,15 @@ describe("Genesis time config for truffle test, failing tests [ @standalone ]", 
         __dirname,
         "../../sources/genesis_time/genesis_time_invalid"
       );
-      config = await sandbox.create(project);
+      ({ config, cleanupCallback } = await sandbox.create(project));
       config.network = "test";
       config.logger = logger;
       // create test directory
       await fs.ensureDir(config.test_directory);
+    });
+
+    after(function () {
+      cleanupCallback();
     });
 
     it("runs test and output whines about invalid date", async function () {
