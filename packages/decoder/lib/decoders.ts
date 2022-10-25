@@ -172,39 +172,56 @@ export class ProjectDecoder {
       ...contractsAndContexts
     ];
 
-    let allocations: Evm.AllocationInfo;
-    allocations.abi = AbiData.Allocate.getAbiAllocations(userDefinedTypes);
-    allocations.storage = Storage.Allocate.getStorageAllocations(
+    //everything up till now has been pretty straightforward merges.
+    //but allocations are a bit more complicated.
+    //some of them can be merged straightforwardly, some can't.
+    //we'll start with the straightforward ones.
+    const abiAllocations = AbiData.Allocate.getAbiAllocations(userDefinedTypes);
+    Object.assign(this.allocations.abi, abiAllocations);
+    const storageAllocations = Storage.Allocate.getStorageAllocations(
       userDefinedTypesByCompilation
     );
-    allocations.calldata = AbiData.Allocate.getCalldataAllocations(
+    Object.assign(this.allocations.storage, storageAllocations);
+    const stateAllocations = Storage.Allocate.getStateAllocations(
       allocationInfo,
       referenceDeclarations,
       userDefinedTypes,
-      allocations.abi
+      storageAllocations //only need the ones from the new compilations
     );
-    allocations.returndata = AbiData.Allocate.getReturndataAllocations(
+    Object.assign(this.allocations.state, stateAllocations);
+
+    //now we have calldata allocations.  merging these is still mostly straightforward,
+    //but slightly less so.
+    const calldataAllocations = AbiData.Allocate.getCalldataAllocations(
       allocationInfo,
       referenceDeclarations,
       userDefinedTypes,
-      allocations.abi
+      abiAllocations //only need the ones from the new compilations
     );
-    allocations.eventdata = AbiData.Allocate.getEventAllocations(
-      allocationInfo,
-      referenceDeclarations,
-      userDefinedTypes,
-      allocations.abi
+    //merge constructor and function allocations separately
+    Object.assign(
+      this.allocations.calldata.constructorAllocations,
+      calldataAllocations.constructorAllocations
     );
-    allocations.state = Storage.Allocate.getStateAllocations(
-      allocationInfo,
-      referenceDeclarations,
-      userDefinedTypes,
-      allocations.storage
+    Object.assign(
+      this.allocations.calldata.functionAllocations,
+      calldataAllocations.functionAllocations
     );
 
-    this.allocations = Evm.Merge.mergeAllocations(
-      this.allocations,
-      allocations
+    //finally, redo the allocations for returndata and eventdata.
+    //attempting to perform a merge on these is too complicated, so we
+    //won't try; we'll just recompute.
+    this.allocations.returndata = AbiData.Allocate.getReturndataAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      this.allocations.abi //we're doing this for merged result, so use merged input!
+    );
+    this.allocations.event = AbiData.Allocate.getEventAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      this.allocations.abi //we're doing this for merged result, so use merged input!
     );
   }
 
