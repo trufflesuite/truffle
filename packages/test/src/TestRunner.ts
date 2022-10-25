@@ -11,7 +11,7 @@ import debugModule from "debug";
 const debug = debugModule("lib:testing:testrunner");
 import * as Decoder from "@truffle/decoder";
 import type { LogDecoding } from "@truffle/codec";
-import Codec from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 import OS from "os";
 import BN from "bn.js";
 
