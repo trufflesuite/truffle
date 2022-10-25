@@ -254,9 +254,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   }, [isConnected]);
 
   const operations = {
-    userConfirmMessage: async (
+    userConfirmMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
-    ) => await confirmMessage(lifecycle),
+    ) => confirmMessage(lifecycle),
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),
