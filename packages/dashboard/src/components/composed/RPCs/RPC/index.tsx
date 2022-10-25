@@ -45,8 +45,6 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     useDisclosure(false);
   const { classes } = useStyles();
 
-  const detailsView = clicked ? "expanded" : "collapsed";
-
   const decodable = messageIsDecodable(lifecycle.message);
 
   useEffect(() => {
@@ -96,7 +94,7 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
         showDecoding={decodable}
         decodingInspected={decodingInspected}
         decodingSucceeded={decodingSucceeded}
-        view={detailsView}
+        view={clicked ? "expanded" : "collapsed"}
         hoverState={{
           overviewBackHovered,
           rejectButtonHovered,
