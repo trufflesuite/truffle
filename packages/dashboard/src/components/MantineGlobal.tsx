@@ -59,16 +59,16 @@ function MantineGlobal(): JSX.Element {
               }
             },
             ".mantine-Prism-code": {
-              backgroundColor:
+              "backgroundColor":
                 colorScheme === "dark"
                   ? `${fn.darken(colors["truffle-brown"][9], 0.1)} !important`
-                  : `${colors["truffle-beige"][0]} !important`
-            },
-            ".mantine-Prism-lineNumber": {
-              color:
-                colorScheme === "dark"
-                  ? colors["truffle-brown"][5]
-                  : colors["truffle-beige"][5]
+                  : `${colors["truffle-beige"][0]} !important`,
+              ".mantine-Prism-lineNumber": {
+                color:
+                  colorScheme === "dark"
+                    ? colors["truffle-brown"][5]
+                    : colors["truffle-beige"][5]
+              }
             }
           }
         ];
