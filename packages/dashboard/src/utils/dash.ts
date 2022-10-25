@@ -49,7 +49,8 @@ export async function confirmMessage(
   const { jsonrpc, id, method, params } = lifecycle.message.payload;
   let payload: any = { jsonrpc, id };
   try {
-    const result = await provider.send(method, params);
+    // @ts-ignore
+    const result = await window.ethereum.request({ method, params });
     payload["result"] = result;
   } catch (err) {
     console.error(err);
