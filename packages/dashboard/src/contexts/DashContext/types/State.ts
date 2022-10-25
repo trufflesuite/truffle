@@ -1,5 +1,4 @@
 import type { IDBPDatabase } from "idb/with-async-ittr";
-import type { providers } from "ethers";
 import type { ProjectDecoder } from "@truffle/decoder";
 import type {
   DashboardMessageBusClient,
@@ -17,7 +16,6 @@ export interface State {
   decoderCompilationHashes: Set<
     Schema["Compilation"]["value"]["dataHash"]
   > | null;
-  provider: providers.Web3Provider;
   providerMessages: Map<
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>

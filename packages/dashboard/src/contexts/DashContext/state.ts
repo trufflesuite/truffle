@@ -1,4 +1,3 @@
-import { providers } from "ethers";
 import { openDB } from "idb/with-async-ittr";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
@@ -39,8 +38,6 @@ export const initialState: State = {
   decoder: null,
   decoderCompilations: null,
   decoderCompilationHashes: null,
-  // @ts-ignore
-  provider: new providers.Web3Provider(window.ethereum),
   providerMessages: new Map(),
   chainInfo: {
     id: null,
@@ -86,7 +83,7 @@ export const reducer = (state: State, action: Action): State => {
           newState.providerMessages.set(message.id, strictlyTypedLifecycle);
         } else {
           // Confirm supported and non-interactive messages
-          confirmMessage(strictlyTypedLifecycle, state.provider);
+          confirmMessage(strictlyTypedLifecycle);
         }
       } else if (isInvalidateMessage(message)) {
         console.debug("Received invalidate message", message);

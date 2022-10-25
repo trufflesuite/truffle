@@ -1,4 +1,3 @@
-import type { providers } from "ethers";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
@@ -43,8 +42,7 @@ export function rejectMessage(
 }
 
 export async function confirmMessage(
-  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
-  provider: providers.Web3Provider
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
 ) {
   const { jsonrpc, id, method, params } = lifecycle.message.payload;
   let payload: any = { jsonrpc, id };

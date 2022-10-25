@@ -185,7 +185,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     };
 
     const initDecoder = async () => {
-      const { dbPromise, provider } = state;
+      const { dbPromise } = state;
       const compilationStore = await (await dbPromise).getAll("Compilation");
       console.debug(`Compilation store`, compilationStore);
 
@@ -256,7 +256,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const operations = {
     userConfirmMessage: async (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
-    ) => await confirmMessage(lifecycle, state.provider),
+    ) => await confirmMessage(lifecycle),
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),
