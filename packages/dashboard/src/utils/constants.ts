@@ -5,7 +5,9 @@ export const COLOR_SCHEME_KEY = "trfl.dash.color-scheme";
 
 export const decodableRpcMethodsArr = [
   "eth_sendTransaction",
-  "personal_sign"
+  "personal_sign",
+  "eth_signTypedData_v3",
+  "eth_signTypedData_v4"
 ] as const;
 export const decodableRpcMethods = new Set(decodableRpcMethodsArr);
 export type DecodableRpcMethod = typeof decodableRpcMethodsArr[number];
@@ -14,9 +16,7 @@ export const interactiveRpcMethodsArr = [
   ...decodableRpcMethodsArr,
   "eth_decrypt",
   "eth_signTypedData",
-  "eth_signTypedData_v1",
-  "eth_signTypedData_v3",
-  "eth_signTypedData_v4"
+  "eth_signTypedData_v1"
 ] as const;
 export const interactiveRpcMethods = new Set(interactiveRpcMethodsArr);
 export type InteractiveRpcMethod = typeof interactiveRpcMethodsArr[number];

@@ -119,6 +119,22 @@ export async function decodeMessage(
         failed: !hexIsValid
       };
     }
+
+    case "eth_signTypedData_v3":
+    case "eth_signTypedData_v4":
+      let typedData = lifecycle.message.payload.params[1];
+      let failed = false;
+      try {
+        typedData = JSON.stringify(JSON.parse(typedData), null, 2);
+      } catch (err) {
+        failed = true;
+      }
+      return {
+        method,
+        result: typedData,
+        resultInspected: typedData,
+        failed
+      };
   }
 }
 
