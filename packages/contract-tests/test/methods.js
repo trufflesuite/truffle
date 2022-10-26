@@ -88,7 +88,7 @@ describe("Methods", function () {
       assert.equal(
         expectedValuePlus,
         retrievedValuePlus,
-        "should get inital value + 10"
+        "should get initial value + 10"
       );
     });
 
