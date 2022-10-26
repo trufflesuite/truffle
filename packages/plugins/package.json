@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.11",
+  "version": "0.2.12",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
