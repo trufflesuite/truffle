@@ -68,6 +68,8 @@ export class ProjectDecoder {
 
   private ensSettings: DecoderTypes.EnsSettings;
 
+  private addProjectInfoNonce: number = 0;
+
   /**
    * @protected
    */
@@ -223,6 +225,30 @@ export class ProjectDecoder {
       userDefinedTypes,
       this.allocations.abi //we're doing this for merged result, so use merged input!
     );
+  }
+
+  /**
+   * **This function is asynchronous.**
+   *
+   * Adds additional compilations to the decoder like [[addCompilations]],
+   * but allows it to be specified in more general forms.
+   *
+   * @param projectInfo Information about the additional compilations or
+   * contracts to be decoded.  This may come in several forms; see the type
+   * documentation for more information.  If passing in `{ compilations: ... }`,
+   * take care that the compilations have different IDs from others passed in
+   * so far.  If passed in in another form, an ID will be assigned automatically,
+   * which should generally avoid any collisions.
+   */
+  public async addAdditionalProjectInfo(
+    projectInfo: Compilations.ProjectInfo
+  ): Promise<void> {
+    const compilations = Compilations.Utils.infoToCompilations(
+      projectInfo,
+      `decoderAdditionalShimmedCompilationGroup(${this.addProjectInfoNonce})`
+    );
+    this.addProjectInfoNonce++;
+    await this.addCompilations(compilations);
   }
 
   /**

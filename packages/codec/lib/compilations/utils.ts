@@ -674,7 +674,8 @@ function projectInfoIsArtifacts(
 }
 
 export function infoToCompilations(
-  projectInfo: ProjectInfo | undefined
+  projectInfo: ProjectInfo | undefined,
+  nonceString?: string
 ): Compilation[] {
   if (!projectInfo) {
     throw new NoProjectInfoError();
@@ -682,8 +683,8 @@ export function infoToCompilations(
   if (projectInfoIsCodecStyle(projectInfo)) {
     return projectInfo.compilations;
   } else if (projectInfoIsCommonStyle(projectInfo)) {
-    return shimCompilations(projectInfo.commonCompilations);
+    return shimCompilations(projectInfo.commonCompilations, nonceString);
   } else if (projectInfoIsArtifacts(projectInfo)) {
-    return shimArtifacts(projectInfo.artifacts);
+    return shimArtifacts(projectInfo.artifacts, undefined, nonceString);
   }
 }
