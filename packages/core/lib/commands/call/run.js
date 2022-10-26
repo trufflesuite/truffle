@@ -38,7 +38,9 @@ module.exports = async function (options) {
   ));
 
   if (functionEntry.stateMutability !== "view") {
-    console.log("WARNING!!! The function called is not read-only");
+    console.log(
+      `WARNING!!! Not a view function\n  ABI stateMutability: ${functionEntry.stateMutability}`
+    );
   }
 
   // wrap provider for lazy EIP-1193 compatibility
@@ -58,12 +60,12 @@ module.exports = async function (options) {
       ]
     });
   } catch (error) {
-    console.log("Error: ", error.message);
+    console.log(`Error Message: ${error.message}\nError Code: ${error.code}`);
   }
 
   // Error handling for 0 returned value
   // Handles cases for more than 1 returned values
-  if (result) {
+  if (result !== null && result !== undefined) {
     const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
 
     // Alternative for ReturndataDecodingInspector, use ResultInspector for logging

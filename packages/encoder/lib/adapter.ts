@@ -151,23 +151,6 @@ export class ProviderAdapter {
         method,
         params
       });
-      /*result = await new Promise((accept, reject) => {
-        if (isEip1193Provider(this.provider)) {
-          this.provider.request({
-            method,
-            params
-          }), 
-          ((error: Error, response: JsonRPCResponse) => {
-            if (error) {
-              return reject(error);
-            }
-            if (response.error) {
-              return reject(response.error);
-            }
-            return accept(response);
-          }) as Callback<JsonRPCResponse>
-        }
-      });*/
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
