@@ -22,7 +22,12 @@ function DecodedParams({
 }: DecodedParamsProps): JSX.Element {
   const { classes } = useStyles();
 
-  const language = method === "eth_sendTransaction" ? "javascript" : "markdown";
+  const language =
+    method === "eth_sendTransaction"
+      ? "javascript"
+      : method === "eth_signTypedData_v3" || method === "eth_signTypedData_v4"
+      ? "json"
+      : "markdown";
 
   return (
     <>
