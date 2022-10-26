@@ -79,6 +79,10 @@ Please make pull requests against `develop`.
 
 There is a bit more information in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
+### Versioning
+
+The truffle package itself does not follow Semantic Versioning 2.0.0. Truffle increases its major version when there are breaking changes, the minor version sometimes, and the patch version most of the time.
+
 ### License
 
 [MIT](./LICENSE)
