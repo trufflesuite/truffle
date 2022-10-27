@@ -339,11 +339,11 @@ export const Test = {
     });
 
     const template = function (tests: (accounts: string[]) => any) {
-      this.timeout(runner.TEST_TIMEOUT);
+      this.timeout(runner.testTimeout);
 
       // @ts-ignore
       before("prepare suite", async function () {
-        this.timeout(runner.BEFORE_TIMEOUT);
+        this.timeout(runner.beforeTimeout);
         await runner.initialize();
       });
 

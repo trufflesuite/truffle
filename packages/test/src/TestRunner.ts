@@ -19,14 +19,14 @@ export class TestRunner {
   public config: Config;
   public logger: any;
   public provider: any;
-  public can_snapshot: boolean;
-  public first_snapshot: boolean;
-  public initial_snapshot: any;
+  public canSnapshot: boolean;
+  public firstSnapshot: boolean;
+  public initialSnapshot: any;
   public interfaceAdapter: ReturnType<typeof createInterfaceAdapter>;
   public decoder: null | Awaited<ReturnType<typeof Decoder.forProject>>;
   public currentTestStartBlock: null | BN;
-  public BEFORE_TIMEOUT: number;
-  public TEST_TIMEOUT: number;
+  public beforeTimeout: number;
+  public testTimeout: number;
   public disableChecks: boolean;
 
   constructor(options: Config) {
@@ -39,9 +39,9 @@ export class TestRunner {
     this.logger = options.logger || console;
     this.provider = options.provider;
 
-    this.can_snapshot = false;
-    this.first_snapshot = true;
-    this.initial_snapshot = null;
+    this.canSnapshot = false;
+    this.firstSnapshot = true;
+    this.initialSnapshot = null;
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -51,9 +51,9 @@ export class TestRunner {
     // For each test
     this.currentTestStartBlock = null;
 
-    this.BEFORE_TIMEOUT =
+    this.beforeTimeout =
       (options.mocha && options.mocha.before_timeout) || 120000;
-    this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
+    this.testTimeout = (options.mocha && options.mocha.timeout) || 300000;
   }
 
   disableChecksOnEventDecoding() {
@@ -70,17 +70,17 @@ export class TestRunner {
       includeTruffleSources: true
     });
 
-    if (this.first_snapshot) {
+    if (this.firstSnapshot) {
       debug("taking first snapshot");
       try {
-        let initial_snapshot = await this.snapshot();
-        this.can_snapshot = true;
-        this.initial_snapshot = initial_snapshot;
+        const initialSnapshot = await this.snapshot();
+        this.canSnapshot = true;
+        this.initialSnapshot = initialSnapshot;
       } catch (error) {
         debug("first snapshot failed");
         debug("Error: %O", error);
       }
-      this.first_snapshot = false;
+      this.firstSnapshot = false;
     } else {
       await this.resetState();
     }
@@ -112,10 +112,10 @@ export class TestRunner {
   }
 
   async resetState() {
-    if (this.can_snapshot) {
+    if (this.canSnapshot) {
       debug("reverting...");
-      await this.revert(this.initial_snapshot);
-      this.initial_snapshot = await this.snapshot();
+      await this.revert(this.initialSnapshot);
+      this.initialSnapshot = await this.snapshot();
     } else {
       debug("redeploying...");
       await this.deploy();

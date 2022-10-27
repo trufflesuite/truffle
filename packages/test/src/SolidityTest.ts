@@ -19,7 +19,7 @@ export const SolidityTest = {
     const self = this;
 
     const suite = new Suite(abstraction.contract_name, {});
-    suite.timeout(runner.BEFORE_TIMEOUT);
+    suite.timeout(runner.beforeTimeout);
 
     // Set up our runner's needs first.
     suite.beforeAll("prepare suite", async function () {
@@ -107,7 +107,7 @@ export const SolidityTest = {
           await checkResultForFailure(await deployed[item.name]());
         });
 
-        test.timeout(runner.TEST_TIMEOUT);
+        test.timeout(runner.testTimeout);
         suite.addTest(test);
       }
     }
