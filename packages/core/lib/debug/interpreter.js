@@ -633,7 +633,11 @@ class DebugInterpreter {
             break;
           }
         }
-        this.printer.printEvents();
+        if (this.session.view(session.status.loaded)) {
+          this.printer.printEvents();
+        } else {
+          this.printer.print("No transaction loaded to print events for.");
+        }
         break;
       case ":":
         watchExpressionAnalytics(cmdArgs);
