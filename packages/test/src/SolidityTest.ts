@@ -1,16 +1,25 @@
-const TestCase = require("mocha/lib/test.js");
-const Suite = require("mocha/lib/suite.js");
-const Deployer = require("@truffle/deployer");
-const { Compile } = require("@truffle/compile-solidity");
-const { Shims } = require("@truffle/compile-common");
-const debug = require("debug")("lib:testing:soliditytest");
+// @ts-ignore
+import TestCase from "mocha/lib/test.js";
+// @ts-ignore
+import Suite from "mocha/lib/suite.js";
+import Deployer from "@truffle/deployer";
+import { Compile } from "@truffle/compile-solidity";
+import { Shims } from "@truffle/compile-common";
+import type { Compilation, CompiledContract } from "@truffle/compile-common";
+import debugModule from "debug";
+const debug = debugModule("lib:testing:soliditytest");
 
-const SolidityTest = {
-  async define(abstraction, dependencyPaths, runner, mocha) {
+export const SolidityTest = {
+  async define(
+    abstraction: any,
+    dependencyPaths: string[],
+    runner: any,
+    mocha: any
+  ) {
     const self = this;
 
     const suite = new Suite(abstraction.contract_name, {});
-    suite.timeout(runner.BEFORE_TIMEOUT);
+    suite.timeout(runner.beforeTimeout);
 
     // Set up our runner's needs first.
     suite.beforeAll("prepare suite", async function () {
@@ -35,7 +44,7 @@ const SolidityTest = {
     });
 
     // Function that checks transaction logs to see if a test failed.
-    async function checkResultForFailure(result) {
+    async function checkResultForFailure(result: any) {
       const logs = result.receipt.rawLogs;
       for (const log of logs) {
         const decodings = await runner.decoder.decodeLog(log, {
@@ -98,7 +107,7 @@ const SolidityTest = {
           await checkResultForFailure(await deployed[item.name]());
         });
 
-        test.timeout(runner.TEST_TIMEOUT);
+        test.timeout(runner.testTimeout);
         suite.addTest(test);
       }
     }
@@ -110,7 +119,7 @@ const SolidityTest = {
     mocha.suite.addSuite(suite);
   },
 
-  async compileNewAbstractInterface(runner) {
+  async compileNewAbstractInterface(runner: any) {
     debug("compiling");
     const config = runner.config;
 
@@ -138,9 +147,12 @@ const SolidityTest = {
         quiet: true
       })
     });
-    const contracts = compilations.reduce((a, compilation) => {
-      return a.concat(compilation.contracts);
-    }, []);
+    const contracts = compilations.reduce(
+      (a: CompiledContract[], compilation: Compilation) => {
+        return a.concat(compilation.contracts);
+      },
+      []
+    );
 
     // Set network values.
     for (let contract of contracts) {
@@ -154,7 +166,11 @@ const SolidityTest = {
     debug("compiled");
   },
 
-  async deployTestDependencies(abstraction, dependencyPaths, runner) {
+  async deployTestDependencies(
+    abstraction: any,
+    dependencyPaths: string[],
+    runner: any
+  ) {
     debug("deploying %s", abstraction.contract_name);
     const deployer = new Deployer(
       runner.config.with({
@@ -222,5 +238,3 @@ const SolidityTest = {
     debug("deployed %s", abstraction.contract_name);
   }
 };
-
-module.exports = SolidityTest;

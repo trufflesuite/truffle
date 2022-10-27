@@ -1,19 +1,35 @@
-const { createInterfaceAdapter } = require("@truffle/interface-adapter");
-const web3Utils = require("web3-utils");
-const Config = require("@truffle/config");
-const Migrate = require("@truffle/migrate").default;
-const { Resolver } = require("@truffle/resolver");
-const expect = require("@truffle/expect");
-const util = require("util");
-const fs = require("fs");
-const path = require("path");
-const debug = require("debug")("lib:testing:testrunner");
-const Decoder = require("@truffle/decoder");
-const Codec = require("@truffle/codec");
-const OS = require("os");
+import { createInterfaceAdapter } from "@truffle/interface-adapter";
+import web3Utils from "web3-utils";
+import Config from "@truffle/config";
+import Migrate from "@truffle/migrate";
+import { Resolver } from "@truffle/resolver";
+import * as expect from "@truffle/expect";
+import util from "util";
+import fs from "fs";
+import path from "path";
+import debugModule from "debug";
+const debug = debugModule("lib:testing:testrunner");
+import * as Decoder from "@truffle/decoder";
+import type { LogDecoding } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
+import OS from "os";
+import BN from "bn.js";
 
-class TestRunner {
-  constructor(options = {}) {
+export class TestRunner {
+  public config: Config;
+  public logger: any;
+  public provider: any;
+  public canSnapshot: boolean;
+  public firstSnapshot: boolean;
+  public initialSnapshot: any;
+  public interfaceAdapter: ReturnType<typeof createInterfaceAdapter>;
+  public decoder: null | Awaited<ReturnType<typeof Decoder.forProject>>;
+  public currentTestStartBlock: null | BN;
+  public beforeTimeout: number;
+  public testTimeout: number;
+  public disableChecks: boolean;
+
+  constructor(options: Config) {
     expect.options(options, [
       "resolver",
       "provider",
@@ -23,9 +39,9 @@ class TestRunner {
     this.logger = options.logger || console;
     this.provider = options.provider;
 
-    this.can_snapshot = false;
-    this.first_snapshot = true;
-    this.initial_snapshot = null;
+    this.canSnapshot = false;
+    this.firstSnapshot = true;
+    this.initialSnapshot = null;
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -35,9 +51,9 @@ class TestRunner {
     // For each test
     this.currentTestStartBlock = null;
 
-    this.BEFORE_TIMEOUT =
+    this.beforeTimeout =
       (options.mocha && options.mocha.before_timeout) || 120000;
-    this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
+    this.testTimeout = (options.mocha && options.mocha.timeout) || 300000;
   }
 
   disableChecksOnEventDecoding() {
@@ -54,17 +70,17 @@ class TestRunner {
       includeTruffleSources: true
     });
 
-    if (this.first_snapshot) {
+    if (this.firstSnapshot) {
       debug("taking first snapshot");
       try {
-        let initial_snapshot = await this.snapshot();
-        this.can_snapshot = true;
-        this.initial_snapshot = initial_snapshot;
+        const initialSnapshot = await this.snapshot();
+        this.canSnapshot = true;
+        this.initialSnapshot = initialSnapshot;
       } catch (error) {
         debug("first snapshot failed");
         debug("Error: %O", error);
       }
-      this.first_snapshot = false;
+      this.firstSnapshot = false;
     } else {
       await this.resetState();
     }
@@ -96,10 +112,10 @@ class TestRunner {
   }
 
   async resetState() {
-    if (this.can_snapshot) {
+    if (this.canSnapshot) {
       debug("reverting...");
-      await this.revert(this.initial_snapshot);
-      this.initial_snapshot = await this.snapshot();
+      await this.revert(this.initialSnapshot);
+      this.initialSnapshot = await this.snapshot();
     } else {
       debug("redeploying...");
       await this.deploy();
@@ -107,32 +123,43 @@ class TestRunner {
   }
 
   async startTest() {
-    let blockNumber = await this.interfaceAdapter.getBlockNumber();
-    let one = web3Utils.toBN(1);
-    blockNumber = web3Utils.toBN(blockNumber);
+    const blockNumber = web3Utils.toBN(
+      await this.interfaceAdapter.getBlockNumber()
+    );
+    const one = web3Utils.toBN(1);
 
     // Add one in base 10
     this.currentTestStartBlock = blockNumber.add(one);
   }
 
-  async endTest(mocha) {
+  async endTest(mocha: any) {
     // Skip logging if test passes and `show-events` option is not true
     if (mocha.currentTest.state !== "failed" && !this.config["show-events"]) {
       return;
     }
 
-    function indent(input, indentation, initialPrefix = "") {
+    function indent(
+      input: string,
+      indentation: number,
+      initialPrefix: string = ""
+    ) {
       const unindented = input.split(/\r?\n/);
       return unindented
         .map((line, index) =>
           index === 0
-            ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
+            ? initialPrefix +
+              " ".repeat(indentation - initialPrefix.length) +
+              line
             : " ".repeat(indentation) + line
         )
         .join(OS.EOL);
     }
 
-    function printEvent(decoding, indentation = 0, initialPrefix = "") {
+    function printEvent(
+      decoding: LogDecoding,
+      indentation = 0,
+      initialPrefix = ""
+    ) {
       debug("raw event: %O", decoding);
       const inspected = util.inspect(
         new Codec.Export.LogDecodingInspector(decoding),
@@ -146,7 +173,17 @@ class TestRunner {
       return indent(inspected, indentation, initialPrefix);
     }
 
-    const logs = await this.decoder.events({
+    if (this.decoder === null) {
+      throw new Error("Decoder has not yet been initialized.");
+    }
+    if (this.currentTestStartBlock === null) {
+      throw new Error(
+        "`currentTestStartBlock` has not been initialized. You must " +
+          "call `startTest` before calling `endTest`."
+      );
+    }
+
+    const logs: Decoder.DecodedLog[] = await this.decoder.events({
       //NOTE: block numbers shouldn't be over 2^53 so this
       //should be fine, but should change this once decoder
       //accepts more general types for blocks
@@ -155,7 +192,7 @@ class TestRunner {
       disableChecks: this.disableChecks //for Solidity testing
     });
 
-    const userDefinedEventLogs = logs.filter(log => {
+    const userDefinedEventLogs: Decoder.DecodedLog[] = logs.filter(log => {
       return log.decodings.every(decoding => decoding.abi.name !== "TestEvent");
     });
 
@@ -194,11 +231,11 @@ class TestRunner {
     return (await this.rpc("evm_snapshot")).result;
   }
 
-  async revert(snapshot_id) {
+  async revert(snapshot_id: number) {
     await this.rpc("evm_revert", [snapshot_id]);
   }
 
-  async rpc(method, arg) {
+  async rpc(method: string, arg?: any) {
     let request = {
       jsonrpc: "2.0",
       method: method,
@@ -215,5 +252,3 @@ class TestRunner {
     return result;
   }
 }
-
-module.exports = TestRunner;

@@ -6987,6 +6987,14 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
+"@truffle/compile-common@^0.8.1":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@truffle/compile-common/-/compile-common-0.8.1.tgz#a3fe500edb880a3104324c9885bbd27b6ce05c54"
+  integrity sha512-7mzzG9Cfrn+fDT5Sqi7B6pccvIIV5w/GM8/56YgnjysbDzy5aZ6mv0fe37ZbcznEVQ35NJjBy+lEr/ozOGXwQA==
+  dependencies:
+    "@truffle/error" "^0.1.1"
+    colors "1.4.0"
+
 "@trufflesuite/bigint-buffer@1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.10.tgz#a1d9ca22d3cad1a138b78baaf15543637a3e1692"

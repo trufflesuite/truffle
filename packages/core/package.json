@@ -52,6 +52,7 @@
     "@truffle/resolver": "^9.0.20",
     "@truffle/source-fetcher": "^1.0.20",
     "@truffle/spinners": "^0.2.2",
+    "@truffle/test": "^0.1.0-0",
     "@truffle/workflow-compile": "^4.0.38",
     "address": "^1.1.2",
     "chai": "^4.2.0",

@@ -1,30 +1,51 @@
-const colors = require("colors");
-const chai = require("chai");
-const path = require("path");
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
-const Config = require("@truffle/config");
-const WorkflowCompile = require("@truffle/workflow-compile").default;
-const { Resolver } = require("@truffle/resolver");
-const TestRunner = require("./TestRunner");
-const SolidityTest = require("./SolidityTest");
-const RangeUtils = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");
-const expect = require("@truffle/expect");
-const { Profiler } = require("@truffle/compile-solidity/dist/profiler");
-const Migrate = require("@truffle/migrate").default;
-const originalrequire = require("original-require");
-const Codec = require("@truffle/codec");
-const debug = require("debug")("lib:test");
-const Debugger = require("@truffle/debugger");
+import colors from "colors";
+import chai from "chai";
+import path = require("path");
+import { Web3Shim, createInterfaceAdapter } from "@truffle/interface-adapter";
+import Config from "@truffle/config";
+import WorkflowCompile from "@truffle/workflow-compile";
+import { Resolver } from "@truffle/resolver";
+import { TestRunner } from "./TestRunner";
+import { SolidityTest } from "./SolidityTest";
+import RangeUtils from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
+import * as expect from "@truffle/expect";
+import Migrate from "@truffle/migrate";
+import { Profiler } from "@truffle/compile-solidity/dist/profiler";
+import originalrequire from "original-require";
+import * as Codec from "@truffle/codec";
+import debugModule from "debug";
+const debug = debugModule("lib:test");
+import Debugger from "@truffle/debugger";
+import type { Compilation, CompiledContract } from "@truffle/compile-common";
+import Web3 from "web3";
 
-let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
+let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 
-chai.use(require("./assertions"));
+chai.use(require("./assertions").default);
 
-const Test = {
-  run: async function (options) {
+type CreateInTestDebugFunction = (options: {
+  mochaRunner: any;
+  config: Config;
+  compilations: Compilation[];
+}) => (operation: any) => any;
+
+interface SetJSTestGlobalsInterface {
+  config: Config;
+  web3: Web3;
+  interfaceAdapter: ReturnType<typeof createInterfaceAdapter>;
+  accounts: string[];
+  testResolver: Resolver;
+  runner: any;
+  compilations: Compilation[];
+  bugger: Debugger; //for stacktracing
+  createInTestDebugFunction: CreateInTestDebugFunction;
+}
+
+export const Test = {
+  run: async function (
+    options: Config,
+    createInTestDebugFunction: CreateInTestDebugFunction
+  ) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -37,7 +58,7 @@ const Test = {
 
     const config = Config.default().merge(options);
 
-    config.test_files = config.test_files.map(testFile => {
+    config.test_files = config.test_files.map((testFile: string) => {
       return path.resolve(testFile);
     });
 
@@ -59,7 +80,7 @@ const Test = {
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     const warn = config.logger.warn;
-    config.logger.warn = function (message) {
+    config.logger.warn = function (message: string) {
       if (message === "cannot find event for log") {
         return;
       } else {
@@ -69,17 +90,17 @@ const Test = {
 
     const mocha = this.createMocha(config);
 
-    const jsTests = config.test_files.filter(file => {
+    const jsTests = config.test_files.filter((file: string) => {
       return path.extname(file) !== ".sol";
     });
 
-    const solTests = config.test_files.filter(file => {
+    const solTests = config.test_files.filter((file: string) => {
       return path.extname(file) === ".sol";
     });
 
     // Add Javascript tests because there's nothing we need to do with them.
     // Solidity tests will be handled later.
-    jsTests.forEach(file => {
+    jsTests.forEach((file: string) => {
       // There's an idiosyncracy in Mocha where the same file can't be run twice
       // unless we delete the `require` cache.
       // https://github.com/mochajs/mocha/issues/995
@@ -100,7 +121,7 @@ const Test = {
       testResolver
     );
 
-    const testContracts = solTests.map(testFilePath => {
+    const testContracts = solTests.map((testFilePath: string) => {
       return testResolver.require(testFilePath);
     });
 
@@ -116,7 +137,9 @@ const Test = {
 
     const sourcePaths = []
       .concat(
-        ...compilations.map(compilation => compilation.sourceIndexes) //we don't need the indices here, just the paths
+        ...compilations.map(
+          (compilation: Compilation) => compilation.sourceIndexes
+        ) //we don't need the indices here, just the paths
       )
       .filter(path => path); //make sure we don't pass in any undefined
 
@@ -144,7 +167,8 @@ const Test = {
       testResolver,
       runner,
       compilations: debuggerCompilations,
-      bugger
+      bugger,
+      createInTestDebugFunction
     });
 
     // Finally, run mocha.
@@ -153,14 +177,14 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      this.mochaRunner = mocha.run(failures => {
+      this.mochaRunner = mocha.run((failures: number) => {
         config.logger.warn = warn;
         resolve(failures);
       });
     });
   },
 
-  createMocha: function (config) {
+  createMocha: function (config: Config) {
     // Allow people to specify config.mocha in their config.
     const mochaConfig = config.mocha || {};
 
@@ -187,14 +211,16 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function (interfaceAdapter) {
+  getAccounts: function (
+    interfaceAdapter: ReturnType<typeof createInterfaceAdapter>
+  ) {
     return interfaceAdapter.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: async function (
-    solidityTestFiles,
-    config,
-    testResolver
+    solidityTestFiles: string[],
+    config: Config,
+    testResolver: Resolver
   ) {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
@@ -245,7 +271,7 @@ const Test = {
     };
   },
 
-  performInitialDeploy: function (config, resolver) {
+  performInitialDeploy: function (config: Config, resolver: Resolver) {
     const migrateConfig = config.with({
       reset: true,
       resolver: resolver,
@@ -254,7 +280,12 @@ const Test = {
     return Migrate.run(migrateConfig);
   },
 
-  defineSolidityTests: async (mocha, contracts, dependencyPaths, runner) => {
+  defineSolidityTests: async (
+    mocha: any,
+    contracts: CompiledContract[],
+    dependencyPaths: string[],
+    runner: any
+  ) => {
     for (const contract of contracts) {
       await SolidityTest.define(contract, dependencyPaths, runner, mocha);
       debug("defined solidity tests for %s", contract.contractName);
@@ -269,14 +300,20 @@ const Test = {
     testResolver,
     runner,
     compilations,
-    bugger //for stacktracing
-  }) {
+    bugger, //for stacktracing
+    createInTestDebugFunction
+  }: SetJSTestGlobalsInterface) {
+    // @ts-ignore
     global.interfaceAdapter = interfaceAdapter;
+    // @ts-ignore
     global.web3 = web3;
+    // @ts-ignore
     global.assert = chai.assert;
+    // @ts-ignore
     global.expect = chai.expect;
+    // @ts-ignore
     global.artifacts = {
-      require: importPath => {
+      require: (importPath: string) => {
         let contract = testResolver.require(importPath);
         //HACK: both of the following should go by means
         //of the provisioner, but I'm not sure how to make
@@ -291,41 +328,31 @@ const Test = {
         return contract;
       }
     };
+    // @ts-ignore
     global.config = config.normalize(config);
 
-    global[config.debugGlobal] = async operation => {
-      if (!config.debug) {
-        config.logger.log(
-          `${colors.bold(
-            "Warning:"
-          )} Invoked in-test debugger without --debug flag. ` +
-            `Try: \`truffle test --debug\``
-        );
-        return operation;
-      }
+    // @ts-ignore
+    global[config.debugGlobal] = createInTestDebugFunction({
+      compilations,
+      mochaRunner: this.mochaRunner,
+      config
+    });
 
-      // wrapped inside function so as not to load debugger on every test
-      const { CLIDebugHook } = require("../debug/mocha");
+    const template = function (tests: (accounts: string[]) => any) {
+      this.timeout(runner.testTimeout);
 
-      // note: this.mochaRunner will be available by the time debug()
-      // is invoked
-      const hook = new CLIDebugHook(config, compilations, this.mochaRunner);
-
-      return await hook.debug(operation);
-    };
-
-    const template = function (tests) {
-      this.timeout(runner.TEST_TIMEOUT);
-
+      // @ts-ignore
       before("prepare suite", async function () {
-        this.timeout(runner.BEFORE_TIMEOUT);
+        this.timeout(runner.beforeTimeout);
         await runner.initialize();
       });
 
+      // @ts-ignore
       beforeEach("before test", async function () {
         await runner.startTest();
       });
 
+      // @ts-ignore
       afterEach("after test", async function () {
         await runner.endTest(this);
       });
@@ -333,18 +360,21 @@ const Test = {
       tests(accounts);
     };
 
+    // @ts-ignore
     global.contract = function (name, tests) {
       Mocha.describe("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
+    // @ts-ignore
     global.contract.only = function (name, tests) {
       Mocha.describe.only("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
+    // @ts-ignore
     global.contract.skip = function (name, tests) {
       Mocha.describe.skip("Contract: " + name, function () {
         template.bind(this, tests)();
@@ -352,5 +382,3 @@ const Test = {
     };
   }
 };
-
-module.exports = Test;
