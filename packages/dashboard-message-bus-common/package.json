@@ -29,7 +29,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.8.1"
+    "@truffle/compile-common": "^0.9.0"
   },
   "devDependencies": {
     "@types/node": "~12.12.0",
