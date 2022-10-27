@@ -167,7 +167,9 @@ export class ProjectDecoder {
 
     const { contexts, deployedContexts, contractsAndContexts, allocationInfo } =
       AbiData.Allocate.Utils.collectAllocationInfo(compilations);
-    Object.assign(this.contexts, contexts);
+    this.contexts = Object.assign(contexts, this.contexts); //HACK: we want to
+    //prioritize new contexts over old contexts, so we do this.  a proper timestamp
+    //system would be better, but this should hopefully do for now.
     Object.assign(this.deployedContexts, deployedContexts);
     this.contractsAndContexts = [
       ...this.contractsAndContexts,
