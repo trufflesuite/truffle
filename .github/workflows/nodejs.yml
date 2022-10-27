@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 19.x]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
@@ -45,7 +45,8 @@ jobs:
 
     - run: npm install -g yarn
 
-    - run: yarn bootstrap
+      # TODO: this will have to be removed before merging
+    - run: yarn bootstrap --ignore-engines
     - run: test -z "$(git diff)" || (echo 'Did you check in a generated file to source control?  Please remove it if so'; false)
     
     - run: yarn depcheck
