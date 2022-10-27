@@ -619,6 +619,22 @@ class DebugInterpreter {
           await this.printer.printReturnValue();
         }
         break;
+      case "e":
+        if (cmdArgs) {
+          const eventsCount = parseInt(cmdArgs);
+          if (!isNaN(eventsCount) && eventsCount > 0) {
+            this.printer.eventsCount = eventsCount;
+          } else if (cmdArgs === "all") {
+            this.printer.eventsCount = Infinity;
+          } else {
+            this.printer.print(
+              'Invalid event count given, must be positive integer or "all"'
+            );
+            break;
+          }
+        }
+        this.printer.printEvents();
+        break;
       case ":":
         watchExpressionAnalytics(cmdArgs);
         this.printer.evalAndPrintExpression(cmdArgs);
@@ -763,7 +779,8 @@ class DebugInterpreter {
       cmd !== "g" &&
       cmd !== "G" &&
       cmd !== "s" &&
-      cmd !== "y"
+      cmd !== "y" &&
+      cmd !== "e"
     ) {
       this.lastCommand = cmd;
     }
