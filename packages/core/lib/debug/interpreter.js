@@ -761,27 +761,8 @@ class DebugInterpreter {
         this.printer.printHelp(this.lastCommand);
     }
 
-    if (
-      cmd !== "b" &&
-      cmd !== "B" &&
-      cmd !== "v" &&
-      cmd !== "h" &&
-      cmd !== "p" &&
-      cmd !== "l" &&
-      cmd !== "?" &&
-      cmd !== "!" &&
-      cmd !== ":" &&
-      cmd !== "+" &&
-      cmd !== "r" &&
-      cmd !== "-" &&
-      cmd !== "t" &&
-      cmd !== "T" &&
-      cmd !== "g" &&
-      cmd !== "G" &&
-      cmd !== "s" &&
-      cmd !== "y" &&
-      cmd !== "e"
-    ) {
+    const nonRepeatableCommands = "bBvhpl?!:+r-tTgGsye";
+    if (!nonRepeatableCommands.includes(cmd)) {
       this.lastCommand = cmd;
     }
   }
