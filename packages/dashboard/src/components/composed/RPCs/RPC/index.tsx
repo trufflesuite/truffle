@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { showNotification, updateNotification } from "@mantine/notifications";
+import {
+  showNotification,
+  updateNotification,
+  hideNotification
+} from "@mantine/notifications";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
@@ -48,6 +52,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
   const decodable = messageIsDecodable(lifecycle.message);
 
   useEffect(() => {
+    const id = `decode-rpc-request-${lifecycle.message.payload.id}`;
+
     const decode = async () => {
       const { method, resultInspected, failed } = await decodeMessage(
         lifecycle,
@@ -57,7 +63,6 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       setDecodingInspected(resultInspected);
       setDecodingSucceeded(!failed);
 
-      const id = `decode-rpc-request-${lifecycle.message.payload.id}`;
       if (failed) {
         showNotification({ ...decodeNotifications[method]["fail"], id });
       } else {
@@ -66,6 +71,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     };
 
     if (decodable) decode();
+
+    return () => void hideNotification(id);
   }, [decoder, decodable, lifecycle]);
 
   return (
