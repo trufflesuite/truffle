@@ -76,9 +76,12 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     };
 
     if (decodable) decode();
-  }, [decoder, decodable, lifecycle]);
+  }, [lifecycle, decoder, decodable, decodeNotificationId]);
 
-  useEffect(() => () => void hideNotification(decodeNotificationId), []);
+  useEffect(
+    () => () => void hideNotification(decodeNotificationId),
+    [decodeNotificationId]
+  );
 
   return (
     <div className={classes.container}>
