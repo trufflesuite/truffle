@@ -210,10 +210,14 @@ var SourceMapUtils = {
         .map(instruction => {
           debug("instruction %O", instruction);
           const sourceIndex = instruction.file;
-          //first off, a special case: if the file is -1, check for designated
+          const findOverlappingRange = overlapFunctions[sourceIndex];
+          const ast = asts[sourceIndex];
+          //first off, if we can't get the AST, check for designated
           //invalid and if it's not that give up
-          //(designated invalid gets file -1 in some Solidity versions)
-          if (sourceIndex === -1) {
+          //(note that being unable to get the AST includes the case
+          //of source index -1; designated invalid has source index
+          //-1 in some Solidity versions)
+          if (!ast) {
             if (
               SourceMapUtils.isDesignatedInvalid(
                 instructions,
@@ -231,13 +235,6 @@ var SourceMapUtils = {
               //not designated invalid, filter it out
               return {};
             }
-          }
-          //now we proceed with the normal case
-          const findOverlappingRange = overlapFunctions[sourceIndex];
-          const ast = asts[sourceIndex];
-          if (!ast) {
-            //if we can't get the ast... filter it out I guess
-            return {};
           }
           const range = SourceMapUtils.getSourceRange(instruction);
           let { node, pointer } = SourceMapUtils.findRange(
