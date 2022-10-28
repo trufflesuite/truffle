@@ -5,19 +5,15 @@ const sandbox = require("../sandbox");
 const path = require("path");
 
 const logger = new MemoryLogger();
-let config, cleanupSandboxDir, project;
+let config, project;
 
 const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  ({ config, cleanupSandboxDir } = await sandbox.load(project));
+  config = await sandbox.load(project);
   config.logger = logger;
 };
 
 describe("truffle run [ @standalone ]", () => {
-  afterEach(function () {
-    cleanupSandboxDir();
-  });
-
   describe("when run without arguments", () => {
     beforeEach(async function () {
       return await loadSandboxLogger("../../sources/run/mockProjectWithPlugin");

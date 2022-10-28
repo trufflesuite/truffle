@@ -5,20 +5,16 @@ const sandbox = require("../sandbox");
 const path = require("path");
 
 const logger = new MemoryLogger();
-let config, project, cleanupSandboxDir;
+let config, project;
 
 const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  ({ cleanupSandboxDir, config } = await sandbox.load(project));
+  config = await sandbox.load(project);
   config.logger = logger;
   return config;
 };
 
 describe("truffle preserve [ @standalone @>=12 ]", () => {
-  afterEach(function () {
-    cleanupSandboxDir();
-  });
-
   // These tests are basically duplicates from "truffle run", but for "truffle preserve"
   describe("plugin error handling", () => {
     it("throws when plugins are configured but not installed", async () => {
