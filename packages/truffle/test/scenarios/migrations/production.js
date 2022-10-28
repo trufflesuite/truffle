@@ -62,19 +62,21 @@ describe("production", function () {
   describe("{ production: true, skipDryRun: true } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
-    let config;
-    let web3;
-    let networkId;
+    let config, cleanupSandboxDir, web3, networkId;
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
     before(async function () {
       this.timeout(10000);
-      config = await sandbox.create(project);
+      ({ config, cleanupSandboxDir } = await sandbox.create(project));
       config.network = "fakeRopsten";
       config.logger = logger;
       web3 = new Web3("http://localhost:8545");
       networkId = await web3.eth.net.getId();
+    });
+
+    after(function () {
+      cleanupSandboxDir();
     });
 
     it("migrates without dry-run", async function () {
