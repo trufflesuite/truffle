@@ -5,7 +5,7 @@ function notice(text: string) {
 }
 
 async function startServers() {
-  notice("Press q / Q to exit\nStarting servers...");
+  notice("Press ^C or Q to exit\nStarting servers...");
 
   const { commands, result } = concurrently(
     [
@@ -30,7 +30,10 @@ async function startServers() {
 
   process.stdin.setRawMode(true);
   process.stdin.on("data", async data => {
-    if (/^q$/i.test(data.toString().trim())) {
+    const isControlC = data.equals(Buffer.from("\x03"));
+    const isQ = /^q$/i.test(data.toString().trim());
+
+    if (isControlC || isQ) {
       notice("Stopping servers...");
       kill();
       try {
