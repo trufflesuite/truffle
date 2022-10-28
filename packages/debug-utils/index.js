@@ -34,59 +34,61 @@ const verbosePanicTable = {
 };
 
 const commandReference = {
-  o: "step over",
-  i: "step line / step into",
-  u: "step out",
-  n: "step next",
+  "o": "step over",
+  "i": "step line / step into",
+  "u": "step out",
+  "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  p: "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
-  l: "print additional source context (`l [+<lines-ahead>] [-<lines-back>]`)",
-  h: "print this help",
-  v: "print variables and values (`v [bui|glo|con|loc]*`)",
+  "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
+  "l": "print additional source context (`l [+<lines-ahead>] [-<lines-back>]`)",
+  "h": "print this help",
+  "v": "print variables and values (`v [bui|glo|con|loc]*`)",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  b: "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
-  B: "remove breakpoint (similar to adding, or `B all` to remove all)",
-  c: "continue until breakpoint",
-  q: "quit",
-  r: "reset",
-  t: "load new transaction",
-  T: "unload transaction",
-  s: "print stacktrace",
-  g: "turn on generated sources",
-  G: "turn off generated sources except via `;`",
-  y: "(if at end) reset & continue to final error",
-  Y: "reset & continue to previous error"
+  "b": "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
+  "c": "continue until breakpoint",
+  "q": "quit",
+  "r": "reset",
+  "t": "load new transaction",
+  "T": "unload transaction",
+  "s": "print stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources except via `;`",
+  "y": "(if at end) reset & continue to final error",
+  "Y": "reset & continue to previous error",
+  "e": "Print recent events (`e [<number>|all]`)"
 };
 
 const shortCommandReference = {
-  o: "step over",
-  i: "step into",
-  u: "step out",
-  n: "step next",
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
   ";": "step instruction",
-  p: "print state",
-  l: "print context",
-  h: "print help",
-  v: "print variables",
+  "p": "print state",
+  "l": "print context",
+  "h": "print help",
+  "v": "print variables",
   ":": "evaluate",
   "+": "add watch",
   "-": "remove watch",
   "?": "list watches & breakpoints",
-  b: "add breakpoint",
-  B: "remove breakpoint",
-  c: "continue",
-  q: "quit",
-  r: "reset",
-  t: "load",
-  T: "unload",
-  s: "stacktrace",
-  g: "turn on generated sources",
-  G: "turn off generated sources",
-  y: "reset & go to final error",
-  Y: "reset & go to previous error"
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
+  "c": "continue",
+  "q": "quit",
+  "r": "reset",
+  "t": "load",
+  "T": "unload",
+  "s": "stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources",
+  "y": "reset & go to final error",
+  "Y": "reset & go to previous error",
+  "e": "print event log"
 };
 
 const truffleColors = {
@@ -107,69 +109,69 @@ const DEFAULT_TAB_WIDTH = 8;
 
 const trufflePalette = {
   /* base (chromafi special, not hljs) */
-  base: chalk,
-  lineNumbers: chalk,
-  trailingSpace: chalk,
+  "base": chalk,
+  "lineNumbers": chalk,
+  "trailingSpace": chalk,
   /* classes hljs-solidity actually uses */
-  keyword: truffleColors.mint,
-  number: truffleColors.red,
-  string: truffleColors.green,
-  params: truffleColors.pink,
-  builtIn: truffleColors.watermelon,
-  built_in: truffleColors.watermelon, //just to be sure
-  literal: truffleColors.watermelon,
-  function: truffleColors.orange,
-  title: truffleColors.orange,
-  class: truffleColors.orange,
-  comment: truffleColors.comment,
-  doctag: truffleColors.comment,
-  operator: truffleColors.blue,
-  punctuation: truffleColors.purple,
+  "keyword": truffleColors.mint,
+  "number": truffleColors.red,
+  "string": truffleColors.green,
+  "params": truffleColors.pink,
+  "builtIn": truffleColors.watermelon,
+  "built_in": truffleColors.watermelon, //just to be sure
+  "literal": truffleColors.watermelon,
+  "function": truffleColors.orange,
+  "title": truffleColors.orange,
+  "class": truffleColors.orange,
+  "comment": truffleColors.comment,
+  "doctag": truffleColors.comment,
+  "operator": truffleColors.blue,
+  "punctuation": truffleColors.purple,
   /* classes it might soon use! */
-  meta: truffleColors.pink,
-  metaString: truffleColors.green,
+  "meta": truffleColors.pink,
+  "metaString": truffleColors.green,
   "meta-string": truffleColors.green, //similar
   /* classes it doesn't currently use but notionally could */
-  type: truffleColors.orange,
-  symbol: truffleColors.orange,
-  metaKeyword: truffleColors.mint,
+  "type": truffleColors.orange,
+  "symbol": truffleColors.orange,
+  "metaKeyword": truffleColors.mint,
   "meta-keyword": truffleColors.mint, //again, to be sure
-  property: chalk, //not putting any highlighting here for now
+  "property": chalk, //not putting any highlighting here for now
   /* classes that don't make sense for Solidity */
-  regexp: chalk, //solidity does not have regexps
-  subst: chalk, //or string interpolation
-  name: chalk, //or s-expressions
-  builtInName: chalk, //or s-expressions, again
+  "regexp": chalk, //solidity does not have regexps
+  "subst": chalk, //or string interpolation
+  "name": chalk, //or s-expressions
+  "builtInName": chalk, //or s-expressions, again
   "builtin-name": chalk, //just to be sure
   /* classes for config, markup, CSS, templates, diffs (not programming) */
-  section: chalk,
-  tag: chalk,
-  attr: chalk,
-  attribute: chalk,
-  variable: chalk,
-  bullet: chalk,
-  code: chalk,
-  emphasis: chalk,
-  strong: chalk,
-  formula: chalk,
-  link: chalk,
-  quote: chalk,
-  selectorAttr: chalk, //lotta redundancy follows
+  "section": chalk,
+  "tag": chalk,
+  "attr": chalk,
+  "attribute": chalk,
+  "variable": chalk,
+  "bullet": chalk,
+  "code": chalk,
+  "emphasis": chalk,
+  "strong": chalk,
+  "formula": chalk,
+  "link": chalk,
+  "quote": chalk,
+  "selectorAttr": chalk, //lotta redundancy follows
   "selector-attr": chalk,
-  selectorClass: chalk,
+  "selectorClass": chalk,
   "selector-class": chalk,
-  selectorId: chalk,
+  "selectorId": chalk,
   "selector-id": chalk,
-  selectorPseudo: chalk,
+  "selectorPseudo": chalk,
   "selector-pseudo": chalk,
-  selectorTag: chalk,
+  "selectorTag": chalk,
   "selector-tag": chalk,
-  templateTag: chalk,
+  "templateTag": chalk,
   "template-tag": chalk,
-  templateVariable: chalk,
+  "templateVariable": chalk,
   "template-variable": chalk,
-  addition: chalk,
-  deletion: chalk
+  "addition": chalk,
+  "deletion": chalk
 };
 
 var DebugUtils = {
@@ -355,14 +357,14 @@ var DebugUtils = {
       ["g", "G"],
       ["p"],
       ["l"],
-      ["s", "h"],
+      ["s", "e"],
       ["q", "r", "t", "T"],
       ["b"],
       ["B"],
       ["+", "-"],
       ["?"],
       ["v"],
-      [":"]
+      [":", "h"]
     ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });

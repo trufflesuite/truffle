@@ -3,6 +3,7 @@ const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
 const util = require("util");
+const OS = require("os");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
@@ -10,8 +11,16 @@ const colors = require("colors");
 const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, sourcemapping, trace, controller, data, evm, stacktrace } =
-  selectors;
+const {
+  session,
+  sourcemapping,
+  trace,
+  controller,
+  data,
+  txlog,
+  evm,
+  stacktrace
+} = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -78,6 +87,10 @@ class DebugPrinter {
     // used by commands (l) and (s)
     // Note that this is a public variable and can be modified from outside.
     this.sourceLines = { beforeLines: 5, afterLines: 3 };
+
+    //number of previous events to print. this is a public variable, it may be
+    //modified from outside.
+    this.eventsCount = 3;
   }
 
   print(...args) {
@@ -651,6 +664,52 @@ class DebugPrinter {
       );
       this.printFile(lastUserFrame.location);
       this.printState(linesBefore, linesAfter, lastUserFrame.location);
+    }
+  }
+
+  printEvents() {
+    const instances = this.session.view(session.info.affectedInstances); //used to look
+    const formatAddress = address => {
+      const name = instances[address]?.contractName;
+      const colorizedAddress = colors.yellow(address); //dull yellow
+      return name ? `${name}(${colorizedAddress})` : colorizedAddress;
+    };
+    //up what type of contract each address refers to
+    const eventsToPrint = this.session
+      .view(txlog.views.flattedEvents)
+      .slice(-this.eventsCount);
+    if (eventsToPrint.length === 0) {
+      this.config.logger.log("No events emitted so far.");
+    }
+    for (const event of eventsToPrint) {
+      this.config.logger.log("");
+      if (!event.status) {
+        //mark it reverted if it's been reverted
+        this.config.logger.log(
+          DebugUtils.truffleColors.yellow("Reverted event:") //bright yellow :)
+        );
+      }
+      if (event.codeAddress === event.address) {
+        this.config.logger.log(`Emitted by ${formatAddress(event.address)}:`);
+      } else {
+        this.config.logger.log(
+          `Emitted by ${formatAddress(event.codeAddress)}${
+            OS.EOL
+          }on behalf of ${formatAddress(event.address)}:`
+        );
+      }
+      if (event.decoding) {
+        this.config.logger.log(
+          util.inspect(new Codec.Export.LogDecodingInspector(event.decoding), {
+            colors: true,
+            depth: null,
+            maxArrayLength: null,
+            breakLength: 80
+          })
+        );
+      } else {
+        this.config.logger.log("Could not decode event.");
+      }
     }
   }
 

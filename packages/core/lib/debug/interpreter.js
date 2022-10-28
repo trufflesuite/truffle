@@ -619,6 +619,26 @@ class DebugInterpreter {
           await this.printer.printReturnValue();
         }
         break;
+      case "e":
+        if (cmdArgs) {
+          const eventsCount = parseInt(cmdArgs);
+          if (!isNaN(eventsCount) && eventsCount > 0) {
+            this.printer.eventsCount = eventsCount;
+          } else if (cmdArgs === "all") {
+            this.printer.eventsCount = Infinity;
+          } else {
+            this.printer.print(
+              'Invalid event count given, must be positive integer or "all"'
+            );
+            break;
+          }
+        }
+        if (this.session.view(session.status.loaded)) {
+          this.printer.printEvents();
+        } else {
+          this.printer.print("No transaction loaded to print events for.");
+        }
+        break;
       case ":":
         watchExpressionAnalytics(cmdArgs);
         this.printer.evalAndPrintExpression(cmdArgs);
@@ -745,26 +765,8 @@ class DebugInterpreter {
         this.printer.printHelp(this.lastCommand);
     }
 
-    if (
-      cmd !== "b" &&
-      cmd !== "B" &&
-      cmd !== "v" &&
-      cmd !== "h" &&
-      cmd !== "p" &&
-      cmd !== "l" &&
-      cmd !== "?" &&
-      cmd !== "!" &&
-      cmd !== ":" &&
-      cmd !== "+" &&
-      cmd !== "r" &&
-      cmd !== "-" &&
-      cmd !== "t" &&
-      cmd !== "T" &&
-      cmd !== "g" &&
-      cmd !== "G" &&
-      cmd !== "s" &&
-      cmd !== "y"
-    ) {
+    const nonRepeatableCommands = "bBvhpl?!:+r-tTgGsye";
+    if (!nonRepeatableCommands.includes(cmd)) {
       this.lastCommand = cmd;
     }
   }
