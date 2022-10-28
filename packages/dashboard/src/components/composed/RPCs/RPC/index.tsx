@@ -50,10 +50,9 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { classes } = useStyles();
 
   const decodable = messageIsDecodable(lifecycle.message);
+  const decodeNotificationId = `decode-rpc-request-${lifecycle.message.payload.id}`;
 
   useEffect(() => {
-    const id = `decode-rpc-request-${lifecycle.message.payload.id}`;
-
     const decode = async () => {
       const { method, resultInspected, failed } = await decodeMessage(
         lifecycle,
@@ -64,16 +63,22 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       setDecodingSucceeded(!failed);
 
       if (failed) {
-        showNotification({ ...decodeNotifications[method]["fail"], id });
+        showNotification({
+          ...decodeNotifications[method]["fail"],
+          id: decodeNotificationId
+        });
       } else {
-        updateNotification({ ...decodeNotifications[method]["success"], id });
+        updateNotification({
+          ...decodeNotifications[method]["success"],
+          id: decodeNotificationId
+        });
       }
     };
 
     if (decodable) decode();
-
-    return () => void hideNotification(id);
   }, [decoder, decodable, lifecycle]);
+
+  useEffect(() => () => void hideNotification(decodeNotificationId), []);
 
   return (
     <div className={classes.container}>
