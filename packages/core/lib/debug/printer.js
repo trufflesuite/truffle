@@ -3,6 +3,7 @@ const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
 const util = require("util");
+const OS = require("os");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
@@ -667,6 +668,13 @@ class DebugPrinter {
   }
 
   printEvents() {
+    const instances = this.session.view(session.info.affectedInstances); //used to look
+    const formatAddress = address => {
+      const name = instances[address]?.contractName;
+      const colorizedAddress = colors.yellow(address); //dull yellow
+      return name ? `${name}(${colorizedAddress})` : colorizedAddress;
+    };
+    //up what type of contract each address refers to
     const eventsToPrint = this.session
       .view(txlog.views.flattedEvents)
       .slice(-this.eventsCount);
@@ -678,14 +686,16 @@ class DebugPrinter {
       if (!event.status) {
         //mark it reverted if it's been reverted
         this.config.logger.log(
-          DebugUtils.truffleColors.yellow("Reverted event:")
+          DebugUtils.truffleColors.yellow("Reverted event:") //bright yellow :)
         );
       }
       if (event.codeAddress === event.address) {
-        this.config.logger.log(`Emitted by ${event.address}:`);
+        this.config.logger.log(`Emitted by ${formatAddress(event.address)}:`);
       } else {
         this.config.logger.log(
-          `Emitted by ${event.codeAddress} on behalf of ${event.address}:`
+          `Emitted by ${formatAddress(event.codeAddress)}${
+            OS.EOL
+          }on behalf of ${formatAddress(event.address)}:`
         );
       }
       if (event.decoding) {
