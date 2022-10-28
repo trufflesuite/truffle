@@ -33,7 +33,11 @@ function main() {
   });
 
   runCommand(command, options)
-    .then(() => process.exit(0))
+    .then(returnStatus => {
+      process.exitCode = returnStatus;
+      return require("@truffle/promise-tracker").waitForOutstandingPromises();
+    })
+    .then(() => process.exit())
     .catch(error => {
       // Perform error handling ourselves.
       if (error instanceof TruffleError) {
