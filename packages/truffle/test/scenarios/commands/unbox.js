@@ -12,6 +12,7 @@ describe("truffle unbox [ @standalone ]", () => {
 
   beforeEach(() => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
+    cleanupSandboxDir = tempDir.removeCallback;
     config = { working_directory: tempDir.name };
     config.logger = logger;
     config = Config.default().merge(config);
