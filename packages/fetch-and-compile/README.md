@@ -65,7 +65,7 @@ async function decode(address: string) {
   console.groupEnd();
   console.log(")");
 }
-// 🥳 Try it out with a contract.
+// 🥳 Try it out with a contract - this is the address for the ENS registry
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
 ```
 
