@@ -89,9 +89,7 @@ export class Project {
    *
    * @category Truffle-specific
    */
-  async loadCompile(options: {
-    result: WorkflowCompileResult;
-  }): Promise<{
+  async loadCompile(options: { result: WorkflowCompileResult }): Promise<{
     compilations: LoadCompile.Compilation[];
     contracts: LoadCompile.Contract[];
   }> {

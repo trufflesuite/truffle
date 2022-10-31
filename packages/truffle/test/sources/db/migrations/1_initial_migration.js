@@ -1,6 +1,6 @@
-var MagicSquare = artifacts.require("./MagicSquare.sol");
-var SquareLib = artifacts.require("./SquareLib.sol");
-var VyperStorage = artifacts.require("./VyperStorage.sol");
+const MagicSquare = artifacts.require("./MagicSquare.sol");
+const SquareLib = artifacts.require("./SquareLib.sol");
+const VyperStorage = artifacts.require("./VyperStorage.sol");
 
 module.exports = function (deployer) {
   deployer
