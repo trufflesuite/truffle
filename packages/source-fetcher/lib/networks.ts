@@ -11,6 +11,7 @@ export const networkNamesById: { [id: number]: string } = {
   69: "kovan-optimistic",
   420: "goerli-optimistic",
   42161: "arbitrum",
+  42170: "nova-arbitrum",
   421611: "rinkeby-arbitrum",
   421613: "goerli-arbitrum",
   137: "polygon",
