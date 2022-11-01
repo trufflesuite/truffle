@@ -84,7 +84,7 @@ export default {
     const result = { contracts, compilations };
 
     if (config.events) {
-      config.events.emit("compile:succeed", {
+      await config.events.emit("compile:succeed", {
         contractsBuildDirectory: config.contracts_build_directory,
         compilers,
         result
