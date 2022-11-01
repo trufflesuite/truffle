@@ -70,7 +70,6 @@ module.exports = {
         data = data.toString().replace(/\n$/, "");
         shouldLog && Log(data, true);
         config.logger.log(data);
-        console.log(data);
       });
 
       child.on("close", code => {
