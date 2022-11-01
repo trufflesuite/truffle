@@ -12,6 +12,7 @@ export interface ContextValue {
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => any;
+    addSimulation: () => void;
     toggleNotice: () => void;
   };
   dispatch?: React.Dispatch<Action>;

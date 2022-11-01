@@ -6,6 +6,7 @@ export type ActionType =
   | "set-decoder"
   | "set-chain-info"
   | "set-notice"
+  | "add-simulation"
   | "handle-message";
 
 export interface BaseAction {
@@ -30,6 +31,11 @@ export interface SetNoticeAction extends BaseAction {
   data: Partial<State["notice"]>;
 }
 
+export interface AddSimulationAction extends BaseAction {
+  type: "add-simulation";
+  data: Partial<State["simulations"] extends Map<number, infer V> ? V : never>;
+}
+
 export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
   data: ReceivedMessageLifecycle<Message>;
@@ -39,4 +45,5 @@ export type Action =
   | SetDecoderAction
   | SetChainInfoAction
   | SetNoticeAction
+  | AddSimulationAction
   | HandleMessageAction;

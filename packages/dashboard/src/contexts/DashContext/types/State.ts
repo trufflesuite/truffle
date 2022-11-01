@@ -1,4 +1,5 @@
 import type { IDBPDatabase } from "idb/with-async-ittr";
+import type { Provider } from "ganache";
 import type { ProjectDecoder } from "@truffle/decoder";
 import type {
   DashboardMessageBusClient,
@@ -20,6 +21,8 @@ export interface State {
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>
   >;
+  simulations: Map<number, { provider: Provider; label?: string }>;
+  simulationNonce: number;
   chainInfo: {
     id: number | null;
     name: string | null;

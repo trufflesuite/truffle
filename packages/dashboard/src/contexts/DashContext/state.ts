@@ -1,4 +1,5 @@
 import { openDB } from "idb/with-async-ittr";
+import ganache from "ganache";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
@@ -39,6 +40,8 @@ export const initialState: State = {
   decoderCompilations: null,
   decoderCompilationHashes: null,
   providerMessages: new Map(),
+  simulations: new Map(),
+  simulationNonce: 0,
   chainInfo: {
     id: null,
     name: null
@@ -58,6 +61,18 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, chainInfo: data };
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
+    case "add-simulation":
+      const label = data.label || `Simulation ${state.simulationNonce}`;
+      const provider = ganache.provider({ fork: { network: "mainnet" } });
+      const simulation = { label, provider };
+
+      const newSimulations = new Map(state.simulations);
+      newSimulations.set(state.simulationNonce, simulation);
+      return {
+        ...state,
+        simulations: newSimulations,
+        simulationNonce: state.simulationNonce + 1
+      };
     case "handle-message":
       // Copy state,
       // modify it depending on message type,
