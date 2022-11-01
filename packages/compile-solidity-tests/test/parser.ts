@@ -11,7 +11,6 @@ describe("Parser", () => {
     "./Dependency.sol",
     "./path/to/AnotherDep.sol",
     "../../../path/to/AnotherDep.sol",
-    "ethpmpackage/Contract.sol",
     "./somePath.sol",
     "./someImportWithNoSpace.sol",
     "../../someRelativeMultilineImport.sol",

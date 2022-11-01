@@ -6,7 +6,7 @@ const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
 import type { ResolverSource, ResolvedSource } from "./source";
-import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
+import { NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {
   includeTruffleSources?: boolean;
@@ -28,7 +28,6 @@ export class Resolver {
     this.options = options;
 
     let basicSources: ResolverSource[] = [
-      new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
       new FS(options.working_directory, options.contracts_build_directory)
