@@ -69,7 +69,7 @@ export class Plugin {
   loadCompiler(): any {
     if (!this.definesCompiler()) {
       throw new TruffleError(
-        `Plugin ${this.module} does not define a \`truffle plugin\` compiler.`
+        `Plugin ${this.module} does not define a \`truffle compiler plugin\`.`
       );
     }
 
