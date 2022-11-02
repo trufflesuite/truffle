@@ -24,7 +24,9 @@ function Expanded({
 
   return (
     <Stack spacing="md" px="xl" pt="sm" pb="xl">
-      <Simulate providerMessageId={lifecycle.message.id} />
+      {method === "eth_sendTransaction" && (
+        <Simulate providerMessageId={lifecycle.message.id} />
+      )}
       {showDecoding && (
         <DecodedParams
           decoding={decoding}
