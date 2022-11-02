@@ -67,6 +67,11 @@ async function decode(address: string) {
 }
 // 🥳 Try it out with a contract - this is the address for the ENS registry
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
+// --- yields the following output ---
+// setResolver(
+//   node: 0xf96f66c6c5e18dc3da0e5d238ee5ff0f56ad7876717492cfcbb3421db607e44c
+//   resolver: 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41
+// )
 ```
 
 ### `fetchAndCompileMultiple`
