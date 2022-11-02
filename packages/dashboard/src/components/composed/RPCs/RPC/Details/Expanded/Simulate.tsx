@@ -14,6 +14,7 @@ export default function Simulate({
   const [selected, setSelected] = useState(
     state.simulations.size > 0 ? "0" : undefined
   );
+  const [waiting, setWaiting] = useState(false);
 
   const selectData = Array.from(state.simulations, ([key, data]) => ({
     value: key.toString(),
@@ -21,13 +22,19 @@ export default function Simulate({
   }));
 
   const handleButtonClick = async () => {
+    setWaiting(true);
     const simulationId = parseInt(selected!);
     await operations.simulateTransaction(providerMessageId, simulationId);
+    setWaiting(false);
   };
 
   return (
     <Group>
-      <Button onClick={handleButtonClick} disabled={!selected} color="indigo">
+      <Button
+        onClick={handleButtonClick}
+        disabled={!selected || waiting}
+        color="indigo"
+      >
         Simulate
       </Button>
       <Select
