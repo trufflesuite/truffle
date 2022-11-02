@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Stack, Text, createStyles } from "@mantine/core";
+import Simulation from "src/components/composed/Simulations/Simulation";
 import Drawer from "src/components/composed/Simulations/Drawer";
 import { useDash } from "src/hooks";
 
@@ -31,7 +32,7 @@ export default function Simulations(): JSX.Element {
       {simulationId === undefined ? (
         <Text>Create / select a simulation</Text>
       ) : (
-        <Text>Viewing simulation (id: {simulationId})</Text>
+        <Simulation id={simulationId} />
       )}
       <Drawer />
     </Stack>
