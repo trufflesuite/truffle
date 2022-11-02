@@ -8,14 +8,12 @@ const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate with [ @fabric-evm ] interface", () => {
   if (!process.env.FABRICEVM) return;
-  let config;
-  let interfaceAdapter;
-  let networkId;
+  let config, interfaceAdapter, networkId, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/migrations/fabric-evm");
   const logger = new MemoryLogger();
 
   before(async () => {
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     const provider = new Web3.providers.HttpProvider("http://localhost:5000", {
@@ -27,6 +25,10 @@ describe("migrate with [ @fabric-evm ] interface", () => {
       networkType: "fabric-evm"
     });
     networkId = await interfaceAdapter.getNetworkId();
+  });
+
+  after(function () {
+    cleanupSandboxDir();
   });
 
   it("runs migrations (sync & async/await)", async () => {

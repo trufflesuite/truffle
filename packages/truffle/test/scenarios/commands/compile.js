@@ -6,15 +6,16 @@ const { assert } = require("chai");
 const Server = require("../server");
 
 describe("truffle compile", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/toyProject");
 
   before(async () => {
     await Server.start();
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("compiles", async function () {

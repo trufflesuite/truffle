@@ -7,18 +7,16 @@ const path = require("path");
 const logger = new MemoryLogger();
 let config, project;
 
-const loadSandboxLogger = source => {
+const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  return sandbox.load(project).then(conf => {
-    config = conf;
-    config.logger = logger;
-  });
+  config = await sandbox.load(project);
+  config.logger = logger;
 };
 
 describe("truffle run [ @standalone ]", () => {
   describe("when run without arguments", () => {
-    beforeEach(() => {
-      return loadSandboxLogger("../../sources/run/mockProjectWithPlugin");
+    beforeEach(async function () {
+      return await loadSandboxLogger("../../sources/run/mockProjectWithPlugin");
     });
 
     it("displays general help", async () => {
@@ -34,8 +32,10 @@ describe("truffle run [ @standalone ]", () => {
 
   describe("when run with an argument", () => {
     describe("without plugins configured", () => {
-      before(() => {
-        return loadSandboxLogger("../../sources/run/mockProjectWithoutPlugin");
+      before(async function () {
+        return await loadSandboxLogger(
+          "../../sources/run/mockProjectWithoutPlugin"
+        );
       });
 
       it("whines about having no plugins configured", async () => {

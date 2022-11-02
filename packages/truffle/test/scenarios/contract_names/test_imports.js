@@ -8,19 +8,20 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("Contract names", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/contract_names");
 
   before(async function () {
     this.timeout(10000);
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     await Server.start();
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("compiles if file names do not match contract names", async function () {

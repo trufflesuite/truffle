@@ -7,7 +7,7 @@ const sandbox = require("../sandbox");
 const tmp = require("tmp");
 
 describe("truffle console", () => {
-  let config;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/console");
 
@@ -15,9 +15,13 @@ describe("truffle console", () => {
   after(async () => await Server.stop());
 
   beforeEach(async () => {
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
+  });
+
+  afterEach(function () {
+    cleanupSandboxDir();
   });
 
   describe("when runs with network option with a config", () => {
@@ -49,9 +53,15 @@ describe("truffle console", () => {
         __dirname,
         "../../sources/consoleWithConflicts"
       );
-      config = await sandbox.create(projectWithConflicts);
+      ({ config, cleanupSandboxDir } = await sandbox.create(
+        projectWithConflicts
+      ));
       config.network = "development";
       config.logger = logger;
+    });
+
+    afterEach(function () {
+      cleanupSandboxDir();
     });
 
     it("warns the user", async function () {

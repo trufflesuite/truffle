@@ -7,16 +7,14 @@ const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
 describe("migrate (typescript)", function () {
-  let config;
-  let web3;
-  let networkId;
+  let config, web3, networkId, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/migrations/typescript");
   const logger = new MemoryLogger();
 
   before(async function () {
     this.timeout(10000);
     await Server.start();
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     web3 = new Web3("http://localhost:8545");
@@ -24,6 +22,7 @@ describe("migrate (typescript)", function () {
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("runs migrations (sync & async/await)", async function () {

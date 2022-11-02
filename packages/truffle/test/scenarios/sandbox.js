@@ -15,7 +15,10 @@ module.exports = {
       path.join(tempDir.name, subPath, "truffle-config.js"),
       {}
     );
-    return config;
+    return {
+      config,
+      cleanupSandboxDir: tempDir.removeCallback
+    };
   },
 
   async load(source) {

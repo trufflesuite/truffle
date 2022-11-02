@@ -6,17 +6,18 @@ const { assert } = require("chai");
 const Server = require("../server");
 
 describe("truffle test", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/toyProject");
 
   before(async () => {
     await Server.start();
-    config = await sandbox.create(project);
+    ({ cleanupSandboxDir, config } = await sandbox.create(project));
     config.logger = logger;
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("runs tests", async function () {

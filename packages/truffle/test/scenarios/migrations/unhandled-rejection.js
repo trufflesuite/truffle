@@ -6,7 +6,7 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("unhandledRejection detection", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const project = path.join(
     __dirname,
     "../../sources/migrations/unhandled-rejection"
@@ -16,12 +16,13 @@ describe("unhandledRejection detection", function () {
   before(async function () {
     this.timeout(10000);
     await Server.start();
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("should detect unhandled-rejection", async function () {

@@ -7,7 +7,7 @@ const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 const gql = require("graphql-tag");
 const { Resolver } = require("@truffle/resolver");
-let config, server1, server2, run;
+let config, cleanupSandboxDir, server1, server2, run;
 
 describe("truffle db", function () {
   // we really don't need to test this when running CI against Geth - there is
@@ -17,7 +17,7 @@ describe("truffle db", function () {
   before(async function () {
     this.timeout(60000);
     const projectPath = path.join(__dirname, "..", "..", "sources", "db");
-    config = await sandbox.create(projectPath);
+    ({ config, cleanupSandboxDir } = await sandbox.create(projectPath));
     server1 = await Ganache.server({
       logging: {
         quiet: true
@@ -38,6 +38,7 @@ describe("truffle db", function () {
   });
 
   after(async function () {
+    cleanupSandboxDir();
     await server1.close();
     await server2.close();
   });

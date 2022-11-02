@@ -6,19 +6,20 @@ const Server = require("../server");
 const sandbox = require("../sandbox");
 
 describe("Javascript testing", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/javascript_testing");
   const logger = new MemoryLogger();
 
   before(async function () {
     this.timeout(10000);
-    config = await sandbox.create(project);
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
     await Server.start();
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("allows use of isAddress", async function () {

@@ -26,11 +26,13 @@ module.exports = function(deployer) {
 `;
 
 describe("Stack tracing", function () {
-  let config;
+  let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
 
   before(async function () {
-    config = await sandbox.create(path.join(__dirname, "../../sources/init"));
+    ({ config, cleanupSandboxDir } = await sandbox.create(
+      path.join(__dirname, "../../sources/init")
+    ));
     config.network = "development";
     config.logger = logger;
     await fse.ensureDir(config.test_directory);
@@ -55,6 +57,7 @@ describe("Stack tracing", function () {
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   it("runs tests and produces stacktraces", async function () {

@@ -5,18 +5,19 @@ const sandbox = require("../sandbox");
 const path = require("path");
 
 describe("truffle networks", () => {
-  let config, projectPath;
+  let config, projectPath, cleanupSandboxDir;
 
   before(async function () {
     this.timeout(10000);
     projectPath = path.join(__dirname, "../../sources/networks/metacoin");
-    config = await sandbox.create(projectPath);
+    ({ cleanupSandboxDir, config } = await sandbox.create(projectPath));
     config.network = "development";
     config.logger = { log: () => {} };
     await Server.start();
   });
   after(async function () {
     await Server.stop();
+    cleanupSandboxDir();
   });
 
   describe("when run on a simple project", () => {

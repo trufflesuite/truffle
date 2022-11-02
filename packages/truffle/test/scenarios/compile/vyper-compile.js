@@ -9,7 +9,12 @@ const log = console.log;
 
 //NOTE: this file is copypasted with modifications from compile.js
 describe("Repeated compilation of Vyper contracts with imports [ @standalone ]", function () {
-  let config, artifactPaths, initialTimes, finalTimes, output;
+  let config,
+    cleanupSandboxDir,
+    artifactPaths,
+    initialTimes,
+    finalTimes,
+    output;
   const mapping = {};
 
   const project = path.join(__dirname, "../../sources/vyper-imports");
@@ -62,8 +67,7 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
 
-    const conf = await sandbox.create(project);
-    config = conf;
+    ({ config, cleanupSandboxDir } = await sandbox.create(project));
     config.network = "development";
     config.logger = logger;
 
@@ -91,6 +95,10 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
 
     // mTime resolution on 6.9.1 is 1 sec.
     await waitSecond();
+  });
+
+  afterEach(function () {
+    cleanupSandboxDir();
   });
 
   // -------------Inheritance Graph -------
