@@ -10,7 +10,7 @@ interface SimulateProps {
 export default function Simulate({
   providerMessageId
 }: SimulateProps): JSX.Element {
-  const { state } = useDash()!;
+  const { state, operations } = useDash()!;
   const [selected, setSelected] = useState(
     state.simulations.size > 0 ? "0" : undefined
   );
@@ -20,14 +20,14 @@ export default function Simulate({
     label: data.label
   }));
 
-  const simulate = () => {
+  const handleButtonClick = async () => {
     const simulationId = parseInt(selected!);
-    console.log(`Simulate ${providerMessageId} on ${simulationId}`);
+    await operations.simulateTransaction(providerMessageId, simulationId);
   };
 
   return (
     <Group>
-      <Button onClick={simulate} disabled={!selected} color="indigo">
+      <Button onClick={handleButtonClick} disabled={!selected} color="indigo">
         Simulate
       </Button>
       <Select

@@ -13,6 +13,10 @@ export interface ContextValue {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => any;
     addSimulation: () => void;
+    simulateTransaction: (
+      providerMessageId: number,
+      simulationId: number
+    ) => Promise<void>;
     toggleNotice: () => void;
   };
   dispatch?: React.Dispatch<Action>;

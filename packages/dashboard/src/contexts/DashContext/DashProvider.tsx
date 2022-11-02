@@ -1,6 +1,8 @@
 import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAccount, useNetwork } from "wagmi";
 import { sha1 } from "object-hash";
+import { ethers } from "ethers";
+import type { Ethereum } from "ganache";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isCliEventMessage,
@@ -33,7 +35,7 @@ type DashProviderProps = {
 };
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
@@ -268,6 +270,40 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),
     addSimulation: () => void dispatch({ type: "add-simulation", data: {} }),
+    simulateTransaction: async (
+      providerMessageId: number,
+      simulationId: number
+    ) => {
+      const { message } =
+        stateRef.current.providerMessages.get(providerMessageId)!;
+      const simulation = stateRef.current.simulations.get(simulationId)!;
+
+      const passphrase = "";
+      // Dangerous: Mutating state
+      await simulation.provider.request({
+        method: "evm_addAccount",
+        params: [address!, passphrase]
+      });
+      await simulation.provider.request({
+        method: "evm_setAccountBalance",
+        params: [address!, ethers.utils.parseEther("1000").toHexString()]
+      });
+      await simulation.provider.request({
+        method: "personal_unlockAccount",
+        params: [address!, passphrase]
+      });
+      const transactionHash = await simulation.provider.request({
+        method: message.payload.method as "eth_sendTransaction",
+        params: message.payload.params as [Ethereum.Transaction]
+      });
+
+      console.debug(
+        `Simulated transaction from provider message (id: ${message.id})\n`,
+        { params: message.payload.params },
+        `\nOn ${simulation.label}`,
+        `\nTransaction hash: ${transactionHash}`
+      );
+    },
     toggleNotice: () =>
       void dispatch({ type: "set-notice", data: { show: !state.notice.show } })
   };
