@@ -21,7 +21,7 @@ export interface State {
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>
   >;
-  simulations: Map<number, { provider: Provider; label?: string }>;
+  simulations: Map<number, { provider: Provider; label: string }>;
   simulationNonce: number;
   chainInfo: {
     id: number | null;

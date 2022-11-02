@@ -1,6 +1,7 @@
 import { Stack } from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import Simulate from "src/components/composed/RPCs/RPC/Details/Expanded/Simulate";
 import DecodedParams from "src/components/composed/RPCs/RPC/Details/Expanded/DecodedParams";
 import RawParams from "src/components/composed/RPCs/RPC/Details/Expanded/RawParams";
 import type { DecodableRpcMethod } from "src/utils/constants";
@@ -23,6 +24,7 @@ function Expanded({
 
   return (
     <Stack spacing="md" px="xl" pt="sm" pb="xl">
+      <Simulate providerMessageId={lifecycle.message.id} />
       {showDecoding && (
         <DecodedParams
           decoding={decoding}

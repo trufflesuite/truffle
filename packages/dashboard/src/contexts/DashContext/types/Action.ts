@@ -33,7 +33,9 @@ export interface SetNoticeAction extends BaseAction {
 
 export interface AddSimulationAction extends BaseAction {
   type: "add-simulation";
-  data: Partial<State["simulations"] extends Map<number, infer V> ? V : never>;
+  data: Partial<
+    Pick<State["simulations"] extends Map<number, infer V> ? V : never, "label">
+  >;
 }
 
 export interface HandleMessageAction extends BaseAction {
