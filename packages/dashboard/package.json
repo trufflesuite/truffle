@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
