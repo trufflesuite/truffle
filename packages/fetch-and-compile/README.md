@@ -1,6 +1,6 @@
 # `@truffle/fetch-and-compile`
 
-This is used to obtain external verified sourced and compile them.
+This is used to obtain externally verified sources and compile them.
 
 Note: If you import this into your TS project, you may need to enable `skipLibCheck` in your tsconfig due to an indirect dependency on @truffle/contract-schema.
 
@@ -32,10 +32,10 @@ const config = Config.default().merge({
 });
 
 async function decode(address: string) {
-  // 👇 Pass in contract address and the network config to the fetchAndCompile 👇.
+  // 👇 Pass in a contract address and a network config to fetchAndCompile 👇.
   const { compileResult } = await fetchAndCompile(address, config);
 
-  // 🪄 Now we have the result from fetch-and-compile, we can use it with @truffle/decoder for some more magic ✨.
+  // 🪄 Now that we have the result from fetch-and-compile, we can use it with @truffle/decoder for some more magic ✨.
   const projectInfo = {
     commonCompilations: compileResult.compilations
   };
@@ -65,8 +65,13 @@ async function decode(address: string) {
   console.groupEnd();
   console.log(")");
 }
-// 🥳 Try it out with a contract.
+// 🥳 Try it out with a contract - this is the address for the ENS registry
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
+// --- yields the following output ---
+// setResolver(
+//   node: 0xf96f66c6c5e18dc3da0e5d238ee5ff0f56ad7876717492cfcbb3421db607e44c
+//   resolver: 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41
+// )
 ```
 
 ### `fetchAndCompileMultiple`
@@ -89,7 +94,7 @@ for (const address in failures) {
 
 ### Alternate input format
 
-Instead of using a Truffle Config as input, you can instead pass in a `FetchAndCompileOptions` anwyhere that
+Instead of using a Truffle Config as input, you can pass in a `FetchAndCompileOptions` anywhere that
 a `config` is used above. The format is as follows:
 
 ```ts
@@ -107,13 +112,12 @@ export interface FetchAndCompileOptions {
       sourcify?: {
         //nothing to go here at present
       };
-      //potentially options for other fetchers in the future
     };
   };
   compile?: {
     docker?: boolean; //indicates that compilation should use dockerized solc;
     //note this won't work with contracts compiled with prerelease versions
-    //of solidity
+    //of Solidity
   };
 }
 ```
@@ -126,14 +130,14 @@ If you want a list of supported networks, you can call `getSupportedNetworks`:
 import { getSupportedNetworks } from "@truffle/fetch-and-compile";
 const networks = getSupportedNetworks();
 // networks = {
-//  mainnet: {
-//    name: "mainnet",
-//    networkId: 1,
-//    chainId: 1,
-//    fetchers: ["etherscan", "sourcify"] //which fetchers support this network?
-//  },
-//  ...
-//}
+//   mainnet: {
+//     name: "mainnet",
+//     networkId: 1,
+//     chainId: 1,
+//     fetchers: ["etherscan", "sourcify"] //which fetchers support this network?
+//   },
+//   ...
+// }
 ```
 
 You can also pass in a list of fetchers if you want to restrict the output to the networks
@@ -145,14 +149,14 @@ import { getSupportedNetworks } from "@truffle/fetch-and-compile";
 import Config from "@truffle/config";
 const networks = getSupportedNetworks(["etherscan"]); //will only list those supported by etherscan fetcher
 // networks = {
-//  mainnet: {
-//    name: "mainnet",
-//    networkId: 1,
-//    chainId: 1,
-//    fetchers: ["etherscan"] //sourcify is not listed since it's not being checked
-//  },
-//  ...
-//}
+//   mainnet: {
+//     name: "mainnet",
+//     networkId: 1,
+//     chainId: 1,
+//     fetchers: ["etherscan"] //sourcify is not listed since it's not being checked
+//   },
+//   ...
+// }
 ```
 
 Please see the [README for @truffle/decoder](https://github.com/trufflesuite/truffle/tree/develop/packages/decoder)
