@@ -25,6 +25,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@ensdomains/ensjs": "^2.1.0",
     "@truffle/abi-utils": "^0.3.7",
     "@truffle/codec": "^0.14.14",
     "@truffle/compile-common": "^0.9.2",
