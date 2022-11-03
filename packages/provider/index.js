@@ -32,10 +32,13 @@ module.exports = {
         { keepAlive: false }
       );
     }
-    if (typeof provider.request === "undefined") {
+    if (
+      typeof provider.request === "undefined" &&
+      typeof provider.send !== "undefined"
+    ) {
       provider.request = async function ({ method, params }) {
-        await new Promise((accept, reject) => {
-          provider.sendAsync(
+        return await new Promise((accept, reject) => {
+          provider.send(
             {
               jsonrpc: "2.0",
               id: ++id,
@@ -61,7 +64,7 @@ module.exports = {
         });
       };
     }
-    provider.request.sendAsync = provider.request.sendAsync.bind(provider);
+    provider.request && (provider.request = provider.request.bind(provider));
     return provider;
   },
 
