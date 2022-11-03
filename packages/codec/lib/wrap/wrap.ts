@@ -181,7 +181,8 @@ function* arrayFromArray(
   return {
     type: dataType,
     kind: "value" as const,
-    value
+    value,
+    interpretations: {}
   };
 }
 
@@ -378,7 +379,8 @@ function* tupleFromArray(
   return <TupleLikeValue>{
     type: dataType,
     kind: "value" as const,
-    value
+    value,
+    interpretations: {}
   };
 }
 
@@ -645,7 +647,8 @@ function* udvtFromUnderlying(
   return {
     type: dataType,
     kind: "value",
-    value: <Format.Values.BuiltInValueValue>value
+    value: <Format.Values.BuiltInValueValue>value,
+    interpretations: {}
   };
 }
 
@@ -905,7 +908,8 @@ function* optionsFromObject(
   return {
     type: dataType,
     kind: "value" as const,
-    value
+    value,
+    interpretations: {}
   };
 }
 
@@ -948,7 +952,8 @@ function* optionsFromCodecOptionsValue(
   return {
     type: dataType,
     kind: "value" as const,
-    value
+    value,
+    interpretations: {}
   };
 }
 

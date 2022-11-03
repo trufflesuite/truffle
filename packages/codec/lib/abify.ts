@@ -151,7 +151,8 @@ export function abifyResult(
             value: {
               asAddress: coercedResult.value.address,
               rawAsHex: coercedResult.value.rawAddress
-            }
+            },
+            interpretations: {}
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -213,7 +214,8 @@ export function abifyResult(
             type: <Format.Types.TupleType>(
               abifyType(result.type, userDefinedTypes)
             ), //note: may throw exception
-            value: abifiedMembers
+            value: abifiedMembers,
+            interpretations: {}
           };
         case "error":
           return {
@@ -230,7 +232,8 @@ export function abifyResult(
         case "value":
           return abifyResult(coercedResult.value, userDefinedTypes);
         case "error":
-          return <Format.Errors.BuiltInValueErrorResult>{ //I have no idea what TS is thinking here
+          return <Format.Errors.BuiltInValueErrorResult>{
+            //I have no idea what TS is thinking here
             ...coercedResult,
             type: abifyType(result.type, userDefinedTypes)
           };
@@ -252,7 +255,8 @@ export function abifyResult(
             kind: "value",
             value: {
               asBN: coercedResult.value.numericAsBN.clone()
-            }
+            },
+            interpretations: {}
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -262,7 +266,8 @@ export function abifyResult(
                 kind: "value",
                 value: {
                   asBN: coercedResult.error.rawAsBN.clone()
-                }
+                },
+                interpretations: {}
               };
             case "EnumPaddingError":
               return {
@@ -282,7 +287,8 @@ export function abifyResult(
                   kind: "value",
                   value: {
                     asBN: numericValue
-                  }
+                  },
+                  interpretations: {}
                 };
               } else {
                 return {
@@ -319,7 +325,8 @@ export function abifyResult(
             type: <Format.Types.ArrayType>(
               abifyType(result.type, userDefinedTypes)
             ),
-            value: abifiedMembers
+            value: abifiedMembers,
+            interpretations: {}
           };
         case "error":
           return {

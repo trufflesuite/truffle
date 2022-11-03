@@ -373,7 +373,8 @@ export class CalldataDecodingInspector {
           },
           value: {
             asHex: data
-          }
+          },
+          interpretations: {}
         };
         if (abi) {
           return formatFunctionLike(
@@ -499,7 +500,8 @@ export class ReturndataDecodingInspector {
           },
           value: {
             asHex: data
-          }
+          },
+          interpretations: {}
         };
         const dataString = util.inspect(
           new ResultInspector(codecValue),

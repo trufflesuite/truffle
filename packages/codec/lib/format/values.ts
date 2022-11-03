@@ -232,7 +232,9 @@ export type EnumResult = EnumValue | Errors.EnumErrorResult;
  *
  * @Category User-defined elementary types
  */
-export type UserDefinedValueTypeResult = UserDefinedValueTypeValue | Errors.UserDefinedValueTypeErrorResult;
+export type UserDefinedValueTypeResult =
+  | UserDefinedValueTypeValue
+  | Errors.UserDefinedValueTypeErrorResult;
 
 /**
  * A contract value or error
@@ -265,6 +267,7 @@ export interface ArrayValue {
    */
   reference?: number;
   value: Result[];
+  interpretations: {};
 }
 
 /**
@@ -288,6 +291,7 @@ export interface MappingValue {
    * order is irrelevant; also note keys must be values, not errors
    */
   value: KeyValuePair[];
+  interpretations: {};
 }
 
 export interface KeyValuePair {
@@ -320,6 +324,7 @@ export interface StructValue {
    * if this is a memory struct (such mappings will be empty)
    */
   value: NameValuePair[];
+  interpretations: {};
 }
 
 export interface NameValuePair {
@@ -343,6 +348,7 @@ export interface TupleValue {
   type: Types.TupleType;
   kind: "value";
   value: OptionallyNamedValue[];
+  interpretations: {};
 }
 
 export interface OptionallyNamedValue {
@@ -369,6 +375,7 @@ export interface MagicValue {
   value: {
     [field: string]: Result;
   };
+  interpretations: {};
 }
 
 /**
@@ -401,6 +408,7 @@ export interface TypeValueContract {
    * these must be stored in order!
    */
   value: NameValuePair[];
+  interpretations: {};
 }
 
 /**
@@ -415,6 +423,7 @@ export interface TypeValueEnum {
    * these must be stored in order!
    */
   value: EnumValue[];
+  interpretations: {};
 }
 
 /*
@@ -439,6 +448,7 @@ export interface FunctionExternalValue {
   type: Types.FunctionExternalType;
   kind: "value";
   value: FunctionExternalValueInfo;
+  interpretations: {};
 }
 
 /**
@@ -520,6 +530,7 @@ export interface FunctionInternalValue {
   type: Types.FunctionInternalType;
   kind: "value";
   value: FunctionInternalValueInfo;
+  interpretations: {};
 }
 
 /**
@@ -614,4 +625,5 @@ export interface OptionsValue {
   type: Types.OptionsType;
   kind: "value";
   value: Common.Options;
+  interpretations: {};
 }

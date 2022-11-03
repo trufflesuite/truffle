@@ -70,7 +70,8 @@ export function* decodeBasic(
             //no idea why need coercion here
             type: fullType,
             kind: "value" as const,
-            value: underlyingResult
+            value: underlyingResult,
+            interpretations: {}
           };
         case "error":
           //wrap the error and return an error result!
@@ -115,13 +116,15 @@ export function* decodeBasic(
         return {
           type: dataType,
           kind: "value" as const,
-          value: { asBoolean: false }
+          value: { asBoolean: false },
+          interpretations: {}
         };
       } else if (numeric.eqn(1)) {
         return {
           type: dataType,
           kind: "value" as const,
-          value: { asBoolean: true }
+          value: { asBoolean: true },
+          interpretations: {}
         };
       } else {
         let error = {
@@ -164,7 +167,8 @@ export function* decodeBasic(
         value: {
           asBN: Conversion.toBN(bytes),
           rawAsBN: Conversion.toBN(rawBytes)
-        }
+        },
+        interpretations: {}
       };
     case "int":
       //first, check padding (if needed)
@@ -191,7 +195,8 @@ export function* decodeBasic(
         value: {
           asBN: Conversion.toSignedBN(bytes),
           rawAsBN: Conversion.toSignedBN(rawBytes)
-        }
+        },
+        interpretations: {}
       };
 
     case "address":
@@ -217,7 +222,8 @@ export function* decodeBasic(
         value: {
           asAddress: Evm.Utils.toAddress(bytes),
           rawAsHex: Conversion.toHexString(rawBytes)
-        }
+        },
+        interpretations: {}
       };
 
     case "contract":
@@ -244,7 +250,8 @@ export function* decodeBasic(
       return {
         type: fullType,
         kind: "value" as const,
-        value: contractValueInfo
+        value: contractValueInfo,
+        interpretations: {}
       };
 
     case "bytes":
@@ -277,7 +284,8 @@ export function* decodeBasic(
         value: {
           asHex: Conversion.toHexString(bytes),
           rawAsHex: Conversion.toHexString(rawBytes)
-        }
+        },
+        interpretations: {}
       };
 
     case "function":
@@ -307,7 +315,8 @@ export function* decodeBasic(
           return {
             type: dataType,
             kind: "value" as const,
-            value: yield* decodeExternalFunction(address, selector, info)
+            value: yield* decodeExternalFunction(address, selector, info),
+            interpretations: {}
           };
         case "internal":
           //note: we used to error if we hit this point with strict === true,
@@ -403,7 +412,8 @@ export function* decodeBasic(
           value: {
             name,
             numericAsBN: numeric
-          }
+          },
+          interpretations: {}
         };
       } else {
         let error = {
@@ -467,7 +477,8 @@ export function* decodeBasic(
         value: {
           asBig,
           rawAsBig
-        }
+        },
+        interpretations: {}
       };
     }
     case "ufixed": {
@@ -505,7 +516,8 @@ export function* decodeBasic(
         value: {
           asBig,
           rawAsBig
-        }
+        },
+        interpretations: {}
       };
     }
   }
@@ -620,7 +632,8 @@ function decodeInternalFunction(
         context,
         deployedProgramCounter: deployedPc,
         constructorProgramCounter: constructorPc
-      }
+      },
+      interpretations: {}
     };
   }
   //also before we continue: is the PC zero? if so let's just return that
@@ -633,7 +646,8 @@ function decodeInternalFunction(
         context,
         deployedProgramCounter: deployedPc,
         constructorProgramCounter: constructorPc
-      }
+      },
+      interpretations: {}
     };
   }
   //another check: is only the deployed PC zero?
@@ -699,7 +713,8 @@ function decodeInternalFunction(
         context,
         deployedProgramCounter: deployedPc,
         constructorProgramCounter: constructorPc
-      }
+      },
+      interpretations: {}
     };
   }
   const name = functionEntry.name;
@@ -718,7 +733,8 @@ function decodeInternalFunction(
       id,
       definedIn,
       mutability
-    }
+    },
+    interpretations: {}
   };
 }
 

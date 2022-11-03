@@ -47,7 +47,8 @@ export function* decodeConstant(
       kind: "value" as const,
       value: {
         asHex: Conversion.toHexString(bytes, size, true) //padding in case of short string literal
-      }
+      },
+      interpretations: {}
     }; //we'll skip including a raw value, as that would be meaningless
   }
 
