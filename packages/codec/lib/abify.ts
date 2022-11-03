@@ -152,7 +152,7 @@ export function abifyResult(
               asAddress: coercedResult.value.address,
               rawAsHex: coercedResult.value.rawAddress
             },
-            interpretations: {}
+            interpretations: coercedResult.interpretations
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -215,7 +215,7 @@ export function abifyResult(
               abifyType(result.type, userDefinedTypes)
             ), //note: may throw exception
             value: abifiedMembers,
-            interpretations: {}
+            interpretations: coercedResult.interpretations
           };
         case "error":
           return {
@@ -256,7 +256,7 @@ export function abifyResult(
             value: {
               asBN: coercedResult.value.numericAsBN.clone()
             },
-            interpretations: {}
+            interpretations: coercedResult.interpretations
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -326,7 +326,7 @@ export function abifyResult(
               abifyType(result.type, userDefinedTypes)
             ),
             value: abifiedMembers,
-            interpretations: {}
+            interpretations: coercedResult.interpretations
           };
         case "error":
           return {
