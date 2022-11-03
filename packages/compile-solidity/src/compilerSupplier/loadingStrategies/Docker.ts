@@ -1,5 +1,3 @@
-import { Spinner } from "@truffle/spinners";
-
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
 import axios from "axios";
@@ -105,14 +103,12 @@ export class Docker {
         `Please ensure that ${image} is a valid docker image name.`;
       throw new Error(message);
     }
-    const spinner = new Spinner("compile-solidity:docker-download", {
-      text: "Downloading Docker image",
-      prefixColor: "red"
-    });
+    this.config.events.emit("compile:downloadDockerImage:start");
     try {
       execSync(`docker pull ethereum/solc:${image}`);
-    } finally {
-      spinner.remove();
+      this.config.events.emit("compile:downloadDockerImage:succeed");
+    } catch (error) {
+      this.config.events.emit("compile:downloadDockerImage:fail", { error });
     }
   }
 

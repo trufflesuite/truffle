@@ -1,4 +1,5 @@
 const OS = require("os");
+const { Spinner } = require("@truffle/spinners");
 
 module.exports = {
   initialization: function () {
@@ -73,6 +74,29 @@ module.exports = {
         if (this.quiet) return;
         this.logger.log(
           `> Compilation skipped because --compile-none option was passed.`
+        );
+      }
+    ],
+    "compile:downloadDockerImage:start": [
+      function () {
+        if (this.quiet) return;
+        this.spinner = new Spinner("compile-solidity:docker-download", {
+          text: "Downloading Docker image",
+          prefixColor: "red"
+        });
+      }
+    ],
+    "compile:downloadDockerImage:succeed": [
+      function () {
+        if (this.quiet) return;
+        this.spinner.succeed("Download successful!");
+      }
+    ],
+    "compile:downloadDockerImage:fail": [
+      function ({ error }) {
+        if (this.quiet) return;
+        this.spinner.fail(
+          `There was a problem downloading the Docker image. \n${error}.`
         );
       }
     ]
