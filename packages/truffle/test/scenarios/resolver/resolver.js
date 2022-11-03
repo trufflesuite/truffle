@@ -26,10 +26,6 @@ describe("Solidity Imports [ @standalone ]", function () {
    * |   |-- ImportOfImport.sol # Local import for NodeImport.sol
    * |   |-- NodeImport.sol
    * |
-   * + installed_contracts/
-   * |-- ethpmpkg/
-   * |   |-- EthPMImport.sol
-   * |
    * + truffleproject/
    * |-- contracts/
    * |   |-- Importer.sol # This imports everthing
@@ -66,7 +62,6 @@ describe("Solidity Imports [ @standalone ]", function () {
       const output = logger.contents();
 
       assert(output.includes("./contracts/Importer.sol"));
-      assert(output.includes("ethpmpkg/EthPMImport.sol"));
       assert(output.includes("nodepkg/ImportOfImport.sol"));
       assert(output.includes("nodepkg/LocalNodeImport.sol"));
       assert(output.includes("nodepkg/NodeImport.sol"));
