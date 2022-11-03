@@ -58,7 +58,8 @@ function* stringFromString(
     value: {
       kind: "valid",
       asString: input
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -118,7 +119,8 @@ function* stringFromCodecStringValue(
   return {
     type: dataType,
     kind: "value" as const,
-    value: (<Format.Values.StringValue>input).value
+    value: (<Format.Values.StringValue>input).value,
+    interpretations: {}
   };
 }
 
@@ -142,7 +144,8 @@ function* stringFromUint8ArrayLike(
   return {
     type: dataType,
     kind: "value" as const,
-    value: info
+    value: info,
+    interpretations: {}
   };
 }
 

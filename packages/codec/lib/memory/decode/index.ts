@@ -50,13 +50,15 @@ function decodeMemorySkippedType(
       return {
         type: dataType,
         kind: "value" as const,
-        value: []
+        value: [],
+        interpretations: {}
       };
     case "array":
       return {
         type: dataType,
         kind: "value" as const,
-        value: []
+        value: [],
+        interpretations: {}
       };
     //other cases should not arise!
   }
@@ -151,7 +153,8 @@ export function* decodeMemoryReferenceByAddress(
           type: dataType,
           kind: "value" as const,
           reference: seenPreviously + 1,
-          value: [] //will be fixed later by the tie function
+          value: [], //will be fixed later by the tie function
+          interpretations: {}
         };
       }
       //otherwise, decode as normal
@@ -210,7 +213,8 @@ export function* decodeMemoryReferenceByAddress(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
+        interpretations: {}
       };
     }
 
@@ -222,7 +226,8 @@ export function* decodeMemoryReferenceByAddress(
           type: dataType,
           kind: "value" as const,
           reference: seenPreviously + 1,
-          value: [] //will be fixed later by the tie function
+          value: [], //will be fixed later by the tie function
+          interpretations: {}
         };
       }
       //otherwise, decode as normal
@@ -272,7 +277,8 @@ export function* decodeMemoryReferenceByAddress(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedMembers
+        value: decodedMembers,
+        interpretations: {}
       };
     }
   }

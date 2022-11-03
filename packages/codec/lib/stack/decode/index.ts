@@ -124,7 +124,12 @@ export function* decodeLiteral(
     return {
       type: dataType,
       kind: "value" as const,
-      value: yield* Basic.Decode.decodeExternalFunction(address, selector, info)
+      value: yield* Basic.Decode.decodeExternalFunction(
+        address,
+        selector,
+        info
+      ),
+      interpretations: {}
     };
   }
 

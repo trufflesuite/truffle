@@ -245,7 +245,8 @@ export function cleanBool(
             kind: "value",
             value: {
               asBoolean: true
-            }
+            },
+            interpretations: {}
           };
         default:
           return result;
