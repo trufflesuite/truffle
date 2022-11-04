@@ -292,9 +292,19 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         method: "personal_unlockAccount",
         params: [address!, passphrase]
       });
+      const maxPriorityFeePerGas = await simulation.provider.request({
+        method: "eth_maxPriorityFeePerGas",
+        params: undefined
+      });
       const transactionHash = await simulation.provider.request({
         method: message.payload.method as "eth_sendTransaction",
-        params: message.payload.params as [Ethereum.Transaction]
+        params: [
+          {
+            ...message.payload.params[0],
+            maxFeePerGas: undefined,
+            maxPriorityFeePerGas
+          }
+        ] as [Ethereum.Transaction]
       });
 
       console.debug(
