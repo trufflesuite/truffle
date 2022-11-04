@@ -48,6 +48,11 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
     init();
   }, [id, state.simulations, transactions]);
 
+  useEffect(() => {
+    transactionsHandlers.setState([]);
+    lastLatestBlockNumber.current = undefined;
+  }, [id]);
+
   return (
     <Stack>
       <Code block>
