@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import type { Ethereum } from "ganache";
 import { Stack, Code } from "@mantine/core";
 import { useDash } from "src/hooks";
 
@@ -8,7 +9,7 @@ interface SimulationProps {
 
 export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Ethereum.Transaction[]>([]);
   const [forkBlockNumber, setForkBlockNumber] = useState<number>();
   const [latestBlockNumber, setLatestBlockNumber] = useState<number>();
   const initCalled = useRef(false);
@@ -38,7 +39,10 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
           params: ["0x" + i.toString(16), true]
         });
         for (const transaction of block!.transactions) {
-          setTransactions([...transactions, transaction]);
+          setTransactions([
+            ...transactions,
+            transaction
+          ] as Ethereum.Transaction[]);
         }
       }
     };
