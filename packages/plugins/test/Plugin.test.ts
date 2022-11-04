@@ -204,7 +204,7 @@ describe("Plugin", () => {
     it("should load compiler defined in the plugin definition", () => {
       const plugin = new Plugin({
         module: "dummy-compiler",
-        definition: { compile: "index.js" }
+        definition: { compiler: "index.js" }
       });
 
       const loadedCompiler = plugin.loadCompiler();
@@ -215,7 +215,7 @@ describe("Plugin", () => {
     it("should throw when compiler plugin definition is an absolute path", () => {
       const plugin = new Plugin({
         module: "dummy-compiler",
-        definition: { compile: "/index.js" }
+        definition: { compiler: "/index.js" }
       });
 
       const expectedError = "Absolute paths not allowed!";

@@ -63,7 +63,7 @@ export class Plugin {
    */
 
   definesCompiler(): boolean {
-    return !!this.definition.compile;
+    return !!this.definition.compiler;
   }
 
   loadCompiler(): any {
@@ -73,7 +73,7 @@ export class Plugin {
       );
     }
 
-    return this.loadModule(this.definition.compile).Compile;
+    return this.loadModule(this.definition.compiler).Compile;
   }
 
   /*

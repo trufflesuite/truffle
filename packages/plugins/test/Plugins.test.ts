@@ -40,7 +40,7 @@ describe("Plugins", () => {
         }),
         new Plugin({
           module: "dummy-compiler",
-          definition: { compile: "index.js" }
+          definition: { compiler: "index.js" }
         })
       ];
 
@@ -208,7 +208,7 @@ describe("Plugins", () => {
       const expectedPlugins = [
         new Plugin({
           module: "dummy-compiler",
-          definition: { compile: "index.js" }
+          definition: { compiler: "index.js" }
         })
       ];
 
