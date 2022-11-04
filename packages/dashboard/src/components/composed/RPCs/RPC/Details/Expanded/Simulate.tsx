@@ -24,7 +24,11 @@ export default function Simulate({
   const handleButtonClick = async () => {
     setWaiting(true);
     const simulationId = parseInt(selected!);
-    await operations.simulateTransaction(providerMessageId, simulationId);
+    try {
+      await operations.simulateTransaction(providerMessageId, simulationId);
+    } catch (err) {
+      console.error(err);
+    }
     setWaiting(false);
   };
 
