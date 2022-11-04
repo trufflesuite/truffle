@@ -39,6 +39,6 @@ export interface PluginDefinition {
     loader?: string;
   };
 
-  // `truffle compile` plugin
-  compile?: string;
+  // `truffle compiler` plugin
+  compiler?: string;
 }
