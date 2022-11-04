@@ -229,7 +229,7 @@ describe("Plugin", () => {
       });
 
       const expectedError =
-        "Plugin dummy-noDefinition does not define a `truffle plugin` compiler.";
+        "Plugin dummy-noDefinition does not define a `truffle compiler plugin`.";
       expect(() => plugin.loadCompiler()).toThrow(expectedError);
     });
   });
