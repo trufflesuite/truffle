@@ -21,17 +21,17 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
     const init = async () => {
       const simulation = state.simulations.get(id)!;
 
-      // Note that block at `fork` is empty
-      // github.com/trufflesuite/ganache/issues/2911
-      const fork = simulation.provider.getOptions().fork.blockNumber as number;
-      setForkBlockNumber(fork);
-
       const latestHex = await simulation.provider.request({
         method: "eth_blockNumber",
         params: undefined
       });
       const latest = parseInt(latestHex, 16);
       setLatestBlockNumber(latest);
+
+      // Note that block at `fork` is empty
+      // github.com/trufflesuite/ganache/issues/2911
+      const fork = simulation.provider.getOptions().fork.blockNumber as number;
+      setForkBlockNumber(fork);
 
       for (let i = fork + 1; i <= latest; i++) {
         const block = await simulation.provider.request({
