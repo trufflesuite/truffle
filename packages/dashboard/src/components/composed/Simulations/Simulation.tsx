@@ -44,7 +44,7 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
     };
 
     init();
-  }, []);
+  }, [id, state.simulations, transactions]);
 
   return (
     <Stack>
