@@ -135,7 +135,9 @@ export interface AddressValue {
      */
     rawAsHex?: string;
   };
-  interpretations: {};
+  interpretations: {
+    ensName?: StringValueInfo;
+  };
 }
 
 /**
@@ -249,7 +251,9 @@ export interface ContractValue {
   type: Types.ContractType;
   kind: "value";
   value: ContractValueInfo;
-  interpretations: {};
+  interpretations: {
+    ensName?: StringValueInfo;
+  };
 }
 
 /**

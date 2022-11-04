@@ -35,7 +35,8 @@ import type {
   UserDefinedValueTypeValue,
   ContractValue,
   ContractValueInfoKnown,
-  ContractValueInfoUnknown
+  ContractValueInfoUnknown,
+  StringValueInfo
 } from "./elementary";
 import type * as Common from "@truffle/codec/common";
 import type * as Abi from "@truffle/abi-utils";
@@ -448,7 +449,9 @@ export interface FunctionExternalValue {
   type: Types.FunctionExternalType;
   kind: "value";
   value: FunctionExternalValueInfo;
-  interpretations: {};
+  interpretations: {
+    contractEnsName?: StringValueInfo;
+  };
 }
 
 /**
