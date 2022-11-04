@@ -13,6 +13,7 @@ export interface ContextValue {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => any;
     addSimulation: () => void;
+    deleteSimulation: (id: number) => void;
     simulateTransaction: (
       providerMessageId: number,
       simulationId: number

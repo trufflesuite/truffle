@@ -270,6 +270,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),
     addSimulation: () => void dispatch({ type: "add-simulation", data: {} }),
+    deleteSimulation: (id: number) =>
+      void dispatch({ type: "delete-simulation", data: id }),
     simulateTransaction: async (
       providerMessageId: number,
       simulationId: number

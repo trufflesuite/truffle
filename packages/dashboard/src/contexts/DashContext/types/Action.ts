@@ -7,6 +7,7 @@ export type ActionType =
   | "set-chain-info"
   | "set-notice"
   | "add-simulation"
+  | "delete-simulation"
   | "handle-message";
 
 export interface BaseAction {
@@ -38,6 +39,11 @@ export interface AddSimulationAction extends BaseAction {
   >;
 }
 
+export interface DeleteSimulationAction extends BaseAction {
+  type: "delete-simulation";
+  data: number;
+}
+
 export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
   data: ReceivedMessageLifecycle<Message>;
@@ -48,4 +54,5 @@ export type Action =
   | SetChainInfoAction
   | SetNoticeAction
   | AddSimulationAction
+  | DeleteSimulationAction
   | HandleMessageAction;

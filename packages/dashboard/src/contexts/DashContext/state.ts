@@ -73,6 +73,12 @@ export const reducer = (state: State, action: Action): State => {
         simulations: newSimulations,
         simulationNonce: state.simulationNonce + 1
       };
+    case "delete-simulation": {
+      const id = data;
+      const newSimulations = new Map(state.simulations);
+      newSimulations.delete(id);
+      return { ...state, simulations: newSimulations };
+    }
     case "handle-message":
       // Copy state,
       // modify it depending on message type,

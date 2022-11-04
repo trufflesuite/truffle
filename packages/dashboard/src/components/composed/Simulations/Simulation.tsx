@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import type { Ethereum } from "ganache";
 import { Stack, Code } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
+import { useNavigate } from "react-router-dom";
 import { useDash } from "src/hooks";
 
 interface SimulationProps {
@@ -10,6 +11,7 @@ interface SimulationProps {
 
 export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
+  const navigate = useNavigate();
   const activeId = useRef(id);
   const [transactions, transactionsHandlers] =
     useListState<Ethereum.Transaction>([]);
@@ -20,6 +22,7 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
   useEffect(() => {
     const init = async () => {
       const simulation = state.simulations.get(id)!;
+      if (!simulation) return navigate("/simulations");
 
       const latestHex = await simulation.provider.request({
         method: "eth_blockNumber",
@@ -52,7 +55,7 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
       transactionsHandlers.setState([]);
     }
     init();
-  }, [id, state.simulations, transactionsHandlers]);
+  }, [id, state.simulations, transactionsHandlers, navigate]);
 
   return (
     <Stack>

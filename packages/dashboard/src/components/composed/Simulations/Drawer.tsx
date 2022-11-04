@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { Stack, Button, UnstyledButton, createStyles } from "@mantine/core";
+import {
+  Stack,
+  NavLink,
+  CloseButton,
+  Button,
+  createStyles
+} from "@mantine/core";
 import { useDash } from "src/hooks";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
@@ -15,18 +21,34 @@ export default function Drawer(): JSX.Element {
   const { state, operations } = useDash()!;
   const { classes } = useStyles();
 
-  const simulations = Array.from(state.simulations, ([key, data]) => (
-    <UnstyledButton
-      key={`simulation-${key}`}
+  const handleNavLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    simulationId: number
+  ) => {
+    const targetIsNavLink = ["root", "body", "label"].some(part =>
+      (e.target as HTMLElement).classList.contains(`mantine-NavLink-${part}`)
+    );
+    if (!targetIsNavLink) {
+      e.preventDefault();
+      operations.deleteSimulation(simulationId);
+    }
+  };
+
+  const simulations = Array.from(state.simulations, ([id, data]) => (
+    <NavLink
+      key={`simulation-${id}`}
       component={Link}
-      to={`/simulations#${key}`}
-    >
-      {data.label}
-    </UnstyledButton>
+      to={`/simulations#${id}`}
+      onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) =>
+        handleNavLinkClick(e, id)
+      }
+      label={data.label}
+      rightSection={<CloseButton title="Remove simulation" color="red" />}
+    />
   ));
 
   return (
-    <Stack className={classes.container} p={0}>
+    <Stack className={classes.container} spacing={0} p={0}>
       {simulations}
       <Button
         onClick={operations.addSimulation}
