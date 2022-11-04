@@ -73,7 +73,11 @@ export class Plugin {
       );
     }
 
-    return this.loadModule(this.definition.compiler).Compile;
+    const compilerPath = this.loadModule(this.definition.compiler);
+    if (!compilerPath.Compile) {
+      throw new TruffleError(`Plugin ${this.module}: Compile is not defined.`);
+    }
+    return compilerPath.Compile;
   }
 
   /*
