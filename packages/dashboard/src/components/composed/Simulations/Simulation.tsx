@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { Ethereum } from "ganache";
 import { Stack, Code } from "@mantine/core";
+import { useListState } from "@mantine/hooks";
 import { useDash } from "src/hooks";
 
 interface SimulationProps {
@@ -9,15 +10,13 @@ interface SimulationProps {
 
 export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
-  const [transactions, setTransactions] = useState<Ethereum.Transaction[]>([]);
+  const [transactions, transactionsHandlers] =
+    useListState<Ethereum.Transaction>([]);
   const [forkBlockNumber, setForkBlockNumber] = useState<number>();
   const [latestBlockNumber, setLatestBlockNumber] = useState<number>();
-  const initCalled = useRef(false);
+  const lastLatestBlockNumber = useRef<number>();
 
   useEffect(() => {
-    if (initCalled.current) return;
-    initCalled.current = true;
-
     const init = async () => {
       const simulation = state.simulations.get(id)!;
 
@@ -26,6 +25,8 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
         params: undefined
       });
       const latest = parseInt(latestHex, 16);
+      if (latest === lastLatestBlockNumber.current) return;
+      lastLatestBlockNumber.current = latest;
       setLatestBlockNumber(latest);
 
       // Note that block at `fork` is empty
@@ -39,10 +40,7 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
           params: ["0x" + i.toString(16), true]
         });
         for (const transaction of block!.transactions) {
-          setTransactions([
-            ...transactions,
-            transaction
-          ] as Ethereum.Transaction[]);
+          transactionsHandlers.append(transaction as Ethereum.Transaction);
         }
       }
     };
