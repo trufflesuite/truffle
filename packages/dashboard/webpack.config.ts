@@ -43,6 +43,9 @@ const config: webpack.Configuration = {
       })
     ]
   },
+  watchOptions: {
+    ignored: "**/node_modules"
+  },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx"],
     alias: {
