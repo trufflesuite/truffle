@@ -10,7 +10,7 @@ interface SimulationProps {
 
 export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
-  const lastId = useRef(id);
+  const activeId = useRef(id);
   const [transactions, transactionsHandlers] =
     useListState<Ethereum.Transaction>([]);
   const [forkBlockNumber, setForkBlockNumber] = useState<number>();
@@ -46,16 +46,13 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
       }
     };
 
-    init();
-  }, [id, state.simulations, transactionsHandlers]);
-
-  useEffect(() => {
-    if (lastId.current !== id) {
-      lastId.current = id;
+    if (activeId.current !== id) {
+      activeId.current = id;
       lastLatestBlockNumber.current = undefined;
       transactionsHandlers.setState([]);
     }
-  }, [id, transactionsHandlers]);
+    init();
+  }, [id, state.simulations, transactionsHandlers]);
 
   return (
     <Stack>
