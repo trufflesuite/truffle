@@ -35,6 +35,7 @@ export class Docker {
     }
 
     const versionString = await this.validateAndGetSolcVersion();
+
     const command =
       "docker run --platform=linux/amd64 --rm -i ethereum/solc:" +
       this.config.version +
@@ -136,7 +137,6 @@ export class Docker {
       execSync("docker inspect --type=image ethereum/solc:" + image);
     } catch (error) {
       console.log(`${image} does not exist locally.\n`);
-      console.log("Attempting to download the Docker image.");
       this.downloadDockerImage(image);
     }
 

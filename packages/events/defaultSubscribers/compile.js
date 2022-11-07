@@ -1,5 +1,4 @@
 const OS = require("os");
-const { Spinner } = require("@truffle/spinners");
 
 module.exports = {
   initialization: function () {
@@ -80,22 +79,19 @@ module.exports = {
     "compile:downloadDockerImage:start": [
       function () {
         if (this.quiet) return;
-        this.spinner = new Spinner("compile-solidity:docker-download", {
-          text: "Downloading Docker image",
-          prefixColor: "red"
-        });
+        this.logger.log("Attempting to download the Docker image.");
       }
     ],
     "compile:downloadDockerImage:succeed": [
       function () {
         if (this.quiet) return;
-        this.spinner.succeed("Download successful!");
+        this.logger.log("Download successful!");
       }
     ],
     "compile:downloadDockerImage:fail": [
       function ({ error }) {
         if (this.quiet) return;
-        this.spinner.fail(
+        this.logger.log(
           `There was a problem downloading the Docker image. \n${error}.`
         );
       }
