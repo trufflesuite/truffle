@@ -207,16 +207,17 @@ class CLIDebugger {
   }
 
   async openVSCodeDebug() {
-    // Sets the parameters
-    const params = new URLSearchParams({
-      txHash: this.txHash,
-      workingDirectory: this.config.working_directory,
-      providerUrl: this.config.provider.host
-    });
+    // Sets the URL
+    const url = new URL("/debug", "vscode://trufflesuite-csi.truffle-vscode");
+
+    // Sets the query parameters
+    url.searchParams.set("txHash", this.txHash);
+    url.searchParams.set("workingDirectory", this.config.working_directory);
+    url.searchParams.set("providerUrl", this.config.provider.host);
 
     // Opens VSCode based on the OS
     const openCommand = process.platform === "win32" ? `start ""` : `open`;
-    const commandLine = `${openCommand} "vscode://trufflesuite-csi.truffle-vscode/debug?${params}"`;
+    const commandLine = `${openCommand} "${url.toString()}"`;
 
     // Defines the options for the child process. An abort signal is used to cancel the process, if necessary.
     const controller = new AbortController();
