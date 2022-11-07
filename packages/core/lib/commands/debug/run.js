@@ -60,9 +60,17 @@ module.exports = async function (options) {
   if (config.compileAll && config.compileNone) {
     throw new Error("Incompatible options passed regarding what to compile");
   }
-  const interpreter = await new CLIDebugger(config, {
+
+  const cliDebugger = new CLIDebugger(config, {
     txHash,
     compilations
-  }).run();
+  });
+
+  if (config.vscode) {
+    await cliDebugger.openVSCodeDebug();
+    return;
+  }
+
+  const interpreter = await cliDebugger.run();
   return await promisify(interpreter.start.bind(interpreter))();
 };

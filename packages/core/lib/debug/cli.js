@@ -3,6 +3,7 @@ const debug = debugModule("lib:debug:cli");
 
 const fs = require("fs-extra");
 const path = require("path");
+const childProcess = require("child_process");
 
 const Debugger = require("@truffle/debugger");
 const DebugUtils = require("@truffle/debug-utils");
@@ -203,6 +204,38 @@ class CLIDebugger {
     );
 
     return contracts;
+  }
+
+  async openVSCodeDebug() {
+    // Sets the parameters
+    const params = new URLSearchParams({
+      txHash: this.txHash,
+      workingDirectory: this.config.working_directory,
+      providerUrl: this.config.provider.host
+    });
+
+    // Opens VSCode based on the OS
+    const openCommand = process.platform === "win32" ? `start ""` : `open`;
+    const commandLine = `${openCommand} "vscode://trufflesuite-csi.truffle-vscode/debug?${params}"`;
+
+    // Defines the options for the child process. An abort signal is used to cancel the process, if necessary.
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    // Executes the command
+    childProcess.exec(commandLine, { signal }, (stderr, error) => {
+      if (stderr) {
+        throw new Error(`Error opening the debug session in VSCode: ${stderr}`);
+      }
+      if (error) {
+        controller.abort();
+        throw new Error(`Error opening the debug session in VSCode: ${error}`);
+      }
+    });
+
+    // Sends a message to the user
+    this.config.logger.log(commandLine);
+    this.config.logger.log("Opening truffle debugger in VSCode...");
   }
 }
 
