@@ -47,7 +47,7 @@
     "@truffle/migrate": "^3.3.16",
     "@truffle/resolver": "^9.0.21",
     "@truffle/workflow-compile": "^4.0.39",
-    "babel-loader": "^8.2.3",
+    "babel-loader": "^9.1.0",
     "babel-runtime": "^6.26.0",
     "chai": "^4.2.0",
     "change-case": "3.0.2",
