@@ -14,8 +14,10 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
   const navigate = useNavigate();
   const activeId = useRef(id);
-  const [transactionReceipts, transactionReceiptsHandler] =
-    useListState<Ethereum.Transaction.Receipt>([]);
+  const [transactions, transactionsHandler] = useListState<{
+    data: any;
+    receipt: Ethereum.Transaction.Receipt;
+  }>([]);
   const [forkBlockNumber, setForkBlockNumber] = useState<number>();
   const [latestBlockNumber, setLatestBlockNumber] = useState<number>();
   const lastLatestBlockNumber = useRef<number>();
@@ -49,7 +51,7 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
             method: "eth_getTransactionReceipt",
             params: [(transaction as Exclude<typeof transaction, string>).hash]
           });
-          transactionReceiptsHandler.append(receipt);
+          transactionsHandler.append({ data: transaction, receipt });
         }
       }
     };
@@ -57,10 +59,10 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
     if (activeId.current !== id) {
       activeId.current = id;
       lastLatestBlockNumber.current = undefined;
-      transactionReceiptsHandler.setState([]);
+      transactionsHandler.setState([]);
     }
     init();
-  }, [id, state.simulations, transactionReceiptsHandler, navigate]);
+  }, [id, state.simulations, transactionsHandler, navigate]);
 
   return (
     <Stack>
@@ -70,10 +72,11 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
           forkBlockNumber &&
           latestBlockNumber - forkBlockNumber}
       </Text>
-      {transactionReceipts.map(data => (
+      {transactions.map(({ data, receipt }) => (
         <Transaction
-          key={`simulated-transaction-${data.transactionHash}`}
-          receipt={data}
+          key={`simulated-transaction-${data.hash}`}
+          transaction={data}
+          receipt={receipt}
         />
       ))}
     </Stack>

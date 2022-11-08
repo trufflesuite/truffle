@@ -4,10 +4,12 @@ import Overview from "src/components/composed/Simulations/Simulation/Transaction
 import Details from "src/components/composed/Simulations/Simulation/Transaction/Details";
 
 interface TransactionProps {
+  transaction: any;
   receipt: Ethereum.Transaction.Receipt;
 }
 
 export default function Transaction({
+  transaction,
   receipt
 }: TransactionProps): JSX.Element {
   const { transactionHash } = receipt;
@@ -17,7 +19,7 @@ export default function Transaction({
       overviewComponent={Overview}
       overviewProps={{ transactionHash }}
       detailsComponent={Details}
-      detailsProps={{ receipt }}
+      detailsProps={{ transaction, receipt }}
     />
   );
 }

@@ -3,12 +3,14 @@ import { Tabs, Text } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 
 interface DetailsProps {
+  transaction: any;
   receipt: Ethereum.Transaction.Receipt;
 }
 
-export default function Details({ receipt }: DetailsProps): JSX.Element {
-  const receiptStringified = JSON.stringify(receipt, null, 2);
-
+export default function Details({
+  transaction,
+  receipt
+}: DetailsProps): JSX.Element {
   return (
     <Tabs defaultValue="overview">
       <Tabs.List grow>
@@ -19,10 +21,16 @@ export default function Details({ receipt }: DetailsProps): JSX.Element {
 
       <Tabs.Panel value="overview">
         <Text size="sm" color="teal" weight={700}>
+          Transaction
+        </Text>
+        <Prism language="json" copyLabel="Copy to clipboard" withLineNumbers>
+          {JSON.stringify(transaction, null, 2)}
+        </Prism>
+        <Text size="sm" color="teal" weight={700}>
           Transaction receipt
         </Text>
         <Prism language="json" copyLabel="Copy to clipboard" withLineNumbers>
-          {receiptStringified}
+          {JSON.stringify(receipt, null, 2)}
         </Prism>
       </Tabs.Panel>
     </Tabs>
