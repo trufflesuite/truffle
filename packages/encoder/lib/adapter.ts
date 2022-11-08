@@ -147,7 +147,10 @@ export class ProviderAdapter {
     }
     let result;
     if (isEip1193Provider(this.provider)) {
-      result = await this.provider.request({ method, params });
+      result = await this.provider.request({
+        method,
+        params
+      });
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
@@ -172,7 +175,9 @@ export class ProviderAdapter {
             if (error) {
               return reject(error);
             }
-
+            if (response.error) {
+              return reject(response.error);
+            }
             const { result: res } = response;
             accept(res);
           }) as Callback<JsonRPCResponse>
