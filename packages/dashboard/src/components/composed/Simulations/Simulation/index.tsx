@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import type { Ethereum } from "ganache";
-import { Stack, Code } from "@mantine/core";
+import { Stack, Text } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { useNavigate } from "react-router-dom";
+import Transaction from "src/components/composed/Simulations/Simulation/Transaction";
 import { useDash } from "src/hooks";
 
 interface SimulationProps {
@@ -13,8 +14,8 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
   const { state } = useDash()!;
   const navigate = useNavigate();
   const activeId = useRef(id);
-  const [transactions, transactionsHandlers] =
-    useListState<Ethereum.Transaction>([]);
+  const [transactionReceipts, transactionReceiptsHandler] =
+    useListState<Ethereum.Transaction.Receipt>([]);
   const [forkBlockNumber, setForkBlockNumber] = useState<number>();
   const [latestBlockNumber, setLatestBlockNumber] = useState<number>();
   const lastLatestBlockNumber = useRef<number>();
@@ -44,7 +45,11 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
           params: ["0x" + i.toString(16), true]
         });
         for (const transaction of block!.transactions) {
-          transactionsHandlers.append(transaction as Ethereum.Transaction);
+          const receipt = await simulation.provider.request({
+            method: "eth_getTransactionReceipt",
+            params: [(transaction as Exclude<typeof transaction, string>).hash]
+          });
+          transactionReceiptsHandler.append(receipt);
         }
       }
     };
@@ -52,21 +57,25 @@ export default function Simulation({ id }: SimulationProps): JSX.Element {
     if (activeId.current !== id) {
       activeId.current = id;
       lastLatestBlockNumber.current = undefined;
-      transactionsHandlers.setState([]);
+      transactionReceiptsHandler.setState([]);
     }
     init();
-  }, [id, state.simulations, transactionsHandlers, navigate]);
+  }, [id, state.simulations, transactionReceiptsHandler, navigate]);
 
   return (
     <Stack>
-      <Code block>
-        Number of blocks after forking:&nbsp;
+      <Text>
+        Number of blocks after forking:
         {latestBlockNumber &&
           forkBlockNumber &&
           latestBlockNumber - forkBlockNumber}
-        <br />
-        {JSON.stringify(transactions, null, 2)}
-      </Code>
+      </Text>
+      {transactionReceipts.map(data => (
+        <Transaction
+          key={`simulated-transaction-${data.transactionHash}`}
+          receipt={data}
+        />
+      ))}
     </Stack>
   );
 }
