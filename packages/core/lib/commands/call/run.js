@@ -3,12 +3,23 @@ module.exports = async function (options) {
   const util = require("util");
   const Config = require("@truffle/config");
   const { Environment } = require("@truffle/environment");
-
+  const OS = require("os");
   const Codec = require("@truffle/codec");
   const Encoder = require("@truffle/encoder");
   const Decoder = require("@truffle/decoder");
+  const TruffleError = require("@truffle/error");
 
-  const config = Config.detect(options);
+  if (options.url && options.network) {
+    const message =
+      "" +
+      "Mutually exclusive options, --url and --network detected!" +
+      OS.EOL +
+      "Please use either --url or --network and try again." +
+      OS.EOL +
+      "See: https://trufflesuite.com/docs/truffle/reference/truffle-commands/#call" +
+      OS.EOL;
+    throw new TruffleError(message);
+  }
   await Environment.detect(config);
 
   const [contractName, functionName, ...args] = config._;
