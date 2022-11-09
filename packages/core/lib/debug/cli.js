@@ -207,7 +207,7 @@ class CLIDebugger {
   }
 
   /**
-   * This function is responsible for opening the debug in vscode.
+   * This function is responsible for opening the debugger in vscode.
    */
   async openVSCodeDebug() {
     // Sets the URL

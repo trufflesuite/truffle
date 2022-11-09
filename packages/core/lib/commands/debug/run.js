@@ -67,7 +67,7 @@ module.exports = async function (options) {
     compilations
   });
 
-  // Checks if the user wants to debug in vscode
+  // Checks if the user wants to open the debugger in vscode
   if (config.vscode) {
     await cliDebugger.openVSCodeDebug();
     return;
