@@ -38,7 +38,7 @@ describe("Solidity console log [ @standalone ]", function () {
   let config, logger, output, provider;
   let cleanupSandboxDir;
 
-  this.timeout(10000);
+  this.timeout(30000);
 
   before("set up sandbox", async () => {
     ({ config, cleanupSandboxDir } = await sandbox.create(
@@ -148,7 +148,7 @@ describe("Solidity console log [ @standalone ]", function () {
   });
 
   describe("Migration", async function () {
-    this.timeout(100000);
+    this.timeout(30000);
     let server;
     before("setup: interact with contract", async function () {
       server = Ganache.server({
