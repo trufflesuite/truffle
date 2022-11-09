@@ -105,6 +105,7 @@ const Create = {
       throw new Error("Can not create " + filename + ": file exists");
     }
     fse.copySync(from, to);
+    replaceContents(to, templates.contract.name, name);
   }
 };
 
