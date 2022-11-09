@@ -206,6 +206,9 @@ class CLIDebugger {
     return contracts;
   }
 
+  /**
+   * This function is responsible for opening the debug in vscode.
+   */
   async openVSCodeDebug() {
     // Sets the URL
     const url = new URL("/debug", "vscode://trufflesuite-csi.truffle-vscode");
@@ -216,7 +219,7 @@ class CLIDebugger {
     url.searchParams.set("providerUrl", this.config.provider.host);
     url.searchParams.set("fetchExternal", this.config.fetchExternal);
 
-    // Opens VSCode based on the OS
+    // Opens VSCode based on OS
     const openCommand = process.platform === "win32" ? `start ""` : `open`;
     const commandLine = `${openCommand} "${url}"`;
 

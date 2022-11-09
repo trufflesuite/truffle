@@ -33,7 +33,8 @@ module.exports = {
       default: false
     },
     "vscode": {
-      describe: "Starts the debug session on Truffle VSCode extension",
+      describe:
+        "Starts the debug session in VS Code using the Truffle for VS Code extension",
       type: "boolean",
       default: false
     }

@@ -61,16 +61,19 @@ module.exports = async function (options) {
     throw new Error("Incompatible options passed regarding what to compile");
   }
 
+  // Create a new CLIDebugger instance
   const cliDebugger = new CLIDebugger(config, {
     txHash,
     compilations
   });
 
+  // Checks if the user wants to debug in vscode
   if (config.vscode) {
     await cliDebugger.openVSCodeDebug();
     return;
   }
 
+  // Starts the cli debugger
   const interpreter = await cliDebugger.run();
   return await promisify(interpreter.start.bind(interpreter))();
 };
