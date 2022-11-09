@@ -1,5 +1,5 @@
-const { open } = require("node:fs/promises");
-const { readdir } = require("node:fs/promises");
+const { open } = require("fs/promises");
+const { readdir } = require("fs/promises");
 const path = require("path");
 const JSONStream = require("JSONStream");
 const Migrate = require("@truffle/migrate").default;
