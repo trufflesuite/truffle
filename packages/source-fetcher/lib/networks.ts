@@ -76,7 +76,10 @@ export const networkNamesById: { [id: number]: string } = {
   71401: "testnet-godwoken",
   50: "xinfin", //not presently supported by either fetcher, but...
   51: "apothem-xinfin",
-  7700: "canto"
+  7700: "canto",
+  592: "astar",
+  8217: "cypress-klaytn", //not presently supported by either fetcher, but...
+  1001: "baobab-klaytn"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
