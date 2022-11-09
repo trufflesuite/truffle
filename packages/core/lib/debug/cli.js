@@ -214,10 +214,11 @@ class CLIDebugger {
     url.searchParams.set("txHash", this.txHash);
     url.searchParams.set("workingDirectory", this.config.working_directory);
     url.searchParams.set("providerUrl", this.config.provider.host);
+    url.searchParams.set("fetchExternal", this.config.fetchExternal);
 
     // Opens VSCode based on the OS
     const openCommand = process.platform === "win32" ? `start ""` : `open`;
-    const commandLine = `${openCommand} "${url.toString()}"`;
+    const commandLine = `${openCommand} "${url}"`;
 
     // Defines the options for the child process. An abort signal is used to cancel the process, if necessary.
     const controller = new AbortController();
@@ -235,7 +236,6 @@ class CLIDebugger {
     });
 
     // Sends a message to the user
-    this.config.logger.log(commandLine);
     this.config.logger.log("Opening truffle debugger in VSCode...");
   }
 }
