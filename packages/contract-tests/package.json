@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.111",
+  "version": "0.1.112",
   "scripts": {
     "prepare": "exit 0",
     "test": "./scripts/test.sh",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.1.4",
-    "@truffle/compile-solidity": "^6.0.48",
+    "@truffle/compile-solidity": "^6.0.49",
     "@truffle/contract": "^4.6.6",
     "bignumber.js": "^7.2.1",
     "chai": "^4.2.0",

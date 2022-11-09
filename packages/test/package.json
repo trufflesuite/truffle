@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,16 +21,16 @@
   "dependencies": {
     "@truffle/codec": "^0.14.8",
     "@truffle/compile-common": "^0.9.0",
-    "@truffle/compile-solidity": "^6.0.48",
-    "@truffle/config": "^1.3.42",
-    "@truffle/debugger": "^11.0.15",
-    "@truffle/decoder": "^5.2.35",
-    "@truffle/deployer": "^3.2.102",
+    "@truffle/compile-solidity": "^6.0.49",
+    "@truffle/config": "^1.3.43",
+    "@truffle/debugger": "^11.0.16",
+    "@truffle/decoder": "^5.2.36",
+    "@truffle/deployer": "^3.2.103",
     "@truffle/expect": "^0.1.3",
     "@truffle/interface-adapter": "^0.5.24",
-    "@truffle/migrate": "^3.3.16",
-    "@truffle/resolver": "^9.0.21",
-    "@truffle/workflow-compile": "^4.0.39",
+    "@truffle/migrate": "^3.3.17",
+    "@truffle/resolver": "^9.0.22",
+    "@truffle/workflow-compile": "^4.0.40",
     "bn.js": "^5.1.3",
     "chai": "^4.2.0",
     "colors": "1.4.0",
