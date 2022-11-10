@@ -13,26 +13,6 @@ module.exports = merge(commonConfig, {
         include: path.resolve(__dirname, "..", "lib"),
         exclude: path.resolve(__dirname, "..", "node_modules"),
         use: "@jsdevtools/coverage-istanbul-loader"
-      },
-      {
-        test: /\.js$/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: [
-              [
-                "@babel/preset-env",
-                { targets: { node: "12.0" }, modules: false }
-              ]
-            ],
-            plugins: ["@babel/plugin-transform-runtime"]
-          }
-        },
-        exclude: [path.resolve(__dirname, "..", "node_modules")],
-        include: [
-          path.resolve(__dirname, "..", "lib"),
-          path.resolve(__dirname, "..", "test")
-        ]
       }
     ]
   },
