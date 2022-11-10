@@ -637,7 +637,7 @@ const data = createSelectorTree({
      */
     compilationId: createLeaf(
       [evm.current.context],
-      ({ compilationId }) => compilationId
+      context => context?.compilationId
     ),
 
     /**
@@ -681,87 +681,90 @@ const data = createSelectorTree({
        * one contains only the current compilation/context
        */
       _: createLeaf(["./raw", "./inlined/raw"], (scopes, inlined) =>
-        Object.assign(
-          {},
-          ...Object.entries(scopes).map(([id, scope]) => {
-            let definition = inlined[id].definition;
-            if (definition.nodeType === "ContractDefinition") {
-              //contract definition case: process inheritance
-              debug("contract id %d", id);
-              let newScope = { ...scope };
-              //note that Solidity gives us the linearization in order from most
-              //derived to most base, but we want most base to most derived;
-              //annoyingly, reverse() is in-place, so we clone with slice() first
-              const linearizedBaseContractsFromBase =
-                definition.linearizedBaseContracts.slice().reverse();
-              linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
-              //the contract itself, because we want to treat that one specially
-              //now, we put it all together
-              newScope.variables = []
-                .concat(
-                  //concatenate the variables lists from the base classes
-                  ...linearizedBaseContractsFromBase.map(
-                    contractId => scopes[contractId].variables || []
-                    //we need the || [] because contracts with no state variables
-                    //have variables undefined rather than empty like you'd expect
-                  )
-                )
-                .filter(
-                  variable =>
-                    inlined[variable.astRef].definition.visibility !== "private"
-                  //filter out private variables from the base classes
-                )
-                //add in the variables for the contract itself -- note that here
-                //private variables are not filtered out!
-                .concat(scopes[id].variables || [])
-                .filter(variable => {
-                  //HACK: let's filter out those constants we don't know
-                  //how to read.  they'll just clutter things up.
-                  debug("variable %O", variable);
-                  const definition = inlined[variable.astRef].definition;
-                  return (
-                    !(
-                      definition.constant ||
-                      definition.mutability === "constant"
-                    ) || Codec.Ast.Utils.isSimpleConstant(definition.value)
-                  );
-                });
-              return { [id]: newScope };
-            } else if (definition.nodeType === "SourceUnit") {
-              //source unit case: process imports
-              let newScope = { ...scope };
-              //in this case, handling imports in some sort of tree fashion would
-              //be too much work.  we'll do this the easy way: by checking exported
-              //symbols for constants.
-              newScope.variables = Object.values(definition.exportedSymbols)
-                .map(
-                  array => array[0] //I don't know why these are arrays...?
-                )
-                .filter(astRef => {
-                  //restrict to variables, not other exported symbols!
-                  const definition = inlined[astRef].definition;
-                  return (
-                    definition.nodeType === "VariableDeclaration" &&
-                    (definition.constant ||
-                      definition.mutability === "constant") &&
-                    //HACK: we'll also again filter out constants we don't know how
-                    //to read
-                    Codec.Ast.Utils.isSimpleConstant(definition.value)
-                  );
-                })
-                .map(astRef => ({
-                  //we'll have to reconstruct the rest from just the astRef
-                  astRef,
-                  name: inlined[astRef].definition.name,
-                  sourceId: inlined[astRef].sourceId
-                }));
-              return { [id]: newScope };
-            } else {
-              //default case, nothing to process
-              return { [id]: scope };
-            }
-          })
-        )
+        scopes && inlined
+          ? Object.assign(
+              {},
+              ...Object.entries(scopes).map(([id, scope]) => {
+                let definition = inlined[id].definition;
+                if (definition.nodeType === "ContractDefinition") {
+                  //contract definition case: process inheritance
+                  debug("contract id %d", id);
+                  let newScope = { ...scope };
+                  //note that Solidity gives us the linearization in order from most
+                  //derived to most base, but we want most base to most derived;
+                  //annoyingly, reverse() is in-place, so we clone with slice() first
+                  const linearizedBaseContractsFromBase =
+                    definition.linearizedBaseContracts.slice().reverse();
+                  linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
+                  //the contract itself, because we want to treat that one specially
+                  //now, we put it all together
+                  newScope.variables = []
+                    .concat(
+                      //concatenate the variables lists from the base classes
+                      ...linearizedBaseContractsFromBase.map(
+                        contractId => scopes[contractId].variables || []
+                        //we need the || [] because contracts with no state variables
+                        //have variables undefined rather than empty like you'd expect
+                      )
+                    )
+                    .filter(
+                      variable =>
+                        inlined[variable.astRef].definition.visibility !==
+                        "private"
+                      //filter out private variables from the base classes
+                    )
+                    //add in the variables for the contract itself -- note that here
+                    //private variables are not filtered out!
+                    .concat(scopes[id].variables || [])
+                    .filter(variable => {
+                      //HACK: let's filter out those constants we don't know
+                      //how to read.  they'll just clutter things up.
+                      debug("variable %O", variable);
+                      const definition = inlined[variable.astRef].definition;
+                      return (
+                        !(
+                          definition.constant ||
+                          definition.mutability === "constant"
+                        ) || Codec.Ast.Utils.isSimpleConstant(definition.value)
+                      );
+                    });
+                  return { [id]: newScope };
+                } else if (definition.nodeType === "SourceUnit") {
+                  //source unit case: process imports
+                  let newScope = { ...scope };
+                  //in this case, handling imports in some sort of tree fashion would
+                  //be too much work.  we'll do this the easy way: by checking exported
+                  //symbols for constants.
+                  newScope.variables = Object.values(definition.exportedSymbols)
+                    .map(
+                      array => array[0] //I don't know why these are arrays...?
+                    )
+                    .filter(astRef => {
+                      //restrict to variables, not other exported symbols!
+                      const definition = inlined[astRef].definition;
+                      return (
+                        definition.nodeType === "VariableDeclaration" &&
+                        (definition.constant ||
+                          definition.mutability === "constant") &&
+                        //HACK: we'll also again filter out constants we don't know how
+                        //to read
+                        Codec.Ast.Utils.isSimpleConstant(definition.value)
+                      );
+                    })
+                    .map(astRef => ({
+                      //we'll have to reconstruct the rest from just the astRef
+                      astRef,
+                      name: inlined[astRef].definition.name,
+                      sourceId: inlined[astRef].sourceId
+                    }));
+                  return { [id]: newScope };
+                } else {
+                  //default case, nothing to process
+                  return { [id]: scope };
+                }
+              })
+            )
+          : null
       ),
 
       /**
@@ -771,7 +774,9 @@ const data = createSelectorTree({
       raw: createLeaf(
         ["/views/scopes", sourcemapping.current.sourceIds],
         (scopes, sourceIds) =>
-          Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
+          sourceIds
+            ? Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
+            : null
       ),
 
       /**
@@ -783,17 +788,21 @@ const data = createSelectorTree({
          * Replacement for the old data.views.scopes.inlined;
          * that one now contains multi-compilation info, this
          * one contains only the current compilation/context
+         *
+         * Returns null if nothing loaded
          */
         _: createLeaf(["./raw", "../_"], (inlined, scopes) =>
-          Object.assign(
-            {},
-            ...Object.entries(inlined).map(([astRef, info]) => ({
-              [astRef]: {
-                ...info,
-                variables: scopes[astRef].variables
-              }
-            }))
-          )
+          inlined
+            ? Object.assign(
+                {},
+                ...Object.entries(inlined).map(([astRef, info]) => ({
+                  [astRef]: {
+                    ...info,
+                    variables: scopes[astRef].variables
+                  }
+                }))
+              )
+            : null
         ),
 
         /**
@@ -803,7 +812,12 @@ const data = createSelectorTree({
         raw: createLeaf(
           ["/views/scopes/inlined", sourcemapping.current.sourceIds],
           (scopes, sourceIds) =>
-            Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
+            sourceIds
+              ? Object.assign(
+                  {},
+                  ...sourceIds.map(sourceId => scopes[sourceId])
+                )
+              : null
         )
       }
     },
@@ -896,7 +910,7 @@ const data = createSelectorTree({
     /**
      * data.current.compiler
      */
-    compiler: createLeaf([evm.current.context], ({ compiler }) => compiler),
+    compiler: createLeaf([evm.current.context], context => context?.compiler),
 
     /**
      * data.current.bareLetsInYulAreHit
@@ -1483,6 +1497,10 @@ const data = createSelectorTree({
             contract: [],
             local: []
           };
+          if (!scopes) {
+            //if no transaction is loaded, there are no variables
+            return sections;
+          }
           for (const [identifier, ref] of Object.entries(refs)) {
             if (identifier in definitions) {
               switch (ref.location) {
