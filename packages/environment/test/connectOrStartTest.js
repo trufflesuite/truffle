@@ -1,5 +1,6 @@
 const assert = require("chai").assert;
 const Develop = require("../develop");
+const TruffleConfig = require("@truffle/config");
 
 describe("connectOrStart test network", async function () {
   const ipcOptions = { network: "test" };
@@ -12,7 +13,11 @@ describe("connectOrStart test network", async function () {
   it("starts Ganache when no Ganache instance is running", async function () {
     let connection;
     try {
-      connection = await Develop.connectOrStart(ipcOptions, ganacheOptions);
+      connection = await Develop.connectOrStart(
+        ipcOptions,
+        ganacheOptions,
+        TruffleConfig.default()
+      );
       assert.isTrue(connection.started, "A new Ganache server did not spin up");
       assert.isFunction(connection.disconnect, "disconnect is not a function");
     } finally {
@@ -29,13 +34,20 @@ describe("connectOrStart test network", async function () {
     try {
       //Establish IPC Ganache service
       spawnedGanache = await Develop.start(ipcOptions.network, ganacheOptions);
-      connectionOneDisconnect = await Develop.connect({
-        ...ipcOptions,
-        retry: true
-      });
+      connectionOneDisconnect = await Develop.connect(
+        {
+          ...ipcOptions,
+          retry: true
+        },
+        TruffleConfig.default()
+      );
 
       //Test
-      connectionTwo = await Develop.connectOrStart(ipcOptions, ganacheOptions);
+      connectionTwo = await Develop.connectOrStart(
+        ipcOptions,
+        ganacheOptions,
+        TruffleConfig.default()
+      );
 
       //Validate
       assert.isFalse(connectionTwo.started);
