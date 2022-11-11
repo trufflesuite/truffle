@@ -41,7 +41,8 @@ import {
   VariableNotFoundError,
   MemberNotFoundError,
   ArrayIndexOutOfBoundsError,
-  NoProviderError
+  NoProviderError,
+  RepeatCompilationIdError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
 //sorry for the untyped import, but...
@@ -80,6 +81,14 @@ export class ProjectDecoder {
   ) {
     if (!provider) {
       throw new NoProviderError();
+    }
+    //check for repeat compilation IDs
+    for (let i = 0; i < compilations.length; i++) {
+      for (let j = i + 1; j < compilations.length; j++) {
+        if (compilations[i].id === compilations[j].id) {
+          throw new RepeatCompilationIdError(compilations[i].id);
+        }
+      }
     }
     this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
@@ -148,6 +157,27 @@ export class ProjectDecoder {
   public async addCompilations(
     compilations: Compilations.Compilation[]
   ): Promise<void> {
+    //first: make sure we're not adding a compilation with an existing ID
+    const existingIds = new Set(
+      this.compilations.map(compilation => compilation.id)
+    );
+    //we use a find() rather than a some() so that we can put the ID in the error
+    const conflictingCompilation = compilations.find(compilation =>
+      existingIds.has(compilation.id)
+    );
+    if (conflictingCompilation !== undefined) {
+      throw new RepeatCompilationIdError(conflictingCompilation.id);
+    }
+    //also: check for repeats among the ones we're adding
+    for (let i = 0; i < compilations.length; i++) {
+      for (let j = i + 1; j < compilations.length; j++) {
+        if (compilations[i].id === compilations[j].id) {
+          throw new RepeatCompilationIdError(compilations[i].id);
+        }
+      }
+    }
+
+    //now: checks are over, start adding stuff
     this.compilations = [...this.compilations, ...compilations];
 
     const {
@@ -239,8 +269,9 @@ export class ProjectDecoder {
    * contracts to be decoded.  This may come in several forms; see the type
    * documentation for more information.  If passing in `{ compilations: ... }`,
    * take care that the compilations have different IDs from others passed in
-   * so far.  If passed in in another form, an ID will be assigned automatically,
-   * which should generally avoid any collisions.
+   * so far, otherwise this will error.  If passed in in another form, an ID
+   * will be assigned automatically, which should generally avoid any
+   * collisions.
    */
   public async addAdditionalProjectInfo(
     projectInfo: Compilations.ProjectInfo
