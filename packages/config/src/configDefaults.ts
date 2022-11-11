@@ -61,6 +61,7 @@ export const getInitialConfig = ({
       grep: null
     },
     compilers: {
+      cache: "fileSystem",
       solc: {
         settings: {
           //Note: The default solc version is *not* set here!
