@@ -11,6 +11,7 @@ const { prepareContracts } = require("../../helpers");
 describe("Adding compilations", function () {
   let provider;
   let abstractions;
+  let compilations;
   let web3;
 
   let Contracts;
@@ -37,6 +38,7 @@ describe("Adding compilations", function () {
       path.resolve(__dirname, "..")
     );
     abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
 
     Contracts = [
       abstractions.WireTest,
@@ -74,5 +76,51 @@ describe("Adding compilations", function () {
     });
     assert.lengthOf(suceedingEvents, 1);
     assert.lengthOf(suceedingEvents[0].decodings, 1);
+  });
+
+  it("should error on supplying two compilations with the same ID on startup", async function () {
+    try {
+      await Decoder.forProject({
+        provider: web3.currentProvider,
+        projectInfo: { compilations: [compilations[0], compilations[0]] }
+      });
+      assert.fail("Creation should have errored");
+    } catch (error) {
+      if (error.name !== "RepeatCompilationIdError") {
+        throw error; //rethrow unexpected errors
+      }
+    }
+  });
+
+  it("should error on supplying two compilations with the same ID on adding", async function () {
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { compilations: [] }
+    });
+    try {
+      await decoder.addAdditionalProjectInfo({
+        compilations: [compilations[0], compilations[0]]
+      });
+      assert.fail("Adding new should have errored");
+    } catch (error) {
+      if (error.name !== "RepeatCompilationIdError") {
+        throw error; //rethrow unexpected errors
+      }
+    }
+  });
+
+  it("should error on supplying compilation with an existing ID", async function () {
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { compilations }
+    });
+    try {
+      await decoder.addAdditionalProjectInfo({ compilations });
+      assert.fail("Adding new should have errored");
+    } catch (error) {
+      if (error.name !== "RepeatCompilationIdError") {
+        throw error; //rethrow unexpected errors
+      }
+    }
   });
 });
