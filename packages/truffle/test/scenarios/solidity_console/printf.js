@@ -35,13 +35,14 @@ const copyFixtures = config => {
 };
 
 describe("Solidity console log [ @standalone ]", function () {
-  let config, logger, output, provider;
-  let cleanupSandboxDir;
-
   this.timeout(30000);
 
+  let config, logger, output, provider;
+  let cleanupSandboxDir;
+  let tempDirPath; // to manipulate truffle-config.js on fs.
+
   before("set up sandbox", async () => {
-    ({ config, cleanupSandboxDir } = await sandbox.create(
+    ({ config, cleanupSandboxDir, tempDirPath } = await sandbox.create(
       path.join(__dirname, "../../sources/init")
     ));
 
@@ -150,6 +151,7 @@ describe("Solidity console log [ @standalone ]", function () {
   describe("Migration", async function () {
     this.timeout(30000);
     let server;
+
     before("setup: interact with contract", async function () {
       server = Ganache.server({
         chain: { chainId: 1, networkId: 1 },
@@ -170,12 +172,20 @@ describe("Solidity console log [ @standalone ]", function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
-        config.solidityLog = { disableMigration: false };
-        await CommandRunner.run("migrate --network mainnet", config);
+        // setup new config file
+        await fs.copy(
+          path.join(tempDirPath, "config-disable-migrate-false.js"),
+          path.join(tempDirPath, "truffle-config.js")
+        );
+        await CommandRunner.run(
+          "migrate --network mainnet",
+          config,
+          "migrate:run"
+        );
         assert(logger.includes("Total deployments:   1"));
       } catch (error) {
         console.log("ERROR: %o", error);
-        assert.fail(); // flow should not get here
+        assert.fail("Migration should have succeeded!");
       }
     });
 
@@ -183,15 +193,27 @@ describe("Solidity console log [ @standalone ]", function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
-        config.solidityLog = { disableMigration: true };
-        await CommandRunner.run("migrate --network mainnet", config);
-        assert.fail(); // flow should not get here
+        // setup new config file
+        await fs.copy(
+          path.join(tempDirPath, "config-disable-migrate-true.js"),
+          path.join(tempDirPath, "truffle-config.js")
+        );
+        await CommandRunner.run(
+          "migrate --network mainnet --reset --skip-dry-run",
+          config,
+          "migrate:run:*"
+        );
+        assert.fail("Migration should have failed");
       } catch (error) {
         const exceptionMessage =
           "You are trying to deploy contracts that use console.log." +
           os.EOL +
-          "Please fix, or disable this check by setting solidityLog.disableMigration to false";
-        assert(logger.includes(exceptionMessage), "Expected Migration to fail"); //TODO: get warning verbiage correct
+          "Please fix, or disable this check by setting solidityLog.disableMigrate to false" +
+          os.EOL;
+        assert(
+          logger.includes(exceptionMessage),
+          "Migration should have failed"
+        );
       }
     });
   });
