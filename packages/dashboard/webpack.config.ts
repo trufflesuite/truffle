@@ -56,7 +56,7 @@ const config: webpack.Configuration = {
       vm: require.resolve("vm-browserify")
     }
   },
-  devtool: "source-map",
+  devtool: "nosources-source-map",
   devServer: {
     port: 3000,
     historyApiFallback: true,
