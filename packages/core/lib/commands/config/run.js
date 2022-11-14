@@ -8,6 +8,10 @@ module.exports = async function (options) {
   const Config = require("@truffle/config");
   const OS = require("os");
 
+  const log = options.logger
+    ? options.logger.log || options.logger.debug
+    : console.log;
+
   let command;
   if (options.enableAnalytics || options.disableAnalytics) {
     // TODO: Deprecate the --(en|dis)able-analytics flag in favor of `set analytics true`
@@ -34,7 +38,7 @@ module.exports = async function (options) {
         if (command.set) {
           googleAnalytics.setAnalytics(command.value);
         } else {
-          options.logger.log(googleAnalytics.getAnalytics());
+          log(googleAnalytics.getAnalytics());
         }
         break;
       }
@@ -42,19 +46,17 @@ module.exports = async function (options) {
 
     return;
   } else if (command.list) {
-    options.logger.log("Truffle config values");
-    options.logger.log(`analytics = ${googleAnalytics.getAnalytics()}`);
+    log("Truffle config values");
+    log(`analytics = ${googleAnalytics.getAnalytics()}`);
   } else {
     const config = Config.detect(options);
 
     if (command.set) {
-      options.logger.log(
-        "Setting project-level parameters is not supported yet."
-      );
+      log("Setting project-level parameters is not supported yet.");
       // TODO: add support for writing project-level settings to the truffle config file
       // config[command.key] = command.value;
     } else {
-      options.logger.log(config[command.key]);
+      log(config[command.key]);
     }
     return;
   }

@@ -50,7 +50,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "kovan-optimistic", //can no longer verify but can still fetch existing
     "goerli-optimistic",
     "arbitrum",
-    "rinkeby-arbitrum",
+    "rinkeby-arbitrum", //can no longer verify but can still fetch existing
     "goerli-arbitrum",
     "polygon",
     "mumbai-polygon",
@@ -104,7 +104,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-godwoken",
     //sourcify does *not* support xinfin mainnet...?
     "apothem-xinfin",
-    "canto"
+    "canto",
+    "astar",
+    //sourcify does *not* support klaytn mainnet cypress...?
+    "baobab-klaytn"
     //I'm excluding crystaleum as it has network ID different from chain ID
   ]);
 

@@ -740,7 +740,7 @@ class DebugPrinter {
   }
 
   async printVariables(sectionOuts = this.sectionPrintouts) {
-    const values = await this.session.variables({ indicateUnknown: true });
+    const values = await this.session.variables();
     const sections = this.session.view(data.current.identifiers.sections);
 
     const sectionNames = {

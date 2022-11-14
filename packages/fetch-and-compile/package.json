@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.24",
+  "version": "0.5.25",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -28,9 +28,9 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/codec": "^0.14.8",
-    "@truffle/compile-solidity": "^6.0.48",
-    "@truffle/config": "^1.3.42",
-    "@truffle/source-fetcher": "^1.0.21",
+    "@truffle/compile-solidity": "^6.0.49",
+    "@truffle/config": "^1.3.43",
+    "@truffle/source-fetcher": "^1.0.22",
     "debug": "^4.3.2",
     "semver": "7.3.7",
     "web3-utils": "1.7.4"

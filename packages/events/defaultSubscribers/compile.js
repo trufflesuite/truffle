@@ -75,6 +75,26 @@ module.exports = {
           `> Compilation skipped because --compile-none option was passed.`
         );
       }
+    ],
+    "compile:downloadDockerImage:start": [
+      function () {
+        if (this.quiet) return;
+        this.logger.log("Attempting to download the Docker image.");
+      }
+    ],
+    "compile:downloadDockerImage:succeed": [
+      function () {
+        if (this.quiet) return;
+        this.logger.log("Download successful!");
+      }
+    ],
+    "compile:downloadDockerImage:fail": [
+      function ({ error }) {
+        if (this.quiet) return;
+        this.logger.log(
+          `There was a problem downloading the Docker image. \n${error}.`
+        );
+      }
     ]
   }
 };
