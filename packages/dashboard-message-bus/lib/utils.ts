@@ -4,6 +4,11 @@ import {
   jsonToBase64,
   base64ToJson
 } from "@truffle/dashboard-message-bus-common";
+
+import { networkInterfaces } from "os";
+import { isIP } from "net";
+import { promises as dns } from "dns";
+
 import any from "promise.any";
 
 any.shim();
@@ -13,12 +18,20 @@ any.shim();
  * @dev If you need to attach event listeners *before* the server connection opens,
  * do not use this function since it resolves *after* the connection is opened
  */
-export const startWebSocketServer = (options: ServerOptions) => {
-  return new Promise<WebSocket.Server>(resolve => {
-    const server = new WebSocket.Server(options, () => {
-      resolve(server);
-    });
-  });
+export const startWebSocketServer = async (options: ServerOptions) => {
+  const ipsForHost = await resolveBindHostnameToAllIps(
+    options.host ?? "localhost"
+  );
+  return Promise.all(
+    ipsForHost.map(
+      ip =>
+        new Promise<WebSocket.Server>(resolve => {
+          const server = new WebSocket.Server({ ...options, host: ip }, () => {
+            resolve(server);
+          });
+        })
+    )
+  );
 };
 
 /**
@@ -78,4 +91,22 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
     const encodedMessage = jsonToBase64(message);
     socket.send(encodedMessage);
   });
+};
+
+const getLocalInterfaceAddresses = () => {
+  return Object.keys(networkInterfaces()).flatMap(name =>
+    networkInterfaces()[name].map(iface => iface.address)
+  );
+};
+
+export const resolveBindHostnameToAllIps = async (hostname: string) => {
+  if (isIP(hostname) !== 0) {
+    return [hostname];
+  }
+
+  const interfaces = getLocalInterfaceAddresses();
+  const results = await dns.lookup(hostname, { all: true });
+  return results
+    .map(result => result.address)
+    .filter(address => interfaces.includes(address));
 };

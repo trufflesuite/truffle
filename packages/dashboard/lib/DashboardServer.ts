@@ -12,7 +12,9 @@ import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import cors from "cors";
 import type { Server } from "http";
+import { createServer } from "http";
 import debugModule from "debug";
+import { resolveBindHostnameToAllIps } from "./utils";
 
 export interface DashboardServerOptions {
   /** Port of the dashboard */
@@ -46,7 +48,7 @@ export class DashboardServer {
   frontendPath: string;
 
   private expressApp?: Application;
-  private httpServer?: Server;
+  private httpServers: Server[] = [];
   private messageBus?: DashboardMessageBus;
   private client?: DashboardMessageBusClient;
   private configPublishPort?: number;
@@ -76,7 +78,8 @@ export class DashboardServer {
   }
 
   async start() {
-    if (this.httpServer?.listening) {
+    // if we've initialized the httpServers array, we're already listening.
+    if (this.httpServers.length > 0) {
       return;
     }
 
@@ -99,15 +102,26 @@ export class DashboardServer {
       res.sendFile("index.html", { root: this.frontendPath });
     });
 
-    await new Promise<void>(resolve => {
-      this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
-        if (this.autoOpen) {
-          const host = this.host === "0.0.0.0" ? "localhost" : this.host;
-          open(`http://${host}:${this.port}`);
-        }
-        resolve();
-      });
-    });
+    const bindIpAddresses = await resolveBindHostnameToAllIps(this.host);
+    this.httpServers = await Promise.all(
+      bindIpAddresses.map(async bindIpAddress => {
+        const server = createServer(this.expressApp);
+        return new Promise<Server>(resolve => {
+          server.listen(
+            {
+              host: bindIpAddress,
+              port: this.port
+            },
+            () => resolve(server)
+          );
+        });
+      })
+    );
+
+    if (this.autoOpen) {
+      const host = this.host === "0.0.0.0" ? "localhost" : this.host;
+      open(`http://${host}:${this.port}`);
+    }
   }
 
   async stop() {
@@ -116,9 +130,9 @@ export class DashboardServer {
     await Promise.all([
       this.client?.close(),
       this.messageBus?.terminate(),
-      new Promise<void>(resolve => {
-        this.httpServer?.close(() => resolve());
-      })
+      ...this.httpServers.map(
+        server => new Promise(resolve => server.close(resolve))
+      )
     ]);
     delete this.client;
   }

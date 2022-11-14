@@ -19,8 +19,8 @@ interface UnfulfilledRequest {
 }
 
 export class DashboardMessageBus extends EventEmitter {
-  private publishServer: WebSocket.Server;
-  private subscribeServer: WebSocket.Server;
+  private publishServers: WebSocket.Server[];
+  private subscribeServers: WebSocket.Server[];
   private publishers: WebSocket[] = [];
   private subscribers: WebSocket[] = [];
   private readyPromise: Promise<void>;
@@ -42,32 +42,36 @@ export class DashboardMessageBus extends EventEmitter {
    * @dev This starts separate websocket servers for subscribers/publishers
    */
   async start() {
-    this.subscribeServer = await startWebSocketServer({
+    this.subscribeServers = await startWebSocketServer({
       host: this.host,
       port: this.subscribePort
     });
 
-    this.subscribeServer.on("connection", (newSubscriber: WebSocket) => {
-      newSubscriber.once("close", () => {
-        this.removeSubscriber(newSubscriber);
-      });
+    this.subscribeServers.map(subscribeServer =>
+      subscribeServer.on("connection", (newSubscriber: WebSocket) => {
+        newSubscriber.once("close", () => {
+          this.removeSubscriber(newSubscriber);
+        });
 
-      // Require the subscriber to send a message *first* before being added
-      newSubscriber.once("message", () => this.addSubscriber(newSubscriber));
-    });
+        // Require the subscriber to send a message *first* before being added
+        newSubscriber.once("message", () => this.addSubscriber(newSubscriber));
+      })
+    );
 
-    this.publishServer = await startWebSocketServer({
+    this.publishServers = await startWebSocketServer({
       host: this.host,
       port: this.publishPort
     });
 
-    this.publishServer.on("connection", (newPublisher: WebSocket) => {
-      newPublisher.once("close", () => {
-        this.removePublisher(newPublisher);
-      });
+    this.publishServers.map(publishServer =>
+      publishServer.on("connection", (newPublisher: WebSocket) => {
+        newPublisher.once("close", () => {
+          this.removePublisher(newPublisher);
+        });
 
-      this.addPublisher(newPublisher);
-    });
+        this.addPublisher(newPublisher);
+      })
+    );
   }
 
   /**
@@ -83,8 +87,14 @@ export class DashboardMessageBus extends EventEmitter {
    * @dev Emits a "terminate" event
    */
   async terminate() {
-    await promisify(this.publishServer.close.bind(this.publishServer))();
-    await promisify(this.subscribeServer.close.bind(this.subscribeServer))();
+    await Promise.all([
+      ...this.publishServers.map(publishServer =>
+        promisify(publishServer.close.bind(publishServer))()
+      ),
+      ...this.subscribeServers.map(subscribeServer =>
+        promisify(subscribeServer.close.bind(subscribeServer))()
+      )
+    ]);
     this.emit("terminate");
   }
 
