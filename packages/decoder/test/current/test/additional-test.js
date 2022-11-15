@@ -89,6 +89,7 @@ describe("Adding compilations", function () {
       if (error.name !== "RepeatCompilationIdError") {
         throw error; //rethrow unexpected errors
       }
+      assert.lengthOf(error.ids, 1);
     }
   });
 
@@ -106,6 +107,7 @@ describe("Adding compilations", function () {
       if (error.name !== "RepeatCompilationIdError") {
         throw error; //rethrow unexpected errors
       }
+      assert.lengthOf(error.ids, 1);
     }
   });
 
@@ -121,6 +123,7 @@ describe("Adding compilations", function () {
       if (error.name !== "RepeatCompilationIdError") {
         throw error; //rethrow unexpected errors
       }
+      assert.lengthOf(error.ids, 1);
     }
   });
 });
