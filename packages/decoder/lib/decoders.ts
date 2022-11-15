@@ -82,10 +82,10 @@ export class ProjectDecoder {
       throw new NoProviderError();
     }
     //check for repeat compilation IDs
-    const repeatId =
-      Codec.Compilations.Utils.findRepeatCompilationId(compilations);
-    if (repeatId !== null) {
-      throw new Codec.RepeatCompilationIdError(repeatId);
+    const repeatIds =
+      Codec.Compilations.Utils.findRepeatCompilationIds(compilations);
+    if (repeatIds.size !== 0) {
+      throw new Codec.RepeatCompilationIdError([...repeatIds]);
     }
     this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
@@ -158,18 +158,17 @@ export class ProjectDecoder {
     const existingIds = new Set(
       this.compilations.map(compilation => compilation.id)
     );
+    const newIds = new Set(compilations.map(compilation => compilation.id));
     //we use a find() rather than a some() so that we can put the ID in the error
-    const conflictingCompilation = compilations.find(compilation =>
-      existingIds.has(compilation.id)
-    );
-    if (conflictingCompilation !== undefined) {
-      throw new Codec.RepeatCompilationIdError(conflictingCompilation.id);
+    const overlappingIds = [...newIds].filter(id => existingIds.has(id));
+    if (overlappingIds.length !== 0) {
+      throw new Codec.RepeatCompilationIdError(overlappingIds);
     }
     //also: check for repeats among the ones we're adding
-    const repeatId =
-      Codec.Compilations.Utils.findRepeatCompilationId(compilations);
-    if (repeatId !== null) {
-      throw new Codec.RepeatCompilationIdError(repeatId);
+    const repeatIds =
+      Codec.Compilations.Utils.findRepeatCompilationIds(compilations);
+    if (repeatIds.size !== 0) {
+      throw new Codec.RepeatCompilationIdError([...repeatIds]);
     }
 
     //now: checks are over, start adding stuff

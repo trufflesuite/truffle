@@ -82,10 +82,10 @@ export class NoProjectInfoError extends Error {
  * with the same ID, or a compilation whose ID was already in use.
  */
 export class RepeatCompilationIdError extends Error {
-  public id: string;
-  constructor(id: string) {
-    super(`Compilation id ${id} already in use.`);
-    this.id = id;
+  public ids: string[];
+  constructor(ids: string[]) {
+    super(`Compilation id(s) ${ids.join(", ")} repeated or already in use.`);
+    this.ids = ids;
     this.name = "RepeatCompilationIdError";
   }
 }
