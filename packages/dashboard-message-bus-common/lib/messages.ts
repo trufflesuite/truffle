@@ -1,5 +1,3 @@
-import type { WorkflowCompileResult } from "@truffle/compile-common";
-
 export interface Message {
   id: number;
   type?: string;
@@ -9,6 +7,20 @@ export interface Message {
 export interface Response {
   id: number;
   payload: any;
+}
+
+export type CliEventMessageType = "cli-event";
+export const cliEventMessageType = "cli-event";
+/**
+ * Message to inform subscribers of Truffle CLI event data.
+ * The message payload label helps identify the type of event data.
+ */
+export interface CliEventMessage extends Message {
+  type: CliEventMessageType;
+  payload: {
+    label: string;
+    data: any;
+  };
 }
 
 export type DashboardProviderMessageType = "provider";
@@ -25,16 +37,6 @@ export interface DashboardProviderMessage extends Message {
     params: any[];
     id: number;
   };
-}
-
-export type WorkflowCompileResultMessageType = "workflow-compile-result";
-export const workflowCompileResultMessageType = "workflow-compile-result";
-/**
- * Message to inform subscribers of new WorkflowCompileResult
- */
-export interface WorkflowCompileResultMessage extends Message {
-  type: WorkflowCompileResultMessageType;
-  payload: WorkflowCompileResult;
 }
 
 export type LogMessageType = "log";
@@ -76,16 +78,16 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
+export const isCliEventMessage = (
+  message: Message
+): message is CliEventMessage => {
+  return message.type === cliEventMessageType;
+};
+
 export const isDashboardProviderMessage = (
   message: Message
 ): message is DashboardProviderMessage => {
   return message.type === dashboardProviderMessageType;
-};
-
-export const isWorkflowCompileResultMessage = (
-  message: Message
-): message is WorkflowCompileResultMessage => {
-  return message.type === workflowCompileResultMessageType;
 };
 
 export const isLogMessage = (message: Message): message is LogMessage => {
@@ -103,8 +105,8 @@ export const isInvalidateMessage = (
 };
 
 export type MessageType =
+  | CliEventMessage
   | DashboardProviderMessageType
-  | WorkflowCompileResultMessageType
   | LogMessageType
   | DebugMessageType
   | InvalidateMessageType;

@@ -45,8 +45,11 @@ module.exports = {
       async function ({ result }) {
         try {
           const publishLifecycle = await this.messageBusClient.publish({
-            type: "workflow-compile-result",
-            payload: result
+            type: "cli-event",
+            payload: {
+              label: "workflow-compile-result",
+              data: result
+            }
           });
           publishLifecycle.abandon();
         } catch (err) {}

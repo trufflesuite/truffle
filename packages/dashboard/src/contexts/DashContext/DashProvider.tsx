@@ -3,17 +3,19 @@ import { useAccount, useNetwork } from "wagmi";
 import { sha1 } from "object-hash";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
-  isWorkflowCompileResultMessage,
+  isCliEventMessage,
   isLogMessage,
   isDebugMessage
 } from "@truffle/dashboard-message-bus-common";
 import type {
   Message,
-  DashboardProviderMessage,
-  WorkflowCompileResultMessage
+  DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
 import { forProject } from "@truffle/decoder";
-import type { Compilation } from "@truffle/compile-common";
+import type {
+  Compilation,
+  WorkflowCompileResult
+} from "@truffle/compile-common";
 import { DashContext, reducer, initialState } from "src/contexts/DashContext";
 import type { State } from "src/contexts/DashContext";
 import {
@@ -79,9 +81,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     []
   );
 
-  const handleWorkflowCompileResultMessage = useCallback(
-    async (message: WorkflowCompileResultMessage) => {
-      const { compilations } = message.payload;
+  const handleWorkflowCompileResult = useCallback(
+    async (data: WorkflowCompileResult) => {
+      const { compilations } = data;
 
       if (compilations.length === 0 || !stateRef.current.decoder) return;
 
@@ -159,12 +161,14 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         lifecycle: ReceivedMessageLifecycle<Message>
       ) => {
         const { message } = lifecycle;
-        if (isWorkflowCompileResultMessage(message)) {
-          // Handle WorkflowCompileResultMessage separately because:
-          // a) Db operations are async
-          // b) Avoid duplicate work (e.g. loop, hash)
-          console.debug("Received workflow-compile-result message", message);
-          handleWorkflowCompileResultMessage(message);
+        if (isCliEventMessage(message)) {
+          console.debug("Received cli-event message", message);
+          if (message.payload.label === "workflow-compile-result") {
+            // Handle compilations separately because:
+            // a) Db operations are async
+            // b) Avoid duplicate work (e.g. loop, hash)
+            handleWorkflowCompileResult(message.payload.data);
+          }
         } else if (isLogMessage(message)) {
           // Log messages do not alter state, not sending to reducer
           console.debug(`Received log message`, message);
@@ -220,7 +224,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     };
 
     init();
-  }, [state, handleWorkflowCompileResultMessage]);
+  }, [state, handleWorkflowCompileResult]);
 
   useEffect(() => {
     const updateChainInfo = () => {
