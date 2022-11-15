@@ -76,3 +76,16 @@ export class NoProjectInfoError extends Error {
     this.name = "NoProjectInfoError";
   }
 }
+
+/**
+ * This error indicates there was an attempt to add multiple compilations
+ * with the same ID, or a compilation whose ID was already in use.
+ */
+export class RepeatCompilationIdError extends Error {
+  public id: string;
+  constructor(id: string) {
+    super(`Compilation id ${id} already in use.`);
+    this.id = id;
+    this.name = "RepeatCompilationIdError";
+  }
+}

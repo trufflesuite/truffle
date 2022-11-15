@@ -41,8 +41,7 @@ import {
   VariableNotFoundError,
   MemberNotFoundError,
   ArrayIndexOutOfBoundsError,
-  NoProviderError,
-  RepeatCompilationIdError
+  NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
 //sorry for the untyped import, but...
@@ -83,12 +82,10 @@ export class ProjectDecoder {
       throw new NoProviderError();
     }
     //check for repeat compilation IDs
-    for (let i = 0; i < compilations.length; i++) {
-      for (let j = i + 1; j < compilations.length; j++) {
-        if (compilations[i].id === compilations[j].id) {
-          throw new RepeatCompilationIdError(compilations[i].id);
-        }
-      }
+    const repeatId =
+      Codec.Compilations.Utils.findRepeatCompilationId(compilations);
+    if (repeatId !== null) {
+      throw new Codec.RepeatCompilationIdError(repeatId);
     }
     this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
@@ -166,15 +163,13 @@ export class ProjectDecoder {
       existingIds.has(compilation.id)
     );
     if (conflictingCompilation !== undefined) {
-      throw new RepeatCompilationIdError(conflictingCompilation.id);
+      throw new Codec.RepeatCompilationIdError(conflictingCompilation.id);
     }
     //also: check for repeats among the ones we're adding
-    for (let i = 0; i < compilations.length; i++) {
-      for (let j = i + 1; j < compilations.length; j++) {
-        if (compilations[i].id === compilations[j].id) {
-          throw new RepeatCompilationIdError(compilations[i].id);
-        }
-      }
+    const repeatId =
+      Codec.Compilations.Utils.findRepeatCompilationId(compilations);
+    if (repeatId !== null) {
+      throw new Codec.RepeatCompilationIdError(repeatId);
     }
 
     //now: checks are over, start adding stuff

@@ -688,3 +688,16 @@ export function infoToCompilations(
     return shimArtifacts(projectInfo.artifacts, undefined, nonceString);
   }
 }
+
+export function findRepeatCompilationId(
+  compilations: Compilation[]
+): string | null {
+  for (let i = 0; i < compilations.length; i++) {
+    for (let j = i + 1; j < compilations.length; j++) {
+      if (compilations[i].id === compilations[j].id) {
+        return compilations[i].id;
+      }
+    }
+  }
+  return null;
+}
