@@ -24,7 +24,7 @@ type SolidityCompilersList = {
 
 export class VersionRange {
   public config: StrategyOptions;
-  public cache: Cache;
+  public cache: Cache | null;
 
   constructor(options: StrategyOptions) {
     const defaultConfig = {
@@ -41,19 +41,32 @@ export class VersionRange {
     };
     this.config = Object.assign({}, defaultConfig, options);
 
-    this.cache = new Cache();
+    switch (options.cache) {
+      case "fileSystem":
+        this.cache = new Cache();
+        break;
+      case "noCache":
+        this.cache = null;
+        break;
+      default:
+        this.cache = new Cache();
+    }
   }
 
   async load(versionRange: string) {
     const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+    if (
+      rangeIsSingleVersion &&
+      this.cache &&
+      this.versionIsCached(versionRange)
+    ) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
 
     try {
       return await this.getSolcFromCacheOrUrl(versionRange);
     } catch (error) {
-      if (error.message.includes("Failed to complete request")) {
+      if (error.message.includes("Failed to complete request") && this.cache) {
         return this.getSatisfyingVersionFromCache(versionRange);
       }
       throw error;
@@ -117,6 +130,9 @@ export class VersionRange {
   }
 
   getCachedSolcByFileName(fileName: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const listeners = observeListeners();
     try {
       const filePath = this.cache.resolve(fileName);
@@ -130,6 +146,9 @@ export class VersionRange {
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -144,6 +163,9 @@ export class VersionRange {
   }
 
   getCachedSolcFileName(commit: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
@@ -182,7 +204,9 @@ export class VersionRange {
       throw error;
     }
     events.emit("downloadCompiler:succeed");
-    this.cache.add(response.data, fileName);
+    if (this.cache) {
+      this.cache.add(response.data, fileName);
+    }
     return this.compilerFromString(response.data);
   }
 
@@ -219,7 +243,7 @@ export class VersionRange {
       );
       if (!fileName) throw new NoVersionError(versionToUse);
 
-      if (this.cache.has(fileName)) {
+      if (this.cache?.has(fileName)) {
         return this.getCachedSolcByFileName(fileName);
       }
       return await this.getAndCacheSolcByUrl(fileName, index);
@@ -275,6 +299,9 @@ export class VersionRange {
   }
 
   versionIsCached(version: string) {
+    if (!this.cache) {
+      return false;
+    }
     const cachedCompilerFileNames = this.cache.list();
     const cachedVersions = cachedCompilerFileNames
       .map(fileName => {
@@ -284,6 +311,13 @@ export class VersionRange {
       .filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
+    );
+  }
+
+  throwNoCacheError(): never {
+    throw new Error(
+      "You are trying to access the cache but your configuration specifies " +
+        "no cache."
     );
   }
 }

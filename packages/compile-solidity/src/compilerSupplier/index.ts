@@ -6,6 +6,18 @@ import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
 const defaultSolcVersion = "0.5.16";
 
+type CompilerSupplierConstructorArgs = {
+  events?: any;
+  solcConfig: {
+    version?: string;
+    docker?: boolean;
+    compilerRoots?: string[];
+    dockerTagsUrl?: string;
+    spawn: any;
+  };
+  cache?: string;
+};
+
 type CompilerSupplierStrategy =
   | Docker
   | Native
@@ -15,10 +27,10 @@ type CompilerSupplierStrategy =
 
 export class CompilerSupplier {
   private version: string;
-  private docker: boolean;
+  private docker?: boolean;
   private strategyOptions: StrategyOptions;
 
-  constructor({ events, solcConfig }) {
+  constructor({ events, solcConfig, cache }: CompilerSupplierConstructorArgs) {
     const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
@@ -28,6 +40,7 @@ export class CompilerSupplier {
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
     if (spawn) this.strategyOptions.spawn = spawn;
+    if (cache) this.strategyOptions.cache = cache;
   }
 
   async load() {
@@ -36,9 +49,12 @@ export class CompilerSupplier {
     let strategy: CompilerSupplierStrategy;
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
-    const useSpecifiedLocal =
-      userSpecification &&
-      (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
+    let useSpecifiedLocal: boolean | string | undefined;
+    if (!userSpecification) {
+      useSpecifiedLocal =
+        userSpecification &&
+        (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
+    }
     const isValidVersionRange = semver.validRange(userSpecification);
 
     if (useDocker) {

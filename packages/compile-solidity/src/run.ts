@@ -243,7 +243,8 @@ async function invokeCompiler({ compilerInput, options, solc }): Promise<{
   const supplierOptions = {
     parser: options.parser,
     events: options.events,
-    solcConfig: options.compilers.solc
+    solcConfig: options.compilers.solc,
+    cache: options.compilers.cache
   };
 
   if (!solc) {

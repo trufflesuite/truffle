@@ -7,4 +7,5 @@ export type StrategyOptions = {
   spawn?: {
     maxBuffer: number;
   };
+  cache?: string;
 };

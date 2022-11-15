@@ -1,6 +1,4 @@
 //these imports aren't actually necessary, but why not :)
-import util from "util";
-import { setTimeout } from "timers";
 import type * as Types from "./types";
 
 export function makeFilename(name: string, extension: string = ".sol"): string {
@@ -14,8 +12,11 @@ export function makeFilename(name: string, extension: string = ".sol"): string {
   }
 }
 
-export const makeTimer: (milliseconds: number) => Promise<void> =
-  util.promisify(setTimeout);
+export const makeTimer = (milliseconds: number): Promise<void> => {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(), milliseconds);
+  });
+};
 
 export function removeLibraries(
   settings: Types.SolcSettings,
