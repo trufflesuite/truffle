@@ -96,6 +96,14 @@ export class ProjectEncoder {
       if (!info.compilations) {
         throw new NoInternalInfoError();
       }
+      //check for repeat compilation IDs
+      const repeatIds = Codec.Compilations.Utils.findRepeatCompilationIds(
+        info.compilations
+      );
+      if (repeatIds.size !== 0) {
+        throw new Codec.RepeatCompilationIdError([...repeatIds]);
+      }
+      //since that's good, save it and continue
       this.compilations = info.compilations;
       ({
         definitions: this.referenceDeclarations,

@@ -68,6 +68,8 @@ export class ProjectDecoder {
 
   private ensSettings: DecoderTypes.EnsSettings;
 
+  private addProjectInfoNonce: number = 0;
+
   /**
    * @protected
    */
@@ -78,6 +80,12 @@ export class ProjectDecoder {
   ) {
     if (!provider) {
       throw new NoProviderError();
+    }
+    //check for repeat compilation IDs
+    const repeatIds =
+      Codec.Compilations.Utils.findRepeatCompilationIds(compilations);
+    if (repeatIds.size !== 0) {
+      throw new Codec.RepeatCompilationIdError([...repeatIds]);
     }
     this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
@@ -131,6 +139,143 @@ export class ProjectDecoder {
       this.allocations.storage
     );
     debug("done with allocation");
+  }
+
+  /**
+   * **This function is asynchronous.**
+   *
+   * Adds compilations to the decoder after it has started.  Note it is
+   * only presently possible to do this with a `ProjectDecoder` and not
+   * with the other decoder classes.
+   *
+   * @param compilations The compilations to be added.  Take care that these
+   * have IDs distinct from those the decoder already has.
+   */
+  public async addCompilations(
+    compilations: Compilations.Compilation[]
+  ): Promise<void> {
+    //first: make sure we're not adding a compilation with an existing ID
+    const existingIds = new Set(
+      this.compilations.map(compilation => compilation.id)
+    );
+    const newIds = new Set(compilations.map(compilation => compilation.id));
+    //we use a find() rather than a some() so that we can put the ID in the error
+    const overlappingIds = [...newIds].filter(id => existingIds.has(id));
+    if (overlappingIds.length !== 0) {
+      throw new Codec.RepeatCompilationIdError(overlappingIds);
+    }
+    //also: check for repeats among the ones we're adding
+    const repeatIds =
+      Codec.Compilations.Utils.findRepeatCompilationIds(compilations);
+    if (repeatIds.size !== 0) {
+      throw new Codec.RepeatCompilationIdError([...repeatIds]);
+    }
+
+    //now: checks are over, start adding stuff
+    this.compilations = [...this.compilations, ...compilations];
+
+    const {
+      definitions: referenceDeclarations,
+      typesByCompilation: userDefinedTypesByCompilation,
+      types: userDefinedTypes
+    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(
+      compilations
+    );
+
+    Object.assign(this.referenceDeclarations, referenceDeclarations);
+    Object.assign(
+      this.userDefinedTypesByCompilation,
+      userDefinedTypesByCompilation
+    );
+    Object.assign(this.userDefinedTypes, userDefinedTypes);
+
+    const { contexts, deployedContexts, contractsAndContexts, allocationInfo } =
+      AbiData.Allocate.Utils.collectAllocationInfo(compilations);
+    this.contexts = Object.assign(contexts, this.contexts); //HACK: we want to
+    //prioritize new contexts over old contexts, so we do this.  a proper timestamp
+    //system would be better, but this should hopefully do for now.
+    Object.assign(this.deployedContexts, deployedContexts);
+    this.contractsAndContexts = [
+      ...this.contractsAndContexts,
+      ...contractsAndContexts
+    ];
+
+    //everything up till now has been pretty straightforward merges.
+    //but allocations are a bit more complicated.
+    //some of them can be merged straightforwardly, some can't.
+    //we'll start with the straightforward ones.
+    const abiAllocations = AbiData.Allocate.getAbiAllocations(userDefinedTypes);
+    Object.assign(this.allocations.abi, abiAllocations);
+    const storageAllocations = Storage.Allocate.getStorageAllocations(
+      userDefinedTypesByCompilation
+    );
+    Object.assign(this.allocations.storage, storageAllocations);
+    const stateAllocations = Storage.Allocate.getStateAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      storageAllocations //only need the ones from the new compilations
+    );
+    Object.assign(this.allocations.state, stateAllocations);
+
+    //now we have calldata allocations.  merging these is still mostly straightforward,
+    //but slightly less so.
+    const calldataAllocations = AbiData.Allocate.getCalldataAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      abiAllocations //only need the ones from the new compilations
+    );
+    //merge constructor and function allocations separately
+    Object.assign(
+      this.allocations.calldata.constructorAllocations,
+      calldataAllocations.constructorAllocations
+    );
+    Object.assign(
+      this.allocations.calldata.functionAllocations,
+      calldataAllocations.functionAllocations
+    );
+
+    //finally, redo the allocations for returndata and eventdata.
+    //attempting to perform a merge on these is too complicated, so we
+    //won't try; we'll just recompute.
+    this.allocations.returndata = AbiData.Allocate.getReturndataAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      this.allocations.abi //we're doing this for merged result, so use merged input!
+    );
+    this.allocations.event = AbiData.Allocate.getEventAllocations(
+      allocationInfo,
+      referenceDeclarations,
+      userDefinedTypes,
+      this.allocations.abi //we're doing this for merged result, so use merged input!
+    );
+  }
+
+  /**
+   * **This function is asynchronous.**
+   *
+   * Adds additional compilations to the decoder like [[addCompilations]],
+   * but allows it to be specified in more general forms.
+   *
+   * @param projectInfo Information about the additional compilations or
+   * contracts to be decoded.  This may come in several forms; see the type
+   * documentation for more information.  If passing in `{ compilations: ... }`,
+   * take care that the compilations have different IDs from others passed in
+   * so far, otherwise this will error.  If passed in in another form, an ID
+   * will be assigned automatically, which should generally avoid any
+   * collisions.
+   */
+  public async addAdditionalProjectInfo(
+    projectInfo: Compilations.ProjectInfo
+  ): Promise<void> {
+    const compilations = Compilations.Utils.infoToCompilations(
+      projectInfo,
+      `decoderAdditionalShimmedCompilationGroup(${this.addProjectInfoNonce})`
+    );
+    this.addProjectInfoNonce++;
+    await this.addCompilations(compilations);
   }
 
   /**
