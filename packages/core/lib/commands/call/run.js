@@ -43,8 +43,6 @@ module.exports = async function (options) {
     );
   }
 
-  // wrap provider for lazy EIP-1193 compatibility
-  // replace the legacy provider API with EIP-1193?
   const provider = new Encoder.ProviderAdapter(config.provider);
   let result;
   try {
@@ -63,12 +61,9 @@ module.exports = async function (options) {
     console.log(`Error Message: ${error.message}\nError Code: ${error.code}`);
   }
 
-  // Error handling for 0 returned value
-  // Handles cases for more than 1 returned values
   if (result !== null && result !== undefined) {
     const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
 
-    // Alternative for ReturndataDecodingInspector, use ResultInspector for logging
     for (const { value: result } of decoding.arguments) {
       console.log(
         util.inspect(new Codec.Export.ResultInspector(result), {
