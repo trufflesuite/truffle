@@ -52,6 +52,12 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
+//if the last word of inputString is `help` or `--help`, re-assign inputString to run as `truffle help <cmd>`
+if (["help", "--help"].includes(inputStrings[inputStrings.length - 1])) {
+  inputStrings.pop();
+  inputStrings.unshift("help");
+}
+
 const {
   getCommand,
   prepareOptions,
