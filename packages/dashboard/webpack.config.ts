@@ -72,7 +72,7 @@ const config: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: [/\.jsx?$/, /\.tsx?$/],
+        test: /\.tsx?$/,
         use: ["ts-loader"],
         exclude: /node_modules/
       },
