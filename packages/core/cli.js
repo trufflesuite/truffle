@@ -51,8 +51,10 @@ if (userWantsGeneralHelp) {
   displayGeneralHelp();
   process.exit(0);
 }
-
-//if the last word of inputString is `help` or `--help`, re-assign inputString to run as `truffle help <cmd>`
+//clean up inputString to run as `truffle help <cmd>` if `help`, `--help` is present with a <cmd>
+if (inputStrings.length > 1 && inputStrings[0] === "--help") {
+  inputStrings[inputStrings.indexOf("--help")] = "help";
+}
 if (["help", "--help"].includes(inputStrings[inputStrings.length - 1])) {
   inputStrings.pop();
   inputStrings.unshift("help");
@@ -73,7 +75,9 @@ const command = getCommand({
 //getCommand() will return null if a command not recognized by truffle is used.
 if (command === null) {
   console.log(
-    `\`truffle ${inputStrings}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
+    `\`truffle ${inputStrings.join(
+      " "
+    )}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
   );
   process.exit(1);
 }
