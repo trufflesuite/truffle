@@ -12,12 +12,17 @@ class VSCodeDebugger {
   async run() {
     // Sets the URL
     const url = new URL("/debug", "vscode://trufflesuite-csi.truffle-vscode");
+    const providerUrl = this.config.url
+      ? this.config.url
+      : this.config.provider.host;
+    const disableFetchExternal = this.config.fetchExternal ? false : true;
 
     // Sets the query parameters
     url.searchParams.set("txHash", this.txHash);
     url.searchParams.set("workingDirectory", this.config.working_directory);
-    url.searchParams.set("providerUrl", this.config.provider.host);
-    url.searchParams.set("fetchExternal", this.config.fetchExternal);
+    url.searchParams.set("providerUrl", providerUrl);
+    url.searchParams.set("network", this.config.network);
+    url.searchParams.set("disableFetchExternal", disableFetchExternal);
 
     // Opens VSCode based on OS
     const openCommand = process.platform === "win32" ? `start ""` : `open`;
