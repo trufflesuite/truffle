@@ -35,7 +35,7 @@
     "@types/fs-extra": "^8.1.0",
     "@types/inquirer": "9.0.1",
     "@types/tmp": "^0.1.0",
-    "mocha": "9.2.2",
+    "mocha": "10.1.0",
     "sinon": "^9.0.2",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4"
