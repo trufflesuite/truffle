@@ -26,6 +26,8 @@ module.exports = {
   handlers: {
     "compile:start": [
       async function () {
+        if (!isDashboardNetwork(this.config)) return;
+
         try {
           const publishLifecycle = await this.messageBus.publish({
             type: "debug",
@@ -41,9 +43,7 @@ module.exports = {
     ],
     "rpc:request": [
       function (event) {
-        if (!isDashboardNetwork(this.config)) {
-          return;
-        }
+        if (!isDashboardNetwork(this.config)) return;
 
         const { payload } = event;
         if (payload.method === "eth_sendTransaction") {
@@ -57,9 +57,7 @@ module.exports = {
     ],
     "rpc:result": [
       function (event) {
-        if (!isDashboardNetwork(this.config)) {
-          return;
-        }
+        if (!isDashboardNetwork(this.config)) return;
 
         let { error } = event;
         const { payload, result } = event;
