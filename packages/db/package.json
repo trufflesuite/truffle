@@ -96,7 +96,6 @@
   "_moduleAliases": {
     "@truffle/db": "db/dist/src"
   },
-  "gitHead": "4c327e21da2e7abebcc1d78879a8d6f0eb7d802c",
   "jest": {
     "moduleFileExtensions": [
       "ts",
