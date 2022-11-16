@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "11.0.16",
+  "version": "11.0.17",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@truffle/abi-utils": "^0.3.4",
-    "@truffle/codec": "^0.14.8",
-    "@truffle/source-map-utils": "^1.3.100",
+    "@truffle/codec": "^0.14.9",
+    "@truffle/source-map-utils": "^1.3.101",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "json-pointer": "^0.6.1",
@@ -39,11 +39,11 @@
   },
   "devDependencies": {
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
-    "@truffle/artifactor": "^4.0.174",
-    "@truffle/config": "^1.3.43",
-    "@truffle/migrate": "^3.3.17",
-    "@truffle/resolver": "^9.0.22",
-    "@truffle/workflow-compile": "^4.0.40",
+    "@truffle/artifactor": "^4.0.175",
+    "@truffle/config": "^1.3.44",
+    "@truffle/migrate": "^3.3.18",
+    "@truffle/resolver": "^9.0.23",
+    "@truffle/workflow-compile": "^4.0.41",
     "chai": "^4.2.0",
     "change-case": "3.0.2",
     "faker": "5.5.3",

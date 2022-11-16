@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.12",
+  "version": "2.1.13",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -28,11 +28,11 @@
     "test": "mocha --require ts-node/register --extension ts,js"
   },
   "dependencies": {
-    "@truffle/config": "^1.3.43",
+    "@truffle/config": "^1.3.44",
     "@truffle/error": "^0.1.1",
     "@truffle/expect": "^0.1.3",
     "@truffle/interface-adapter": "^0.5.24",
-    "@truffle/resolver": "^9.0.22",
+    "@truffle/resolver": "^9.0.23",
     "debug": "^4.3.1",
     "original-require": "^1.0.1"
   },
