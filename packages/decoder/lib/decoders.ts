@@ -44,8 +44,9 @@ import {
   NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
-//sorry for the untyped import, but...
+//sorry for untyped imports!
 const SourceMapUtils = require("@truffle/source-map-utils");
+const { default: ENS, getEnsAddress } = require("@ensdomains/ensjs");
 
 /**
  * The ProjectDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -65,7 +66,9 @@ export class ProjectDecoder {
   private allocations: Evm.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
+  private ensCache: { [address: string]: Uint8Array | null } = {};
 
+  private ens: any | null; //any should be ENS, sorry >_>
   private ensSettings: DecoderTypes.EnsSettings;
 
   private addProjectInfoNonce: number = 0;
@@ -89,7 +92,11 @@ export class ProjectDecoder {
     }
     this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
-    this.ensSettings = ensSettings || {};
+    this.ensSettings = {
+      provider:
+        ensSettings?.provider !== undefined ? ensSettings?.provider : provider, //importantly, null does not trigger this case
+      registryAddress: ensSettings?.registryAddress
+    }; //we don't use an object spread because we want undefined to be ignored
     let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
 
     ({
@@ -139,6 +146,43 @@ export class ProjectDecoder {
       this.allocations.storage
     );
     debug("done with allocation");
+  }
+
+  /**
+   * @protected
+   * WARNING: this code is copypasted (w/slight modifications) from encoder!!
+   */
+  public async init(): Promise<void> {
+    const { provider, registryAddress } = this.ensSettings;
+    if (provider) {
+      debug("provider given!");
+      if (registryAddress !== undefined) {
+        this.ens = new ENS({
+          provider,
+          ensAddress: registryAddress
+        });
+      } else {
+        //if we weren't given a registry address, we use the default one,
+        //but what is that?  We have to look it up.
+        //NOTE: ENS is supposed to do this for us in the constructor,
+        //but due to a bug it doesn't.
+        debug("using default registry address");
+        const networkId = await new ProviderAdapter(provider).getNetworkId();
+        const registryAddress: string | undefined = getEnsAddress(networkId);
+        if (registryAddress) {
+          this.ens = new ENS({
+            provider: provider,
+            ensAddress: registryAddress
+          });
+        } else {
+          //there is no default registry on this chain
+          this.ens = null;
+        }
+      }
+    } else {
+      debug("no provider given, ens off");
+      this.ens = null;
+    }
   }
 
   /**
@@ -344,6 +388,29 @@ export class ProjectDecoder {
   /**
    * @protected
    */
+  public async reverseEnsResolve(input: string): Promise<Uint8Array | null> {
+    if (this.ens === null) {
+      return null;
+    }
+    if (input in this.ensCache) {
+      return this.ensCache[input];
+    }
+    let nameAsBytes: Uint8Array | null;
+    try {
+      const { name } = await this.ens.getAddress(input);
+      nameAsBytes = name !== null ? Conversion.stringToBytes(name) : null;
+    } catch {
+      //Normally I'd rethrow unexpected errors, but given the context here
+      //that seems like it might be a problem
+      nameAsBytes = null;
+    }
+    this.ensCache[input] = nameAsBytes;
+    return nameAsBytes;
+  }
+
+  /**
+   * @protected
+   */
   public async decodeTransactionWithAdditionalContexts(
     transaction: DecoderTypes.Transaction,
     additionalContexts: Contexts.Contexts = {},
@@ -401,6 +468,9 @@ export class ProjectDecoder {
       switch (request.type) {
         case "code":
           response = await this.getCode(request.address, blockNumber);
+          break;
+        case "ens":
+          response = await this.reverseEnsResolve(request.address);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
@@ -495,6 +565,9 @@ export class ProjectDecoder {
       switch (request.type) {
         case "code":
           response = await this.getCode(request.address, blockNumber);
+          break;
+        case "ens":
+          response = await this.reverseEnsResolve(request.address);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
@@ -1346,6 +1419,9 @@ export class ContractDecoder {
         case "code":
           response = await this.getCode(request.address, blockNumber);
           break;
+        case "ens":
+          response = await this.reverseEnsResolve(request.address);
+          break;
         //not writing a storage case as it shouldn't occur here!
       }
       result = decoder.next(response);
@@ -1372,6 +1448,10 @@ export class ContractDecoder {
     block: RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
     return await this.projectDecoder.getCode(address, block);
+  }
+
+  private async reverseEnsResolve(address: string): Promise<Uint8Array | null> {
+    return await this.projectDecoder.reverseEnsResolve(address);
   }
 
   private async regularizeBlock(
@@ -1624,12 +1704,8 @@ export class ContractInstanceDecoder {
 
     //set up encoder for wrapping elementary values.
     //we pass it a provider, so it can handle ENS names.
-    let { provider: ensProvider, registryAddress } =
+    const { provider: ensProvider, registryAddress } =
       this.projectDecoder.getEnsSettings();
-    if (ensProvider === undefined) {
-      //note: NOT if it's null, if it's null we leave it null
-      ensProvider = this.providerAdapter.provider;
-    }
     this.encoder = await Encoder.forProjectInternal({
       provider: ensProvider,
       registryAddress,
@@ -1743,6 +1819,9 @@ export class ContractInstanceDecoder {
           break;
         case "code":
           response = await this.getCode(request.address, block);
+          break;
+        case "ens":
+          response = await this.reverseEnsResolve(request.address);
           break;
       }
       result = decoder.next(response);
@@ -1941,6 +2020,10 @@ export class ContractInstanceDecoder {
     block: RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
     return await this.projectDecoder.getCode(address, block);
+  }
+
+  private async reverseEnsResolve(address: string): Promise<Uint8Array | null> {
+    return await this.projectDecoder.reverseEnsResolve(address);
   }
 
   private async regularizeBlock(
