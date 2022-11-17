@@ -104,7 +104,7 @@ export class DashboardServer {
 
     const bindIpAddresses = await resolveBindHostnameToAllIps(this.host);
     this.httpServers = await Promise.all(
-      bindIpAddresses.map(async bindIpAddress => {
+      bindIpAddresses.map(bindIpAddress => {
         const server = createServer(this.expressApp);
         return new Promise<Server>(resolve => {
           server.listen(
