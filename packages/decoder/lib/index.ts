@@ -192,7 +192,13 @@ export async function forProject(
     settings.projectInfo
   );
   let ensSettings = ensSettingsForInfo(settings);
-  return new ProjectDecoder(compilations, settings.provider, ensSettings);
+  let decoder = new ProjectDecoder(
+    compilations,
+    settings.provider,
+    ensSettings
+  );
+  await decoder.init();
+  return decoder;
 }
 
 /**
