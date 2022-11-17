@@ -94,8 +94,9 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
 };
 
 const getLocalInterfaceAddresses = () => {
-  return Object.keys(networkInterfaces()).flatMap(name =>
-    networkInterfaces()[name].map(iface => iface.address)
+  const interfaces = networkInterfaces();
+  return Object.keys(interfaces).flatMap(name =>
+    interfaces[name].map(iface => iface.address)
   );
 };
 
