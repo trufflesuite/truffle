@@ -9,6 +9,7 @@ import {
 } from "@truffle/dashboard-message-bus-common";
 import type {
   Message,
+  CliEventMessage,
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
 import { forProject } from "@truffle/decoder";
@@ -167,7 +168,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
             // Handle compilations separately because:
             // a) Db operations are async
             // b) Avoid duplicate work (e.g. loop, hash)
-            handleWorkflowCompileResult(message.payload.data);
+            handleWorkflowCompileResult(
+              (message as CliEventMessage<WorkflowCompileResult>).payload.data
+            );
           }
         } else if (isLogMessage(message)) {
           // Log messages do not alter state, not sending to reducer

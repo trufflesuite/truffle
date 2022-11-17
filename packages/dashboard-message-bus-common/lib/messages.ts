@@ -15,11 +15,11 @@ export const cliEventMessageType = "cli-event";
  * Message to inform subscribers of Truffle CLI event data.
  * The message payload label helps identify the type of event data.
  */
-export interface CliEventMessage extends Message {
+export interface CliEventMessage<T = unknown> extends Message {
   type: CliEventMessageType;
   payload: {
     label: string;
-    data: any;
+    data: T;
   };
 }
 
