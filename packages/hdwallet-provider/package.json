@@ -39,7 +39,7 @@
     "@types/mocha": "^5.2.7",
     "@types/web3-provider-engine": "^14.0.0",
     "ganache": "7.5.0",
-    "mocha": "9.2.2",
+    "mocha": "10.1.0",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4"
   },
