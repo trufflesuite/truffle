@@ -6,6 +6,7 @@ import {
   updateNotification,
   hideNotification
 } from "@mantine/notifications";
+import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
@@ -36,7 +37,7 @@ type RPCProps = {
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
-  const [decodingInspected, setDecodingInspected] = useState("");
+  const [decoding, setDecoding] = useState<CalldataDecoding | string>("");
   const [decodingSucceeded, setDecodingSucceeded] = useState(true);
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
@@ -54,12 +55,12 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
 
   useEffect(() => {
     const decode = async () => {
-      const { method, resultInspected, failed } = await decodeMessage(
+      const { method, result, failed } = await decodeMessage(
         lifecycle,
         decoder!
       );
 
-      setDecodingInspected(resultInspected);
+      setDecoding(result);
       setDecodingSucceeded(!failed);
 
       if (failed) {
@@ -88,7 +89,7 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       <Overview
         lifecycle={lifecycle}
         showDecoding={decodable}
-        decodingInspected={decodingInspected}
+        decoding={decoding}
         decodingSucceeded={decodingSucceeded}
         active={
           clicked ||
@@ -107,7 +108,7 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       <Details
         lifecycle={lifecycle}
         showDecoding={decodable}
-        decodingInspected={decodingInspected}
+        decoding={decoding}
         decodingSucceeded={decodingSucceeded}
         view={clicked ? "expanded" : "collapsed"}
         hoverState={{

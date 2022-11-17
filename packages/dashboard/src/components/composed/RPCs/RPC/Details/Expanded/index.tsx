@@ -1,4 +1,5 @@
 import { Stack } from "@mantine/core";
+import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import DecodedParams from "src/components/composed/RPCs/RPC/Details/Expanded/DecodedParams";
@@ -8,14 +9,14 @@ import type { DecodableRpcMethod } from "src/utils/constants";
 type ExpandedProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decodingInspected: string;
+  decoding: CalldataDecoding | string;
   decodingSucceeded: boolean;
 };
 
 function Expanded({
   lifecycle,
   showDecoding,
-  decodingInspected,
+  decoding,
   decodingSucceeded
 }: ExpandedProps): JSX.Element {
   const { params, method } = lifecycle.message.payload;
@@ -24,7 +25,7 @@ function Expanded({
     <Stack spacing="md" px="xl" pt="sm" pb="xl">
       {showDecoding && (
         <DecodedParams
-          decodingInspected={decodingInspected}
+          decoding={decoding}
           decodingSucceeded={decodingSucceeded}
           method={method as DecodableRpcMethod}
         />

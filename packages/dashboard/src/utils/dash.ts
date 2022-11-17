@@ -2,6 +2,7 @@ import inspect from "object-inspect";
 import * as Codec from "@truffle/codec";
 import { Buffer } from "buffer";
 import type { ProjectDecoder } from "@truffle/decoder";
+import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
@@ -97,15 +98,9 @@ export async function decodeMessage(
         gas: params.gas,
         gasPrice: params.gasPrice
       });
-      const resultInspected = inspect(
-        new Codec.Export.CalldataDecodingInspector(result),
-        { quoteStyle: "double" }
-      );
-      const failed =
-        /^(Created|Receiving) contract could not be identified\.$/.test(
-          resultInspected
-        );
-      return { method, result, resultInspected, failed };
+      const failed = result.kind === "unknown" || result.kind === "create";
+
+      return { method, result, failed };
     }
 
     case "personal_sign": {
@@ -115,7 +110,6 @@ export async function decodeMessage(
       return {
         method,
         result: utf8,
-        resultInspected: utf8,
         failed: !hexIsValid
       };
     }
@@ -132,10 +126,17 @@ export async function decodeMessage(
       return {
         method,
         result: typedData,
-        resultInspected: typedData,
         failed
       };
   }
+}
+
+export function inspectDecoding(decoding: CalldataDecoding | string) {
+  return typeof decoding === "string"
+    ? decoding
+    : inspect(new Codec.Export.CalldataDecodingInspector(decoding), {
+        quoteStyle: "double"
+      });
 }
 
 export function getChainNameByID(id: number) {

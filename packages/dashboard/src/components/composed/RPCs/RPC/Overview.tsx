@@ -1,7 +1,9 @@
 import { Group, Stack, Button, Badge, Text, createStyles } from "@mantine/core";
+import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
+import { inspectDecoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, getRef) => {
@@ -78,8 +80,8 @@ const useStyles = createStyles((theme, _params, getRef) => {
 type OverviewProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decodingInspected: string;
-  decodingInspectedFallback?: string;
+  decoding: CalldataDecoding | string;
+  decodingFallback?: string;
   decodingSucceeded: boolean;
   active: boolean;
   onBackClick: React.MouseEventHandler<HTMLDivElement>;
@@ -94,8 +96,8 @@ type OverviewProps = {
 function Overview({
   lifecycle,
   showDecoding,
-  decodingInspected,
-  decodingInspectedFallback = "?",
+  decoding,
+  decodingFallback = "?",
   decodingSucceeded,
   active,
   onBackClick,
@@ -107,6 +109,7 @@ function Overview({
   onConfirmButtonLeave
 }: OverviewProps): JSX.Element {
   const { method } = lifecycle.message.payload;
+  const decodingInspected = inspectDecoding(decoding);
   const {
     state: { chainInfo },
     operations: { userConfirmMessage, userRejectMessage }
@@ -145,7 +148,7 @@ function Overview({
         </Badge>
         {showDecoding && (
           <Text size="xl" className={classes.decoding} lineClamp={1}>
-            {decodingSucceeded ? decodingInspected : decodingInspectedFallback}
+            {decodingSucceeded ? decodingInspected : decodingFallback}
           </Text>
         )}
       </Stack>
