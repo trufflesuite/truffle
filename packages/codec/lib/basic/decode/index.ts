@@ -6,11 +6,16 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import * as Contexts from "@truffle/codec/contexts";
 import type * as Pointer from "@truffle/codec/pointer";
-import type { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import type {
+  DecoderRequest,
+  DecoderOptions,
+  EnsRequest
+} from "@truffle/codec/types";
 import type { PaddingMode, PaddingType } from "@truffle/codec/common";
 import * as Evm from "@truffle/codec/evm";
 import { handleDecodingError, StopDecodingError } from "@truffle/codec/errors";
 import { byteLength } from "@truffle/codec/basic/allocate";
+import { decodeString } from "@truffle/codec/bytes/decode";
 
 export function* decodeBasic(
   dataType: Format.Types.Type,
@@ -199,7 +204,7 @@ export function* decodeBasic(
         interpretations: {}
       };
 
-    case "address":
+    case "address": {
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "AddressPaddingError" as const,
@@ -216,17 +221,25 @@ export function* decodeBasic(
         };
       }
       bytes = removePadding(bytes, dataType, paddingMode);
-      return {
+      const address = Evm.Utils.toAddress(bytes);
+      let decoded = {
         type: dataType,
         kind: "value" as const,
         value: {
-          asAddress: Evm.Utils.toAddress(bytes),
+          asAddress: address,
           rawAsHex: Conversion.toHexString(rawBytes)
         },
         interpretations: {}
       };
+      //now: attach interpretations
+      const ensName = yield* reverseEnsResolve(address);
+      if (ensName !== null) {
+        decoded.interpretations = { ensName };
+      }
+      return decoded;
+    }
 
-    case "contract":
+    case "contract": {
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "ContractPaddingError" as const,
@@ -247,12 +260,19 @@ export function* decodeBasic(
         Format.Types.fullType(dataType, info.userDefinedTypes)
       );
       const contractValueInfo = yield* decodeContract(bytes, info);
-      return {
+      let decoded = {
         type: fullType,
         kind: "value" as const,
         value: contractValueInfo,
         interpretations: {}
       };
+      //now: attach interpretations
+      const ensName = yield* reverseEnsResolve(contractValueInfo.address);
+      if (ensName !== null) {
+        decoded.interpretations = { ensName };
+      }
+      return decoded;
+    }
 
     case "bytes":
       //NOTE: we assume this is a *static* bytestring,
@@ -312,12 +332,25 @@ export function* decodeBasic(
             Evm.Utils.ADDRESS_SIZE,
             Evm.Utils.ADDRESS_SIZE + Evm.Utils.SELECTOR_SIZE
           );
-          return {
+          const valueInfo = yield* decodeExternalFunction(
+            address,
+            selector,
+            info
+          );
+          let decoded = {
             type: dataType,
             kind: "value" as const,
-            value: yield* decodeExternalFunction(address, selector, info),
+            value: valueInfo,
             interpretations: {}
           };
+          //now: attach interpretations
+          const contractEnsName = yield* reverseEnsResolve(
+            valueInfo.contract.address
+          );
+          if (contractEnsName !== null) {
+            decoded.interpretations = { contractEnsName };
+          }
+          return decoded;
         case "internal":
           //note: we used to error if we hit this point with strict === true,
           //since internal function pointers don't go in the ABI, and strict
@@ -858,6 +891,17 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
   let value = bytes.slice(-length); //meanwhile the actual value is those last length bytes
   let signByte = value[0] & 0x80 ? 0xff : 0x00;
   return padding.every(paddingByte => paddingByte === signByte);
+}
+
+function* reverseEnsResolve(
+  address: string
+): Generator<
+  EnsRequest,
+  Format.Values.StringValueInfo | null,
+  Uint8Array | null
+> {
+  const nameAsBytes = yield { type: "ens" as const, address };
+  return nameAsBytes !== null ? decodeString(nameAsBytes) : null;
 }
 
 //the following types are intended for internal use only
