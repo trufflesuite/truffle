@@ -1,56 +1,34 @@
 import { useEffect, useState } from "react";
-import { createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { useMantineTheme } from "@mantine/core";
 import {
   showNotification,
   updateNotification,
   hideNotification
 } from "@mantine/notifications";
+import { X, Check } from "react-feather";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import Card from "src/components/common/Card";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
 import Details from "src/components/composed/RPCs/RPC/Details";
 import { useDash } from "src/hooks";
 import { messageIsDecodable, decodeMessage, Decoding } from "src/utils/dash";
 import { decodeNotifications } from "src/utils/notifications";
 
-const useStyles = createStyles((theme, _params, _getRef) => {
-  const { colors, colorScheme, radius, fn } = theme;
-  return {
-    container: {
-      width: "60%",
-      minWidth: 590,
-      maxWidth: 920,
-      borderRadius: radius.sm,
-      outline:
-        colorScheme === "dark"
-          ? `0.5px solid ${colors["truffle-brown"][5]}`
-          : `0.5px solid ${fn.rgba(colors["truffle-beige"][5], 0.45)}`
-    }
-  };
-});
-
 type RPCProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
 };
 
-function RPC({ lifecycle }: RPCProps): JSX.Element {
+export default function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
   const [decoding, setDecoding] = useState<Decoding>("");
   const [decodingSucceeded, setDecodingSucceeded] = useState(true);
-  const [clicked, clickedHandlers] = useDisclosure(false);
-  const [overviewBackHovered, overviewBackHoveredHandlers] =
-    useDisclosure(false);
-  const [rejectButtonHovered, rejectButtonHoveredHandlers] =
-    useDisclosure(false);
-  const [confirmButtonHovered, confirmButtonHoveredHandlers] =
-    useDisclosure(false);
-  const [collapsedDetailsHovered, collapsedDetailsHoveredHandlers] =
-    useDisclosure(false);
-  const { classes } = useStyles();
-
   const decodable = messageIsDecodable(lifecycle.message);
   const decodeNotificationId = `decode-rpc-request-${lifecycle.message.payload.id}`;
+  const [rejectHovered, rejectHoveredHandlers] = useDisclosure(false);
+  const [confirmHovered, confirmHoveredHandlers] = useDisclosure(false);
+  const { colors } = useMantineTheme();
 
   useEffect(() => {
     const decode = async () => {
@@ -84,44 +62,37 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
   );
 
   return (
-    <div className={classes.container}>
-      <Overview
-        lifecycle={lifecycle}
-        showDecoding={decodable}
-        decoding={decoding}
-        decodingSucceeded={decodingSucceeded}
-        active={
-          clicked ||
-          overviewBackHovered ||
-          rejectButtonHovered ||
-          confirmButtonHovered
+    <Card
+      overviewComponent={Overview}
+      overviewProps={{
+        lifecycle,
+        showDecoding: decodable,
+        decoding,
+        decodingSucceeded,
+        handleRejectEnter: rejectHoveredHandlers.open,
+        handleRejectLeave: rejectHoveredHandlers.close,
+        handleConfirmEnter: confirmHoveredHandlers.open,
+        handleConfirmLeave: confirmHoveredHandlers.close
+      }}
+      detailsComponent={Details}
+      detailsProps={{
+        lifecycle,
+        showDecoding: decodable,
+        decoding,
+        decodingSucceeded
+      }}
+      extraIcons={[
+        {
+          component: X,
+          show: rejectHovered,
+          color: colors.red[6]
+        },
+        {
+          component: Check,
+          show: confirmHovered,
+          color: colors.green[8]
         }
-        onBackClick={clickedHandlers.toggle}
-        onBackEnter={overviewBackHoveredHandlers.open}
-        onBackLeave={overviewBackHoveredHandlers.close}
-        onRejectButtonEnter={rejectButtonHoveredHandlers.open}
-        onRejectButtonLeave={rejectButtonHoveredHandlers.close}
-        onConfirmButtonEnter={confirmButtonHoveredHandlers.open}
-        onConfirmButtonLeave={confirmButtonHoveredHandlers.close}
-      />
-      <Details
-        lifecycle={lifecycle}
-        showDecoding={decodable}
-        decoding={decoding}
-        decodingSucceeded={decodingSucceeded}
-        view={clicked ? "expanded" : "collapsed"}
-        hoverState={{
-          overviewBackHovered,
-          rejectButtonHovered,
-          confirmButtonHovered,
-          collapsedDetailsHovered
-        }}
-        onCollapsedClick={clickedHandlers.toggle}
-        onCollapsedEnter={collapsedDetailsHoveredHandlers.open}
-        onCollapsedLeave={collapsedDetailsHoveredHandlers.close}
-      />
-    </div>
+      ]}
+    />
   );
 }
-
-export default RPC;

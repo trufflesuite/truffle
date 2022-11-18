@@ -23,14 +23,19 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
   }
 }));
 
-interface IconProps extends BoxProps {
+export interface IconProps extends BoxProps {
   component: FeatherIcon;
   show: boolean;
   color?: string;
   animate?: boolean;
 }
 
-function Icon({ component, show, color, animate }: IconProps): JSX.Element {
+export default function Icon({
+  component,
+  show,
+  color,
+  animate
+}: IconProps): JSX.Element {
   const { classes } = useStyles();
 
   return (
@@ -45,5 +50,3 @@ function Icon({ component, show, color, animate }: IconProps): JSX.Element {
     />
   );
 }
-
-export default Icon;

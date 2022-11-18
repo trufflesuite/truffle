@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Group, Button, Select } from "@mantine/core";
+import { Group, Select, Button } from "@mantine/core";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
 

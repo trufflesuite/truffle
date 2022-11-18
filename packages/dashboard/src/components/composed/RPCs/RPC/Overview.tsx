@@ -7,23 +7,18 @@ import type { Decoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, getRef) => {
-  const { colors, colorScheme, white, radius, fontFamilyMonospace, fn } = theme;
+  const { colors, colorScheme, fontFamilyMonospace, fn } = theme;
   return {
     container: {
-      flexWrap: "nowrap",
-      backgroundColor:
-        colorScheme === "dark"
-          ? fn.rgba(colors["truffle-beige"][8], 0.12)
-          : colors["truffle-beige"][1],
-      transition: "background-color 0.2s",
-      borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
-      cursor: "pointer"
+      flexWrap: "nowrap"
     },
-    activeContainer: {
-      backgroundColor:
-        colorScheme === "dark"
-          ? fn.rgba(colors["truffle-beige"][8], 0.2)
-          : white,
+    containerBright: {
+      [`& .${getRef("methodBadgeBright")}`]: {
+        backgroundColor:
+          colorScheme === "dark"
+            ? fn.darken(colors["truffle-beige"][9], 0.56)
+            : colors["yellow"][1]
+      },
       [`& .${getRef("button")}`]: {
         opacity: 1
       },
@@ -45,11 +40,8 @@ const useStyles = createStyles((theme, _params, getRef) => {
       cursor: "pointer",
       transition: "background-color 0.2s"
     },
-    activeMethodBadge: {
-      backgroundColor:
-        colorScheme === "dark"
-          ? fn.darken(colors["truffle-beige"][9], 0.56)
-          : colors["yellow"][1]
+    methodBadgeBright: {
+      ref: getRef("methodBadgeBright")
     },
     decoding: {
       fontFamily: fontFamilyMonospace,
@@ -83,30 +75,24 @@ type OverviewProps = {
   decoding: Decoding;
   decodingFallback?: string;
   decodingSucceeded: boolean;
-  active: boolean;
-  onBackClick: React.MouseEventHandler<HTMLDivElement>;
-  onBackEnter: React.MouseEventHandler<HTMLDivElement>;
-  onBackLeave: React.MouseEventHandler<HTMLDivElement>;
-  onRejectButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
-  onRejectButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
-  onConfirmButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
-  onConfirmButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
+  handleRejectEnter: () => void;
+  handleRejectLeave: () => void;
+  handleConfirmEnter: () => void;
+  handleConfirmLeave: () => void;
+  bright: boolean;
 };
 
-function Overview({
+export default function Overview({
   lifecycle,
   showDecoding,
   decoding,
   decodingFallback = "?",
   decodingSucceeded,
-  active,
-  onBackClick,
-  onBackEnter,
-  onBackLeave,
-  onRejectButtonEnter,
-  onRejectButtonLeave,
-  onConfirmButtonEnter,
-  onConfirmButtonLeave
+  handleRejectEnter,
+  handleRejectLeave,
+  handleConfirmEnter,
+  handleConfirmLeave,
+  bright
 }: OverviewProps): JSX.Element {
   const { method } = lifecycle.message.payload;
   const decodingInspected = inspectDecoding(decoding);
@@ -116,21 +102,15 @@ function Overview({
   } = useDash()!;
   const { classes } = useStyles();
 
-  const onConfirmButtonClick = () => void userConfirmMessage(lifecycle);
-  const onRejectButtonClick = () => void userRejectMessage(lifecycle);
-
   return (
     <Group
-      onClick={onBackClick}
-      onMouseEnter={onBackEnter}
-      onMouseLeave={onBackLeave}
       position="apart"
       spacing={50}
       pl={42}
       pr={35}
       py="lg"
       className={`${classes.container} ${
-        active ? classes.activeContainer : ""
+        bright ? classes.containerBright : ""
       }`}
       tabIndex={0}
     >
@@ -141,7 +121,7 @@ function Overview({
           color="truffle-beige"
           radius="sm"
           className={`${classes.methodBadge} ${
-            active ? classes.activeMethodBadge : ""
+            bright ? classes.methodBadgeBright : ""
           }`}
         >
           {method}
@@ -155,18 +135,18 @@ function Overview({
       <Group className={classes.buttons}>
         <Button
           size="md"
-          onClick={onRejectButtonClick}
-          onMouseEnter={onRejectButtonEnter}
-          onMouseLeave={onRejectButtonLeave}
+          onClick={() => void userRejectMessage(lifecycle)}
+          onMouseEnter={handleRejectEnter}
+          onMouseLeave={handleRejectLeave}
           className={`${classes.button} ${classes.rejectButton}`}
         >
           Reject
         </Button>
         <Button
           size="md"
-          onClick={onConfirmButtonClick}
-          onMouseEnter={onConfirmButtonEnter}
-          onMouseLeave={onConfirmButtonLeave}
+          onClick={() => void userConfirmMessage(lifecycle)}
+          onMouseEnter={handleConfirmEnter}
+          onMouseLeave={handleConfirmLeave}
           rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
           className={`${classes.button} ${classes.confirmButton}`}
           classNames={{ rightIcon: classes.confirmButtonRightIcon }}
@@ -177,5 +157,3 @@ function Overview({
     </Group>
   );
 }
-
-export default Overview;
