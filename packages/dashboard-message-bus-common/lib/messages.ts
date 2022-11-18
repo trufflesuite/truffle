@@ -9,6 +9,20 @@ export interface Response {
   payload: any;
 }
 
+export type CliEventMessageType = "cli-event";
+export const cliEventMessageType = "cli-event";
+/**
+ * Message to inform subscribers of Truffle CLI event data.
+ * The message payload label helps identify the type of event data.
+ */
+export interface CliEventMessage<T> extends Message {
+  type: CliEventMessageType;
+  payload: {
+    label: string;
+    data: T;
+  };
+}
+
 export type DashboardProviderMessageType = "provider";
 export const dashboardProviderMessageType = "provider";
 /**
@@ -27,7 +41,6 @@ export interface DashboardProviderMessage extends Message {
 
 export type LogMessageType = "log";
 export const logMessageType = "log";
-
 /**
  * Message intended to log messages across the message bus.
  * The message payload includes a "debug" namespace as well as a message.
@@ -43,7 +56,6 @@ export interface LogMessage extends Message {
 
 export type DebugMessageType = "debug";
 export const debugMessageType = "debug";
-
 /**
  * Message to log in Dashboard browser console
  */
@@ -66,6 +78,12 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
+export const isCliEventMessage = <T>(
+  message: Message
+): message is CliEventMessage<T> => {
+  return message.type === cliEventMessageType;
+};
+
 export const isDashboardProviderMessage = (
   message: Message
 ): message is DashboardProviderMessage => {
@@ -87,6 +105,7 @@ export const isInvalidateMessage = (
 };
 
 export type MessageType =
+  | CliEventMessage<unknown>
   | DashboardProviderMessageType
   | LogMessageType
   | DebugMessageType

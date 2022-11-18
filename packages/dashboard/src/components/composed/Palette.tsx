@@ -9,7 +9,6 @@ function Palette(): JSX.Element {
       const key = `${color}-${shade}`;
       return (
         <Center
-          // @ts-ignore
           sx={{ backgroundColor: theme.colors[color][shade], height: 36 }}
           key={key}
         >

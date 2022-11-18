@@ -1,13 +1,9 @@
-import type { providers } from "ethers";
-import type {
-  DashboardMessageBusClient,
-  ReceivedMessageLifecycle
-} from "@truffle/dashboard-message-bus-client";
+import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { Message } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
 
 export type ActionType =
-  | "set-client"
+  | "set-decoder"
   | "set-chain-info"
   | "set-notice"
   | "handle-message";
@@ -16,9 +12,12 @@ export interface BaseAction {
   type: ActionType;
 }
 
-export interface SetClientAction extends BaseAction {
-  type: "set-client";
-  data: DashboardMessageBusClient;
+export interface SetDecoderAction extends BaseAction {
+  type: "set-decoder";
+  data: Pick<
+    State,
+    "decoder" | "decoderCompilations" | "decoderCompilationHashes"
+  >;
 }
 
 export interface SetChainInfoAction extends BaseAction {
@@ -33,14 +32,11 @@ export interface SetNoticeAction extends BaseAction {
 
 export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
-  data: {
-    lifecycle: ReceivedMessageLifecycle<Message>;
-    provider: providers.Web3Provider;
-  };
+  data: ReceivedMessageLifecycle<Message>;
 }
 
 export type Action =
-  | SetClientAction
+  | SetDecoderAction
   | SetChainInfoAction
   | SetNoticeAction
   | HandleMessageAction;

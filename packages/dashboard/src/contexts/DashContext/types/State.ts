@@ -1,16 +1,21 @@
-import type { providers } from "ethers";
+import type { IDBPDatabase } from "idb/with-async-ittr";
+import type { ProjectDecoder } from "@truffle/decoder";
 import type {
   DashboardMessageBusClient,
   ReceivedMessageLifecycle
 } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import type { Schema } from "src/contexts/DashContext";
 import type { NoticeContent } from "src/components/composed/Notice/content/types";
 
 export interface State {
-  host: string;
-  port: number;
-  provider: providers.Web3Provider;
-  client: DashboardMessageBusClient | null;
+  busClient: DashboardMessageBusClient;
+  dbPromise: Promise<IDBPDatabase<Schema>>;
+  decoder: ProjectDecoder | null;
+  decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
+  decoderCompilationHashes: Set<
+    Schema["Compilation"]["value"]["dataHash"]
+  > | null;
   providerMessages: Map<
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>

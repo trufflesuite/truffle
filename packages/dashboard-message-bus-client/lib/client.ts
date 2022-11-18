@@ -74,6 +74,8 @@ export class DashboardMessageBusClient {
     const { type, payload } = options;
     let message = createMessage(type, payload);
     try {
+      await this.ready();
+
       const lifecycle = new PublishMessageLifecycle({
         message,
         connection: this._publishConnection

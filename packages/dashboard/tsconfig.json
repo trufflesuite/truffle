@@ -18,7 +18,6 @@
     "outDir": "./build",
     "strictBindCallApply": true,
     "strictNullChecks": true,
-    "rootDir": ".",
     "baseUrl": ".",
     "types": ["jest", "react", "node"],
     "allowJs": true,
@@ -27,7 +26,12 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": false
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
   "include": ["src"]
 }

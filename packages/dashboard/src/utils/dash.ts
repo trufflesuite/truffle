@@ -1,21 +1,34 @@
-import type { providers } from "ethers";
+import inspect from "object-inspect";
+import { Buffer } from "buffer";
+import type { PrismProps } from "@mantine/prism";
+import * as Codec from "@truffle/codec";
+import type { ProjectDecoder } from "@truffle/decoder";
+import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
-  INTERACTIVE_RPC_METHODS,
-  UNSUPPORTED_RPC_METHODS,
+  decodableRpcMethods,
+  interactiveRpcMethods,
+  unsupportedRpcMethods,
   unsupportedMessageResponse,
-  chainIDtoName,
+  chainIDtoName
+} from "src/utils/constants";
+import type {
+  DecodableRpcMethod,
+  UnsupportedRpcMethod,
   knownChainID
 } from "src/utils/constants";
-import type { UNSUPPORTED_RPC_METHOD } from "src/utils/constants";
+
+export function messageIsDecodable(message: DashboardProviderMessage) {
+  return (decodableRpcMethods as Set<string>).has(message.payload.method);
+}
 
 export function messageNeedsInteraction(message: DashboardProviderMessage) {
-  return (INTERACTIVE_RPC_METHODS as Set<string>).has(message.payload.method);
+  return (interactiveRpcMethods as Set<string>).has(message.payload.method);
 }
 
 export function messageIsUnsupported(message: DashboardProviderMessage) {
-  return (UNSUPPORTED_RPC_METHODS as Set<string>).has(message.payload.method);
+  return (unsupportedRpcMethods as Set<string>).has(message.payload.method);
 }
 
 export function rejectMessage(
@@ -27,7 +40,7 @@ export function rejectMessage(
   switch (reason) {
     case "UNSUPPORTED":
       message = unsupportedMessageResponse.get(
-        lifecycle.message.payload.method as UNSUPPORTED_RPC_METHOD
+        lifecycle.message.payload.method as UnsupportedRpcMethod
       )!;
       break;
     case "USER":
@@ -43,13 +56,13 @@ export function rejectMessage(
 }
 
 export async function confirmMessage(
-  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
-  provider: providers.Web3Provider
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
 ) {
   const { jsonrpc, id, method, params } = lifecycle.message.payload;
   let payload: any = { jsonrpc, id };
   try {
-    const result = await provider.send(method, params);
+    // @ts-ignore
+    const result = await window.ethereum.request({ method, params });
     payload["result"] = result;
   } catch (err) {
     console.error(err);
@@ -59,12 +72,87 @@ export async function confirmMessage(
     await lifecycle.respond({ payload });
   } catch (err: any) {
     const muteErrPattern =
-      /A response has already been sent for message id.*of type "provider"./;
+      /^A response has already been sent for message id .* of type "provider"\.$/;
     if (!muteErrPattern.test(err.message)) {
       console.error(err);
     }
   }
   return payload;
+}
+
+export async function decodeMessage(
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
+  decoder: ProjectDecoder
+) {
+  const method = lifecycle.message.payload.method as DecodableRpcMethod;
+
+  switch (method) {
+    case "eth_sendTransaction": {
+      const params = lifecycle.message.payload.params[0];
+      const result = await decoder.decodeTransaction({
+        from: params.from,
+        to: params.to || null,
+        input: params.data,
+        value: params.value,
+        blockNumber: null,
+        nonce: params.nonce,
+        gas: params.gas,
+        gasPrice: params.gasPrice
+      });
+      const failed = result.kind === "unknown" || result.kind === "create";
+
+      return { method, result, failed };
+    }
+
+    case "personal_sign": {
+      const hex = lifecycle.message.payload.params[0];
+      const hexIsValid = /^0x[0-9a-f]*$/i.test(hex);
+      const utf8 = Buffer.from(hex.slice(2), "hex").toString();
+      return {
+        method,
+        result: utf8,
+        failed: !hexIsValid
+      };
+    }
+
+    case "eth_signTypedData_v3":
+    case "eth_signTypedData_v4":
+      let typedData = lifecycle.message.payload.params[1];
+      let failed = false;
+      try {
+        typedData = JSON.stringify(JSON.parse(typedData), null, 2);
+      } catch (err) {
+        failed = true;
+      }
+      return {
+        method,
+        result: typedData,
+        failed
+      };
+  }
+}
+
+export type Decoding = CalldataDecoding | string;
+export function inspectDecoding(decoding: Decoding) {
+  return typeof decoding === "string"
+    ? decoding
+    : inspect(new Codec.Export.CalldataDecodingInspector(decoding), {
+        quoteStyle: "double"
+      });
+}
+
+export function getHighlightLanguageForRpcMethod(
+  method: DecodableRpcMethod
+): PrismProps["language"] {
+  switch (method) {
+    case "eth_sendTransaction":
+      return "javascript";
+    case "eth_signTypedData_v4":
+    case "eth_signTypedData_v3":
+      return "json";
+    case "personal_sign":
+      return "markdown";
+  }
 }
 
 export function getChainNameByID(id: number) {

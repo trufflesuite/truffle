@@ -81,17 +81,17 @@ export default {
       }
     }
 
+    const result = { contracts, compilations };
+
     if (config.events) {
-      config.events.emit("compile:succeed", {
+      await config.events.emit("compile:succeed", {
         contractsBuildDirectory: config.contracts_build_directory,
-        compilers
+        compilers,
+        result
       });
     }
 
-    return {
-      contracts,
-      compilations
-    };
+    return result;
   },
 
   async compileAndSave(options) {
