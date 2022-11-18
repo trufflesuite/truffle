@@ -78,9 +78,9 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
-export const isCliEventMessage = (
+export const isCliEventMessage = <T>(
   message: Message
-): message is CliEventMessage => {
+): message is CliEventMessage<T> => {
   return message.type === cliEventMessageType;
 };
 
