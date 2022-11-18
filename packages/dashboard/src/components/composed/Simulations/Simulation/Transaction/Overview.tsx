@@ -1,11 +1,9 @@
-import { Text } from "@mantine/core";
+import { Code } from "@mantine/core";
+import type { TransactionProps } from "src/components/composed/Simulations/Simulation/Transaction";
+import { inspectDecoding } from "src/utils/dash";
 
-interface OverviewProps {
-  transactionHash: string;
-}
+export default function Overview({ decoding }: TransactionProps): JSX.Element {
+  const decodingInspected = inspectDecoding(decoding);
 
-export default function Overview({
-  transactionHash
-}: OverviewProps): JSX.Element {
-  return <Text>{transactionHash}</Text>;
+  return <Code>{decodingInspected}</Code>;
 }

@@ -2,7 +2,7 @@ import inspect from "object-inspect";
 import { Buffer } from "buffer";
 import type { PrismProps } from "@mantine/prism";
 import * as Codec from "@truffle/codec";
-import type { ProjectDecoder } from "@truffle/decoder";
+import type { ProjectDecoder, Transaction } from "@truffle/decoder";
 import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
@@ -89,19 +89,22 @@ export async function decodeMessage(
   switch (method) {
     case "eth_sendTransaction": {
       const params = lifecycle.message.payload.params[0];
-      const result = await decoder.decodeTransaction({
-        from: params.from,
-        to: params.to || null,
-        input: params.data,
-        value: params.value,
-        blockNumber: null,
-        nonce: params.nonce,
-        gas: params.gas,
-        gasPrice: params.gasPrice
-      });
-      const failed = result.kind === "unknown" || result.kind === "create";
-
-      return { method, result, failed };
+      return {
+        method,
+        ...(await decodeTransaction(
+          {
+            from: params.from,
+            to: params.to || null,
+            input: params.data,
+            value: params.value,
+            blockNumber: null,
+            nonce: params.nonce,
+            gas: params.gas,
+            gasPrice: params.gasPrice
+          },
+          decoder
+        ))
+      };
     }
 
     case "personal_sign": {
@@ -130,6 +133,15 @@ export async function decodeMessage(
         failed
       };
   }
+}
+
+export async function decodeTransaction(
+  transaction: Transaction,
+  decoder: ProjectDecoder
+) {
+  const result = await decoder.decodeTransaction(transaction);
+  const failed = result.kind === "unknown" || result.kind === "create";
+  return { result, failed };
 }
 
 export type Decoding = CalldataDecoding | string;

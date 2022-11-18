@@ -1,16 +1,11 @@
-import type { Ethereum } from "ganache";
 import { Tabs, Text } from "@mantine/core";
 import { Prism } from "@mantine/prism";
-
-interface DetailsProps {
-  transaction: any;
-  receipt: Ethereum.Transaction.Receipt;
-}
+import type { TransactionProps } from "src/components/composed/Simulations/Simulation/Transaction";
 
 export default function Details({
-  transaction,
+  data,
   receipt
-}: DetailsProps): JSX.Element {
+}: TransactionProps): JSX.Element {
   return (
     <Tabs defaultValue="overview">
       <Tabs.List grow>
@@ -24,7 +19,7 @@ export default function Details({
           Transaction
         </Text>
         <Prism language="json" copyLabel="Copy to clipboard" withLineNumbers>
-          {JSON.stringify(transaction, null, 2)}
+          {JSON.stringify(data, null, 2)}
         </Prism>
         <Text size="sm" color="teal" weight={700}>
           Transaction receipt
