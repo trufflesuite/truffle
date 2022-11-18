@@ -1,6 +1,7 @@
 import inspect from "object-inspect";
-import * as Codec from "@truffle/codec";
 import { Buffer } from "buffer";
+import type { PrismProps } from "@mantine/prism";
+import * as Codec from "@truffle/codec";
 import type { ProjectDecoder } from "@truffle/decoder";
 import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
@@ -138,6 +139,20 @@ export function inspectDecoding(decoding: Decoding) {
     : inspect(new Codec.Export.CalldataDecodingInspector(decoding), {
         quoteStyle: "double"
       });
+}
+
+export function getHighlightLanguageForRpcMethod(
+  method: DecodableRpcMethod
+): PrismProps["language"] {
+  switch (method) {
+    case "eth_sendTransaction":
+      return "javascript";
+    case "eth_signTypedData_v4":
+    case "eth_signTypedData_v3":
+      return "json";
+    case "personal_sign":
+      return "markdown";
+  }
 }
 
 export function getChainNameByID(id: number) {

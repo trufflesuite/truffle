@@ -1,7 +1,10 @@
 import { Group, Text, createStyles } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { AlertTriangle } from "react-feather";
-import { inspectDecoding } from "src/utils/dash";
+import {
+  inspectDecoding,
+  getHighlightLanguageForRpcMethod
+} from "src/utils/dash";
 import type { Decoding } from "src/utils/dash";
 import type { DecodableRpcMethod } from "src/utils/constants";
 
@@ -25,12 +28,7 @@ function DecodedParams({
   const decodingInspected = inspectDecoding(decoding);
   const { classes } = useStyles();
 
-  const language =
-    method === "eth_sendTransaction"
-      ? "javascript"
-      : method === "eth_signTypedData_v3" || method === "eth_signTypedData_v4"
-      ? "json"
-      : "markdown";
+  const language = getHighlightLanguageForRpcMethod(method);
 
   return (
     <>
