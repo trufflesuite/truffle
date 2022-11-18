@@ -1,9 +1,9 @@
 import { Group, Stack, Button, Badge, Text, createStyles } from "@mantine/core";
-import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
 import { inspectDecoding } from "src/utils/dash";
+import type { Decoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, getRef) => {
@@ -80,7 +80,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
 type OverviewProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decoding: CalldataDecoding | string;
+  decoding: Decoding;
   decodingFallback?: string;
   decodingSucceeded: boolean;
   active: boolean;

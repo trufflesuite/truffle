@@ -131,7 +131,8 @@ export async function decodeMessage(
   }
 }
 
-export function inspectDecoding(decoding: CalldataDecoding | string) {
+export type Decoding = CalldataDecoding | string;
+export function inspectDecoding(decoding: Decoding) {
   return typeof decoding === "string"
     ? decoding
     : inspect(new Codec.Export.CalldataDecodingInspector(decoding), {

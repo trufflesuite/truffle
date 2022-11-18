@@ -6,13 +6,12 @@ import {
   updateNotification,
   hideNotification
 } from "@mantine/notifications";
-import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
 import Details from "src/components/composed/RPCs/RPC/Details";
 import { useDash } from "src/hooks";
-import { messageIsDecodable, decodeMessage } from "src/utils/dash";
+import { messageIsDecodable, decodeMessage, Decoding } from "src/utils/dash";
 import { decodeNotifications } from "src/utils/notifications";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
@@ -37,7 +36,7 @@ type RPCProps = {
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
   const { decoder } = useDash()!.state;
-  const [decoding, setDecoding] = useState<CalldataDecoding | string>("");
+  const [decoding, setDecoding] = useState<Decoding>("");
   const [decodingSucceeded, setDecodingSucceeded] = useState(true);
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =

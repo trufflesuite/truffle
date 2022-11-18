@@ -1,8 +1,8 @@
 import { Group, Text, createStyles } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { AlertTriangle } from "react-feather";
-import type { CalldataDecoding } from "@truffle/codec";
 import { inspectDecoding } from "src/utils/dash";
+import type { Decoding } from "src/utils/dash";
 import type { DecodableRpcMethod } from "src/utils/constants";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
@@ -12,7 +12,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
 }));
 
 type DecodedParamsProps = {
-  decoding: CalldataDecoding | string;
+  decoding: Decoding;
   decodingSucceeded: boolean;
   method: DecodableRpcMethod;
 };

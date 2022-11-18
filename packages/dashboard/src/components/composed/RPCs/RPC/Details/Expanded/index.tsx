@@ -1,15 +1,15 @@
 import { Stack } from "@mantine/core";
-import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import DecodedParams from "src/components/composed/RPCs/RPC/Details/Expanded/DecodedParams";
 import RawParams from "src/components/composed/RPCs/RPC/Details/Expanded/RawParams";
 import type { DecodableRpcMethod } from "src/utils/constants";
+import type { Decoding } from "src/utils/dash";
 
 type ExpandedProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decoding: CalldataDecoding | string;
+  decoding: Decoding;
   decodingSucceeded: boolean;
 };
 

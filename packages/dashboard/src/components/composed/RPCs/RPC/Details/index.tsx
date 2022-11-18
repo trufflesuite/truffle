@@ -6,9 +6,9 @@ import {
   Loader,
   createStyles
 } from "@mantine/core";
-import type { CalldataDecoding } from "@truffle/codec";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import type { Decoding } from "src/utils/dash";
 import type {
   HoverState,
   DetailsView
@@ -51,7 +51,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
 type DetailsProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
   showDecoding: boolean;
-  decoding: CalldataDecoding | string;
+  decoding: Decoding;
   decodingSucceeded: boolean;
   view: DetailsView;
   hoverState: HoverState;
