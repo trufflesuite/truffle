@@ -4,31 +4,53 @@ import {
   ReceivedMessageLifecycle
 } from "@truffle/dashboard-message-bus-client";
 import { Message } from "@truffle/dashboard-message-bus-common";
+import { createServer } from "http";
+import type { Server } from "http";
 
-jest.setTimeout(2000000);
+jest.setTimeout(10000);
 
 describe("DashboardMessageBus", () => {
-  const publishPort = 12345;
-  const subscribePort = 23456;
+  const port = 12345;
 
   let messageBus: DashboardMessageBus;
   let client: DashboardMessageBusClient;
+  let httpServers: Server[] = [];
+  let httpServerClosePromises: Promise<void>[] = [];
 
   beforeEach(async () => {
-    messageBus = new DashboardMessageBus(publishPort, subscribePort);
+    httpServers = [createServer(), createServer()];
+
+    // used in afterEach to wait until the servers actually close
+    httpServerClosePromises = httpServers.map(
+      server => new Promise(resolve => server.once("close", resolve))
+    );
+    const listenPromises = httpServers.map(
+      server => new Promise(resolve => server.once("listening", resolve))
+    );
+
+    httpServers[0].listen(port, "127.0.0.1");
+    httpServers[1].listen(port, "::1");
+
+    await Promise.all(listenPromises);
+
+    messageBus = new DashboardMessageBus({ httpServers });
+
+    messageBus.once("terminate", () => {
+      httpServers.forEach(server => server.close());
+    });
+
     await messageBus.start();
     client = new DashboardMessageBusClient({
       host: "localhost",
-      subscribePort,
-      publishPort,
+      port,
       retryDelayMsec: 10
     });
   });
 
   afterEach(async () => {
-    //await client.waitForOutstandingTasks();
     await client.close();
     await messageBus.terminate();
+    await Promise.all(httpServerClosePromises);
   });
 
   it("should send a message between a publisher and subscriber", async () => {

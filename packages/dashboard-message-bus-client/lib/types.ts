@@ -1,19 +1,9 @@
 import { Message } from "@truffle/dashboard-message-bus-common";
 
 export interface DashboardMessageBusClientOptions {
-  host?: string;
-  port?: number;
-  subscribePort?: number;
-  publishPort?: number;
-  maxRetries?: number;
-  retryDelayMsec?: number;
-}
-
-export interface ResolvedDashboardMessageBusClientOptions {
   host: string;
   port: number;
-  subscribePort?: number;
-  publishPort?: number;
+  pathPrefix: string;
   maxRetries: number;
   retryDelayMsec: number;
 }

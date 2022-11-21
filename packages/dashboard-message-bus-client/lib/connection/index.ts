@@ -1,8 +1,5 @@
 import WebSocket from "isomorphic-ws";
 
-// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
-import "../polyfill";
-import axios from "axios";
 import {
   base64ToJson,
   jsonToBase64,
@@ -36,23 +33,33 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
   private _socket: WebSocket | undefined;
   private _host: string;
   private _port: number;
-  private _publishPort: number | undefined;
-  private _subscribePort: number | undefined;
+  private _path: string;
   private _connecting: boolean;
 
   constructor({
     host,
     port,
-    publishPort,
-    subscribePort,
-    connectionType: socketType
+    connectionType: socketType,
+    pathPrefix
   }: DashboardMessageBusConnectionOptions) {
     super();
     this._host = host;
     this._port = port;
-    this._publishPort = publishPort;
-    this._subscribePort = subscribePort;
     this._connectionType = socketType;
+
+    if (pathPrefix && !pathPrefix.startsWith("/")) {
+      pathPrefix = `/${pathPrefix}`;
+    }
+
+    if (pathPrefix && !pathPrefix.endsWith("/")) {
+      pathPrefix = `${pathPrefix}/`;
+    }
+
+    if (!pathPrefix) {
+      pathPrefix = "/";
+    }
+
+    this._path = pathPrefix + socketType;
   }
 
   get isConnected() {
@@ -107,9 +114,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
 
       this._connecting = true;
 
-      const port = await this._getMessageBusPort();
-
-      const url = `ws://${this._host}:${port}`;
+      const url = `ws://${this._host}:${this._port}${this._path}`;
 
       debug(
         "connect: %s is attempting to connect to %s",
@@ -252,50 +257,6 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
 
       this._socket.close();
       return promise;
-    }
-  }
-
-  private async _getMessageBusPort(): Promise<number> {
-    if (this._connectionType === "subscribe" && this._subscribePort) {
-      return this._subscribePort;
-    }
-
-    if (this._connectionType === "publish" && this._publishPort) {
-      return this._publishPort;
-    }
-
-    // otherwise, fetch it from the server
-    try {
-      debug(
-        "_getMessageBusPort: %s connection attempting to fetch ports",
-        this._connectionType
-      );
-      const { data } = await axios.get(
-        `http://${this._host}:${this._port}/ports`,
-        {
-          timeout: 350
-        }
-      );
-
-      const port =
-        this._connectionType === "subscribe"
-          ? data.subscribePort
-          : data.publishPort;
-
-      debug(
-        "_getMessageBusPort: %s connection will use port %s",
-        this._connectionType,
-        port
-      );
-
-      return port;
-    } catch (err) {
-      debug(
-        "_getMessageBusPort: failed fetching ports for %s connection due to error %s",
-        this._connectionType,
-        err
-      );
-      throw err;
     }
   }
 

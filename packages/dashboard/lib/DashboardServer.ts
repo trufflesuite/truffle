@@ -1,6 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import path from "path";
-import getPort from "get-port";
 import open from "open";
 import {
   dashboardProviderMessageType,
@@ -20,22 +19,36 @@ export interface DashboardServerOptions {
   /** Port of the dashboard */
   port: number;
 
-  /** Port of the message bus publish socket server */
-  publishPort?: number;
+  /**
+   * The HTTP path prefix for the dashboard message bus to use.
+   *
+   * @default "/"
+   * */
+  pathPrefix?: string;
 
-  /** Port of the message bus subscribe socket server */
-  subscribePort?: number;
-
-  /** Host of the dashboard (default: localhost) */
+  /**
+   * Host of the dashboard
+   * @default "localhost"
+   */
   host?: string;
 
-  /** Boolean indicating whether the POST /rpc endpoint should be exposed (default: true) */
+  /**
+   * Boolean indicating whether the POST /rpc endpoint should be exposed.
+   * @default true
+   */
   rpc?: boolean;
 
-  /** Boolean indicating whether debug output should be logged (default: false) */
+  /**
+   * Boolean indicating whether debug output should be logged.
+   * @default false
+   */
   verbose?: boolean;
 
-  /** Boolean indicating whether whether starting the DashboardServer should automatically open the dashboard (default: true) */
+  /**
+   * Boolean indicating whether whether starting the DashboardServer should
+   * automatically open the dashboard.
+   * @default true
+   */
   autoOpen?: boolean;
 }
 
@@ -51,30 +64,16 @@ export class DashboardServer {
   private httpServers: Server[] = [];
   private messageBus?: DashboardMessageBus;
   private client?: DashboardMessageBusClient;
-  private configPublishPort?: number;
-  private configSubscribePort?: number;
-
-  boundTerminateListener: () => void;
-
-  get subscribePort(): number | undefined {
-    return this.messageBus?.subscribePort;
-  }
-
-  get publishPort(): number | undefined {
-    return this.messageBus?.subscribePort;
-  }
 
   constructor(options: DashboardServerOptions) {
     this.host = options.host ?? "localhost";
     this.port = options.port;
-    this.configPublishPort = options.publishPort;
-    this.configSubscribePort = options.subscribePort;
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
     this.frontendPath = path.join(__dirname, "dashboard-frontend");
 
-    this.boundTerminateListener = () => this.stop();
+    this.stop = this.stop.bind(this);
   }
 
   async start() {
@@ -83,40 +82,14 @@ export class DashboardServer {
       return;
     }
 
+    this.createExpressApp();
+    await this.startHttpServers();
+
     this.messageBus = await this.startMessageBus();
-
-    this.expressApp = express();
-
-    this.expressApp.use(cors());
-    this.expressApp.use(express.json());
-
-    this.expressApp.get("/ports", this.getPorts.bind(this));
 
     if (this.rpc) {
       await this.connectToMessageBus();
-      this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
-
-    this.expressApp.use(express.static(this.frontendPath));
-    this.expressApp.get("*", (_req, res) => {
-      res.sendFile("index.html", { root: this.frontendPath });
-    });
-
-    const bindIpAddresses = await resolveBindHostnameToAllIps(this.host);
-    this.httpServers = await Promise.all(
-      bindIpAddresses.map(bindIpAddress => {
-        const server = createServer(this.expressApp);
-        return new Promise<Server>(resolve => {
-          server.listen(
-            {
-              host: bindIpAddress,
-              port: this.port
-            },
-            () => resolve(server)
-          );
-        });
-      })
-    );
 
     if (this.autoOpen) {
       const host = this.host === "0.0.0.0" ? "localhost" : this.host;
@@ -125,7 +98,7 @@ export class DashboardServer {
   }
 
   async stop() {
-    this.messageBus?.off("terminate", this.boundTerminateListener);
+    this.messageBus?.off("terminate", this.stop);
 
     await Promise.all([
       this.client?.close(),
@@ -137,16 +110,39 @@ export class DashboardServer {
     delete this.client;
   }
 
-  private getPorts(req: Request, res: Response) {
-    if (!this.messageBus) {
-      throw new Error("Message bus has not been started yet");
+  private createExpressApp() {
+    if (this.expressApp) {
+      return;
     }
 
-    res.json({
-      dashboardPort: this.port,
-      subscribePort: this.messageBus.subscribePort,
-      publishPort: this.messageBus.publishPort
+    this.expressApp = express();
+
+    this.expressApp.use(cors());
+    this.expressApp.use(express.json());
+
+    if (this.rpc) {
+      this.expressApp.post("/rpc", this.postRpc.bind(this));
+    }
+
+    this.expressApp.use(express.static(this.frontendPath));
+    this.expressApp.get("*", (_req, res) => {
+      res.sendFile("index.html", { root: this.frontendPath });
     });
+  }
+
+  private async startHttpServers() {
+    const bindIpAddresses = await resolveBindHostnameToAllIps(this.host);
+
+    this.httpServers = await Promise.all(
+      bindIpAddresses.map(bindIpAddress => {
+        const server = createServer(this.expressApp);
+        return new Promise<Server>(resolve => {
+          server.listen({ host: bindIpAddress, port: this.port }, () =>
+            resolve(server)
+          );
+        });
+      })
+    );
   }
 
   private postRpc(req: Request, res: Response, next: NextFunction) {
@@ -162,19 +158,12 @@ export class DashboardServer {
   }
 
   private async startMessageBus() {
-    const subscribePort =
-      this.configSubscribePort ?? (await getPort({ host: this.host }));
-    const publishPort =
-      this.configPublishPort ?? (await getPort({ host: this.host }));
-
-    const messageBus = new DashboardMessageBus(
-      publishPort,
-      subscribePort,
-      this.host
-    );
+    const messageBus = new DashboardMessageBus({
+      httpServers: this.httpServers
+    });
 
     await messageBus.start();
-    messageBus.on("terminate", this.boundTerminateListener);
+    messageBus.on("terminate", this.stop);
 
     return messageBus;
   }
@@ -190,8 +179,7 @@ export class DashboardServer {
 
     this.client = new DashboardMessageBusClient({
       host: this.host,
-      subscribePort: this.messageBus.subscribePort,
-      publishPort: this.messageBus.publishPort
+      port: this.port
     });
 
     await this.client.ready();

@@ -1,7 +1,6 @@
 import {
   DashboardMessageBusClientOptions,
   SendOptions,
-  ResolvedDashboardMessageBusClientOptions,
   SubscriptionOptions
 } from "./types";
 import {
@@ -22,38 +21,39 @@ import { waitForOutstandingPromises } from "@truffle/promise-tracker";
 const debug = debugModule(`dashboard-message-bus-client:client`);
 
 export class DashboardMessageBusClient {
-  private _options: ResolvedDashboardMessageBusClientOptions;
+  private _options: DashboardMessageBusClientOptions;
 
   private _publishConnection: DashboardMessageBusConnection;
   private _subscribeConnection: DashboardMessageBusConnection;
   private _subscriptions: DashboardMessageBusSubscription<Message>[] = [];
 
-  get options(): ResolvedDashboardMessageBusClientOptions {
+  get options(): DashboardMessageBusClientOptions {
     return { ...this._options };
   }
 
-  constructor(options: DashboardMessageBusClientOptions) {
+  constructor(options: Partial<DashboardMessageBusClientOptions>) {
     this._options = {
       host: "localhost",
       port: 24012,
+      pathPrefix: "/",
       maxRetries: 1,
       retryDelayMsec: 100,
       ...(options ?? {})
     };
 
-    const { host, port, publishPort, subscribePort } = this._options;
+    const { host, port, pathPrefix } = this._options;
     this._publishConnection = new DashboardMessageBusConnection({
       host,
       port,
-      publishPort,
-      connectionType: "publish"
+      connectionType: "publish",
+      pathPrefix
     });
 
     this._subscribeConnection = new DashboardMessageBusConnection({
       host,
       port,
-      subscribePort,
-      connectionType: "subscribe"
+      connectionType: "subscribe",
+      pathPrefix
     });
 
     this._subscribeConnection.on("message", this._messageHandler.bind(this));

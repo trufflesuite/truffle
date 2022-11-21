@@ -22,7 +22,9 @@ export default class MockDashboard {
 
   constructor(public forwardProvider: EthereumProvider) {}
 
-  async connect(options: DashboardMessageBusClientOptions): Promise<void> {
+  async connect(
+    options: Partial<DashboardMessageBusClientOptions>
+  ): Promise<void> {
     if (this._connected) {
       return;
     }

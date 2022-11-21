@@ -1,26 +1,43 @@
 import WebSocket from "isomorphic-ws";
 import { EventEmitter } from "events";
+import { parse } from "url";
 import {
   base64ToJson,
   createMessage,
   jsonToBase64
 } from "@truffle/dashboard-message-bus-common";
 
-import {
-  broadcastAndAwaitFirst,
-  broadcastAndDisregard,
-  startWebSocketServer
-} from "./utils";
+import { broadcastAndAwaitFirst, broadcastAndDisregard } from "./utils";
 import { promisify } from "util";
+import type { Server } from "http";
 
 interface UnfulfilledRequest {
   publisher: WebSocket;
   data: WebSocket.Data;
 }
 
+export interface DashboardMessageBusOptions {
+  /**
+   * An array of {@link Server} instances that will be used to create the
+   * websocket server instances that the message bus will listen on
+   */
+  httpServers: Server[];
+
+  /**
+   * The prefix for the HTTP path that the message bus will listen on (defaults
+   * to "/")
+   */
+  pathPrefix?: string;
+}
+
 export class DashboardMessageBus extends EventEmitter {
-  private publishServers: WebSocket.Server[];
-  private subscribeServers: WebSocket.Server[];
+  public readonly publishPath: string;
+  public readonly subscribePath: string;
+
+  private httpServers: Server[];
+
+  private publishServer: WebSocket.Server;
+  private subscribeServer: WebSocket.Server;
   private publishers: WebSocket[] = [];
   private subscribers: WebSocket[] = [];
   private readyPromise: Promise<void>;
@@ -28,12 +45,30 @@ export class DashboardMessageBus extends EventEmitter {
 
   private unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
-  constructor(
-    public publishPort: number,
-    public subscribePort: number,
-    public host: string = "localhost"
-  ) {
+  constructor(options: DashboardMessageBusOptions) {
     super();
+
+    this.httpServers = options.httpServers;
+
+    let pathPrefix = options.pathPrefix ?? "/";
+
+    // ensure pathPrefix always starts with a leading slash
+    if (!pathPrefix.startsWith("/")) {
+      pathPrefix = `/${pathPrefix}`;
+    }
+
+    // ensure pathPrefix always ends with a trailing slash
+    if (!pathPrefix.endsWith("/")) {
+      pathPrefix = `${pathPrefix}/`;
+    }
+
+    this.subscribePath = pathPrefix + "subscribe";
+    this.publishPath = pathPrefix + "publish";
+
+    // necessary to make it so that we can access properties of this class when
+    // handling HTTP upgrade events
+    this.handleHttpUpgrade = this.handleHttpUpgrade.bind(this);
+
     this.resetReadyState();
   }
 
@@ -42,36 +77,33 @@ export class DashboardMessageBus extends EventEmitter {
    * @dev This starts separate websocket servers for subscribers/publishers
    */
   async start() {
-    this.subscribeServers = await startWebSocketServer({
-      host: this.host,
-      port: this.subscribePort
+    if (this.subscribeServer && this.publishServer) {
+      return;
+    }
+
+    this.subscribeServer = new WebSocket.Server({ noServer: true });
+    this.publishServer = new WebSocket.Server({ noServer: true });
+
+    this.subscribeServer.on("connection", (newSubscriber: WebSocket) => {
+      newSubscriber.once("close", () => {
+        this.removeSubscriber(newSubscriber);
+      });
+
+      // Require the subscriber to send a message *first* before being added
+      newSubscriber.once("message", () => this.addSubscriber(newSubscriber));
     });
 
-    this.subscribeServers.map(subscribeServer =>
-      subscribeServer.on("connection", (newSubscriber: WebSocket) => {
-        newSubscriber.once("close", () => {
-          this.removeSubscriber(newSubscriber);
-        });
+    this.publishServer.on("connection", (newPublisher: WebSocket) => {
+      newPublisher.once("close", () => {
+        this.removePublisher(newPublisher);
+      });
 
-        // Require the subscriber to send a message *first* before being added
-        newSubscriber.once("message", () => this.addSubscriber(newSubscriber));
-      })
-    );
-
-    this.publishServers = await startWebSocketServer({
-      host: this.host,
-      port: this.publishPort
+      this.addPublisher(newPublisher);
     });
 
-    this.publishServers.map(publishServer =>
-      publishServer.on("connection", (newPublisher: WebSocket) => {
-        newPublisher.once("close", () => {
-          this.removePublisher(newPublisher);
-        });
-
-        this.addPublisher(newPublisher);
-      })
-    );
+    this.httpServers.forEach(server => {
+      server.on("upgrade", this.handleHttpUpgrade);
+    });
   }
 
   /**
@@ -87,15 +119,31 @@ export class DashboardMessageBus extends EventEmitter {
    * @dev Emits a "terminate" event
    */
   async terminate() {
+    this.httpServers.forEach(server => {
+      server.off("upgrade", this.handleHttpUpgrade);
+    });
+
     await Promise.all([
-      ...this.publishServers.map(publishServer =>
-        promisify(publishServer.close.bind(publishServer))()
-      ),
-      ...this.subscribeServers.map(subscribeServer =>
-        promisify(subscribeServer.close.bind(subscribeServer))()
-      )
+      promisify(this.publishServer.close.bind(this.publishServer))(),
+      promisify(this.subscribeServer.close.bind(this.subscribeServer))()
     ]);
     this.emit("terminate");
+  }
+
+  private handleHttpUpgrade(request: any, socket: any, head: any) {
+    const { pathname } = parse(request.url);
+
+    if (pathname === this.subscribePath) {
+      this.subscribeServer.handleUpgrade(request, socket, head, ws => {
+        this.subscribeServer.emit("connection", ws, request);
+      });
+    } else if (pathname === this.publishPath) {
+      this.publishServer.handleUpgrade(request, socket, head, ws => {
+        this.publishServer.emit("connection", ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
   }
 
   /**

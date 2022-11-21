@@ -16,7 +16,7 @@ describe("DashboardServer", () => {
   let dashboardServer: DashboardServer;
   let mockDashboard: MockDashboard;
   let ganacheProvider: EthereumProvider;
-  let clientOptions: DashboardMessageBusClientOptions;
+  let clientOptions: Partial<DashboardMessageBusClientOptions>;
 
   beforeAll(async () => {
     ganacheProvider = Ganache.provider<"ethereum">({
@@ -38,9 +38,7 @@ describe("DashboardServer", () => {
 
     clientOptions = {
       host: "localhost",
-      port: dashboardPort,
-      subscribePort: dashboardServer.subscribePort,
-      publishPort: dashboardServer.publishPort
+      port: dashboardPort
     };
 
     mockDashboard = new MockDashboard(ganacheProvider);
