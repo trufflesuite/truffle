@@ -12,15 +12,13 @@ class VSCodeDebugger {
   async run() {
     // Sets the URL
     const url = new URL("/debug", "vscode://trufflesuite-csi.truffle-vscode");
-    const providerUrl = this.config.url
-      ? this.config.url
-      : this.config.provider.host;
+
     const disableFetchExternal = this.config.fetchExternal ? false : true;
 
     // Sets the query parameters
     url.searchParams.set("txHash", this.txHash);
     url.searchParams.set("workingDirectory", this.config.working_directory);
-    url.searchParams.set("providerUrl", providerUrl);
+    url.searchParams.set("providerUrl", this.getProviderUrl());
     url.searchParams.set("network", this.config.network);
     url.searchParams.set("disableFetchExternal", disableFetchExternal);
 
@@ -45,6 +43,28 @@ class VSCodeDebugger {
 
     // Sends a message to the user
     this.config.logger.log("Opening truffle debugger in VSCode...");
+  }
+
+  /**
+   * This function is for getting the provider URL.
+   */
+  getProviderUrl() {
+    // Checks if the user is using a custom provider
+    if (this.config.url) {
+      return this.config.url;
+    }
+
+    // Checks if there is a provider in the config
+    if (this.config.provider) {
+      return this.config.provider.host;
+    }
+
+    // Creates the provider URL from host and port
+    if (this.config.network_config) {
+      return new URL(
+        `http://${this.config.network_config.host}:${this.config.network_config.port}`
+      ).toString();
+    }
   }
 }
 

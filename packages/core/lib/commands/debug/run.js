@@ -63,7 +63,9 @@ module.exports = async function (options) {
 
   // Checks if the user wants to open the debugger in vscode
   if (config.vscode) {
-    await new VSCodeDebugger(config, txHash).run();
+    // await new VSCodeDebugger(config, txHash).run();
+    const vsDebugger = new VSCodeDebugger(config, txHash);
+    await vsDebugger.run();
     return;
   }
 
