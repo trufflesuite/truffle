@@ -6,20 +6,21 @@ import { Shims, Compilation } from "@truffle/compile-common";
 import { getTruffleDb } from "@truffle/db-loader";
 import { Plugins } from "@truffle/plugins";
 
+const SUPPORTED_COMPILER_PLUGINS = ["zksolc"];
+
 const checkForCompilerPlugin = async (config, name) => {
   // not sure if we need this check here; may want to remove in the future
-  const SUPPORTED_COMPILER_PLUGINS = ["zksolc"];
+  //const SUPPORTED_COMPILER_PLUGINS = ["zksolc"];
   let pluginCompiler = config.plugins ? config.plugins : null;
-  const supportedCompiler = SUPPORTED_COMPILER_PLUGINS[name];
+  const supportedCompiler = SUPPORTED_COMPILER_PLUGINS.includes(name);
   if (supportedCompiler && pluginCompiler) {
-    pluginCompiler = Plugins.compile(pluginCompiler);
+    pluginCompiler = Plugins.compile(config);
     return pluginCompiler;
   } else {
     // PROBABLY ADD SOME ERROR HANDLING HERE SPECIFIC TO PLUGIN NOT FOUND
     return false;
   }
 };
-
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -29,20 +30,45 @@ const SUPPORTED_COMPILERS = {
 
 async function compile(config) {
   // determine compiler(s) to use
-  const compilers = config.compiler
+  const allcompilers = config.compiler
     ? config.compiler === "none"
       ? []
       : [config.compiler]
     : Object.keys(config.compilers);
 
+  var compilers: string[] = [];
+  // supported compilers only
+  if (config.plugins) {
+    Object.keys(config.compilers).forEach(function (c) {
+      if (
+        config.compilers[c].plugin &&
+        config.plugins.includes(config.compilers[c].plugin)
+      ) {
+        SUPPORTED_COMPILER_PLUGINS.push(c);
+      }
+    });
+    compilers.push(
+      allcompilers.find(c => SUPPORTED_COMPILER_PLUGINS.includes(c))
+    );
+  } else {
+    allcompilers.map(c => {
+      compilers.push(c);
+    });
+  }
+
   // invoke compilers
+  //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
       //NEED PLUGIN COMPILER TO BE IN SUPPORTED_COMPILERS
       let Compile = SUPPORTED_COMPILERS[name];
       const pluginCompile = await checkForCompilerPlugin(config, name);
       if (pluginCompile) {
-        Compile = pluginCompile;
+        pluginCompile.map(pc => {
+          if (pc.module === config.compilers[name].plugin)
+            Compile = pc.loadCompiler();
+          //Compile = require(path.join(__dirname, "../plugins/node_modules", pc.module, pc.definition.compile)).Compile
+        });
       }
 
       if (!Compile && !pluginCompile)
