@@ -209,6 +209,25 @@ function* receiveBinary(address) {
   return binary;
 }
 
+export function* reverseEnsResolve(address) {
+  const task = yield fork(receiveEnsName, address);
+  yield put(actions.reverseEnsResolve(address));
+  return yield join(task);
+}
+
+function* performEnsReverseResolution(adapter, { address }) {
+  const name = yield apply(adapter, adapter.reverseEnsResolve, [address]);
+  yield put(actions.receiveEnsName(name));
+}
+
+function* receiveEnsName(address) {
+  const { name } = yield take(
+    action =>
+      action.type == actions.RECEIVE_ENS_NAME && action.address == address
+  );
+  return name;
+}
+
 export function* obtainStorage(address, slot, blockHash, txIndex) {
   debug("forking");
   const task = yield fork(function* () {
@@ -268,12 +287,18 @@ export function* init(provider) {
 
 export function* saga() {
   // wait for web3 init signal
-  let { provider } = yield take(actions.INIT_WEB3);
-  let adapter = new Web3Adapter(provider);
+  const { provider, ensRegistryAddress } = yield take(actions.INIT_WEB3);
+  let adapter = new Web3Adapter(provider, ensRegistryAddress);
+  yield apply(adapter, init); //set up ens
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
   yield takeEvery(actions.FETCH_STORAGE, fetchStorage, adapter);
+  yield takeEvery(
+    actions.REVERSE_ENS_RESOLVE,
+    performEnsReverseResolution,
+    adapter
+  );
 }
 
 export default prefixName("web3", saga);

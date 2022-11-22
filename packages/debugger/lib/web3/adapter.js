@@ -3,11 +3,27 @@ const debug = debugModule("debugger:web3:adapter");
 
 import Web3 from "web3";
 import * as Codec from "@truffle/codec";
+import ENS, { getEnsAddress } from "@ensdomains/ensjs";
 import { promisify } from "util";
 
 export default class Web3Adapter {
-  constructor(provider) {
+  constructor(provider, ensRegistryAddress) {
     this.web3 = new Web3(provider);
+    this.ensRegistryAddress = ensRegistryAddress; //note: may be null to turn off resolution
+  }
+
+  async init() {
+    if (this.ensRegistryAddress === undefined) {
+      const networkId = await this.web3.eth.net.getId();
+      this.ensRegistryAddress = getEnsAddress(networkId);
+    }
+    if (this.ensRegistryAddress) {
+      //not an else! can be set up above!
+      this.ens = new ENS({
+        provider: this.web3.current.provider,
+        ensAddress: this.ensRegistryAddress
+      });
+    }
   }
 
   async getTrace(txHash) {
@@ -103,5 +119,16 @@ export default class Web3Adapter {
     debug("getting deployed code for %s", address);
     let code = await this.web3.eth.getCode(address, block);
     return code === "0x0" ? "0x" : code;
+  }
+
+  async reverseEnsResolve(address) {
+    if (!this.ens) {
+      return null;
+    }
+    try {
+      return (await this.ens.getAddress(address)).name;
+    } catch {
+      return null; //we don't want this erroring, sorry
+    }
   }
 }
