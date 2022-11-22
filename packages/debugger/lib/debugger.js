@@ -14,6 +14,7 @@ import sourcemappingSelector from "./sourcemapping/selectors";
 import sessionSelector from "./session/selectors";
 import stacktraceSelector from "./stacktrace/selectors";
 import controllerSelector from "./controller/selectors";
+import ensSelector from "./ens/selectors";
 
 import { Compilations } from "@truffle/codec";
 
@@ -98,6 +99,7 @@ const Debugger = {
     return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
+      ens: ensSelector,
       txlog: txlogSelector,
       trace: traceSelector,
       evm: evmSelector,

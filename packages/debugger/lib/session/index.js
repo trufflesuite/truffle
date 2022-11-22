@@ -23,6 +23,7 @@ import { createNestedSelector } from "reselect-tree";
 import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
+import ens from "lib/ens/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
 
 import rootSaga from "./sagas";
@@ -591,6 +592,7 @@ export default class Session {
     return createNestedSelector({
       ast,
       data,
+      ens,
       txlog,
       trace,
       evm,
