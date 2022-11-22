@@ -1,9 +1,10 @@
 export const START = "SESSION_START";
-export function start(provider, txHash) {
+export function start(provider, txHash, ensRegistryAddress) {
   return {
     type: START,
     provider,
-    txHash //OPTIONAL
+    txHash, //OPTIONAL
+    ensRegistryAddress //OPTIONAL
   };
 }
 

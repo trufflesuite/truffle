@@ -30,6 +30,8 @@ import reducer from "./reducers";
 
 import { Shims } from "@truffle/compile-common";
 
+import { utils as Web3Utils } from "web3";
+
 /**
  * Debugger Session
  */
@@ -70,8 +72,18 @@ export default class Session {
       });
     });
 
+    if (moduleOptions.ensRegistryAddress) {
+      if (!Web3Utils.isAddress(moduleOptions.ensRegistryAddress)) {
+        throw new Error(
+          `Error: Invalid address ${moduleOptions.ensRegistryAddress}`
+        );
+      }
+    }
+
     //note that txHash is now optional
-    this._store.dispatch(actions.start(provider, txHash));
+    this._store.dispatch(
+      actions.start(provider, txHash, moduleOptions.ensRegistryAddress)
+    );
   }
 
   async ready() {
