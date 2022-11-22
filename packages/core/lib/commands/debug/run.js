@@ -7,6 +7,7 @@ module.exports = async function (options) {
   const Codec = require("@truffle/codec");
   const TruffleError = require("@truffle/error");
   const { CLIDebugger } = require("../../debug");
+  const { utils: Web3Utils } = require("web3");
 
   if (options.url && options.network) {
     const message =
@@ -18,6 +19,20 @@ module.exports = async function (options) {
       "See: https://trufflesuite.com/docs/truffle/reference/truffle-commands/#debug" +
       OS.EOL;
     throw new TruffleError(message);
+  }
+
+  if (options.registry && options.noEns) {
+    throw new TruffleError(
+      "The --no-ens options and --registry options are mutually exclusive; please remove one and try again."
+    );
+  }
+
+  if (options.registry) {
+    if (!Web3Utils.isAddress(options.registry)) {
+      throw new TruffleError(
+        "The specified registry is not a valid address.  It may have an incorrect checksum or be otherwise invalid."
+      );
+    }
   }
 
   let config;

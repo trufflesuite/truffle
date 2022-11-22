@@ -133,13 +133,15 @@ class CLIDebugger {
     const startMessage = DebugUtils.formatStartMessage(
       this.txHash !== undefined
     );
+    const registry = this.config.noEns ? null : this.config.registry;
     let bugger;
     if (!this.config.fetchExternal) {
       //ordinary case, not doing fetch-external
       const startSpinner = new Spinner("core:debug:cli:start", startMessage);
       bugger = await Debugger.forProject({
         provider: this.config.provider,
-        compilations
+        compilations,
+        ensRegistryAddress: registry
       });
       if (this.txHash !== undefined) {
         try {
@@ -162,6 +164,7 @@ class CLIDebugger {
       bugger = await Debugger.forTx(this.txHash, {
         provider: this.config.provider,
         compilations,
+        ensRegistryAddress: registry,
         lightMode: true
       }); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
