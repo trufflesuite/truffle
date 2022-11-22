@@ -38,6 +38,58 @@ describe("TruffleConfig.detect", () => {
   });
 });
 
+describe("TruffleConfig.load", () => {
+  it("re-loads a config file after being modified", () => {
+    const options = {
+      workingDirectory: `${process.cwd()}/test`
+    };
+
+    fs.writeFileSync(
+      "./test/truffle-config.js",
+      `
+    module.exports = {
+        networks: {
+            development: {
+                url: "http://127.0.0.1:8545"
+            },
+        },
+    };
+    `
+    );
+    {
+      const config = TruffleConfig.detect(options);
+      delete config.networks["dashboard"];
+      assert.deepStrictEqual(config.networks, {
+        development: { url: "http://127.0.0.1:8545" }
+      });
+    }
+
+    fs.writeFileSync(
+      "./test/truffle-config.js",
+      `
+    module.exports = {
+        networks: {
+            development: {
+                url: "http://127.0.0.1:8545"
+            },
+            development2: {
+                url: "http://127.0.0.1:8546"
+            },
+        },
+    };
+    `
+    );
+    {
+      const config = TruffleConfig.detect(options);
+      delete config.networks["dashboard"];
+      assert.deepStrictEqual(config.networks, {
+        development: { url: "http://127.0.0.1:8545" },
+        development2: { url: "http://127.0.0.1:8546" }
+      });
+    }
+  });
+});
+
 describe("when it can't find a config file", () => {
   beforeEach(() => {
     sinon.stub(TruffleConfig, "search").returns(null);
