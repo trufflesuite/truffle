@@ -13,7 +13,7 @@ describe("TruffleConfig unit tests", async () => {
     it("solidityLog", () => {
       const expectedSolidityLog = {
         displayPrefix: "",
-        disableMigration: false
+        disableMigrate: false
       };
       assert.deepStrictEqual(truffleConfig.solidityLog, expectedSolidityLog);
     });

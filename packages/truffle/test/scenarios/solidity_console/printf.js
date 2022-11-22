@@ -169,7 +169,7 @@ describe("Solidity console log [ @standalone ]", function () {
       await server.close();
     });
 
-    it("MAINNET disableMigration: false", async function () {
+    it("MAINNET disableMigrate: false", async function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
@@ -186,7 +186,7 @@ describe("Solidity console log [ @standalone ]", function () {
       }
     });
 
-    it("MAINNET disableMigration: true", async function () {
+    it("MAINNET disableMigrate: true", async function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
