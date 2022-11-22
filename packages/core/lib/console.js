@@ -335,7 +335,7 @@ class Console extends EventEmitter {
     );
 
     // Theoretically stderr can contain multiple errors.
-    // So let's jsut print it instaed of throwing through
+    // So let's just print it instead of throwing through
     // the error handling mechanism. Bad call?
     sid.stderr.on("data", data => {
       debug(data.toString());
