@@ -1,8 +1,9 @@
 export const INIT_WEB3 = "INIT_WEB3";
-export function init(provider) {
+export function init(provider, ensRegistryAddress) {
   return {
     type: INIT_WEB3,
-    provider
+    provider,
+    ensRegistryAddress
   };
 }
 
@@ -34,6 +35,14 @@ export function fetchStorage(address, slot, blockHash, txIndex) {
   };
 }
 
+export const REVERSE_ENS_RESOLVE = "REVERSE_ENS_RESOLVE";
+export function reverseEnsResolve(address) {
+  return {
+    type: REVERSE_ENS_RESOLVE,
+    address
+  };
+}
+
 export const RECEIVE_BINARY = "RECEIVE_BINARY";
 export function receiveBinary(address, binary) {
   return {
@@ -58,6 +67,15 @@ export function receiveStorageFail(error) {
   return {
     type: RECEIVE_STORAGE_FAIL,
     error
+  };
+}
+
+export const RECEIVE_ENS_NAME = "RECEIVE_ENS_NAME";
+export function receiveEnsName(address, name) {
+  return {
+    type: RECEIVE_ENS_NAME,
+    address,
+    name
   };
 }
 
