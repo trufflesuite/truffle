@@ -31,6 +31,15 @@ module.exports = {
       describe: "Force debugger to skip compilation (dangerous!)",
       type: "boolean",
       default: false
+    },
+    "no-ens": {
+      describe: "Turns off ens reverse resolution",
+      type: "boolean",
+      default: false
+    },
+    "registry": {
+      describe: "Allows setting a custom address for the ENS registry",
+      type: "string"
     }
   },
   help: {
@@ -38,6 +47,8 @@ module.exports = {
       "truffle debug [<transaction_hash>] [--fetch-external|-x]" +
       OS.EOL +
       "                             [--network <network>|--url <provider_url>]" +
+      OS.EOL +
+      "                             [--no-ens|--registry <registry_address>]" +
       OS.EOL +
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
@@ -60,6 +71,15 @@ module.exports = {
         option: "--url",
         description:
           "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the debugger outside of a Truffle project."
+      },
+      {
+        option: "--no-ens",
+        description: "Disables ENS reverse resolution when decoding addresses."
+      },
+      {
+        option: "--registry",
+        description:
+          "Allows setting a custom registry for performing reverse ENS resolution, or setting such a registry at all on lesser-known networks."
       },
       {
         option: "--compile-tests",
