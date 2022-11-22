@@ -151,6 +151,7 @@ describe("Solidity console log [ @standalone ]", function () {
   describe("Migration", async function () {
     this.timeout(30000);
     let server;
+    let debugEnv = "";
 
     before("setup: interact with contract", async function () {
       server = Ganache.server({
@@ -177,11 +178,7 @@ describe("Solidity console log [ @standalone ]", function () {
           path.join(tempDirPath, "config-disable-migrate-false.js"),
           path.join(tempDirPath, "truffle-config.js")
         );
-        await CommandRunner.run(
-          "migrate --network mainnet",
-          config,
-          "migrate:run"
-        );
+        await CommandRunner.run("migrate --network mainnet", config, debugEnv);
         assert(logger.includes("Total deployments:   1"));
       } catch (error) {
         console.log("ERROR: %o", error);
@@ -201,7 +198,7 @@ describe("Solidity console log [ @standalone ]", function () {
         await CommandRunner.run(
           "migrate --network mainnet --reset --skip-dry-run",
           config,
-          "migrate:run:*"
+          debugEnv
         );
         assert.fail("Migration should have failed");
       } catch (error) {

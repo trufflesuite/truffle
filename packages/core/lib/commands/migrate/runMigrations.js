@@ -37,61 +37,68 @@ async function usesConsoleLog(artifactJson) {
   });
 }
 
+async function getDirtyArtifactFiles(buildDir) {
+  const debugLog = debug.extend("dirty-files");
+  const files = await readdir(buildDir);
+
+  let promises = [];
+  files.forEach(fn => {
+    if (fn.endsWith(".json")) {
+      promises.push(usesConsoleLog(path.join(buildDir, fn)));
+    }
+  });
+
+  const settled = await Promise.allSettled(promises);
+  const dirtyArtifacts = [];
+  for (const s of settled) {
+    if (s.status === "rejected") {
+      debugLog("promise failure: %o", s.reason);
+      continue;
+    }
+    dirtyArtifacts.push(s.value);
+  }
+  return dirtyArtifacts;
+}
+
 module.exports = async function (config) {
   // only check if deploying on MAINNET
-  const dirtyArtifacts = [];
-  let continueTesting = true;
   const debugLog = debug.extend("guard");
-  debugLog("config.network_id", config.network_id);
-  debugLog("config.solidityLog", config.solidityLog);
+
   if (config.network_id === 1) {
     debugLog("solidityLog guard for mainnet");
     try {
       const buildDir = config.contracts_build_directory;
-      const maybeArtifacts = await readdir(buildDir);
-      for (let i = 0, L = maybeArtifacts.length; i < L; i++) {
-        const fn = maybeArtifacts[i];
-        if (
-          fn.endsWith(".json") &&
-          (await usesConsoleLog(path.join(buildDir, fn)))
-        ) {
-          dirtyArtifacts.push(fn);
+      const dirtyArtifacts = await getDirtyArtifactFiles(buildDir);
+
+      debugLog(`${dirtyArtifacts.length} consoleLog artifacts detected`);
+      debugLog(
+        `config.solidityLog.disableMigrate: ${config.solidityLog.disableMigrate}`
+      );
+
+      if (dirtyArtifacts.length) {
+        console.warn(
+          `${os.EOL}Solidity console.log detected in the following assets:`
+        );
+        console.warn(dirtyArtifacts.join(", "));
+        console.warn();
+
+        if (config.solidityLog.disableMigrate) {
+          throw new TruffleError(
+            "You are trying to deploy contracts that use console.log." +
+              os.EOL +
+              "Please fix, or disable this check by setting solidityLog.disableMigrate to false" +
+              os.EOL
+          );
         }
       }
     } catch (err) {
       debugLog("Unexpected error %o:", err);
       // Something went wrong while inspecting for console log.
-      // log and warning and skip the remaining logic in this
-      // branch
-      continueTesting = false;
+      // Log warning and skip the remaining logic in this branch
       console.warn();
       console.warn(
         "Failed to detect Solidity console.log usage:" + os.EOL + err
       );
-    }
-
-    debugLog("continueTesting", continueTesting);
-    debugLog("dirtyArtifacts.length", dirtyArtifacts.length);
-    debugLog(
-      "config.solidityLog.disableMigrate",
-      config.solidityLog.disableMigrate
-    );
-
-    if (continueTesting && dirtyArtifacts.length) {
-      console.warn(
-        `${os.EOL}Solidity console.log detected in the following assets:`
-      );
-      console.warn(dirtyArtifacts.join(", "));
-      console.warn();
-
-      if (config.solidityLog.disableMigrate) {
-        throw new TruffleError(
-          "You are trying to deploy contracts that use console.log." +
-            os.EOL +
-            "Please fix, or disable this check by setting solidityLog.disableMigrate to false" +
-            os.EOL
-        );
-      }
     }
   }
 
