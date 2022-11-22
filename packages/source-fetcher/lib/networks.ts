@@ -10,6 +10,7 @@ export const networkNamesById: { [id: number]: string } = {
   10: "optimistic",
   69: "kovan-optimistic",
   420: "goerli-optimistic",
+  28528: "goerli-bedrock-optimistic",
   42161: "arbitrum",
   42170: "nova-arbitrum",
   421611: "rinkeby-arbitrum",
@@ -17,6 +18,7 @@ export const networkNamesById: { [id: number]: string } = {
   137: "polygon",
   80001: "mumbai-polygon",
   100: "gnosis", //formerly known as xdai
+  10200: "chiado-gnosis",
   300: "optimism-gnosis", //optimism on gnosis, not vice versa
   99: "core-poa",
   77: "sokol-poa",
@@ -78,6 +80,7 @@ export const networkNamesById: { [id: number]: string } = {
   51: "apothem-xinfin",
   7700: "canto",
   592: "astar",
+  336: "shiden-astar",
   8217: "cypress-klaytn", //not presently supported by either fetcher, but...
   1001: "baobab-klaytn"
   //I'm not including crystaleum as it has network ID different from chain ID
