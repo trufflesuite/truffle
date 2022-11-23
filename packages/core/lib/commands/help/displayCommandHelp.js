@@ -4,14 +4,14 @@ module.exports = async function (selectedCommand, subCommand, options) {
 
   let commandHelp, commandDescription;
 
-  const chosenCommand = commands[selectedCommand];
+  const chosenCommand = commands[selectedCommand].meta;
 
   if (subCommand && chosenCommand.subCommands[subCommand]) {
-    commandHelp = chosenCommand.subCommands[subCommand].meta.help;
-    commandDescription = chosenCommand.subCommands[subCommand].meta.description;
+    commandHelp = chosenCommand.subCommands[subCommand].help;
+    commandDescription = chosenCommand.subCommands[subCommand].description;
   } else {
-    commandHelp = chosenCommand.meta.help;
-    commandDescription = chosenCommand.meta.description;
+    commandHelp = chosenCommand.help;
+    commandDescription = chosenCommand.description;
   }
 
   if (typeof commandHelp === "function") {

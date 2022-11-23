@@ -7,7 +7,9 @@ const usage =
   OS.EOL +
   "  Available sub-commands: " +
   OS.EOL +
-  "                serve \tStart the GraphQL server";
+  "                serve \tStart the GraphQL server" +
+  OS.EOL +
+  "                query \tQuery @truffle/db";
 
 module.exports = {
   command: "db",
@@ -18,18 +20,16 @@ module.exports = {
         ...serveCommand.run,
         ...serveCommand.meta
       })
+      .command({
+        ...queryCommand.run,
+        ...queryCommand.meta
+      })
       .demandCommand();
   },
 
   subCommands: {
-    serve: {
-      help: serveCommand.help,
-      description: serveCommand.meta
-    },
-    query: {
-      help: queryCommand.help,
-      description: queryCommand.meta
-    }
+    serve: serveCommand.meta,
+    query: queryCommand.meta
   },
 
   help: {
