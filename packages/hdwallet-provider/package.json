@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.1",
+  "version": "2.1.2",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -24,7 +24,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "4.0.1",
-    "@truffle/hdwallet": "^0.1.0",
+    "@truffle/hdwallet": "^0.1.1",
     "@types/web3": "^1.0.20",
     "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",

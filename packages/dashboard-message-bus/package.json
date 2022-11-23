@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.8",
+  "version": "0.1.9",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -35,7 +35,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/dashboard-message-bus-common": "^0.1.4",
+    "@truffle/dashboard-message-bus-common": "^0.1.5",
     "@types/ws": "^7.2.0",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
