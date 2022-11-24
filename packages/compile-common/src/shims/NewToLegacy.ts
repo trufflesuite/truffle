@@ -4,6 +4,7 @@ export function forContract(contract: CompiledContract): any {
   const {
     contractName,
     sourcePath,
+    sourceName,
     source,
     sourceMap,
     deployedSourceMap,
@@ -19,12 +20,16 @@ export function forContract(contract: CompiledContract): any {
     immutableReferences,
     generatedSources,
     deployedGeneratedSources,
+    linkReferences,
+    deployedLinkReferences,
+    factoryDeps,
     db
   } = contract;
 
   return {
     contract_name: contractName,
     sourcePath,
+    sourceName,
     source,
     sourceMap,
     deployedSourceMap,
@@ -41,6 +46,9 @@ export function forContract(contract: CompiledContract): any {
     immutableReferences,
     generatedSources,
     deployedGeneratedSources,
+    linkReferences,
+    deployedLinkReferences,
+    factoryDeps,
     db
   };
 }

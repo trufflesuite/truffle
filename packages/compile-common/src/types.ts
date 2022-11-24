@@ -45,6 +45,7 @@ export interface GeneratedSource {
 export type CompiledContract = {
   contractName: string;
   sourcePath: string;
+  sourceName?: string;
   source: string;
   sourceMap: string;
   deployedSourceMap: string;
@@ -63,6 +64,9 @@ export type CompiledContract = {
   immutableReferences: ImmutableReferences;
   generatedSources?: GeneratedSource[];
   deployedGeneratedSources?: GeneratedSource[];
+  linkReferences?: {};
+  deployedLinkReferences?: {};
+  factoryDeps?: {};
   db?: {};
 };
 
