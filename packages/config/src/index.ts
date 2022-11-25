@@ -190,7 +190,9 @@ class TruffleConfig {
     // The require-nocache module used to do this for us, but
     // it doesn't bundle very well. So we've pulled it out ourselves.
     //@ts-ignore
-    delete originalRequire.cache[Module._resolveFilename(file, module)];
+    //this doesn't do anything in the webpack build
+    //BUT may have an impact in non-webpack scenarios, ie, unit tests
+    delete require.cache[Module._resolveFilename(file, module)];
     const staticConfig = originalRequire(file);
 
     config.merge(staticConfig);
