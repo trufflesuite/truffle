@@ -353,7 +353,7 @@ class Console extends EventEmitter {
 
           //display prompt when child repl process is finished
           this.repl.displayPrompt();
-          void resolve();
+          return void resolve();
         }
         reject(code);
       });
