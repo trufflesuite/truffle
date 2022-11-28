@@ -4,8 +4,6 @@ const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
-let id = 0;
-
 module.exports = {
   wrap: function (provider, options) {
     return wrapper.wrap(provider, options);
@@ -32,39 +30,6 @@ module.exports = {
         { keepAlive: false }
       );
     }
-    if (
-      typeof provider.request === "undefined" &&
-      typeof provider.send !== "undefined"
-    ) {
-      provider.request = async function ({ method, params }) {
-        return await new Promise((accept, reject) => {
-          provider.send(
-            {
-              jsonrpc: "2.0",
-              id: ++id,
-              method,
-              params
-            },
-            (error, response) => {
-              if (error) {
-                return reject(error);
-              }
-              if (response.error) {
-                const error = new Error(response.error.message);
-                error.code = response.error.code;
-                if ("data" in error) {
-                  error.data = response.error.data;
-                }
-                return reject(error);
-              }
-              const { result: res } = response;
-              accept(res);
-            }
-          );
-        });
-      };
-    }
-    provider.request && (provider.request = provider.request.bind(provider));
     return provider;
   },
 
