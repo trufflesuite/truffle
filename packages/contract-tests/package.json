@@ -30,7 +30,7 @@
     "ganache": "7.5.0",
     "mocha": "10.1.0",
     "sinon": "^9.0.2",
-    "web3": "1.7.4",
-    "web3-core-promievent": "1.7.4"
+    "web3": "1.8.1",
+    "web3-core-promievent": "1.8.1"
   }
 }
