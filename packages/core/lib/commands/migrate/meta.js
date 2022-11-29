@@ -56,7 +56,8 @@ module.exports = {
       hidden: true
     },
     "url": {
-      describe: "Use specified URL for provider",
+      describe:
+        "Creates a provider using the given url and connects to the network",
       type: "string"
     }
   },
@@ -66,7 +67,9 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run] [--network <network>|--url <provider_url>]",
+      "[--skip-dry-run] [--describe-json] [--dry-run]\n" +
+      "                                " + // spacing to align with previous line
+      "[--network <network>|--url <provider_url>]",
     options: [
       {
         option: "--reset",
