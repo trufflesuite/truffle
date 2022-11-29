@@ -51,10 +51,11 @@ if (userWantsGeneralHelp) {
   displayGeneralHelp();
   process.exit(0);
 }
-//clean up inputString to run as `truffle help <cmd>` if `help`, `--help` is present with a <cmd>
+// when `truffle --help <cmd>` is used, convert inputStrings to run as `truffle help <cmd>`
 if (inputStrings.length > 1 && inputStrings[0] === "--help") {
   inputStrings[inputStrings.indexOf("--help")] = "help";
 }
+// when `truffle <cmd> help | --help` is used, convert inputStrings  to run as `truffle help <cmd>`
 if (["help", "--help"].includes(inputStrings[inputStrings.length - 1])) {
   inputStrings.pop();
   inputStrings.unshift("help");
