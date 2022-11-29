@@ -7,7 +7,17 @@ import type { Decoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, getRef) => {
-  const { colors, colorScheme, white, radius, fontFamilyMonospace, fn } = theme;
+  const {
+    colors,
+    colorScheme,
+    white,
+    radius,
+    spacing,
+    fontFamilyMonospace,
+    fn
+  } = theme;
+  const buttonsWidth = 234;
+
   return {
     container: {
       flexWrap: "nowrap",
@@ -40,6 +50,9 @@ const useStyles = createStyles((theme, _params, getRef) => {
         }
       }
     },
+    info: {
+      width: `calc(100% - ${buttonsWidth + spacing.xl}px)`
+    },
     methodBadge: {
       textTransform: "initial",
       cursor: "pointer",
@@ -52,6 +65,8 @@ const useStyles = createStyles((theme, _params, getRef) => {
           : colors["yellow"][1]
     },
     decoding: {
+      display: "inline-block",
+      maxWidth: "90%",
       fontFamily: fontFamilyMonospace,
       fontWeight: 700,
       color:
@@ -60,7 +75,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
           : colors["truffle-beige"][8]
     },
     buttons: {
-      minWidth: 234
+      minWidth: buttonsWidth
     },
     button: {
       ref: getRef("button"),
@@ -125,7 +140,6 @@ function Overview({
       onMouseEnter={onBackEnter}
       onMouseLeave={onBackLeave}
       position="apart"
-      spacing={50}
       pl={42}
       pr={35}
       py="lg"
@@ -134,7 +148,7 @@ function Overview({
       }`}
       tabIndex={0}
     >
-      <Stack align="flex-start" spacing="xs">
+      <Stack className={classes.info} align="flex-start" spacing="xs">
         <Badge
           size="lg"
           variant="outline"
