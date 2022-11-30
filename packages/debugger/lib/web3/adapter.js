@@ -131,4 +131,15 @@ export default class Web3Adapter {
       return null; //we don't want this erroring, sorry
     }
   }
+
+  async ensResolve(name) {
+    if (!this.ens) {
+      return null;
+    }
+    try {
+      return await this.ens.name(name).getAddress();
+    } catch {
+      return null; //we don't want this erroring, sorry
+    }
+  }
 }

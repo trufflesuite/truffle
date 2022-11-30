@@ -217,7 +217,7 @@ export function* reverseEnsResolve(address) {
 
 function* performEnsReverseResolution(adapter, { address }) {
   const name = yield apply(adapter, adapter.reverseEnsResolve, [address]);
-  yield put(actions.receiveEnsName(name));
+  yield put(actions.receiveEnsName(name, address));
 }
 
 function* receiveEnsName(address) {
@@ -226,6 +226,24 @@ function* receiveEnsName(address) {
       action.type == actions.RECEIVE_ENS_NAME && action.address == address
   );
   return name;
+}
+
+export function* ensResolve(name) {
+  const task = yield fork(receiveEnsAddress, name);
+  yield put(actions.ensResolve(name));
+  return yield join(task);
+}
+
+function* performEnsResolution(adapter, { name }) {
+  const address = yield apply(adapter, adapter.ensResolve, [name]);
+  yield put(actions.receiveEnsName(address, name));
+}
+
+function* receiveEnsAddress(name) {
+  const { address } = yield take(
+    action => action.type == actions.RECEIVE_ENS_ADDRESS && action.name == name
+  );
+  return address;
 }
 
 export function* obtainStorage(address, slot, blockHash, txIndex) {
@@ -299,6 +317,7 @@ export function* saga() {
     performEnsReverseResolution,
     adapter
   );
+  yield takeEvery(actions.ENS_RESOLVE, performEnsResolution, adapter);
 }
 
 export default prefixName("web3", saga);
