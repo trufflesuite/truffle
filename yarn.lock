@@ -3706,7 +3706,7 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@ganache/console.log@^0.2.0":
+"@ganache/console.log@0.2.0", "@ganache/console.log@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@ganache/console.log/-/console.log-0.2.0.tgz#32ea0df806ed735d61bd0537d7b7fc350e511479"
   integrity sha512-+SNBUZzrbe4DE4F0jdl9SU8w3ek5k4cUE73ttUFweo8FaKEDQsMbFjZ3ZU0LM6QM/zCMqE7euSq0s/IlsYxf7A==

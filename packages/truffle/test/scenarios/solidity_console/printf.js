@@ -16,18 +16,6 @@ const formatLines = lines =>
     .join("\n");
 
 const copyFixtures = config => {
-  const ganacheConsoleSol = path.resolve(
-    path.join(
-      __dirname,
-      "../../../../..",
-      "node_modules/@ganache/console.log/console.sol"
-    )
-  );
-  fs.copySync(
-    ganacheConsoleSol,
-    path.join(config.contracts_directory, "console.sol")
-  );
-
   fs.copySync(
     path.join(__dirname, "Printf.sol"),
     path.join(config.contracts_directory, "Printf.sol")

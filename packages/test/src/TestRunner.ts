@@ -66,9 +66,7 @@ export class TestRunner {
 
   async initialize() {
     debug("initializing");
-    this.config.resolver = new Resolver(this.config, {
-      includeTruffleSources: true
-    });
+    this.config.resolver = new Resolver(this.config);
 
     if (this.firstSnapshot) {
       debug("taking first snapshot");

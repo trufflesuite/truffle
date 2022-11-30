@@ -1,6 +1,3 @@
-import debugModule from "debug";
-const debug = debugModule("resolver");
-
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
@@ -16,7 +13,10 @@ export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, resolverOptions: ResolverOptions = {}) {
+  constructor(
+    options: any,
+    resolverOptions: ResolverOptions = { includeTruffleSources: true }
+  ) {
     expect.options(options, [
       "working_directory",
       "contracts_build_directory",

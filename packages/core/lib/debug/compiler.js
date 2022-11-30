@@ -12,9 +12,7 @@ class DebugCompiler {
     let compileConfig = this.config.with({ quiet: true });
 
     if (withTests) {
-      const testResolver = new Resolver(this.config, {
-        includeTruffleSources: true
-      });
+      const testResolver = new Resolver(this.config);
       const testFiles = glob
         .sync(`${this.config.test_directory}/**/*.sol`)
         .map(filePath => path.resolve(filePath));
