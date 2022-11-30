@@ -53,15 +53,16 @@ export class Resolver {
     import_path: string,
     search_path?: string
   ): ReturnType<typeof contract> {
-    let abstraction;
-    this.sources.forEach((source: ResolverSource) => {
+    for (const source of this.sources) {
       const result = source.require(import_path, search_path);
       if (result) {
-        abstraction = contract(result);
+        let abstraction = contract(result);
         provision(abstraction, this.options);
+        return abstraction;
       }
-    });
-    if (abstraction) return abstraction;
+    }
+
+    // exhausted sources and could not resolve
     throw new Error(
       "Could not find artifacts for " + import_path + " from any sources"
     );
