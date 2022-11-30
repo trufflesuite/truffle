@@ -342,6 +342,7 @@ class Console extends EventEmitter {
     });
 
     sid.stdout.on("data", data => {
+      // remove extra newline in `truffle develop` console
       console.log(data.toString().trim());
     });
 
