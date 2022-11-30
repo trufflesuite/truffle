@@ -469,7 +469,7 @@ export class ProjectEncoder {
           };
         case "invalid address":
           //in this case, try resolving it as an ENS name
-          const address = await this.resolveENSName(input);
+          const address = await this.resolveEnsName(input);
           if (address !== null) {
             return {
               kind: "address",
@@ -488,7 +488,7 @@ export class ProjectEncoder {
     }
   }
 
-  private async resolveENSName(input: string): Promise<string | null> {
+  private async resolveEnsName(input: string): Promise<string | null> {
     if (this.ens === null) {
       return null;
     }
