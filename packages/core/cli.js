@@ -42,6 +42,16 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 
 const inputStrings = process.argv.slice(2);
 
+if (inputStrings.length > 2 && ["help", "--help"].includes(inputStrings[1])) {
+  const help = require("./lib/commands/help").meta;
+  console.log(
+    "Error: please use below syntax to displaying help information\n",
+    "\n               ",
+    help.help.usage
+  );
+  process.exit();
+}
+
 const userWantsGeneralHelp =
   inputStrings.length === 0 ||
   (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
