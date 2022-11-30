@@ -99,27 +99,25 @@ export class ResultInspector {
               case "dynamic":
                 return options.stylize(`hex'${hex.slice(2)}'`, "string");
             }
-          case "address":
-            return options.stylize(
-              (<Format.Values.AddressValue>this.result).value.asAddress,
-              "number"
-            );
-          case "string": {
-            let coercedResult = <Format.Values.StringValue>this.result;
-            switch (coercedResult.value.kind) {
-              case "valid":
-                return util.inspect(coercedResult.value.asString, options);
-              case "malformed":
-                //note: this will turn malformed utf-8 into replacement characters (U+FFFD)
-                //note we need to cut off the 0x prefix
-                return util.inspect(
-                  Buffer.from(
-                    coercedResult.value.asHex.slice(2),
-                    "hex"
-                  ).toString()
-                );
+          case "address": {
+            const coercedResult = this.result as Format.Values.AddressValue;
+            if (coercedResult.interpretations.ensName) {
+              return options.stylize(
+                stringValueInfoToStringLossy(
+                  coercedResult.interpretations.ensName
+                ),
+                "special"
+              );
             }
+            return options.stylize(coercedResult.value.asAddress, "number");
           }
+          case "string":
+            return util.inspect(
+              stringValueInfoToStringLossy(
+                (this.result as Format.Values.StringValue).value
+              ),
+              options
+            );
           case "array": {
             let coercedResult = <Format.Values.ArrayValue>this.result;
             if (coercedResult.reference !== undefined) {
@@ -228,9 +226,11 @@ export class ResultInspector {
             return enumFullName(<Format.Values.EnumValue>this.result); //not stylized
           }
           case "contract": {
+            const coercedValue = this.result as Format.Values.ContractValue;
             return util.inspect(
               new ContractInfoInspector(
-                (<Format.Values.ContractValue>this.result).value
+                coercedValue.value,
+                coercedValue.interpretations.ensName
               ),
               options
             );
@@ -238,11 +238,13 @@ export class ResultInspector {
           case "function":
             switch (this.result.type.visibility) {
               case "external": {
-                let coercedResult = <Format.Values.FunctionExternalValue>(
-                  this.result
-                );
-                let contractString = util.inspect(
-                  new ContractInfoInspector(coercedResult.value.contract),
+                const coercedResult = this
+                  .result as Format.Values.FunctionExternalValue;
+                const contractString = util.inspect(
+                  new ContractInfoInspector(
+                    coercedResult.value.contract,
+                    coercedResult.interpretations.contractEnsName
+                  ),
                   { ...cleanStylize(options), colors: false }
                 );
                 let firstLine: string;
@@ -394,8 +396,13 @@ export class ResultInspector {
 //these get their own class to deal with a minor complication
 class ContractInfoInspector {
   value: Format.Values.ContractValueInfo;
-  constructor(value: Format.Values.ContractValueInfo) {
+  ensName?: Format.Values.StringValueInfo;
+  constructor(
+    value: Format.Values.ContractValueInfo,
+    ensName?: Format.Values.StringValueInfo
+  ) {
     this.value = value;
+    this.ensName = ensName;
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -405,16 +412,20 @@ class ContractInfoInspector {
     return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+    let addressString: string;
+    if (this.ensName) {
+      addressString = options.stylize(
+        stringValueInfoToStringLossy(this.ensName),
+        "special"
+      );
+    } else {
+      addressString = options.stylize(this.value.address, "number");
+    }
     switch (this.value.kind) {
       case "known":
-        return (
-          options.stylize(this.value.address, "number") +
-          ` (${this.value.class.typeName})`
-        );
+        return `${addressString} (${this.value.class.typeName})`;
       case "unknown":
-        return (
-          options.stylize(this.value.address, "number") + " of unknown class"
-        );
+        return `${addressString} of unknown class`;
     }
   }
 }
@@ -521,20 +532,10 @@ function unsafeNativizeWithTable(
       return (<Format.Values.BytesValue>result).value.asHex;
     case "address":
       return (<Format.Values.AddressValue>result).value.asAddress;
-    case "string": {
-      let coercedResult = <Format.Values.StringValue>result;
-      switch (coercedResult.value.kind) {
-        case "valid":
-          return coercedResult.value.asString;
-        case "malformed":
-          // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
-          // note we need to cut off the 0x prefix
-          return Buffer.from(
-            coercedResult.value.asHex.slice(2),
-            "hex"
-          ).toString();
-      }
-    }
+    case "string":
+      return stringValueInfoToStringLossy(
+        (result as Format.Values.StringValue).value
+      );
     case "fixed":
     case "ufixed":
       //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
@@ -701,4 +702,20 @@ export function nativizeAccessList(
       )
     };
   });
+}
+
+//turns a StringValueInfo into a string in a lossy fashion,
+//by turning malformed utf-8 into replacement characters (U+FFFD)
+export function stringValueInfoToStringLossy(
+  info: Format.Values.StringValueInfo
+): string {
+  switch (info.kind) {
+    case "valid":
+      return info.asString;
+    case "malformed":
+      return Buffer.from(
+        info.asHex.slice(2), // note we need to cut off the 0x prefix
+        "hex"
+      ).toString();
+  }
 }
