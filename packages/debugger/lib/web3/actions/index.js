@@ -43,6 +43,14 @@ export function reverseEnsResolve(address) {
   };
 }
 
+export const ENS_RESOLVE = "ENS_RESOLVE";
+export function ensResolve(name) {
+  return {
+    type: ENS_RESOLVE,
+    name
+  };
+}
+
 export const RECEIVE_BINARY = "RECEIVE_BINARY";
 export function receiveBinary(address, binary) {
   return {
@@ -74,6 +82,15 @@ export const RECEIVE_ENS_NAME = "RECEIVE_ENS_NAME";
 export function receiveEnsName(address, name) {
   return {
     type: RECEIVE_ENS_NAME,
+    address,
+    name
+  };
+}
+
+export const RECEIVE_ENS_ADDRESS = "RECEIVE_ENS_ADDRESS";
+export function receiveEnsAddress(name, address) {
+  return {
+    type: RECEIVE_ENS_ADDRESS,
     address,
     name
   };

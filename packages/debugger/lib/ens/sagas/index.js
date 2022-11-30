@@ -16,10 +16,23 @@ export function* reverseResolve(address) {
   if (address in cache) {
     return cache[address];
   } else {
-    const name = yield* web3.reverseEnsResolve(address);
+    let name = yield* web3.reverseEnsResolve(address); //may be null
+    //now: do a forward resolve as a check
+    if (name !== null) {
+      const checkAddress = yield* resolve(name);
+      if (checkAddress !== address) {
+        //if forward resolution doesn't match, this name is no good!
+        name = null;
+      }
+    }
     yield put(actions.record(address, name));
     return name;
   }
+}
+
+export function* resolve(name) {
+  //we won't bother with a cache for this one
+  return yield* web3.ensResolve(name);
 }
 
 //also may be null.  note: swallows errors! we don't
