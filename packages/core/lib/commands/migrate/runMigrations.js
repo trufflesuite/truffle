@@ -61,9 +61,8 @@ async function getDirtyArtifactFiles(buildDir) {
 }
 
 module.exports = async function (config) {
-  // only check if deploying on MAINNET
   const debugLog = debug.extend("guard");
-
+  // only check if deploying on MAINNET
   if (config.network_id === 1) {
     debugLog("solidityLog guard for mainnet");
     try {
