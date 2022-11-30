@@ -388,23 +388,32 @@ export class ProjectDecoder {
   /**
    * @protected
    */
-  public async reverseEnsResolve(input: string): Promise<Uint8Array | null> {
+  public async reverseEnsResolve(address: string): Promise<Uint8Array | null> {
     if (this.ens === null) {
       return null;
     }
-    if (input in this.ensCache) {
-      return this.ensCache[input];
+    if (address in this.ensCache) {
+      return this.ensCache[address];
     }
+    let name: string | null;
     let nameAsBytes: Uint8Array | null;
     try {
-      const { name } = await this.ens.getAddress(input);
+      name = await this.ens.getAddress(address).name;
+      if (name !== null) {
+        //do a forward resolution check to make sure it matches
+        const checkAddress = await this.ens.name(name).getAddress();
+        if (checkAddress !== address) {
+          //if it doesn't, the name is no good!
+          name = null;
+        }
+      }
       nameAsBytes = name !== null ? Conversion.stringToBytes(name) : null;
     } catch {
       //Normally I'd rethrow unexpected errors, but given the context here
       //that seems like it might be a problem
       nameAsBytes = null;
     }
-    this.ensCache[input] = nameAsBytes;
+    this.ensCache[address] = nameAsBytes;
     return nameAsBytes;
   }
 
