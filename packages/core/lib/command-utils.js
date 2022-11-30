@@ -203,6 +203,41 @@ const runCommand = async function (command, options) {
   return await command.run(options);
 };
 
+const processHelpInput = inputStrings => {
+  //is it wrong syntax of help?
+  if (inputStrings.length > 2 && ["help", "--help"].includes(inputStrings[1])) {
+    const help = require("./commands/help").meta;
+    console.log(
+      "Error: please use below syntax to displaying help information\n",
+      "\n               ",
+      help.help.usage
+    );
+    process.exit();
+  }
+
+  // when `truffle --help <cmd>` is used, convert inputStrings to run as `truffle help <cmd>`
+  if (inputStrings.length > 1 && inputStrings[0] === "--help") {
+    inputStrings[inputStrings.indexOf("--help")] = "help";
+  }
+
+  // when `truffle <cmd> help | --help` is used, convert inputStrings  to run as `truffle help <cmd>`
+  if (["help", "--help"].includes(inputStrings[inputStrings.length - 1])) {
+    inputStrings.pop();
+    inputStrings.unshift("help");
+  }
+
+  const userWantsGeneralHelp =
+    inputStrings.length === 0 ||
+    (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
+
+  //is it general help?
+  if (userWantsGeneralHelp) {
+    displayGeneralHelp();
+    process.exit(0);
+  }
+  return inputStrings;
+};
+
 const displayGeneralHelp = () => {
   const yargs = require("yargs/yargs")();
   commands.forEach(command => {
@@ -307,6 +342,7 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
 };
 
 module.exports = {
+  processHelpInput,
   displayGeneralHelp,
   getCommand,
   prepareOptions,

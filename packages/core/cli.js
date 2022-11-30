@@ -40,35 +40,15 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-const inputStrings = process.argv.slice(2);
+let inputStrings = process.argv.slice(2);
 
-if (inputStrings.length > 2 && ["help", "--help"].includes(inputStrings[1])) {
-  const help = require("./lib/commands/help").meta;
-  console.log(
-    "Error: please use below syntax to displaying help information\n",
-    "\n               ",
-    help.help.usage
-  );
-  process.exit();
-}
+//check if user wants some help
+const helpNeeded = inputStrings.some(r => ["help", "--help"].indexOf(r) >= 0);
 
-const userWantsGeneralHelp =
-  inputStrings.length === 0 ||
-  (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
-
-if (userWantsGeneralHelp) {
-  const { displayGeneralHelp } = require("./lib/command-utils");
-  displayGeneralHelp();
-  process.exit(0);
-}
-// when `truffle --help <cmd>` is used, convert inputStrings to run as `truffle help <cmd>`
-if (inputStrings.length > 1 && inputStrings[0] === "--help") {
-  inputStrings[inputStrings.indexOf("--help")] = "help";
-}
-// when `truffle <cmd> help | --help` is used, convert inputStrings  to run as `truffle help <cmd>`
-if (["help", "--help"].includes(inputStrings[inputStrings.length - 1])) {
-  inputStrings.pop();
-  inputStrings.unshift("help");
+if (helpNeeded) {
+  //check what help does user want
+  const { processHelpInput } = require("./lib/command-utils");
+  inputStrings = processHelpInput(inputStrings);
 }
 
 const {
