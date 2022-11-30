@@ -39,6 +39,18 @@
     "sourcePath": {
       "$ref": "#/definitions/SourcePath"
     },
+    "sourceName": {
+      "$ref": "#/definitions/SourceName"
+    },
+    "linkReferences": {
+      "$ref": "#/definitions/LinkReferences"
+    },
+    "deployedLinkReferences": {
+      "$ref": "#/definitions/DeployedLinkReferences"
+    },
+    "factoryDeps": {
+      "$ref": "#/definitions/FactoryDeps"
+    },
     "ast": {
       "$ref": "#/definitions/AST"
     },
@@ -194,6 +206,18 @@
     },
     "SourcePath": {
       "type": "string"
+    },
+    "SourceName": {
+      "type": "string"
+    },
+    "LinkReferences": {
+      "type": "object"
+    },
+    "DeployedLinkReferences": {
+      "type": "object"
+    },
+    "FactoryDeps": {
+      "type": "object"
     },
     "AST": {
       "type": "object"
