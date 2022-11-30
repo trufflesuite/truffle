@@ -126,7 +126,10 @@
         },
         {
           "type": "array"
-        }
+        },
+        {
+          "type": "undefined"
+        },
       ]
     }
   },
