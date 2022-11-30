@@ -71,7 +71,7 @@ module.exports = async function (config) {
 
       debugLog(`${dirtyArtifacts.length} consoleLog artifacts detected`);
       debugLog(
-        `config.solidityLog.disableMigrate: ${config.solidityLog.disableMigrate}`
+        `config.solidityLog.preventConsoleLogMigration: ${config.solidityLog.preventConsoleLogMigration}`
       );
 
       if (dirtyArtifacts.length) {
@@ -81,11 +81,11 @@ module.exports = async function (config) {
         console.warn(dirtyArtifacts.join(", "));
         console.warn();
 
-        if (config.solidityLog.disableMigrate) {
+        if (config.solidityLog.preventConsoleLogMigration) {
           throw new TruffleError(
             "You are trying to deploy contracts that use console.log." +
               os.EOL +
-              "Please fix, or disable this check by setting solidityLog.disableMigrate to false" +
+              "Please fix, or disable this check by setting solidityLog.preventConsoleLogMigration to false" +
               os.EOL
           );
         }

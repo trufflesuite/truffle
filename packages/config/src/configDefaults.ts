@@ -30,7 +30,7 @@ export const getInitialConfig = ({
     verboseRpc: false,
     solidityLog: {
       displayPrefix: "",
-      disableMigrate: false
+      preventConsoleLogMigration: false
     },
     gas: null,
     gasPrice: null,

@@ -157,7 +157,7 @@ describe("Solidity console log [ @standalone ]", function () {
       await server.close();
     });
 
-    it("MAINNET disableMigrate: false", async function () {
+    it("MAINNET preventConsoleLogMigration: false", async function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
@@ -174,7 +174,7 @@ describe("Solidity console log [ @standalone ]", function () {
       }
     });
 
-    it("MAINNET disableMigrate: true", async function () {
+    it("MAINNET preventConsoleLogMigration: true", async function () {
       try {
         logger = new MemoryLogger();
         config.logger = logger;
@@ -193,7 +193,7 @@ describe("Solidity console log [ @standalone ]", function () {
         const exceptionMessage =
           "You are trying to deploy contracts that use console.log." +
           os.EOL +
-          "Please fix, or disable this check by setting solidityLog.disableMigrate to false" +
+          "Please fix, or disable this check by setting solidityLog.preventConsoleLogMigration to false" +
           os.EOL;
         assert(
           logger.includes(exceptionMessage),

@@ -1,7 +1,7 @@
 module.exports = {
   solidityLog: {
     displayPrefix: ": ",
-    disableMigrate: true
+    preventConsoleLogMigration: true
   },
 
   networks: {
