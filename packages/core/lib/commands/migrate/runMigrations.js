@@ -37,7 +37,7 @@ async function usesConsoleLog(artifactJson) {
   });
 }
 
-async function getDirtyArtifactFiles(buildDir) {
+async function findArtifactsThatUseConsoleLog(buildDir) {
   const debugLog = debug.extend("dirty-files");
   const files = await readdir(buildDir);
 
@@ -67,7 +67,7 @@ module.exports = async function (config) {
     debugLog("solidityLog guard for mainnet");
     try {
       const buildDir = config.contracts_build_directory;
-      const dirtyArtifacts = await getDirtyArtifactFiles(buildDir);
+      const dirtyArtifacts = await findArtifactsThatUseConsoleLog(buildDir);
 
       debugLog(`${dirtyArtifacts.length} consoleLog artifacts detected`);
       debugLog(
