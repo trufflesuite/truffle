@@ -18,13 +18,15 @@ import {
   unsafeNativize,
   unsafeNativizeVariables,
   InspectOptions,
-  nativizeAccessList
+  nativizeAccessList,
+  stringValueInfoToStringLossy
 } from "@truffle/codec/format/utils/inspect";
 export {
   ResultInspector,
   unsafeNativize,
   unsafeNativizeVariables,
-  nativizeAccessList
+  nativizeAccessList,
+  stringValueInfoToStringLossy
 };
 
 type NumberFormatter = (n: BigInt) => any; //not parameterized since we output any anyway
@@ -142,20 +144,10 @@ function ethersCompatibleNativize(
           return (<Format.Values.AddressValue>result).value.asAddress;
         case "contract":
           return (<Format.Values.ContractValue>result).value.address;
-        case "string": {
-          const coercedResult = <Format.Values.StringValue>result;
-          switch (coercedResult.value.kind) {
-            case "valid":
-              return coercedResult.value.asString;
-            case "malformed":
-              // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
-              // note we need to cut off the 0x prefix
-              return Buffer.from(
-                coercedResult.value.asHex.slice(2),
-                "hex"
-              ).toString();
-          }
-        }
+        case "string":
+          return stringValueInfoToStringLossy(
+            (result as Format.Values.StringValue).value
+          );
         case "userDefinedValueType":
           return ethersCompatibleNativize(
             (<Format.Values.UserDefinedValueTypeValue>result).value,
