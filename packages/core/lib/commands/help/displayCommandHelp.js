@@ -6,7 +6,19 @@ module.exports = async function (selectedCommand, subCommand, options) {
 
   const chosenCommand = commands[selectedCommand].meta;
 
-  if (subCommand && chosenCommand.subCommands[subCommand]) {
+  if (subCommand) {
+    if (!chosenCommand.subCommands) {
+      console.log(`WARNING: ${selectedCommand} does not have sub commands.`);
+      process.exit();
+    }
+
+    if (!chosenCommand.subCommands[subCommand]) {
+      console.log(
+        `WARNING: ${subCommand} is an invalid sub command for ${selectedCommand}.`
+      );
+      process.exit();
+    }
+
     commandHelp = chosenCommand.subCommands[subCommand].help;
     commandDescription = chosenCommand.subCommands[subCommand].description;
   } else {
