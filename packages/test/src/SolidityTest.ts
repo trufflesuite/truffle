@@ -22,7 +22,7 @@ export const SolidityTest = {
     suite.timeout(runner.beforeTimeout);
 
     // Set up our runner's needs first.
-    suite.beforeAll("prepare suite", async function () {
+    suite.beforeAll("prepare suite", async function() {
       // This compiles some native contracts (including the assertion library
       // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
@@ -35,11 +35,11 @@ export const SolidityTest = {
       );
     });
 
-    suite.afterAll("clean up", function () {
+    suite.afterAll("clean up", function() {
       runner.reEnableChecksOnEventDecoding();
     });
 
-    suite.beforeEach("before test", async function () {
+    suite.beforeEach("before test", async function() {
       await runner.startTest(this);
     });
 
@@ -112,7 +112,7 @@ export const SolidityTest = {
       }
     }
 
-    suite.afterEach("after test", async function () {
+    suite.afterEach("after test", async function() {
       await runner.endTest(this);
     });
 
@@ -125,18 +125,6 @@ export const SolidityTest = {
 
     const truffleLibraries = [
       "truffle/Assert.sol",
-      "truffle/AssertAddress.sol",
-      "truffle/AssertAddressArray.sol",
-      "truffle/AssertBalance.sol",
-      "truffle/AssertBool.sol",
-      "truffle/AssertBytes32.sol",
-      "truffle/AssertBytes32Array.sol",
-      "truffle/AssertGeneral.sol",
-      "truffle/AssertInt.sol",
-      "truffle/AssertIntArray.sol",
-      "truffle/AssertString.sol",
-      "truffle/AssertUint.sol",
-      "truffle/AssertUintArray.sol",
       "truffle/DeployedAddresses.sol",
       `truffle/SafeSend.sol`
     ];
@@ -174,7 +162,7 @@ export const SolidityTest = {
     debug("deploying %s", abstraction.contract_name);
     const deployer = new Deployer(
       runner.config.with({
-        logger: { log() {} }
+        logger: { log() { } }
       })
     );
 
