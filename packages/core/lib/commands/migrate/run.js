@@ -12,11 +12,6 @@ module.exports = async function (options) {
 
   const config = Config.detect(options);
 
-  // if declarative deployments are enabled, run the solver package to kick of migrations
-  if (config.declarativeDeployment.enabled) {
-    await Runner.solve(config.declarativeDeployment.filepath, options);
-  }
-
   if (config.compileNone || config["compile-none"]) {
     config.compiler = "none";
   }
@@ -24,6 +19,19 @@ module.exports = async function (options) {
   const result = await WorkflowCompile.compileAndSave(config);
   await WorkflowCompile.assignNames(config, result);
   await Environment.detect(config);
+
+  // if declarative deployments are enabled, run the solver package to kick of migrations
+  if (config.declarativeDeployment.enabled) {
+    if (config.declarativeDeployment.filepath) {
+      await Runner.solve(config, options);
+    } else {
+      throw new Error(
+        "Declarative deployment enabled but no filepath provided"
+      );
+    }
+
+    return;
+  }
 
   const { dryRunOnly, dryRunAndMigrations } = determineDryRunSettings(
     config,
