@@ -79,12 +79,7 @@ export class Truffle implements ResolverSource {
       // @ts-ignore
       if (typeof BUNDLE_VERSION === "undefined") {
         unbundledGanacheConsoleSol = path.resolve(
-          path.join(
-            require.resolve("@ganache/console.log"),
-            "..",
-            "..",
-            "console.sol"
-          )
+          require.resolve("@ganache/console.log/console.sol")
         );
       }
       const actualImportPath =
