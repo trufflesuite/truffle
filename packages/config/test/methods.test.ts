@@ -48,11 +48,11 @@ describe("TruffleConfig.load", () => {
       "./test/truffle-config.js",
       `
     module.exports = {
-        networks: {
-            development: {
-                url: "http://127.0.0.1:8545"
-            },
+      networks: {
+        development: {
+          url: "http://127.0.0.1:8545"
         },
+      },
     };
     `
     );
@@ -68,14 +68,14 @@ describe("TruffleConfig.load", () => {
       "./test/truffle-config.js",
       `
     module.exports = {
-        networks: {
-            development: {
-                url: "http://127.0.0.1:8545"
-            },
-            development2: {
-                url: "http://127.0.0.1:8546"
-            },
+      networks: {
+        development: {
+          url: "http://127.0.0.1:8545"
         },
+        development2: {
+          url: "http://127.0.0.1:8546"
+        },
+      },
     };
     `
     );
