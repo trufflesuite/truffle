@@ -23,6 +23,10 @@ function cleanStylize(options: InspectOptions): InspectOptions {
   return clonedOptions;
 }
 
+export interface ResultInspectorOptions {
+  noHideAddress?: boolean;
+}
+
 /**
  * This class is meant to be used with Node's
  * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
@@ -54,8 +58,10 @@ function cleanStylize(options: InspectOptions): InspectOptions {
  */
 export class ResultInspector {
   result: Format.Values.Result;
-  constructor(result: Format.Values.Result) {
+  options: ResultInspectorOptions;
+  constructor(result: Format.Values.Result, options?: ResultInspectorOptions) {
     this.result = result;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -101,13 +107,20 @@ export class ResultInspector {
             }
           case "address": {
             const coercedResult = this.result as Format.Values.AddressValue;
+            const addressString = options.stylize(
+              coercedResult.value.asAddress,
+              "number"
+            );
             if (coercedResult.interpretations.ensName) {
-              return options.stylize(
+              const nameString = options.stylize(
                 stringValueInfoToStringLossy(
                   coercedResult.interpretations.ensName
                 ),
                 "special"
               );
+              return this.options.noHideAddress
+                ? `${nameString} [${addressString}]`
+                : nameString;
             }
             return options.stylize(coercedResult.value.asAddress, "number");
           }
@@ -124,7 +137,9 @@ export class ResultInspector {
               return formatCircular(coercedResult.reference, options);
             }
             return util.inspect(
-              coercedResult.value.map(element => new ResultInspector(element)),
+              coercedResult.value.map(
+                element => new ResultInspector(element, this.options)
+              ),
               options
             );
           }
@@ -133,8 +148,8 @@ export class ResultInspector {
               new Map(
                 (<Format.Values.MappingValue>this.result).value.map(
                   ({ key, value }) => [
-                    new ResultInspector(key),
-                    new ResultInspector(value)
+                    new ResultInspector(key, this.options),
+                    new ResultInspector(value, this.options)
                   ]
                 )
               ),
@@ -149,7 +164,7 @@ export class ResultInspector {
               Object.assign(
                 {},
                 ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
+                  [name]: new ResultInspector(value, this.options)
                 }))
               ),
               options
@@ -163,7 +178,7 @@ export class ResultInspector {
               this.result
             );
             const inspectOfUnderlying = util.inspect(
-              new ResultInspector(coercedResult.value),
+              new ResultInspector(coercedResult.value, this.options),
               options
             );
             return `${typeName}.wrap(${inspectOfUnderlying})`; //note only the underlying part is stylized
@@ -178,7 +193,7 @@ export class ResultInspector {
                 Object.assign(
                   {},
                   ...coercedResult.value.map(({ name, value }) => ({
-                    [name]: new ResultInspector(value)
+                    [name]: new ResultInspector(value, this.options)
                   }))
                 ),
                 options
@@ -186,7 +201,7 @@ export class ResultInspector {
             } else {
               return util.inspect(
                 coercedResult.value.map(
-                  ({ value }) => new ResultInspector(value)
+                  ({ value }) => new ResultInspector(value, this.options)
                 ),
                 options
               );
@@ -201,7 +216,7 @@ export class ResultInspector {
                     {},
                     ...(<Format.Values.TypeValueContract>this.result).value.map(
                       ({ name, value }) => ({
-                        [name]: new ResultInspector(value)
+                        [name]: new ResultInspector(value, this.options)
                       })
                     )
                   ),
@@ -218,7 +233,9 @@ export class ResultInspector {
                 {},
                 ...Object.entries(
                   (<Format.Values.MagicValue>this.result).value
-                ).map(([key, value]) => ({ [key]: new ResultInspector(value) }))
+                ).map(([key, value]) => ({
+                  [key]: new ResultInspector(value, this.options)
+                }))
               ),
               options
             );
@@ -230,7 +247,8 @@ export class ResultInspector {
             return util.inspect(
               new ContractInfoInspector(
                 coercedValue.value,
-                coercedValue.interpretations.ensName
+                coercedValue.interpretations.ensName,
+                this.options
               ),
               options
             );
@@ -243,7 +261,8 @@ export class ResultInspector {
                 const contractString = util.inspect(
                   new ContractInfoInspector(
                     coercedResult.value.contract,
-                    coercedResult.interpretations.contractEnsName
+                    coercedResult.interpretations.contractEnsName,
+                    this.options
                   ),
                   { ...cleanStylize(options), colors: false }
                 );
@@ -315,7 +334,7 @@ export class ResultInspector {
         switch (errorResult.error.kind) {
           case "WrappedError":
             return util.inspect(
-              new ResultInspector(errorResult.error.error),
+              new ResultInspector(errorResult.error.error, this.options),
               options
             );
           case "UintPaddingError":
@@ -397,12 +416,15 @@ export class ResultInspector {
 class ContractInfoInspector {
   value: Format.Values.ContractValueInfo;
   ensName?: Format.Values.StringValueInfo;
+  options: ResultInspectorOptions;
   constructor(
     value: Format.Values.ContractValueInfo,
-    ensName?: Format.Values.StringValueInfo
+    ensName?: Format.Values.StringValueInfo,
+    options?: ResultInspectorOptions
   ) {
     this.value = value;
     this.ensName = ensName;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -412,20 +434,34 @@ class ContractInfoInspector {
     return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-    let addressString: string;
+    const { noHideAddress } = this.options;
+    const addressString = options.stylize(this.value.address, "number");
+    let mainIdentifier = addressString;
     if (this.ensName) {
-      addressString = options.stylize(
+      //replace address with name
+      mainIdentifier = options.stylize(
         stringValueInfoToStringLossy(this.ensName),
         "special"
       );
-    } else {
-      addressString = options.stylize(this.value.address, "number");
     }
+    let withClass: string;
     switch (this.value.kind) {
       case "known":
-        return `${addressString} (${this.value.class.typeName})`;
+        withClass = `${mainIdentifier} (${this.value.class.typeName})`;
+        break;
       case "unknown":
-        return `${addressString} of unknown class`;
+        withClass = `${mainIdentifier} of unknown class`;
+        break;
+    }
+    if (this.ensName && noHideAddress) {
+      //this might get a bit long, so let's break it up if needed
+      const breakingSpace =
+        withClass.length + addressString.length + 3 > options.breakLength
+          ? "\n"
+          : " ";
+      return `${withClass}${breakingSpace}[${addressString}]`;
+    } else {
+      return withClass;
     }
   }
 }
