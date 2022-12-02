@@ -41,44 +41,46 @@ async function findArtifactsThatUseConsoleLog(buildDir) {
   const debugLog = debug.extend("dirty-files");
   const files = await readdir(buildDir);
 
-  let promises = [];
-  files.forEach(fn => {
-    if (fn.endsWith(".json")) {
-      promises.push(usesConsoleLog(path.join(buildDir, fn)));
-    }
-  });
-
-  const settled = await Promise.allSettled(promises);
-  const dirtyArtifacts = [];
-  for (const s of settled) {
-    if (s.status === "rejected") {
-      debugLog("promise failure: %o", s.reason);
-      continue;
-    }
-    dirtyArtifacts.push(s.value);
-  }
-  return dirtyArtifacts;
+  const artifacts = [];
+  await Promise.allSettled(
+    files.map(async fn => {
+      if (fn.endsWith(".json")) {
+        try {
+          const itLogs = await usesConsoleLog(path.join(buildDir, fn));
+          if (itLogs) {
+            artifacts.push(fn);
+          }
+        } catch (e) {
+          debugLog("Promise failure: %o", e.message);
+        }
+      }
+    })
+  );
+  return artifacts;
 }
 
 module.exports = async function (config) {
   const debugLog = debug.extend("guard");
   // only check if deploying on MAINNET
+  // NOTE: this includes Ethereum Classic as well as Ethereum as they're only
+  // distinguishable by checking their chainIds, 2 and 1 respectively.
   if (config.network_id === 1) {
     debugLog("solidityLog guard for mainnet");
     try {
       const buildDir = config.contracts_build_directory;
-      const dirtyArtifacts = await findArtifactsThatUseConsoleLog(buildDir);
+      const loggingArtifacts = await findArtifactsThatUseConsoleLog(buildDir);
 
-      debugLog(`${dirtyArtifacts.length} consoleLog artifacts detected`);
+      debugLog(`${loggingArtifacts.length} consoleLog artifacts detected`);
       debugLog(
-        `config.solidityLog.preventConsoleLogMigration: ${config.solidityLog.preventConsoleLogMigration}`
+        "config.solidityLog.preventConsoleLogMigration: " +
+          config.solidityLog.preventConsoleLogMigration
       );
 
-      if (dirtyArtifacts.length) {
+      if (loggingArtifacts.length) {
         console.warn(
           `${os.EOL}Solidity console.log detected in the following assets:`
         );
-        console.warn(dirtyArtifacts.join(", "));
+        console.warn(loggingArtifacts.join(", "));
         console.warn();
 
         if (config.solidityLog.preventConsoleLogMigration) {
@@ -91,6 +93,8 @@ module.exports = async function (config) {
         }
       }
     } catch (err) {
+      if (err instanceof TruffleError) throw err;
+
       debugLog("Unexpected error %o:", err);
       // Something went wrong while inspecting for console log.
       // Log warning and skip the remaining logic in this branch
