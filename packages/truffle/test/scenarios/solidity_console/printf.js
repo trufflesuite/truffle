@@ -6,7 +6,6 @@ const assert = require("assert");
 const Ganache = require("ganache");
 const sandbox = require("../sandbox");
 const MemDown = require("memdown");
-const os = require("os");
 
 //prepare a helpful message to standout in CI log noise
 const formatLines = lines =>
@@ -190,15 +189,21 @@ describe("Solidity console log [ @standalone ]", function () {
         );
         assert.fail("Migration should have failed");
       } catch (error) {
-        const exceptionMessage =
-          "You are trying to deploy contracts that use console.log." +
-          os.EOL +
-          "Please fix, or disable this check by setting solidityLog.preventConsoleLogMigration to false" +
-          os.EOL;
+        const output = logger.contents();
+        const summary =
+          /Solidity console.log detected in the following assets:.+Printf.json/ms;
         assert(
-          logger.includes(exceptionMessage),
-          "Migration should have failed"
+          summary.test(output),
+          "Should list the contract using console.log"
         );
+        const action1 =
+          /You are trying to deploy contracts that use console.log./;
+
+        assert(action1.test(output), "Should suggest action");
+
+        const action2 =
+          /Please fix, or disable this check by setting.+preventConsoleLogMigration to false/;
+        assert(action2.test(output), "Should suggest action");
       }
     });
   });
