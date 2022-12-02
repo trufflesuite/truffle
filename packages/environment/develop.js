@@ -72,7 +72,6 @@ const Develop = {
       fn =>
       (...args) => {
         // HACK-y: replace `{}` that is getting logged instead of ""
-        // var args = Array.prototype.slice.call(arguments);
         if (
           args.length === 1 &&
           typeof args[0] === "object" &&
