@@ -56,7 +56,7 @@ export class Resolver {
     for (const source of this.sources) {
       const result = source.require(import_path, search_path);
       if (result) {
-        let abstraction = contract(result);
+        const abstraction = contract(result);
         provision(abstraction, this.options);
         return abstraction;
       }
