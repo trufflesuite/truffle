@@ -702,7 +702,7 @@ var DebugUtils = {
     };
     let valueToInspect = nativized
       ? value
-      : new Codec.Export.ResultInspector(value);
+      : new Codec.Export.ResultInspector(value, { noHideAddress: true });
     return util
       .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)
