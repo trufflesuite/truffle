@@ -210,21 +210,28 @@ function* receiveBinary(address) {
 }
 
 export function* reverseEnsResolve(address) {
+  debug("forking receive name for %s", address);
   const task = yield fork(receiveEnsName, address);
+  debug("putting the action to kick things off");
   yield put(actions.reverseEnsResolve(address));
+  debug("waiting (outer)");
   return yield join(task);
 }
 
 function* performEnsReverseResolution(adapter, { address }) {
+  debug("got reverse action; address = %s", address);
   const name = yield apply(adapter, adapter.reverseEnsResolve, [address]);
-  yield put(actions.receiveEnsName(name, address));
+  debug("got name = %s, passing it on", name);
+  yield put(actions.receiveEnsName(address, name));
 }
 
 function* receiveEnsName(address) {
+  debug("waiting (inner)");
   const { name } = yield take(
     action =>
       action.type == actions.RECEIVE_ENS_NAME && action.address == address
   );
+  debug("received name = %s, returning", name);
   return name;
 }
 
@@ -236,7 +243,7 @@ export function* ensResolve(name) {
 
 function* performEnsResolution(adapter, { name }) {
   const address = yield apply(adapter, adapter.ensResolve, [name]);
-  yield put(actions.receiveEnsName(address, name));
+  yield put(actions.receiveEnsAddress(name, address));
 }
 
 function* receiveEnsAddress(name) {
