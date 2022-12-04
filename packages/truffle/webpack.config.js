@@ -25,9 +25,7 @@ const truffleRequireDistDirectory = path.join(
   "dist"
 );
 
-const ganacheConsoleSol = path.resolve(
-  path.join(require.resolve("@ganache/console.log"), "..", "..", "console.sol")
-);
+const ganacheConsoleSol = require.resolve("@ganache/console.log/console.sol");
 
 const commandsEntries = commands.reduce((a, command) => {
   a[command] = path.join(
