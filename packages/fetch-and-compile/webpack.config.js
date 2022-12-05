@@ -1,5 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
+const fs = require("fs");
 
 module.exports = {
   entry: "./lib/index.ts",
@@ -32,7 +33,6 @@ module.exports = {
       child_process: require.resolve("./emptyShim"),
       constants: require.resolve("./emptyShim"),
       readline: require.resolve("./emptyShim"),
-      process: require.resolve("./emptyShim"),
       os: require.resolve("os-browserify/browser"),
       path: require.resolve("path-browserify"),
       stream: require.resolve("stream-browserify"),
@@ -45,6 +45,14 @@ module.exports = {
     path: path.resolve(__dirname, "browser-dist")
   },
   plugins: [
+    new webpack.DefinePlugin({
+      WORKER_CODE_BASE64: `"${Buffer.from(
+        fs.readFileSync(
+          "../compile-solidity/dist/compileInWebWorker/bundledWorker.js",
+          { encoding: "utf8" }
+        )
+      ).toString("base64")}"`
+    }),
     new webpack.ProvidePlugin({
       process: "process/browser"
     }),

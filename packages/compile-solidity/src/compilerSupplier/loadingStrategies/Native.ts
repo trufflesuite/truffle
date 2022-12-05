@@ -3,6 +3,10 @@ const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const { NoVersionError } = require("../errors");
 
 export class Native {
+  loadSoljson() {
+    throw new Error("Method loadSoljson not implemented for Native strategy.");
+  }
+
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";

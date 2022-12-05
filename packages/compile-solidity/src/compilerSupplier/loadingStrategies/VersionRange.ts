@@ -53,7 +53,7 @@ export class VersionRange {
     }
   }
 
-  async load(versionRange: string) {
+  async loadSoljson(versionRange: string) {
     const rangeIsSingleVersion = semver.valid(versionRange);
     if (
       rangeIsSingleVersion &&
@@ -71,6 +71,11 @@ export class VersionRange {
       }
       throw error;
     }
+  }
+
+  async load(versionRange: string) {
+    const soljson = await this.loadSoljson(versionRange);
+    return await this.compilerFromString(soljson);
   }
 
   async list(index = 0) {
@@ -109,7 +114,7 @@ export class VersionRange {
     };
   }
 
-  compilerFromString(code: string) {
+  async compilerFromString(code: string) {
     const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
@@ -190,7 +195,7 @@ export class VersionRange {
     throw new NoVersionError(versionRange);
   }
 
-  async getAndCacheSolcByUrl(fileName: string, index: number) {
+  async getAndCacheSoljsonByUrl(fileName: string, index: number) {
     const { events, compilerRoots } = this.config;
     const url = `${compilerRoots![index].replace(/\/+$/, "")}/${fileName}`;
     events.emit("downloadCompiler:start", {
@@ -207,7 +212,7 @@ export class VersionRange {
     if (this.cache) {
       this.cache.add(response.data, fileName);
     }
-    return this.compilerFromString(response.data);
+    return response.data;
   }
 
   async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
@@ -246,8 +251,9 @@ export class VersionRange {
       if (this.cache?.has(fileName)) {
         return this.getCachedSolcByFileName(fileName);
       }
-      return await this.getAndCacheSolcByUrl(fileName, index);
+      return await this.getAndCacheSoljsonByUrl(fileName, index);
     } catch (error) {
+      debug("there was an error fetching soljson -- %o", error.message);
       const attemptNumber = index + 1;
       return await this.getSolcFromCacheOrUrl(versionConstraint, attemptNumber);
     }
@@ -264,6 +270,10 @@ export class VersionRange {
     const url = `${urlRoot.replace(/\/+$/, "")}/list.json`;
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
+      debug(
+        `obtained the following version list from ${url} -- %o`,
+        response.data
+      );
       return response.data;
     } catch (error) {
       events.emit("fetchSolcList:fail");
@@ -292,8 +302,13 @@ export class VersionRange {
     }
 
     const versionToUse = this.findNewestValidVersion(version, allVersions);
-
-    if (versionToUse) return allVersions.releases[versionToUse];
+    if (versionToUse) {
+      debug(
+        "the solc filename that we will use -- %o",
+        allVersions.releases[versionToUse]
+      );
+      return allVersions.releases[versionToUse];
+    }
 
     return null;
   }

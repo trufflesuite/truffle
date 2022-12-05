@@ -4,6 +4,10 @@ import solcWrap from "solc/wrapper";
 import { observeListeners } from "../observeListeners";
 
 export class Local {
+  loadSoljson() {
+    throw new Error("Method loadSoljson not implemented for Local strategy.");
+  }
+
   load(localPath: string) {
     const listeners = observeListeners();
     try {

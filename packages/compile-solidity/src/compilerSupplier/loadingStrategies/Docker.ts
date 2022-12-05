@@ -26,6 +26,10 @@ export class Docker {
     this.cache = new Cache();
   }
 
+  loadSoljson() {
+    throw new Error("Method loadSoljson not implemented for Docker strategy.");
+  }
+
   async load() {
     // Set a sensible limit for maxBuffer
     // See https://github.com/nodejs/node/pull/23027

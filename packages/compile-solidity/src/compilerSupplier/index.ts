@@ -43,7 +43,7 @@ export class CompilerSupplier {
     if (cache) this.strategyOptions.cache = cache;
   }
 
-  async load() {
+  getStrategy() {
     const userSpecification = this.version;
 
     let strategy: CompilerSupplierStrategy;
@@ -53,7 +53,8 @@ export class CompilerSupplier {
     if (!userSpecification) {
       useSpecifiedLocal =
         userSpecification &&
-        (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
+        (fs.existsSync(userSpecification) ||
+          path.isAbsolute(userSpecification));
     }
     const isValidVersionRange = semver.validRange(userSpecification);
 
@@ -66,7 +67,24 @@ export class CompilerSupplier {
     } else if (isValidVersionRange) {
       strategy = new VersionRange(this.strategyOptions);
     }
+    return {
+      strategy,
+      userSpecification
+    };
+  }
 
+  async loadSoljson() {
+    const { strategy, userSpecification } = this.getStrategy();
+    if (strategy) {
+      const soljson = await strategy.loadSoljson(userSpecification);
+      return { soljson };
+    } else {
+      throw new BadInputError(userSpecification);
+    }
+  }
+
+  async load() {
+    const { strategy, userSpecification } = this.getStrategy();
     if (strategy) {
       const solc = await strategy.load(userSpecification);
       return { solc };
