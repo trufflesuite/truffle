@@ -336,9 +336,13 @@ class Console extends EventEmitter {
 
     // Theoretically stderr can contain multiple errors.
     // So let's just print it instead of throwing through
-    // the error handling mechanism. Bad call?
+    // the error handling mechanism. Bad call? Who knows...
+    // better be safe and buffer stderr so that it doesn't
+    // interrupt stdout, and present it as a complete
+    // string at the end of the spawned process.
+    let bufferedError = "";
     sid.stderr.on("data", data => {
-      debug(data.toString());
+      bufferedError += data.toString();
     });
 
     sid.stdout.on("data", data => {
@@ -348,6 +352,9 @@ class Console extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       sid.on("close", code => {
+        // dump bufferedError
+        debug(bufferedError);
+
         if (!code) {
           // re-provision to ensure any changes are available in the repl
           this.provision();
@@ -400,12 +407,12 @@ class Console extends EventEmitter {
 
     /*
     - allow whitespace before everything else
-    - optionally capture `var|let|const <varname> = `
-      - varname only matches if it starts with a-Z or _ or $
+    - optionally capture `var| let |const <varname> = `
+        - varname only matches if it starts with a-Z or _ or $
         and if contains only those chars or numbers
-      - this is overly restrictive but is easier to maintain
-    - capture `await <anything that follows it>`
-    */
+        - this is overly restrictive but is easier to maintain
+        - capture `await <anything that follows it>`
+          */
     let includesAwait =
       /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
@@ -427,11 +434,11 @@ class Console extends EventEmitter {
 
       // Wrap the await inside an async function.
       // Strange indentation keeps column offset correct in stack traces
-      source = `(async function() { try { ${
+      source = `(async function() { try {${
         assign ? `global.${RESULT} =` : "return"
       } (
-  ${expression.trim()}
-  ); } catch(e) { global.ERROR = e; throw e; } }())`;
+          ${expression.trim()}
+  ); } catch(e) {global.ERROR = e; throw e; } }())`;
 
       assignment = assign
         ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
