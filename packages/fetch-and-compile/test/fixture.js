@@ -237,43 +237,6 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-kovan-optimistic.etherscan.io/api": {
-    "0x5bb6699ef885ca997d1467380ff9e51c606a07e1": {
-      status: "1",
-      message: "OK",
-      result: [
-        {
-          SourceCode: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/kovan-optimistic/0x5bb6699ef885ca997d1467380ff9e51c606a07e1/Wormhole.sol"
-            ),
-            "utf8"
-          ),
-          ABI: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/kovan-optimistic/0x5bb6699ef885ca997d1467380ff9e51c606a07e1/Wormhole.abi.json"
-            ),
-            "utf8"
-          ),
-          ContractName: "Wormhole",
-          CompilerVersion: "v0.8.6+commit.11564f7e",
-          OptimizationUsed: "0",
-          Runs: "200",
-          ConstructorArguments: "",
-          EVMVersion: "Default",
-          Library: "",
-          LicenseType: "None",
-          Proxy: "0",
-          Implementation: "",
-          SwarmSource:
-            "ipfs://10357a4f7b671c8a5b0c870cd2bda25dd017773e274f0cfa416461963ac82b5b"
-        }
-      ]
-    }
-  },
-
   "https://api.arbiscan.io/api": {
     "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31": {
       status: "1",
@@ -306,44 +269,6 @@ const etherscanFixture = {
           Proxy: "0",
           Implementation: "",
           SwarmSource: ""
-        }
-      ]
-    }
-  },
-
-  "https://api-testnet.arbiscan.io/api": {
-    "0x1167d145919642dac82e03a6cfe2848db7a94995": {
-      status: "1",
-      message: "OK",
-      result: [
-        {
-          SourceCode: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/rinkeby-arbitrum/0x1167d145919642dac82e03a6cfe2848db7a94995/ProxyRegistry.sol"
-            ),
-            "utf8"
-          ),
-          ABI: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/rinkeby-arbitrum/0x1167d145919642dac82e03a6cfe2848db7a94995/ProxyRegistry.abi.json"
-            ),
-            "utf8"
-          ),
-          ContractName: "ProxyRegistry",
-          CompilerVersion: "v0.4.26+commit.4563c3fc",
-          OptimizationUsed: "1",
-          Runs: "200",
-          ConstructorArguments:
-            "0000000000000000000000006401e31976887d39a35a558891b4f6d476388181",
-          EVMVersion: "Default",
-          Library: "",
-          LicenseType: "GNU GPLv3",
-          Proxy: "0",
-          Implementation: "",
-          SwarmSource:
-            "bzzr://e7e9638fe071622556b31cfd1452cbcc9526ed4db6a7845a2984c071bc55326f"
         }
       ]
     }

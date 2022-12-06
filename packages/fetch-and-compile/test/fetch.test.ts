@@ -140,15 +140,6 @@ describe("Etherscan single-source Solidity case", function () {
     );
   });
 
-  it("verifies contract from arbitrum rinkeby", async function () {
-    await runTestBody(
-      421611,
-      "0x1167d145919642dac82e03a6cfe2848db7a94995",
-      "etherscan",
-      "ProxyRegistry"
-    );
-  });
-
   it("verifies contract from polygon", async function () {
     await runTestBody(
       137,
@@ -173,15 +164,6 @@ describe("Etherscan single-source Solidity case", function () {
       "0xca5f37e6D8bB24c5A7958d5eccE7Bd9Aacc944f2",
       "etherscan",
       "InstaERC20Resolver"
-    );
-  });
-
-  it("verifies contract from optimism kovan", async function () {
-    await runTestBody(
-      69,
-      "0x5bb6699ef885ca997d1467380ff9e51c606a07e1",
-      "etherscan",
-      "Wormhole"
     );
   });
 
