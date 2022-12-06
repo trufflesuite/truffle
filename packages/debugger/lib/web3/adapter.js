@@ -13,14 +13,16 @@ export default class Web3Adapter {
   }
 
   async init() {
+    debug("initting; registry = %o", this.ensRegistryAddress);
     if (this.ensRegistryAddress === undefined) {
       const networkId = await this.web3.eth.net.getId();
       this.ensRegistryAddress = getEnsAddress(networkId);
     }
     if (this.ensRegistryAddress) {
       //not an else! can be set up above!
+      debug("setting up");
       this.ens = new ENS({
-        provider: this.web3.current.provider,
+        provider: this.web3.currentProvider,
         ensAddress: this.ensRegistryAddress
       });
     }
@@ -123,10 +125,14 @@ export default class Web3Adapter {
 
   async reverseEnsResolve(address) {
     if (!this.ens) {
+      debug("no ens you fool!");
       return null;
     }
     try {
-      return (await this.ens.getAddress(address)).name;
+      debug("addr: %s", address);
+      const name = (await this.ens.getAddress(address)).name;
+      debug("name: %o", name);
+      return name;
     } catch {
       return null; //we don't want this erroring, sorry
     }
