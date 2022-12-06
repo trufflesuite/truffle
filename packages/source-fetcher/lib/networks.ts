@@ -42,6 +42,7 @@ export const networkNamesById: { [id: number]: string } = {
   5700: "tanenbaum-syscoin",
   288: "boba",
   28: "rinkeby-boba",
+  2888: "goerli-boba",
   106: "velas",
   82: "meter",
   83: "testnet-meter",
@@ -81,7 +82,7 @@ export const networkNamesById: { [id: number]: string } = {
   7700: "canto",
   592: "astar",
   336: "shiden-astar",
-  8217: "cypress-klaytn", //not presently supported by either fetcher, but...
+  8217: "cypress-klaytn",
   1001: "baobab-klaytn"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
