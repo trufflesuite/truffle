@@ -167,15 +167,6 @@ describe("Etherscan single-source Solidity case", function () {
     );
   });
 
-  it("verifies contract from optimism kovan", async function () {
-    await runTestBody(
-      69,
-      "0x5bb6699ef885ca997d1467380ff9e51c606a07e1",
-      "etherscan",
-      "Wormhole"
-    );
-  });
-
   it("verifies contract from moonbeam", async function () {
     await runTestBody(
       1284,

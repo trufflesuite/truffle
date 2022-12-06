@@ -62,7 +62,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "goerli": "api-goerli.etherscan.io",
       "sepolia": "api-sepolia.etherscan.io",
       "optimistic": "api-optimistic.etherscan.io",
-      "kovan-optimistic": "api-kovan-optimistic.etherscan.io",
       "goerli-optimistic": "api-goerli-optimism.etherscan.io", //yes this one is different!
       "arbitrum": "api.arbiscan.io",
       "nova-arbitrum": "api-nova.arbiscan.io",
