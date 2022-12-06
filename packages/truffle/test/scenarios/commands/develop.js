@@ -94,7 +94,7 @@ describe("truffle develop", function () {
       },
       {
         cmd: "",
-        expectedError: `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+        expectedError: `ℹ️ : Missing truffle command. Please include a valid truffle command.`
       }
     ].forEach(({ cmd, expectedError }) => {
       it(`alerts on 'truffle ${cmd}'`, async function () {
