@@ -33,7 +33,7 @@ const processInput = (input, allowedCommands) => {
 
     if (cmd === undefined) {
       return makeIIFE(
-        `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+        `ℹ️ : Missing truffle command. Please include a valid truffle command.`
       );
     }
 
