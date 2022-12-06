@@ -46,6 +46,12 @@ const processInput = (input, allowedCommands) => {
     return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
   }
 
+  if (words.includes("--url") || words.includes("--network")) {
+    const message =
+      "url and network options are not supported within Truffle REPL";
+    throw new TruffleError(message);
+  }
+
   // an expression
   return input.trim();
 };
