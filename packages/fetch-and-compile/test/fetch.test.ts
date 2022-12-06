@@ -140,15 +140,6 @@ describe("Etherscan single-source Solidity case", function () {
     );
   });
 
-  it("verifies contract from arbitrum rinkeby", async function () {
-    await runTestBody(
-      421611,
-      "0x1167d145919642dac82e03a6cfe2848db7a94995",
-      "etherscan",
-      "ProxyRegistry"
-    );
-  });
-
   it("verifies contract from polygon", async function () {
     await runTestBody(
       137,

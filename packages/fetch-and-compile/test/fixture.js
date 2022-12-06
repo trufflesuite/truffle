@@ -311,44 +311,6 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-testnet.arbiscan.io/api": {
-    "0x1167d145919642dac82e03a6cfe2848db7a94995": {
-      status: "1",
-      message: "OK",
-      result: [
-        {
-          SourceCode: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/rinkeby-arbitrum/0x1167d145919642dac82e03a6cfe2848db7a94995/ProxyRegistry.sol"
-            ),
-            "utf8"
-          ),
-          ABI: fs.readFileSync(
-            path.resolve(
-              __dirname,
-              "./sources/etherscan/rinkeby-arbitrum/0x1167d145919642dac82e03a6cfe2848db7a94995/ProxyRegistry.abi.json"
-            ),
-            "utf8"
-          ),
-          ContractName: "ProxyRegistry",
-          CompilerVersion: "v0.4.26+commit.4563c3fc",
-          OptimizationUsed: "1",
-          Runs: "200",
-          ConstructorArguments:
-            "0000000000000000000000006401e31976887d39a35a558891b4f6d476388181",
-          EVMVersion: "Default",
-          Library: "",
-          LicenseType: "GNU GPLv3",
-          Proxy: "0",
-          Implementation: "",
-          SwarmSource:
-            "bzzr://e7e9638fe071622556b31cfd1452cbcc9526ed4db6a7845a2984c071bc55326f"
-        }
-      ]
-    }
-  },
-
   "https://api.polygonscan.com/api": {
     "0xCF79C5417934ECde6BA055C0119A03380CE28DEC": {
       status: "1",
