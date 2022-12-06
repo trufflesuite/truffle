@@ -23,7 +23,7 @@ module.exports = async function (options) {
     throw new TruffleError(message);
   }
 
-  let config = loadConfig(options);
+  const config = loadConfig(options);
   if (config.compileNone || config["compile-none"]) {
     config.compiler = "none";
   }
