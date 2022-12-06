@@ -398,7 +398,7 @@ export class ProjectDecoder {
     let name: string | null;
     let nameAsBytes: Uint8Array | null;
     try {
-      name = await this.ens.getAddress(address).name;
+      name = await this.ens.getName(address).name;
       if (name !== null) {
         //do a forward resolution check to make sure it matches
         const checkAddress = await this.ens.name(name).getAddress();

@@ -130,9 +130,7 @@ export default class Web3Adapter {
     }
     try {
       debug("addr: %s", address);
-      const name = (await this.ens.getAddress(address)).name;
-      debug("name: %o", name);
-      return name;
+      return (await this.ens.getName(address)).name;
     } catch {
       return null; //we don't want this erroring, sorry
     }
