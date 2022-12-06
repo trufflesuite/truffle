@@ -221,7 +221,7 @@ export function* reverseEnsResolve(address) {
 function* performEnsReverseResolution(adapter, { address }) {
   debug("got reverse action; address = %s", address);
   const name = yield apply(adapter, adapter.reverseEnsResolve, [address]);
-  debug("got name = %s, passing it on", name);
+  debug("got name = %o, passing it on", name);
   yield put(actions.receiveEnsName(address, name));
 }
 
@@ -306,15 +306,15 @@ function* receiveStorageErrorHandler() {
   //rather than throw to prevent redux-saga from giving up
 }
 
-export function* init(provider) {
-  yield put(actions.init(provider));
+export function* init(provider, ensRegistryAddress) {
+  yield put(actions.init(provider, ensRegistryAddress));
 }
 
 export function* saga() {
   // wait for web3 init signal
   const { provider, ensRegistryAddress } = yield take(actions.INIT_WEB3);
   let adapter = new Web3Adapter(provider, ensRegistryAddress);
-  yield apply(adapter, init); //set up ens
+  yield apply(adapter, adapter.init); //set up ens
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
