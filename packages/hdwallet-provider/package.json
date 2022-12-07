@@ -37,6 +37,7 @@
     "@types/ethereum-protocol": "^1.0.0",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
+    "@types/web3": "^1.0.20",
     "@types/web3-provider-engine": "^14.0.0",
     "ganache": "7.5.0",
     "mocha": "10.1.0",
