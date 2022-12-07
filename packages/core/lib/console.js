@@ -241,7 +241,8 @@ class Console extends EventEmitter {
   }
 
   provision() {
-    let files;
+    let files = [];
+    let jsonBlobs = [];
     try {
       files = fse.readdirSync(this.options.contracts_build_directory);
     } catch (error) {
@@ -251,10 +252,10 @@ class Console extends EventEmitter {
       // doesn't exist" 99.9% of the time.
     }
 
-    let jsonBlobs = [];
-    files = files || [];
-
     files.forEach(file => {
+      // filter out non artifacts
+      if (!file.endsWith(".json")) return;
+
       try {
         const body = fse.readFileSync(
           path.join(this.options.contracts_build_directory, file),
