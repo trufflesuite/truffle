@@ -49,12 +49,41 @@ describe("ENS class", () => {
 
   describe("deployNewDevENSRegistry", () => {
     it("deploys a new registry and returns the registry object", async () => {
-      let result = await ens.deployNewDevENSRegistry(fromAddress);
+      const result = await ens.deployNewDevENSRegistry(fromAddress);
       assert(Web3.utils.isAddress(result.address));
     });
     it("deploys a new registry which has a non-0x0 address", async () => {
-      let result = await ens.deployNewDevENSRegistry(fromAddress);
-      assert(result.address !== "0x0000000000000000000000000000000000000000");
+      const result = await ens.deployNewDevENSRegistry(fromAddress);
+      assert.notEqual(
+        result.address,
+        "0x0000000000000000000000000000000000000000"
+      );
+    });
+    it("deploys a reverse registrar and hooks it up", async () => {
+      const registryAddress = await ens.deployNewDevENSRegistry(fromAddress);
+      const reverseRegistrar = await ens.ensjs.name("addr.reverse").getOwner();
+      assert.notEqual(
+        reverseRegistrar,
+        "0x0000000000000000000000000000000000000000",
+        "no reverse registrar hooked up"
+      );
+      assert.notEqual(
+        reverseRegistrar,
+        fromAddress,
+        "EOA got set as reverse registrar"
+      );
+      assert.notEqual(
+        reverseRegistrar,
+        registryAddress,
+        "Registry got set as its own reverse registrar??"
+      );
+    });
+    it("deploys a reverse registrar and allows setting reverse records", async () => {
+      const name = "myname.eth";
+      await ens.deployNewDevENSRegistry(fromAddress);
+      await ens.ensjs.setReverseRecord(name); //set reverse record for fromAddress
+      const retrievedName = (await ens.ensjs.getName(fromAddress)).name;
+      assert.equal(retrievedName, name);
     });
   });
 
