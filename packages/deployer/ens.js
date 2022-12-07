@@ -1,3 +1,4 @@
+const debug = require("debug")("deployer:ens");
 const { getEnsAddress, default: ENSJS } = require("@ensdomains/ensjs");
 const contract = require("@truffle/contract");
 const { sha3 } = require("web3-utils");
@@ -34,16 +35,79 @@ class ENS {
     this.ens.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
     this.setENSJS();
+    await this.deployNewDevReverseRegistrar(from);
     return ensRegistry;
+  }
+
+  //this method should only be called when using a dev registry!
+  //do not call it otherwise!
+  async deployNewDevReverseRegistrar(from) {
+    const registryAddress = this.determineENSRegistryAddress();
+    debug("from: %s", from);
+    debug("registryAddress: %s", registryAddress);
+    const ReverseRegistrarArtifact = require("./builtContracts/ReverseRegistrar");
+    const ReverseRegistrar = contract(ReverseRegistrarArtifact);
+    ReverseRegistrar.setProvider(this.provider);
+    //note: the resolver address we're supposed to pass in to the constructor
+    //is supposed to be the "default resolver"; I'm not sure what that means,
+    //but I figure using the resolver for "addr.reverse" ought to suffice,
+    //right?  So let's set up a resolver for it.
+    const reverseResolutionSpecialName = "addr.reverse";
+    debug("made it here");
+    //but in order to set its resolver, we first have to set its owner.
+    await this.setNameOwner({ from, name: reverseResolutionSpecialName });
+    debug("owner set");
+    //now we can actually set the resolver
+    const { resolverAddress } = await this.ensureResolverExists({
+      from,
+      name: reverseResolutionSpecialName
+    });
+    debug("resolver set: %s", resolverAddress);
+    //...but wait!  we need it to be owned by the registry, not by us.
+    //(otherwise the deployment will revert.)  so, let's hand over
+    //ownership to the registry.
+    await this.alienateNameOwner({
+      from,
+      owner: registryAddress,
+      name: reverseResolutionSpecialName
+    });
+    debug("owner alienated");
+    //now we can do the deployment!
+    const reverseRegistrar = await ReverseRegistrar.new(
+      registryAddress,
+      resolverAddress,
+      {
+        from
+      }
+    );
+    debug("deployed");
+    //except, we're not done... we need to transfer ownership from the registry
+    //to the reverse registrar.
+    //(if there were a previous reverse registrar, this would happen automatically,
+    //but there wasn't, so it doesn't.)
+    //so, first let's claim the name for ourself again
+    await this.setNameOwner({ from, name: reverseResolutionSpecialName });
+    debug("reclaimed");
+    //and now let's give it away again
+    await this.alienateNameOwner({
+      from,
+      owner: reverseRegistrar.address,
+      name: reverseResolutionSpecialName
+    });
+    debug("re-alienated");
   }
 
   async ensureResolverExists({ from, name }) {
     // See if the resolver is set, if not then set it
+    debug("getting resolver");
     const resolverAddress = await this.ensjs.name(name).getResolver();
+    debug("got resolver");
     // names with no set resolver have 0x0 returned
     if (resolverAddress !== "0x0000000000000000000000000000000000000000") {
+      debug("getting addr");
       const resolvedAddress = await this.ensjs.name(name).getAddress("ETH");
-      return { resolvedAddress };
+      debug("got addr");
+      return { resolvedAddress, resolverAddress };
     }
     // deploy a resolver if one isn't set
     const PublicResolverArtifact = require("./builtContracts/PublicResolver");
@@ -52,9 +116,12 @@ class ENS {
 
     let registryAddress = this.determineENSRegistryAddress();
 
+    debug("deploying resolver");
     const publicResolver = await PublicResolver.new(registryAddress, { from });
+    debug("deployed; setting resolver");
     await this.ensjs.name(name).setResolver(publicResolver.address, { from });
-    return { resolvedAddress: null };
+    debug("set resolver");
+    return { resolvedAddress: null, resolverAddress: publicResolver.address };
   }
 
   async setAddress(name, addressOrContract, { from }) {
@@ -115,6 +182,35 @@ class ENS {
         { from }
       );
       builtName = label.concat(`.${builtName}`);
+    }
+  }
+
+  //this method assumes that the current owner is `from`,
+  //and sets the new owner to be `owner`.
+  async alienateNameOwner({ name, from, owner }) {
+    //setNameOwner goes down the tree, from top to bottom.
+    //here, however, we have to go *up* the tree.
+    //as such, we are going to process the labels in order, rather
+    //than in reverse order.
+
+    let remaining = name;
+    while (remaining !== "") {
+      let label, suffix;
+      const dotIndex = remaining.indexOf("."); //find the first dot
+      if (dotIndex !== -1) {
+        label = remaining.slice(0, dotIndex); //everything before the dot
+        suffix = remaining.slice(dotIndex + 1); //everything after the dot
+      } else {
+        label = remaining;
+        suffix = "";
+      }
+      await this.devRegistry.setSubnodeOwner(
+        suffix !== "" ? hash(suffix) : "0x0",
+        sha3(label),
+        owner,
+        { from }
+      );
+      remaining = suffix;
     }
   }
 
