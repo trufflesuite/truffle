@@ -329,7 +329,7 @@ class Console extends EventEmitter {
 
     const spawnInput = `${settings} -- ${inputStrings}`;
 
-    const sid = spawn(
+    const spawnedProcess = spawn(
       "node",
       ["--no-deprecation", childPath, spawnInput],
       spawnOptions
@@ -342,17 +342,17 @@ class Console extends EventEmitter {
     // interrupt stdout, and present it as a complete
     // string at the end of the spawned process.
     let bufferedError = "";
-    sid.stderr.on("data", data => {
+    spawnedProcess.stderr.on("data", data => {
       bufferedError += data.toString();
     });
 
-    sid.stdout.on("data", data => {
+    spawnedProcess.stdout.on("data", data => {
       // remove extra newline in `truffle develop` console
       console.log(data.toString().trim());
     });
 
     return new Promise((resolve, reject) => {
-      sid.on("close", code => {
+      spawnedProcess.on("close", code => {
         // dump bufferedError
         debug(bufferedError);
 
