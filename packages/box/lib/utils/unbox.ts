@@ -148,7 +148,7 @@ function installBoxDependencies({ hooks }: boxConfig, destination: string) {
   const postUnpack = hooks["post-unpack"];
 
   if (postUnpack.length === 0) return;
-  execSync(postUnpack, { cwd: destination });
+  execSync(postUnpack, { cwd: destination, stdio: "ignore" });
 }
 
 export = {
