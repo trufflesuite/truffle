@@ -12,17 +12,19 @@ const Runner = {
   ) {
     // run each target through the run function, hold output until all are completed,
     // or throw an error
-    // TODO: add error handling
-    // const deploymentSteps = await Promise.all(declarationSteps.map(async step => {
-    //   const result = await this.deploy(step, config, options);
-    //   return result;
-    // }));
-    //@TODO: switch to using allSettled
+    // Using a for loop here because we want fine-grained
+    // control over the loop & the ability to break out of it
+    // & handle intermediate steps
     //@TODO: handle state for intermediate steps in case deployment fails partway
     let deploymentSteps: DeclarationTarget[] = [];
     for (const step of declarationSteps) {
-      const result = await this.run(step, config, options);
-      deploymentSteps.push(result);
+      try {
+        const deploymentStep = await this.run(step, config, options);
+        deploymentSteps.push(deploymentStep);
+      } catch (error) {
+        //handle rejected promises
+        throw new Error(JSON.stringify(error));
+      }
     }
 
     return deploymentSteps;
@@ -56,8 +58,12 @@ const Runner = {
 
     return { resolver, deployer };
   },
-  link: async function (deploymentStep: DeclarationTarget, config: Config) {
-    const { deployer, resolver } = this.prepareForMigrations(config);
+  link: async function (
+    deploymentStep: DeclarationTarget,
+    config: Config,
+    deployer: Deployer,
+    resolver: ResolverIntercept
+  ) {
     const configNetworks = config.networks;
     if (configNetworks[deploymentStep.network]) {
       config.network = deploymentStep.network;
@@ -70,24 +76,23 @@ const Runner = {
     try {
       Contract = resolver.require(deploymentStep.contractName);
     } catch (e) {
-      console.log("error", e);
       throw new Error(JSON.stringify(e));
     }
 
-    await deployer.start();
-    let link = resolver.require(deploymentStep.links[0]);
+    //TODO handle multiple links
+    const link = resolver.require(deploymentStep.links[0]);
     let linkFunc = async function (link, Contract) {
-      await deployer.link(link, Contract);
+      const linkInstance = await deployer.link(link, Contract);
+      return linkInstance;
     };
 
-    await linkFunc(link, Contract);
+    const linkedContract = await linkFunc(link, Contract);
 
     let artifacts = resolver
       .contracts()
       .map((abstraction: any) => abstraction._json);
     await config.artifactor.saveAll(artifacts);
-
-    await deployer.finish();
+    return linkedContract;
   },
   // @TODO: will need to add options here for the deployment like gasPrice, etc.
   run: async function (deploymentStep: DeclarationTarget, config: Config) {
@@ -112,7 +117,7 @@ const Runner = {
     await deployer.start();
 
     if (deploymentStep.run.includes("link")) {
-      await this.link(deploymentStep, config);
+      await this.link(deploymentStep, config, deployer, resolver);
     }
 
     if (deploymentStep.run.includes("deploy")) {
