@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.51",
+  "version": "6.0.52",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -37,7 +37,7 @@
     "solc": "0.8.17"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.176",
+    "@truffle/artifactor": "^4.0.177",
     "@truffle/box": "^2.1.65",
     "@types/node": "~12.12.0",
     "@types/sinon": "^9.0.10",
