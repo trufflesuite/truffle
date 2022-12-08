@@ -41,16 +41,11 @@ export function* resolve(name) {
   return yield* web3.ensResolve(name);
 }
 
-//also may be null.  note: swallows errors! we don't
-//want this to throw!
+//also may be null.
 export function* reverseResolveAsBytes(address) {
   const name = yield* reverseResolve(address);
   if (name === null) {
     return null;
   }
-  try {
-    return Conversion.stringToBytes(name);
-  } catch {
-    return null;
-  }
+  return Conversion.stringToBytes(name);
 }
