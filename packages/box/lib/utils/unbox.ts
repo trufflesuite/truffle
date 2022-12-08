@@ -4,7 +4,7 @@ import download from "download-git-repo";
 import axios from "axios";
 import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
-import { execSync } from "child_process";
+import { spawn } from "child_process";
 import inquirer from "inquirer";
 import type { Question } from "inquirer";
 import type { boxConfig, unboxOptions } from "typings";
@@ -144,11 +144,78 @@ async function copyTempIntoDestination(
   }
 }
 
-function installBoxDependencies({ hooks }: boxConfig, destination: string) {
+/** tokenize uh tokenizes a string into substrings splitting on spaces
+ * while preserving quoted substrings.
+ */
+function tokenize(input: string): string[] {
+  const tokens = [];
+
+  // track start of current token
+  let currTokenStart = 0;
+  let [i, L] = [0, input.length];
+  while (i < L) {
+    let ch = input[i];
+
+    // beginning of a quote
+    if (`'"`.includes(ch)) {
+      // token start should be after quote
+      currTokenStart = i + 1;
+
+      // remember quote to match its end pair
+      const m = ch;
+
+      // consume characters (inc index) until matching end quote
+      while ((ch = input[++i]) !== m);
+
+      // extract the current token
+      tokens.push(input.slice(currTokenStart, i));
+
+      // update the start of the next token, and inc index
+      currTokenStart = ++i;
+    } else if (ch === " ") {
+      // a space outside of a quote
+
+      // consume all spaces, inc index
+      while ((ch = input[++i]) === " ");
+
+      // extract token
+      const token = input.slice(currTokenStart, i - 1).trim();
+
+      // store if it's an actual token; spaces don't count
+      if (token.length) tokens.push(token);
+
+      // update start of the next token
+      currTokenStart = i;
+    } else {
+      // neither quote nor space. increment index
+      i++;
+
+      // if at the end of the input, save last token
+      if (i >= L) tokens.push(input.slice(currTokenStart, i));
+    }
+  }
+  return tokens;
+}
+
+async function installBoxDependencies(
+  { hooks }: boxConfig,
+  destination: string
+) {
   const postUnpack = hooks["post-unpack"];
 
   if (postUnpack.length === 0) return;
-  execSync(postUnpack, { cwd: destination });
+  const [cmd, ...args] = tokenize(postUnpack);
+  const spawned = spawn(cmd, args, { cwd: destination, stdio: "pipe" });
+  spawned.stdout.on("data", d => console.log(d.toString()));
+  spawned.stderr.on("data", d => console.log(d.toString()));
+  return new Promise((resolve, reject) => {
+    spawned.on("close", (code: number) => {
+      if (!code) {
+        return resolve(code);
+      }
+      reject(code);
+    });
+  });
 }
 
 export = {

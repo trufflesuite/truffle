@@ -48,12 +48,17 @@ export = {
     unpackBoxOptions: unboxOptions
   ) => {
     unbox.prepareToCopyFiles(tempDir, boxConfig);
-    await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
+    unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: (boxConfig: boxConfig, destination: string, events: any) => {
+  setUpBox: async (boxConfig: boxConfig, destination: string, events: any) => {
     events.emit("unbox:settingUpBox:start");
-    unbox.installBoxDependencies(boxConfig, destination);
-    events.emit("unbox:settingUpBox:succeed");
+    try {
+      await unbox.installBoxDependencies(boxConfig, destination);
+      events.emit("unbox:settingUpBox:succeed");
+    } catch (err) {
+      // send succeed to stop spinner
+      events.emit("unbox:settingUpBox:succeed");
+    }
   }
 };

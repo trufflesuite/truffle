@@ -216,7 +216,7 @@ const Box = {
       tempDirCleanup();
       events.emit("unbox:cleaningTempFiles:succeed");
 
-      utils.setUpBox(boxConfig, destination, events);
+      await utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {
