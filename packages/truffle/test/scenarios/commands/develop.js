@@ -116,6 +116,38 @@ describe("truffle develop", function () {
     });
   });
 
+  describe("Improper command options", async function () {
+    this.timeout(7000);
+
+    [
+      {
+        option: "--url",
+        expectedError: `ℹ️ : url option is not supported within Truffle REPL`
+      },
+      {
+        option: "--network",
+        expectedError: `ℹ️ : network option is not supported within Truffle REPL`
+      }
+    ].forEach(({ option, expectedError }) => {
+      it(`alerts on 'migrate ${option}'`, async function () {
+        await CommandRunner.runInREPL({
+          inputCommands: [`migrate ${option}`],
+          config,
+          executableCommand: "develop",
+          displayHost: "develop"
+        });
+
+        const output = logger.contents();
+        assert(
+          output.includes(expectedError),
+          `Expected string in output: "${expectedError}"\n${formatLines(
+            output
+          )}`
+        );
+      });
+    });
+  });
+
   it("handles awaits", async function () {
     this.timeout(70000);
     const input = "await Promise.resolve(`${6*7} is probably not a prime`)";
