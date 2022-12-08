@@ -130,9 +130,12 @@ export default class Web3Adapter {
     }
     try {
       debug("addr: %s", address);
+      //unfortunately, ensjs will throw on invalid UTF-8
+      //and we really don't want this erroring... so we'll just swallow it,
+      //sorry :-/
       return (await this.ens.getName(address)).name;
     } catch {
-      return null; //we don't want this erroring, sorry
+      return null;
     }
   }
 
@@ -140,10 +143,6 @@ export default class Web3Adapter {
     if (!this.ens) {
       return null;
     }
-    try {
-      return await this.ens.name(name).getAddress();
-    } catch {
-      return null; //we don't want this erroring, sorry
-    }
+    return await this.ens.name(name).getAddress();
   }
 }

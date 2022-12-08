@@ -396,23 +396,24 @@ export class ProjectDecoder {
       return this.ensCache[address];
     }
     let name: string | null;
-    let nameAsBytes: Uint8Array | null;
     try {
+      //try-catch because ensjs throws on bad UTF-8 :-/
+      //this should be fixed later
       name = await this.ens.getName(address).name;
-      if (name !== null) {
-        //do a forward resolution check to make sure it matches
-        const checkAddress = await this.ens.name(name).getAddress();
-        if (checkAddress !== address) {
-          //if it doesn't, the name is no good!
-          name = null;
-        }
-      }
-      nameAsBytes = name !== null ? Conversion.stringToBytes(name) : null;
     } catch {
       //Normally I'd rethrow unexpected errors, but given the context here
       //that seems like it might be a problem
-      nameAsBytes = null;
+      name = null;
     }
+    if (name !== null) {
+      //do a forward resolution check to make sure it matches
+      const checkAddress = await this.ens.name(name).getAddress();
+      if (checkAddress !== address) {
+        //if it doesn't, the name is no good!
+        name = null;
+      }
+    }
+    const nameAsBytes = name !== null ? Conversion.stringToBytes(name) : null;
     this.ensCache[address] = nameAsBytes;
     return nameAsBytes;
   }
