@@ -3,6 +3,7 @@ import { DeclarationTarget } from "./types/";
 import Deployer from "@truffle/deployer";
 import Config from "@truffle/config";
 import { ResolverIntercept } from "./ResolverIntercept";
+import { Environment } from "@truffle/environment";
 
 const Runner = {
   orchestrate: async function (
@@ -64,13 +65,6 @@ const Runner = {
     deployer: Deployer,
     resolver: ResolverIntercept
   ) {
-    const configNetworks = config.networks;
-    if (configNetworks[deploymentStep.network]) {
-      config.network = deploymentStep.network;
-    } else {
-      throw new Error(`Network ${deploymentStep.network} not found in config`);
-    }
-
     let Contract;
 
     try {
@@ -96,14 +90,16 @@ const Runner = {
   },
   // @TODO: will need to add options here for the deployment like gasPrice, etc.
   run: async function (deploymentStep: DeclarationTarget, config: Config) {
-    const { deployer, resolver } = this.prepareForMigrations(config);
-    // TODO update this to play with environment-based config, when that is ready; this way of handling networks is temporary
     const configNetworks = config.networks;
     if (configNetworks[deploymentStep.network]) {
       config.network = deploymentStep.network;
     } else {
       throw new Error(`Network ${deploymentStep.network} not found in config`);
     }
+
+    await Environment.detect(config);
+    const { deployer, resolver } = this.prepareForMigrations(config);
+    // TODO update this to play with environment-based config, when that is ready; this way of handling networks is temporary
 
     // @TODO: add Contract type!
     let Contract;

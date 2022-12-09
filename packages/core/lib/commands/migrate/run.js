@@ -18,9 +18,8 @@ module.exports = async function (options) {
 
   const result = await WorkflowCompile.compileAndSave(config);
   await WorkflowCompile.assignNames(config, result);
-  await Environment.detect(config);
 
-  // if declarative deployments are enabled, run the solver package to kick of migrations
+  // if declarative deployments are enabled, run the solver package to kick off migrations
   if (config.declarativeDeployment.enabled) {
     if (config.declarativeDeployment.filepath) {
       await Runner.solve(config, options);
@@ -33,6 +32,7 @@ module.exports = async function (options) {
     return;
   }
 
+  await Environment.detect(config);
   const { dryRunOnly, dryRunAndMigrations } = determineDryRunSettings(
     config,
     options
