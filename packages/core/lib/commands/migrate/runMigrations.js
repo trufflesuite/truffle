@@ -39,16 +39,16 @@ async function usesConsoleLog(artifactJson) {
 
 async function findArtifactsThatUseConsoleLog(buildDir) {
   const debugLog = debug.extend("dirty-files");
-  const files = await readdir(buildDir);
+  const filenames = await readdir(buildDir);
 
   const artifacts = [];
   await Promise.allSettled(
-    files.map(async fn => {
-      if (fn.endsWith(".json")) {
+    filenames.map(async filename => {
+      if (filename.endsWith(".json")) {
         try {
-          const itLogs = await usesConsoleLog(path.join(buildDir, fn));
+          const itLogs = await usesConsoleLog(path.join(buildDir, filename));
           if (itLogs) {
-            artifacts.push(fn);
+            artifacts.push(filename);
           }
         } catch (e) {
           debugLog("Promise failure: %o", e.message);
