@@ -4,8 +4,6 @@ pragma solidity >=0.4.22 <0.9.0;
 import "truffle/Console.sol";
 
 contract Printf {
-  address public owner = msg.sender;
-
   constructor() payable { }
 
   function log_string() view public {
