@@ -1597,4 +1597,17 @@ export class ContractInstanceEncoder {
     encoded.tx.to = this.toAddress;
     return encoded;
   }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.encodeCreation]].
+   * The particular contract instance is ignored, only its class is used.
+   */
+  public async encodeCreation(
+    inputs: unknown[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    return await this.contractEncoder.encodeCreation(inputs, options);
+  }
 }
