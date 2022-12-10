@@ -1298,6 +1298,40 @@ export class ContractEncoder {
   /**
    * **This method is asynchronous.**
    *
+   * This method is similar to [[encodeTransaction]], except that instead of
+   * encoding a function transaction, it encodes a creation transaction.
+   *
+   * Because this method does not perform overload resolution, it only returns
+   * the resulting transaction options (including the encoded `data`), and does
+   * not bother returning the ABI used (as this was user-supplied.)
+   *
+   * If the `allowOptions` flag is set in the `options` argument, the input may
+   * contain an additional transaction options argument after the other
+   * arguments.  Any non-`data` options not specified in such a transaction
+   * options argument will be simply omitted; it you want some options to have
+   * defaults, it is up to the you to set these options as appropriate
+   * afterwards.
+   *
+   * If the transaction options parameter has a `data` or a `to` option,
+   * these option will be recognized but ignored.
+   *
+   * See [[encodeTransaction]] for documentation of the inputs.
+   */
+  public async encodeCreation(
+    inputs: unknown[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    const method = this.getConstructorMethod();
+    return await this.projectEncoder.encodeTxNoResolution(
+      method,
+      inputs,
+      options
+    );
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
    * Constructs a contract instance encoder for a given instance of the
    * contract this encoder is for.
    * @param address The address of the contract instance.
@@ -1350,36 +1384,12 @@ export class ContractEncoder {
     abi: Abi.FunctionEntry | Abi.ConstructorEntry
   ): Codec.Wrap.Method {
     abi = <Abi.FunctionEntry | Abi.ConstructorEntry>Abi.normalizeEntry(abi); //just to be absolutely certain!
-    const allocations = this.projectEncoder.getAllocations();
     debug("got allocations");
     switch (abi.type) {
-      case "constructor": {
-        debug("constructor binary: %s", this.constructorBinary);
-        //first check that we have constructor binary, and that it's all linked
-        if (!this.constructorBinary || this.constructorBinary === "0x") {
-          throw new NoBytecodeError(this.contract.contractName);
-        } else if (!this.constructorBinary.match(/^0x([0-9a-fA-F]{2})+$/)) {
-          throw new UnlinkedContractError(
-            this.contract.contractName,
-            this.artifact ? this.artifact.bytecode : undefined
-          );
-        }
-        //otherwise, we're good to go!
-        const allocation =
-          //@ts-ignore: We set this up and checked this earlier
-          allocations.calldata.constructorAllocations[
-            <string>this.constructorContextHash
-          ].input;
-        const inputs = allocation.arguments.map(
-          input => ({ type: input.type, name: input.name || undefined }) //convert "" to undefined
-        );
-        return {
-          selector: this.constructorBinary,
-          inputs,
-          abi
-        };
-      }
-      case "function": {
+      case "constructor":
+        return this.getConstructorMethod(abi);
+      case "function":
+        const allocations = this.projectEncoder.getAllocations();
         const selector: string = Codec.AbiData.Utils.abiSelector(abi);
         const allocation: Codec.AbiData.Allocate.CalldataAllocation = this
           .deployedContextHash
@@ -1397,8 +1407,49 @@ export class ContractEncoder {
           inputs,
           abi
         };
-      }
     }
+  }
+
+  //if you already know the ABI, you can pass it in for convenience.
+  //if you don't, we'll find it for you.
+  private getConstructorMethod(abi?: Abi.ConstructorEntry): Codec.Wrap.Method {
+    if (!abi) {
+      abi = this.getConstructorAbi();
+    }
+    const allocations = this.projectEncoder.getAllocations();
+    debug("constructor binary: %s", this.constructorBinary);
+    //first check that we have constructor binary, and that it's all linked
+    if (!this.constructorBinary || this.constructorBinary === "0x") {
+      throw new NoBytecodeError(this.contract.contractName);
+    } else if (!this.constructorBinary.match(/^0x([0-9a-fA-F]{2})+$/)) {
+      throw new UnlinkedContractError(
+        this.contract.contractName,
+        this.artifact ? this.artifact.bytecode : undefined
+      );
+    }
+    //otherwise, we're good to go!
+    const allocation =
+      //@ts-ignore: We set this up and checked this earlier
+      allocations.calldata.constructorAllocations[
+        <string>this.constructorContextHash
+      ].input;
+    const inputs = allocation.arguments.map(
+      input => ({ type: input.type, name: input.name || undefined }) //convert "" to undefined
+    );
+    return {
+      selector: this.constructorBinary,
+      inputs,
+      abi
+    };
+  }
+
+  private getConstructorAbi(): Abi.ConstructorEntry {
+    return (
+      this.abi.find(
+        (abi: Abi.Entry): abi is Abi.ConstructorEntry =>
+          abi.type === "constructor"
+      ) || Codec.AbiData.Utils.DEFAULT_CONSTRUCTOR_ABI
+    );
   }
 }
 
@@ -1545,5 +1596,18 @@ export class ContractInstanceEncoder {
     //for compatibility
     encoded.tx.to = this.toAddress;
     return encoded;
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.encodeCreation]].
+   * The particular contract instance is ignored, only its class is used.
+   */
+  public async encodeCreation(
+    inputs: unknown[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    return await this.contractEncoder.encodeCreation(inputs, options);
   }
 }
