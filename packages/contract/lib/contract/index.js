@@ -156,10 +156,6 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 
   Contract._constructorMethods = constructorMethods(Contract);
 
-  Contract.prototype[Symbol.for("nodejs.util.inspect.custom")] = function () {
-    return `Contract at: ${this.address}`;
-  };
-
   // Getter functions are scoped to Contract object.
   Contract._properties = properties;
 
