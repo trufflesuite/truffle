@@ -59,23 +59,30 @@ beforeAll(async () => {
 
 describe("Encoding", () => {
   describe("Constructors", () => {
-    let encoder: Encoder.ContractEncoder;
-    let bytecode: string;
-
-    beforeAll(async () => {
-      encoder = await Encoder.forArtifact(artifacts.TestContract, {
+    it("Encodes constructors", async () => {
+      const artifact = artifacts.TestContract;
+      const encoder = await Encoder.forArtifact(artifact, {
         projectInfo: { compilations }
       });
-      bytecode = Shims.NewToLegacy.forBytecode(artifacts.TestContract.bytecode);
-    });
-
-    it("Encodes constructors", async () => {
+      const bytecode = Shims.NewToLegacy.forBytecode(artifact.bytecode);
       const { data } = await encoder.encodeCreation([1]);
       assert.strictEqual(
         data,
         bytecode +
           "0000000000000000000000000000000000000000000000000000000000000001"
       );
+    });
+
+    it("Encodes implicit default constructors", async () => {
+      const artifact = artifacts.AuxContract;
+      //check that it really is implicit, that it's not in the ABI
+      assert(!artifact.abi.some(abi => abi.type === "constructor"));
+      const encoder = await Encoder.forArtifact(artifact, {
+        projectInfo: { compilations }
+      });
+      const bytecode = Shims.NewToLegacy.forBytecode(artifact.bytecode);
+      const { data } = await encoder.encodeCreation([]);
+      assert.strictEqual(data, bytecode);
     });
   });
 });
