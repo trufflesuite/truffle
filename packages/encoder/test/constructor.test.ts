@@ -9,7 +9,6 @@ import * as Encoder from "..";
 import * as Codec from "@truffle/codec";
 import { Shims } from "@truffle/compile-common";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
 import type { Provider } from "web3/providers";
 
@@ -61,23 +60,17 @@ beforeAll(async () => {
 describe("Encoding", () => {
   describe("Constructors", () => {
     let encoder: Encoder.ContractEncoder;
-    let abi: Abi.ConstructorEntry;
     let bytecode: string;
 
     beforeAll(async () => {
       encoder = await Encoder.forArtifact(artifacts.TestContract, {
         projectInfo: { compilations }
       });
-      abi = <Abi.ConstructorEntry>(
-        Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "constructor"
-        )
-      );
       bytecode = Shims.NewToLegacy.forBytecode(artifacts.TestContract.bytecode);
     });
 
     it("Encodes constructors", async () => {
-      const { data } = await encoder.encodeTxNoResolution(abi, [1]);
+      const { data } = await encoder.encodeCreation([1]);
       assert.strictEqual(
         data,
         bytecode +
