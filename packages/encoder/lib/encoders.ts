@@ -1298,6 +1298,40 @@ export class ContractEncoder {
   /**
    * **This method is asynchronous.**
    *
+   * This method is similar to [[encodeTransaction]], except that instead of
+   * encoding a function transaction, it encodes a creation transaction.
+   *
+   * Because this method does not perform overload resolution, it only returns
+   * the resulting transaction options (including the encoded `data`), and does
+   * not bother returning the ABI used (as this was user-supplied.)
+   *
+   * If the `allowOptions` flag is set in the `options` argument, the input may
+   * contain an additional transaction options argument after the other
+   * arguments.  Any non-`data` options not specified in such a transaction
+   * options argument will be simply omitted; it you want some options to have
+   * defaults, it is up to the you to set these options as appropriate
+   * afterwards.
+   *
+   * If the transaction options parameter has a `data` or a `to` option,
+   * these option will be recognized but ignored.
+   *
+   * See [[encodeTransaction]] for documentation of the inputs.
+   */
+  public async encodeCreation(
+    inputs: unknown[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    const method = this.getConstructorMethod();
+    return await this.projectEncoder.encodeTxNoResolution(
+      method,
+      inputs,
+      options
+    );
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
    * Constructs a contract instance encoder for a given instance of the
    * contract this encoder is for.
    * @param address The address of the contract instance.
