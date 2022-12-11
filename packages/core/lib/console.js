@@ -17,6 +17,9 @@ const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
 const validTruffleCommands = require("./commands/commands");
 
+// Get meta on TruffleConfig
+require("./console-meta")(contract);
+
 // Create an expression that returns a string when evaluated
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;

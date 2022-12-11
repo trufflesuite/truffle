@@ -11,5 +11,6 @@ const contract = (json = {}) => {
 };
 
 contract.version = truffleContractVersion;
+contract.__internal_tc = Contract;
 
 module.exports = contract;
