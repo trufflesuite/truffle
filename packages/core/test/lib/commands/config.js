@@ -11,12 +11,9 @@ describe("config", function () {
   let output = "";
   let memStream;
 
-  before(function () {
+  beforeEach(function () {
     config = createTestProject(path.join(__dirname, "../../sources/metacoin"));
     config.logger = { log: val => val && memStream.write(val) };
-  });
-
-  beforeEach(function () {
     memStream = new MemoryStream();
     memStream.on("data", data => {
       output += data.toString();
