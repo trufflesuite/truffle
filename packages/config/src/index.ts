@@ -6,6 +6,8 @@ import TruffleError from "@truffle/error";
 import originalRequire from "original-require";
 import { getInitialConfig, configProps } from "./configDefaults";
 import { EventManager } from "@truffle/events";
+import debugModule from "debug";
+const debug = debugModule("config");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
@@ -116,6 +118,7 @@ class TruffleConfig {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
           this[key] = merge(this[key], clone[key]);
         } else {
+          debug("setting key -- %o -- to -- %o", key, clone[key]);
           this[key] = clone[key];
         }
       } catch (e) {
@@ -161,6 +164,7 @@ class TruffleConfig {
   }
 
   public static detect(options: any = {}, filename?: string): TruffleConfig {
+    debug("callling Config.detect with filename -- %o", filename);
     let configFile;
     const configPath = options.config;
 
@@ -180,6 +184,7 @@ class TruffleConfig {
   }
 
   public static load(file: string, options: any = {}): TruffleConfig {
+    debug("calling Config.load with file -- %o", file);
     const workingDirectory = options.config
       ? process.cwd()
       : path.dirname(path.resolve(file));
@@ -187,6 +192,7 @@ class TruffleConfig {
     const config = new TruffleConfig(undefined, workingDirectory, undefined);
 
     const staticConfig = originalRequire(file);
+    debug("the static config is -- %o", staticConfig);
 
     config.merge(staticConfig);
     config.merge(options);
