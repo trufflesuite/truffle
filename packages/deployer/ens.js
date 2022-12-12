@@ -52,26 +52,22 @@ class ENS {
     //is supposed to be the "default resolver"; I'm not sure what that means,
     //but I figure using the resolver for "addr.reverse" ought to suffice,
     //right?  So let's set up a resolver for it.
-    const reverseResolutionSpecialName = "addr.reverse";
-    debug("made it here");
     //but in order to set its resolver, we first have to set its owner.
-    await this.setNameOwner({ from, name: reverseResolutionSpecialName });
-    debug("owner set");
+    await this.setNameOwner({ from, name: "addr.reverse" });
     //now we can actually set the resolver
     const { resolverAddress } = await this.ensureResolverExists({
       from,
-      name: reverseResolutionSpecialName
+      name: "addr.reverse"
     });
     debug("resolver set: %s", resolverAddress);
-    //...but wait!  we need it to be owned by the registry, not by us.
-    //(otherwise the deployment will revert.)  so, let's hand over
-    //ownership to the registry.
-    await this.alienateNameOwner({
+    //...but wait!  we need it to be owned by the registry (or 0), not by us.
+    //(otherwise the deployment will revert.)  so, let's hand over ownership to
+    //the registry.
+    await this.updateNameOwner({
       from,
-      owner: registryAddress,
-      name: reverseResolutionSpecialName
+      newOwner: registryAddress,
+      name: "addr.reverse"
     });
-    debug("owner alienated");
     //now we can do the deployment!
     const reverseRegistrar = await ReverseRegistrar.new(
       registryAddress,
@@ -80,33 +76,24 @@ class ENS {
         from
       }
     );
-    debug("deployed");
     //except, we're not done... we need to transfer ownership from the registry
     //to the reverse registrar.
     //(if there were a previous reverse registrar, this would happen automatically,
     //but there wasn't, so it doesn't.)
-    //so, first let's claim the name for ourself again
-    await this.setNameOwner({ from, name: reverseResolutionSpecialName });
-    debug("reclaimed");
-    //and now let's give it away again
-    await this.alienateNameOwner({
+    await this.updateNameOwner({
       from,
-      owner: reverseRegistrar.address,
-      name: reverseResolutionSpecialName
+      newOwner: reverseRegistrar.address,
+      name: "addr.reverse"
     });
-    debug("re-alienated");
+    //and we're done!
   }
 
   async ensureResolverExists({ from, name }) {
     // See if the resolver is set, if not then set it
-    debug("getting resolver");
     const resolverAddress = await this.ensjs.name(name).getResolver();
-    debug("got resolver");
     // names with no set resolver have 0x0 returned
     if (resolverAddress !== "0x0000000000000000000000000000000000000000") {
-      debug("getting addr");
       const resolvedAddress = await this.ensjs.name(name).getAddress("ETH");
-      debug("got addr");
       return { resolvedAddress, resolverAddress };
     }
     // deploy a resolver if one isn't set
@@ -116,11 +103,8 @@ class ENS {
 
     let registryAddress = this.determineENSRegistryAddress();
 
-    debug("deploying resolver");
     const publicResolver = await PublicResolver.new(registryAddress, { from });
-    debug("deployed; setting resolver");
     await this.ensjs.name(name).setResolver(publicResolver.address, { from });
-    debug("set resolver");
     return { resolvedAddress: null, resolverAddress: publicResolver.address };
   }
 
@@ -185,33 +169,29 @@ class ENS {
     }
   }
 
-  //this method assumes that the current owner is `from`,
-  //and sets the new owner to be `owner`.
-  async alienateNameOwner({ name, from, owner }) {
-    //setNameOwner goes down the tree, from top to bottom.
-    //here, however, we have to go *up* the tree.
-    //as such, we are going to process the labels in order, rather
-    //than in reverse order.
+  //this method assumes that from owns the parent!
+  //it won't work otherwise!
+  async updateNameOwner({ name, from, newOwner }) {
+    //this method does *not* walk the tree.
+    //it only updates this individual entry.
 
-    let remaining = name;
-    while (remaining !== "") {
-      let label, suffix;
-      const dotIndex = remaining.indexOf("."); //find the first dot
-      if (dotIndex !== -1) {
-        label = remaining.slice(0, dotIndex); //everything before the dot
-        suffix = remaining.slice(dotIndex + 1); //everything after the dot
-      } else {
-        label = remaining;
-        suffix = "";
-      }
-      await this.devRegistry.setSubnodeOwner(
-        suffix !== "" ? hash(suffix) : "0x0",
-        sha3(label),
-        owner,
-        { from }
-      );
-      remaining = suffix;
+    let label, suffix;
+
+    const dotIndex = name.indexOf("."); //find the first dot
+    if (dotIndex !== -1) {
+      label = name.slice(0, dotIndex); //everything before the dot
+      suffix = name.slice(dotIndex + 1); //everything after the dot
+    } else {
+      label = name;
+      suffix = "";
     }
+
+    await this.devRegistry.setSubnodeOwner(
+      suffix !== "" ? hash(suffix) : "0x0",
+      sha3(label),
+      newOwner,
+      { from }
+    );
   }
 
   parseAddress(addressOrContract) {
