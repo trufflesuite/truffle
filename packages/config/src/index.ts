@@ -1,6 +1,5 @@
 import path from "path";
 import merge from "lodash/merge";
-import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";
 import TruffleError from "@truffle/error";
@@ -187,10 +186,6 @@ class TruffleConfig {
 
     const config = new TruffleConfig(undefined, workingDirectory, undefined);
 
-    // The require-nocache module used to do this for us, but
-    // it doesn't bundle very well. So we've pulled it out ourselves.
-    //@ts-ignore
-    delete require.cache[Module._resolveFilename(file, module)];
     const staticConfig = originalRequire(file);
 
     config.merge(staticConfig);
