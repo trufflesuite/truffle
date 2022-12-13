@@ -1,3 +1,4 @@
+const debug = require("debug")("deployer:ens");
 const { getEnsAddress, default: ENSJS } = require("@ensdomains/ensjs");
 const contract = require("@truffle/contract");
 const { sha3 } = require("web3-utils");
@@ -34,7 +35,57 @@ class ENS {
     this.ens.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
     this.setENSJS();
+    await this.deployNewDevReverseRegistrar(from);
     return ensRegistry;
+  }
+
+  //this method should only be called when using a dev registry!
+  //do not call it otherwise!
+  async deployNewDevReverseRegistrar(from) {
+    const registryAddress = this.determineENSRegistryAddress();
+    debug("from: %s", from);
+    debug("registryAddress: %s", registryAddress);
+    const ReverseRegistrarArtifact = require("./builtContracts/ReverseRegistrar");
+    const ReverseRegistrar = contract(ReverseRegistrarArtifact);
+    ReverseRegistrar.setProvider(this.provider);
+    //note: the resolver address we're supposed to pass in to the constructor
+    //is supposed to be the "default resolver"; I'm not sure what that means,
+    //but I figure using the resolver for "addr.reverse" ought to suffice,
+    //right?  So let's set up a resolver for it.
+    //but in order to set its resolver, we first have to set its owner.
+    await this.setNameOwner({ from, name: "addr.reverse" });
+    //now we can actually set the resolver
+    const { resolverAddress } = await this.ensureResolverExists({
+      from,
+      name: "addr.reverse"
+    });
+    debug("resolver set: %s", resolverAddress);
+    //...but wait!  we need it to be owned by the registry (or 0), not by us.
+    //(otherwise the deployment will revert.)  so, let's hand over ownership to
+    //the registry.
+    await this.updateNameOwner({
+      from,
+      newOwner: registryAddress,
+      name: "addr.reverse"
+    });
+    //now we can do the deployment!
+    const reverseRegistrar = await ReverseRegistrar.new(
+      registryAddress,
+      resolverAddress,
+      {
+        from
+      }
+    );
+    //except, we're not done... we need to transfer ownership from the registry
+    //to the reverse registrar.
+    //(if there were a previous reverse registrar, this would happen automatically,
+    //but there wasn't, so it doesn't.)
+    await this.updateNameOwner({
+      from,
+      newOwner: reverseRegistrar.address,
+      name: "addr.reverse"
+    });
+    //and we're done!
   }
 
   async ensureResolverExists({ from, name }) {
@@ -43,7 +94,7 @@ class ENS {
     // names with no set resolver have 0x0 returned
     if (resolverAddress !== "0x0000000000000000000000000000000000000000") {
       const resolvedAddress = await this.ensjs.name(name).getAddress("ETH");
-      return { resolvedAddress };
+      return { resolvedAddress, resolverAddress };
     }
     // deploy a resolver if one isn't set
     const PublicResolverArtifact = require("./builtContracts/PublicResolver");
@@ -54,7 +105,7 @@ class ENS {
 
     const publicResolver = await PublicResolver.new(registryAddress, { from });
     await this.ensjs.name(name).setResolver(publicResolver.address, { from });
-    return { resolvedAddress: null };
+    return { resolvedAddress: null, resolverAddress: publicResolver.address };
   }
 
   async setAddress(name, addressOrContract, { from }) {
@@ -116,6 +167,31 @@ class ENS {
       );
       builtName = label.concat(`.${builtName}`);
     }
+  }
+
+  //this method assumes that from owns the parent!
+  //it won't work otherwise!
+  async updateNameOwner({ name, from, newOwner }) {
+    //this method does *not* walk the tree.
+    //it only updates this individual entry.
+
+    let label, suffix;
+
+    const dotIndex = name.indexOf("."); //find the first dot
+    if (dotIndex !== -1) {
+      label = name.slice(0, dotIndex); //everything before the dot
+      suffix = name.slice(dotIndex + 1); //everything after the dot
+    } else {
+      label = name;
+      suffix = "";
+    }
+
+    await this.devRegistry.setSubnodeOwner(
+      suffix !== "" ? hash(suffix) : "0x0",
+      sha3(label),
+      newOwner,
+      { from }
+    );
   }
 
   parseAddress(addressOrContract) {
