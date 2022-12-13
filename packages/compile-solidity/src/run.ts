@@ -1,3 +1,4 @@
+/* eslint-env node, browser */
 import { zeroLinkReferences, formatLinkReferences } from "./shims";
 import debugModule from "debug";
 const debug = debugModule("compile:run");
@@ -250,7 +251,7 @@ async function invokeCompiler({ compilerInput, options, solc }): Promise<{
 
   // in the browser, compile in a worker and return the result
   // @ts-ignore
-  if (window !== undefined) {
+  if (typeof window !== "undefined") {
     const supplier = new CompilerSupplier(supplierOptions);
     const { soljson } = await supplier.loadSoljson();
     debug(
