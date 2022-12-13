@@ -24,7 +24,7 @@ let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 chai.use(require("./assertions").default);
 
 type CreateInTestDebugFunction = (options: {
-  mochaRunner: any;
+  mochaRunner: Promise<unknown>;
   config: Config;
   compilations: Compilation[];
 }) => (operation: any) => any;
@@ -96,7 +96,7 @@ export const Test = {
     // do this upfront so that the promise is available
     // immediately, even though mocha.run happens at the very
     // end of this setup.
-    let setMochaRunner: (mochaRunner: any) => void;
+    let setMochaRunner: (mochaRunner: unknown) => void;
     this.mochaRunner = new Promise(resolve => {
       setMochaRunner = resolve;
     });
