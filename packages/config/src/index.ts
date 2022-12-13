@@ -1,12 +1,13 @@
 import path from "path";
 import merge from "lodash/merge";
-import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";
 import TruffleError from "@truffle/error";
 import originalRequire from "original-require";
 import { getInitialConfig, configProps } from "./configDefaults";
 import { EventManager } from "@truffle/events";
+import debugModule from "debug";
+const debug = debugModule("config");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
@@ -117,6 +118,7 @@ class TruffleConfig {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
           this[key] = merge(this[key], clone[key]);
         } else {
+          debug("setting key -- %o -- to -- %o", key, clone[key]);
           this[key] = clone[key];
         }
       } catch (e) {
@@ -162,6 +164,7 @@ class TruffleConfig {
   }
 
   public static detect(options: any = {}, filename?: string): TruffleConfig {
+    debug("callling Config.detect with filename -- %o", filename);
     let configFile;
     const configPath = options.config;
 
@@ -181,17 +184,15 @@ class TruffleConfig {
   }
 
   public static load(file: string, options: any = {}): TruffleConfig {
+    debug("calling Config.load with file -- %o", file);
     const workingDirectory = options.config
       ? process.cwd()
       : path.dirname(path.resolve(file));
 
     const config = new TruffleConfig(undefined, workingDirectory, undefined);
 
-    // The require-nocache module used to do this for us, but
-    // it doesn't bundle very well. So we've pulled it out ourselves.
-    //@ts-ignore
-    delete require.cache[Module._resolveFilename(file, module)];
     const staticConfig = originalRequire(file);
+    debug("the static config is -- %o", staticConfig);
 
     config.merge(staticConfig);
     config.merge(options);

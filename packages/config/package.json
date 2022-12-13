@@ -25,6 +25,7 @@
     "@truffle/events": "^0.1.19",
     "@truffle/provider": "^0.2.64",
     "conf": "^10.1.2",
+    "debug": "^4.3.1",
     "find-up": "^2.1.0",
     "lodash": "^4.17.21",
     "original-require": "^1.0.1"
