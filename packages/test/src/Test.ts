@@ -24,7 +24,7 @@ let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 chai.use(require("./assertions").default);
 
 type CreateInTestDebugFunction = (options: {
-  mochaRunner: any;
+  mochaRunner: Promise<unknown>;
   config: Config;
   compilations: Compilation[];
 }) => (operation: any) => any;
@@ -89,6 +89,17 @@ export const Test = {
     };
 
     const mocha = this.createMocha(config);
+
+    // set up a promise on this instance to resolve to
+    // Mocha's "runner" returned by `mocha.run(...)`.
+    //
+    // do this upfront so that the promise is available
+    // immediately, even though mocha.run happens at the very
+    // end of this setup.
+    let setMochaRunner: (mochaRunner: unknown) => void;
+    this.mochaRunner = new Promise(resolve => {
+      setMochaRunner = resolve;
+    });
 
     const jsTests = config.test_files.filter((file: string) => {
       return path.extname(file) !== ".sol";
@@ -177,10 +188,14 @@ export const Test = {
     });
 
     return new Promise(resolve => {
-      this.mochaRunner = mocha.run((failures: number) => {
+      const mochaRunner = mocha.run((failures: number) => {
         config.logger.warn = warn;
         resolve(failures);
       });
+
+      // finish setting up the mocha runner so that the
+      // previously-made promise resolves.
+      setMochaRunner(mochaRunner);
     });
   },
 
