@@ -1,9 +1,9 @@
+/* eslint-env node, browser */
 import path from "path";
 import fs from "fs";
 import semver from "semver";
 import { StrategyOptions } from "./types";
 import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
-
 const defaultSolcVersion = "0.5.16";
 
 type CompilerSupplierConstructorArgs = {
@@ -13,7 +13,7 @@ type CompilerSupplierConstructorArgs = {
     docker?: boolean;
     compilerRoots?: string[];
     dockerTagsUrl?: string;
-    spawn: any;
+    spawn?: any;
   };
   cache?: string;
 };
@@ -45,12 +45,12 @@ export class CompilerSupplier {
 
   getStrategy() {
     const userSpecification = this.version;
-
     let strategy: CompilerSupplierStrategy;
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     let useSpecifiedLocal: boolean | string | undefined;
-    if (!userSpecification) {
+    // don't attempt file system access in browser environment
+    if (typeof window === "undefined") {
       useSpecifiedLocal =
         userSpecification &&
         (fs.existsSync(userSpecification) ||

@@ -8,10 +8,11 @@ import Config from "@truffle/config";
 const config = Config.default();
 let versionRangeOptions = {
   events: config.events,
-  solcConfig: config.compilers.solc
+  solcConfig: config.compilers.solc,
+  cache: "fileSystem"
 };
 const instance = new LoadingStrategies.VersionRange(versionRangeOptions);
-let fileName, expectedResult;
+let fileName: string, expectedResult: any;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
   "soljson-v0.4.23+commit.1534a40d.js",
@@ -105,32 +106,32 @@ describe("VersionRange loading strategy", () => {
 
     describe("when a version constraint is specified", () => {
       beforeEach(() => {
-        sinon.stub(instance, "getAndCacheSolcByUrl");
-        sinon.stub(instance.cache, "has").returns(false);
+        sinon.stub(instance, "getAndCacheSoljsonByUrl");
+        sinon.stub(instance.cache!, "has").returns(false);
       });
       afterEach(() => {
-        unStub(instance, "getAndCacheSolcByUrl");
-        unStub(instance.cache, "has");
+        unStub(instance, "getAndCacheSoljsonByUrl");
+        unStub(instance.cache!, "has");
       });
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
         await instance.getSolcFromCacheOrUrl("^0.5.0");
         assert.isTrue(
           // @ts-ignore
-          instance.getAndCacheSolcByUrl.calledWith(
+          instance.getAndCacheSoljsonByUrl.calledWith(
             "soljson-v0.5.4+commit.9549d8ff.js"
           ),
-          "getAndCacheSolcByUrl not called with the compiler file name"
+          "getAndCacheSoljsonByUrl not called with the compiler file name"
         );
       });
     });
 
     describe("when the version is cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "has").returns(true);
+        sinon.stub(instance.cache!, "has").returns(true);
       });
       afterEach(() => {
-        unStub(instance.cache, "has");
+        unStub(instance.cache!, "has");
       });
 
       it("calls getCachedSolcByFileName", async () => {
@@ -146,13 +147,15 @@ describe("VersionRange loading strategy", () => {
 
     describe("when the version is not cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "has").returns(false);
-        sinon.stub(instance.cache, "add");
-        sinon.stub(instance, "compilerFromString").returns("compiler");
+        sinon.stub(instance.cache!, "has").returns(false);
+        sinon.stub(instance.cache!, "add");
+        sinon
+          .stub(instance, "compilerFromString")
+          .returns(Promise.resolve("compiler"));
       });
       afterEach(() => {
-        unStub(instance.cache, "has");
-        unStub(instance.cache, "add");
+        unStub(instance.cache!, "has");
+        unStub(instance.cache!, "add");
         unStub(instance, "compilerFromString");
       });
 
@@ -178,16 +181,16 @@ describe("VersionRange loading strategy", () => {
       sinon
         .stub(instance, "compilerFromString")
         .withArgs("requestReturn")
-        .returns("success");
+        .returns(Promise.resolve("success"));
     });
     afterEach(() => {
       unStub(axios, "get");
-      unStub(instance.cache, "add");
+      unStub(instance.cache!, "add");
       unStub(instance, "compilerFromString");
     });
 
     it("calls add with the response and the file name", async () => {
-      const result = await instance.getAndCacheSolcByUrl(fileName, 0);
+      const result = await instance.getAndCacheSoljsonByUrl(fileName, 0);
       assert.isTrue(
         // @ts-ignore
         instance.cache.add.calledWith("requestReturn", "someSolcFile")
@@ -216,10 +219,10 @@ describe("VersionRange loading strategy", () => {
 
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
-      sinon.stub(instance.cache, "list").returns(compilerFileNames);
+      sinon.stub(instance.cache!, "list").returns(compilerFileNames);
     });
     afterEach(() => {
-      unStub(instance.cache, "list");
+      unStub(instance.cache!, "list");
     });
 
     describe("when a cached version of the compiler is present", () => {
@@ -246,11 +249,11 @@ describe("VersionRange loading strategy", () => {
   describe("getCachedSolcByVersionRange(version)", () => {
     beforeEach(() => {
       expectedResult = "soljson-v0.4.23+commit.1534a40d.js";
-      sinon.stub(instance.cache, "list").returns(compilerFileNames);
+      sinon.stub(instance.cache!, "list").returns(compilerFileNames);
       sinon.stub(instance, "getCachedSolcByFileName");
     });
     afterEach(() => {
-      unStub(instance.cache, "list");
+      unStub(instance.cache!, "list");
       unStub(instance, "getCachedSolcByFileName");
     });
 
