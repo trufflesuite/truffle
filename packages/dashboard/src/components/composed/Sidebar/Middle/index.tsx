@@ -1,5 +1,5 @@
 import { Navbar, Badge, Indicator } from "@mantine/core";
-import { Zap, Archive, Aperture } from "react-feather";
+import { Zap, Archive, Aperture, Settings } from "react-feather";
 import NavButton from "src/components/composed/Sidebar/Middle/NavButton";
 import { useDash } from "src/hooks";
 
@@ -7,6 +7,7 @@ function Middle(): JSX.Element {
   const {
     state: { providerMessages }
   } = useDash()!;
+
   const numRequests = providerMessages.size;
   const featherIconProps = { size: 18 };
 
@@ -39,6 +40,11 @@ function Middle(): JSX.Element {
             <Zap {...featherIconProps} />
           </Indicator>
         }
+      />
+      <NavButton
+        label="Settings"
+        to="/Settings"
+        icon={<Settings {...featherIconProps} />}
       />
       <NavButton
         label="Contracts"

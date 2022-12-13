@@ -117,6 +117,7 @@ export class DashboardServer {
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
+      _res.send();
     });
 
     this.expressApp.use(express.static(this.frontendPath));
