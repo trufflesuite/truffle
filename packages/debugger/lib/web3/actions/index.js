@@ -7,6 +7,13 @@ export function init(provider, ensRegistryAddress) {
   };
 }
 
+export const WEB3_READY = "WEB3_READY";
+export function web3Ready() {
+  return {
+    type: WEB3_READY
+  };
+}
+
 export const INSPECT = "INSPECT_TRANSACTION";
 export function inspect(txHash) {
   return {

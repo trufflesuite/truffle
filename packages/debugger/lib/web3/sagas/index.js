@@ -133,8 +133,10 @@ function* fetchTransactionInfo(adapter, { txHash }) {
 }
 
 export function* inspectTransaction(txHash) {
+  debug("putting");
   yield put(actions.inspect(txHash));
 
+  debug("waiting");
   let action = yield take([actions.RECEIVE_TRACE, actions.ERROR_WEB3]);
   debug("action %o", action);
 
@@ -308,6 +310,7 @@ function* receiveStorageErrorHandler() {
 
 export function* init(provider, ensRegistryAddress) {
   yield put(actions.init(provider, ensRegistryAddress));
+  yield take(actions.WEB3_READY);
 }
 
 export function* saga() {
@@ -325,6 +328,7 @@ export function* saga() {
     adapter
   );
   yield takeEvery(actions.ENS_RESOLVE, performEnsResolution, adapter);
+  yield put(actions.web3Ready());
 }
 
 export default prefixName("web3", saga);
