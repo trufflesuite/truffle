@@ -6,7 +6,7 @@ import * as validate from "./schema/validate";
 const toposort = require("toposort");
 
 const Solver = {
-  read: async function (filepath: string): Promise<any> {
+  async read(filepath: string): Promise<any> {
     const declarations: any = loadAll(await readFile(filepath, "utf8"));
     // loadAll returns an array, we just want the first item; we will assume a user only has one declaration per project
     const valid = validate.validate(declarations[0]);
@@ -23,10 +23,7 @@ const Solver = {
       throw new Error("Invalid declaration file");
     }
   },
-  sort: async function (
-    dependencies: Array<string>,
-    deploymentSteps: DeploymentSteps
-  ) {
+  async sort(dependencies: Array<string>, deploymentSteps: DeploymentSteps) {
     let sortedSteps: Array<any> = [];
     const sortedContracts = toposort(dependencies);
     // let's rearrange our deploymentSteps so that dependencies are added first
@@ -39,7 +36,7 @@ const Solver = {
     return sortedSteps;
   },
   // put together a list of contracts that need to be deployed, with relevant information for the deployment
-  orchestrate: async function (filepath: string): Promise<DeploymentSteps> {
+  async orchestrate(filepath: string): Promise<DeploymentSteps> {
     //TODO change this any to a type
     let declarations: Array<any> = await this.read(filepath);
     let deploymentSteps: DeploymentSteps = [];
