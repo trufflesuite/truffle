@@ -15,7 +15,12 @@ import Config from "@truffle/config";
 export const testBlockGasLimit = 7000000;
 export const testDefaultTxGasLimit = testBlockGasLimit;
 
-export async function prepareContracts(provider, sources = {}, migrations) {
+export async function prepareContracts(
+  provider,
+  sources = {},
+  migrations,
+  enableEns
+) {
   let config = await createSandbox();
 
   const accounts = await new Web3(provider).eth.getAccounts();
@@ -41,6 +46,8 @@ export async function prepareContracts(provider, sources = {}, migrations) {
       }
     }
   };
+
+  config.ens = { enabled: enableEns };
 
   await addContracts(config, sources);
   let { contractNames, compilations: rawCompilations } = await compile(config);
