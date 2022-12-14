@@ -82,7 +82,7 @@ describe("truffle help [ @standalone ]", function () {
       const output = logger.contents();
       assert(
         output.includes(
-          "Error: please use below syntax to displaying help information"
+          "Error: please use the following syntax for accessing help information"
         )
       );
     }).timeout(20000);
@@ -92,7 +92,7 @@ describe("truffle help [ @standalone ]", function () {
       const output = logger.contents();
       assert(
         output.includes(
-          "Error: please use below syntax to displaying help information"
+          "Error: please use the following syntax for accessing help information"
         )
       );
     }).timeout(20000);

@@ -43,12 +43,16 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 let inputStrings = process.argv.slice(2);
 
 //check if user wants some help
-const helpNeeded = inputStrings.some(r => ["help", "--help"].indexOf(r) >= 0);
-
-if (helpNeeded) {
-  //check what help does user want
+if (inputStrings.length === 0) {
+  const { displayGeneralHelp } = require("./lib/command-utils");
+  displayGeneralHelp();
+  process.exit();
+} else if (
+  inputStrings.some(inputString => ["help", "--help"].includes(inputString))
+) {
+  //check what kind of help the user is looking for
   const { processHelpInput } = require("./lib/command-utils");
-  inputStrings = processHelpInput(inputStrings);
+  processHelpInput(inputStrings);
 }
 
 const {
