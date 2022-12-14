@@ -21,7 +21,7 @@
     "build": "tsc",
     "prepare": "yarn build",
     "start": "tsc --watch",
-    "test": "mocha ./test/current/test/* ./test/legacy/test/*"
+    "test": "mocha ./test/current/test/* ./test/legacy/test/* ./test/ens/test/*"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
