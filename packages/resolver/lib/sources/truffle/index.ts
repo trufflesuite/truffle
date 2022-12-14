@@ -73,7 +73,13 @@ export class Truffle implements ResolverSource {
         this.options.compilers
       );
       return { body: addressSource, filePath: importPath };
-    } else if (importPath === `truffle${path.sep}Console.sol`) {
+    }
+
+    // Match both Camel and Pascal casing for console.sol
+    if (
+      importPath === `truffle${path.sep}Console.sol` ||
+      importPath === `truffle${path.sep}console.sol`
+    ) {
       // calculating this in webpack env breaks
       let unbundledGanacheConsoleSol;
       // @ts-ignore
