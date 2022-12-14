@@ -5,6 +5,7 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
+const os = require("os");
 const vm = require("vm");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
@@ -347,8 +348,13 @@ class Console extends EventEmitter {
     });
 
     spawnedProcess.stdout.on("data", data => {
-      // remove extra newline in `truffle develop` console
-      console.log(data.toString().trim());
+      // convert buffer to string
+      data = data.toString();
+      // workaround: remove extra newline in `truffle develop` console
+      // truffle test, for some reason, appends a newline to the data
+      // it emits here.
+      if (data.endsWith(os.EOL)) data = data.slice(0, -os.EOL.length);
+      console.log(data);
     });
 
     return new Promise((resolve, reject) => {
