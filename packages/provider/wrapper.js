@@ -2,6 +2,11 @@ const debug = require("debug")("provider:wrapper"); // eslint-disable-line no-un
 const ProviderError = require("./error");
 
 function make1193ProviderRequest(provider) {
+  /*
+  NOTE: If truffle switches to use WebSockets instead of HTTP requests in the future
+        then we will need to keep separate requestId counters for .request and .send
+        methods to avoid the race condition on parallel requests.
+  */
   let requestId = 0;
   const modifiedRequest = async function ({ method, params }) {
     return await new Promise((accept, reject) => {
