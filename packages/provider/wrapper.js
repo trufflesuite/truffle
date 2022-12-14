@@ -5,7 +5,7 @@ function make1193ProviderRequest(provider) {
   /*
   NOTE: If truffle switches to use WebSockets instead of HTTP requests in the future
         then we will need to keep separate requestId counters for .request and .send
-        methods to avoid the race condition on parallel requests.
+        methods to avoid collision while generating requestIds on parallel requests.
   */
   let requestId = 0;
   const modifiedRequest = async function ({ method, params }) {
