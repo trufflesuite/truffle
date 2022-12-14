@@ -7,7 +7,6 @@ const { Truffle } = require("../dist/lib/sources/truffle");
 const resolver = new Truffle({});
 
 describe("truffle resolve", function () {
-
   describe("assertion contracts", () => {
     [
       "Assert",
@@ -24,6 +23,8 @@ describe("truffle resolve", function () {
       "AssertUint",
       "AssertUintArray",
       "SafeSend",
+      "console",
+      "Console"
     ].forEach(lib => {
       it(`resolves truffle/${lib}.sol`, async () => {
         const dependency = path.join("truffle", `${lib}.sol`);
@@ -32,7 +33,7 @@ describe("truffle resolve", function () {
           result.filePath.includes(dependency),
           `should have resovled 'truffle${path.sep}${lib}.sol'`
         );
-      })
-    })
+      });
+    });
   });
 });

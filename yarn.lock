@@ -3706,6 +3706,14 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
+"@ganache/console.log@0.2.0", "@ganache/console.log@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@ganache/console.log/-/console.log-0.2.0.tgz#32ea0df806ed735d61bd0537d7b7fc350e511479"
+  integrity sha512-+SNBUZzrbe4DE4F0jdl9SU8w3ek5k4cUE73ttUFweo8FaKEDQsMbFjZ3ZU0LM6QM/zCMqE7euSq0s/IlsYxf7A==
+  dependencies:
+    "@ganache/utils" "0.3.0"
+    ethereumjs-util "7.1.5"
+
 "@ganache/ethereum-address@0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@ganache/ethereum-address/-/ethereum-address-0.1.5.tgz#4b4994cf3b49b2f79bcd9fa9923f8217e956b99c"
@@ -3847,6 +3855,17 @@
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@ganache/utils/-/utils-0.1.5.tgz#45687a42adc37cefee3c4557837df2f9bbfab96e"
   integrity sha512-1lpNtRVsGLb2rHwNnbVQj4lTehrw4j3iLgXF5a5GNRKCx7ccqZRrPaMKmSgo0XjFME4YsFMO+de7ZBRzfmiqcQ==
+  dependencies:
+    emittery "0.10.0"
+    keccak "3.0.1"
+    seedrandom "3.0.5"
+  optionalDependencies:
+    "@trufflesuite/bigint-buffer" "1.1.9"
+
+"@ganache/utils@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@ganache/utils/-/utils-0.3.0.tgz#f95d7a4746d4e062febf3ce59f65f6ca1336be8a"
+  integrity sha512-cxoG8KQxkYPl71BPdKZihjVKqN2AE7WLXjU65BVOQ5jEYrUH3CWSxA9v7CCUJj4e0HoXFpVFIZ+1HRkiBKKiKg==
   dependencies:
     emittery "0.10.0"
     keccak "3.0.1"
@@ -13086,6 +13105,17 @@ ethereumjs-util@7.1.3:
     ethereum-cryptography "^0.1.3"
     rlp "^2.2.4"
 
+ethereumjs-util@7.1.5, ethereumjs-util@^7.1.5:
+  version "7.1.5"
+  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-7.1.5.tgz#9ecf04861e4fbbeed7465ece5f23317ad1129181"
+  integrity sha512-SDl5kKrQAudFBUe5OJM9Ac6WmMyYmXX/6sTmLZ3ffG2eY6ZIGBes3pEDxNN6V72WyOw4CPD5RomKdsa8DAAwLg==
+  dependencies:
+    "@types/bn.js" "^5.1.0"
+    bn.js "^5.1.2"
+    create-hash "^1.1.2"
+    ethereum-cryptography "^0.1.3"
+    rlp "^2.2.4"
+
 ethereumjs-util@^4.3.0:
   version "4.5.1"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-4.5.1.tgz#f4bf9b3b515a484e3cc8781d61d9d980f7c83bd0"
@@ -13164,17 +13194,6 @@ ethereumjs-util@^7.1.1, ethereumjs-util@^7.1.3, ethereumjs-util@^7.1.4:
   version "7.1.4"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-7.1.4.tgz#a6885bcdd92045b06f596c7626c3e89ab3312458"
   integrity sha512-p6KmuPCX4mZIqsQzXfmSx9Y0l2hqf+VkAiwSisW3UKUFdk8ZkAt+AYaor83z2nSi6CU2zSsXMlD80hAbNEGM0A==
-  dependencies:
-    "@types/bn.js" "^5.1.0"
-    bn.js "^5.1.2"
-    create-hash "^1.1.2"
-    ethereum-cryptography "^0.1.3"
-    rlp "^2.2.4"
-
-ethereumjs-util@^7.1.5:
-  version "7.1.5"
-  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-7.1.5.tgz#9ecf04861e4fbbeed7465ece5f23317ad1129181"
-  integrity sha512-SDl5kKrQAudFBUe5OJM9Ac6WmMyYmXX/6sTmLZ3ffG2eY6ZIGBes3pEDxNN6V72WyOw4CPD5RomKdsa8DAAwLg==
   dependencies:
     "@types/bn.js" "^5.1.0"
     bn.js "^5.1.2"

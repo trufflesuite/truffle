@@ -25,6 +25,8 @@ const truffleRequireDistDirectory = path.join(
   "dist"
 );
 
+const ganacheConsoleSol = require.resolve("@ganache/console.log/console.sol");
+
 const commandsEntries = commands.reduce((a, command) => {
   a[command] = path.join(
     __dirname,
@@ -175,7 +177,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      scrypt: "js-scrypt"
+      "scrypt": "js-scrypt"
     }
   },
 
@@ -212,6 +214,9 @@ module.exports = {
             "initSource"
           ),
           to: "initSource"
+        },
+        {
+          from: ganacheConsoleSol
         },
         {
           from: path.join(truffleLibraryDirectory, "Assert.sol")

@@ -5,6 +5,7 @@ const IPC = require("node-ipc").IPC;
 const Ganache = require("ganache");
 const path = require("path");
 const debug = require("debug");
+const util = require("util");
 
 /*
  * Loggers
@@ -201,8 +202,9 @@ class LifecycleMixin {
 
 // constructor - accepts options for Ganache
 class GanacheMixin {
-  constructor(options) {
+  constructor(options, ganacheConsoleLogger) {
     this.ganache = Ganache.server(options);
+    this.ganacheConsoleLogger = ganacheConsoleLogger;
   }
 
   // start Ganache and capture promise that resolves when ready
@@ -222,6 +224,15 @@ class GanacheMixin {
   connect(supervisor, socket) {
     this.ready.then(() => {
       supervisor.emit(socket, "truffle.ready");
+
+      // hook into ganache console.log events
+      this.ganache.provider.on("ganache:vm:tx:console.log", ({ logs }) => {
+        this.ganacheConsoleLogger.log(
+          // Format and colorize ganache log data which may or may not
+          // include a format string as the first argument.
+          util.formatWithOptions({ colors: true }, ...logs)
+        );
+      });
     });
   }
 
@@ -271,6 +282,7 @@ process.on("uncaughtException", ({ stack }) => {
  */
 const ipcLogger = new Logger();
 const ganacheLogger = new Logger();
+const ganacheConsoleLogger = new Logger();
 
 const supervisor = new Supervisor({
   appspace: "truffle.",
@@ -282,9 +294,13 @@ const supervisor = new Supervisor({
 ipcLogger.subscribe(ipcDebug);
 
 options.logger = { log: ganacheLogger.log.bind(ganacheLogger) };
+ganacheConsoleLogger.log = ganacheConsoleLogger.log.bind(ganacheConsoleLogger);
+const ganacheMixin = new GanacheMixin(options, ganacheConsoleLogger);
 
 supervisor.use(new LifecycleMixin());
-supervisor.use(new GanacheMixin(options));
+supervisor.use(ganacheMixin);
 supervisor.use(new LoggerMixin(ipcLogger, "truffle.ipc.log"));
 supervisor.use(new LoggerMixin(ganacheLogger, "truffle.ganache.log"));
+supervisor.use(new LoggerMixin(ganacheConsoleLogger, "truffle.solidity.log"));
+
 supervisor.start();

@@ -1,6 +1,3 @@
-import debugModule from "debug";
-const debug = debugModule("resolver");
-
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
@@ -16,7 +13,10 @@ export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, resolverOptions: ResolverOptions = {}) {
+  constructor(
+    options: any,
+    resolverOptions: ResolverOptions = { includeTruffleSources: true }
+  ) {
     expect.options(options, [
       "working_directory",
       "contracts_build_directory",
@@ -53,15 +53,16 @@ export class Resolver {
     import_path: string,
     search_path?: string
   ): ReturnType<typeof contract> {
-    let abstraction;
-    this.sources.forEach((source: ResolverSource) => {
+    for (const source of this.sources) {
       const result = source.require(import_path, search_path);
       if (result) {
-        abstraction = contract(result);
+        const abstraction = contract(result);
         provision(abstraction, this.options);
+        return abstraction;
       }
-    });
-    if (abstraction) return abstraction;
+    }
+
+    // exhausted sources and could not resolve
     throw new Error(
       "Could not find artifacts for " + import_path + " from any sources"
     );

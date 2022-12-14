@@ -17,7 +17,8 @@ module.exports = {
     );
     return {
       config,
-      cleanupSandboxDir: tempDir.removeCallback
+      cleanupSandboxDir: tempDir.removeCallback,
+      tempDirPath: path.join(tempDir.name, subPath)
     };
   },
 

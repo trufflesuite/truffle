@@ -28,6 +28,10 @@ export const getInitialConfig = ({
       }
     },
     verboseRpc: false,
+    solidityLog: {
+      displayPrefix: "",
+      preventConsoleLogMigration: false
+    },
     gas: null,
     gasPrice: null,
     maxFeePerGas: null,
@@ -93,6 +97,7 @@ export const configProps = ({
     network() {},
     networks() {},
     verboseRpc() {},
+    solidityLog() {},
     build() {},
     resolver() {},
     artifactor() {},

@@ -122,9 +122,7 @@ export const Test = {
 
     const accounts = await this.getAccounts(interfaceAdapter);
 
-    const testResolver = new Resolver(config, {
-      includeTruffleSources: true
-    });
+    const testResolver = new Resolver(config);
 
     const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,

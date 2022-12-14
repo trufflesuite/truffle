@@ -3,52 +3,65 @@ import TruffleConfig from "../dist";
 import { describe, it } from "mocha";
 
 describe("TruffleConfig unit tests", async () => {
-  describe("with", async () => {
-    let truffleConfig: TruffleConfig;
+  let truffleConfig: TruffleConfig;
 
-    beforeEach(() => {
+  describe("Defaults", async () => {
+    before(() => {
       truffleConfig = TruffleConfig.default();
     });
 
-    it("a simple object", async () => {
-      const expectedRandom = 42;
-      const expectedFoo = "bar";
-      const obj = {
-        random: expectedRandom,
-        foo: expectedFoo
+    it("solidityLog", () => {
+      const expectedSolidityLog = {
+        displayPrefix: "",
+        preventConsoleLogMigration: false
       };
-      const newConfig = truffleConfig.with(obj);
-      assert.equal(expectedRandom, newConfig.random);
-      assert.equal(expectedFoo, newConfig.foo);
+      assert.deepStrictEqual(truffleConfig.solidityLog, expectedSolidityLog);
     });
-
-    it("overwrites a known property", () => {
-      const expectedProvider = { a: "propertyA", b: "propertyB" };
-      const newConfig = truffleConfig.with({ provider: expectedProvider });
-      assert.deepEqual(expectedProvider, newConfig.provider);
-    });
-
-    it("ignores properties that throw", () => {
-      const expectedSurvivor = "BatMan";
-      const minefield = { who: expectedSurvivor };
-
-      const hits = ["boom", "pow", "crash", "zonk"];
-      hits.forEach(hit => {
-        Object.defineProperty(minefield, hit, {
-          get() {
-            throw new Error("BOOM!");
-          },
-          enumerable: true //must be enumerable
-        });
+  }),
+    describe("with", async () => {
+      beforeEach(() => {
+        truffleConfig = TruffleConfig.default();
       });
 
-      const newConfig = truffleConfig.with(minefield);
+      it("a simple object", async () => {
+        const expectedRandom = 42;
+        const expectedFoo = "bar";
+        const obj = {
+          random: expectedRandom,
+          foo: expectedFoo
+        };
+        const newConfig = truffleConfig.with(obj);
+        assert.strictEqual(expectedRandom, newConfig.random);
+        assert.strictEqual(expectedFoo, newConfig.foo);
+      });
 
-      //one survivor
-      assert.equal(expectedSurvivor, newConfig.who);
+      it("overwrites a known property", () => {
+        const expectedProvider = { a: "propertyA", b: "propertyB" };
+        const newConfig = truffleConfig.with({ provider: expectedProvider });
+        assert.deepStrictEqual(expectedProvider, newConfig.provider);
+      });
 
-      //these jokers shouldn't be included
-      hits.forEach(hit => assert.equal(undefined, newConfig[hit]));
+      it("ignores properties that throw", () => {
+        const expectedSurvivor = "BatMan";
+        const minefield = { who: expectedSurvivor };
+
+        const hits = ["boom", "pow", "crash", "zonk"];
+        hits.forEach(hit => {
+          Object.defineProperty(minefield, hit, {
+            get() {
+              throw new Error("BOOM!");
+            },
+            enumerable: true //must be enumerable
+          });
+        });
+
+        const newConfig = truffleConfig.with(minefield);
+
+        //one survivor
+        assert.strictEqual(expectedSurvivor, newConfig.who);
+
+        //these jokers shouldn't be included
+        hits.forEach(hit => assert.strictEqual(undefined, newConfig[hit]));
+      });
     });
-  });
 });
