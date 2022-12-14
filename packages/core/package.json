@@ -54,6 +54,7 @@
     "@truffle/spinners": "^0.2.3",
     "@truffle/test": "^0.1.4",
     "@truffle/workflow-compile": "^4.0.43",
+    "JSONStream": "^1.3.5",
     "address": "^1.1.2",
     "chai": "^4.2.0",
     "colors": "1.4.0",
