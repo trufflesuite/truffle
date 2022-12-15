@@ -1,6 +1,43 @@
 const debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
 const ProviderError = require("./error");
 
+function make1193ProviderRequest(provider) {
+  /*
+  NOTE: If truffle switches to use WebSockets instead of HTTP requests in the future
+        then we will need to keep separate requestId counters for .request and .send
+        methods to avoid collision while generating requestIds on parallel requests.
+  */
+  let requestId = 0;
+  const modifiedRequest = async function ({ method, params }) {
+    return await new Promise((accept, reject) => {
+      provider.send(
+        {
+          jsonrpc: "2.0",
+          id: ++requestId,
+          method,
+          params
+        },
+        (error, response) => {
+          if (error) {
+            return reject(error);
+          }
+          if (response.error) {
+            const error = new Error(response.error.message);
+            error.code = response.error.code;
+            if (response.error.data) {
+              error.data = response.error.data;
+            }
+            return reject(error);
+          }
+          const { result: res } = response;
+          accept(res);
+        }
+      );
+    });
+  };
+  return modifiedRequest.bind(provider);
+}
+
 module.exports = {
   /*
    * Web3.js Transport Wrapper
@@ -31,6 +68,11 @@ module.exports = {
     if (provider.sendAsync) {
       const originalSendAsync = provider.sendAsync.bind(provider);
       provider.sendAsync = this.send(originalSendAsync, preHook, postHook);
+    }
+
+    // EIP-1193 provider wrapping
+    if (provider.request === undefined && provider.send !== undefined) {
+      provider.request = make1193ProviderRequest(provider);
     }
     /* mark as wrapped */
     provider._alreadyWrapped = true;
