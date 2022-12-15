@@ -262,7 +262,20 @@ class Console extends EventEmitter {
           path.join(this.options.contracts_build_directory, file),
           "utf8"
         );
-        jsonBlobs.push(JSON.parse(body));
+        const json = JSON.parse(body);
+        // hack to prevent a warning about the console.sol contract which we
+        // don't load into the environment - we only want to do this when it is
+        // Truffle's console.sol, that is why we check the sources keys
+        if (
+          !Object.keys(JSON.parse(json.metadata).sources).some(source => {
+            return (
+              source === "truffle/console.sol" ||
+              source === "truffle/Console.sol"
+            );
+          })
+        ) {
+          jsonBlobs.push(json);
+        }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
       }
