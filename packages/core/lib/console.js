@@ -262,7 +262,23 @@ class Console extends EventEmitter {
           path.join(this.options.contracts_build_directory, file),
           "utf8"
         );
-        jsonBlobs.push(JSON.parse(body));
+        const json = JSON.parse(body);
+        const metadata = JSON.parse(json.metadata);
+        const sources = Object.keys(metadata.sources);
+        // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+        // user contracts named console.log will be imported, and a warning will be issued.
+        if (
+          sources.length > 1 ||
+          (sources.length === 1 &&
+            !sources.some(source => {
+              return (
+                source === "truffle/console.sol" ||
+                source === "truffle/Console.sol"
+              );
+            }))
+        ) {
+          jsonBlobs.push(json);
+        }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
       }
