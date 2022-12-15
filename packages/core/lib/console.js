@@ -263,16 +263,17 @@ class Console extends EventEmitter {
           "utf8"
         );
         const json = JSON.parse(body);
-        // hack to prevent a warning about the console.sol contract which we
-        // don't load into the environment - we only want to do this when it is
-        // Truffle's console.sol, that is why we check the sources keys
+        const metadata = JSON.parse(json.metadata);
+        // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+        // user contracts named console.log will be imported, and a warning will be issued.
         if (
-          !Object.keys(JSON.parse(json.metadata).sources).some(source => {
+          !Object.keys(metadata.sources).some(source => {
             return (
               source === "truffle/console.sol" ||
               source === "truffle/Console.sol"
             );
-          })
+          }) &&
+          Object.keys(metadata.sources).length === 1
         ) {
           jsonBlobs.push(json);
         }
