@@ -1,23 +1,37 @@
 # @truffle/config
-Utility for interacting with truffle-config.js files
+
+Utility for interacting with truffle-config.js files.
+
+## Semver notice
+
+:warning: This package does not follow semver recommendations as it is a
+Truffle internal module.
 
 ### Usage
- ```javascript
+
+```javascript
 const TruffleConfig = require("@truffle/config");
 ```
 
 #### Instantiate default TruffleConfig object
- ```javascript
+
+```javascript
 const newConfig = TruffleConfig.default();
 ```
 
 #### Instantiate custom TruffleConfig object
- ```javascript
-const customConfig = new TruffleConfig("/truffleDirPath", "/currentWorkingDirPath", networkObj);
+
+```javascript
+const customConfig = new TruffleConfig(
+  "/truffleDirPath",
+  "/currentWorkingDirPath",
+  networkObj
+);
 ```
 
 #### Config.detect()
- ```javascript
+
+```javascript
 // find config file & return new TruffleConfig object with config file settings (cwd)
 const truffleConfig = TruffleConfig.detect();
 
@@ -26,4 +40,5 @@ const truffleConfig = TruffleConfig.detect({ workingDirectory: "./some/Path" });
 
 // find & return new TruffleConfig object from custom named config
 const customTruffleConfig = TruffleConfig.detect({}, "./customConfig.js");
- ```
+`` `
+```

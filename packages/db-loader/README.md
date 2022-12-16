@@ -1,6 +1,12 @@
 # `@truffle/db-loader`
 
-A loader for importing Truffle Db that does not throw an error when it is not installed.
+A loader for importing Truffle Db that does not throw an error when it is not
+installed.
+
+## Semver notice
+
+:warning: This package does not follow semver recommendations as it is a
+Truffle internal module.
 
 ## Contents
 
