@@ -21,7 +21,7 @@ const validTruffleCommands = require("./commands/commands");
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;
 
-function filterInputOptions(words) {
+function hasMutuallyExclusiveOptions(words) {
   if (words.includes("--url")) {
     const message = "url option is not supported within Truffle REPL";
     return makeIIFE(`ℹ️ : ${message}`);
@@ -50,8 +50,8 @@ const processInput = (input, allowedCommands) => {
 
     const normalizedCommand = cmd.toLowerCase();
     if (validTruffleCommands.includes(normalizedCommand)) {
-      const filteredOptionsMessage = filterInputOptions(words);
-      if (filteredOptionsMessage !== undefined) return filteredOptionsMessage;
+      const errorMessage = hasMutuallyExclusiveOptions(words);
+      if (errorMessage) return errorMessage;
 
       return allowedCommands.includes(normalizedCommand)
         ? words.slice(1).join(" ")
@@ -61,8 +61,8 @@ const processInput = (input, allowedCommands) => {
   }
 
   if (validTruffleCommands.includes(words[0].toLowerCase())) {
-    const filteredOptionsMessage = filterInputOptions(words);
-    if (filteredOptionsMessage !== undefined) return filteredOptionsMessage;
+    const errorMessage = hasMutuallyExclusiveOptions(words);
+    if (errorMessage) return errorMessage;
   }
 
   // an expression
