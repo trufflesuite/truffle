@@ -12,7 +12,8 @@ if ! yarn semver -r ">=12" $NODE_VERSION; then
 fi
 
 if [ "$GETH" == true ]; then
-  mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
+  # mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
+  mocha --timeout 50000 test/scenarios/stacktracing/stacktrace.js
 elif [ "$FABRICEVM" == true ]; then
   mocha --timeout 50000 --grep @fabric-evm --colors $@
 elif [ "$COVERAGE" == true ]; then

@@ -41,8 +41,8 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [14.x, 16.x, 18.x]
-        env: [GETH=true, PACKAGES=true, INTEGRATION=true]
+        node-version: [18.x]
+        env: [GETH=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
