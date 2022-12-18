@@ -5,12 +5,12 @@ const BN = require("bn.js");
 import Ganache from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
-import { InterfaceAdapter, Web3BaseProvider } from "../lib/adapter/types";
+import { InterfaceAdapter, Provider } from "../lib/adapter/types";
 
 const genesisBlockTime = new Date();
 
 function prepareGanache(quorumEnabled: boolean): {
-  provider: Web3BaseProvider;
+  provider: Provider;
   interfaceAdapter: InterfaceAdapter;
 } {
   const provider = Ganache.provider({
@@ -21,7 +21,7 @@ function prepareGanache(quorumEnabled: boolean): {
     miner: {
       instamine: "strict"
     }
-  }) as unknown as Web3BaseProvider;
+  }) as unknown as Provider;
   const interfaceAdapter = createInterfaceAdapter({
     provider: provider as Provider,
     networkType: quorumEnabled ? "quorum" : "ethereum"
