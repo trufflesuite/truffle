@@ -7,7 +7,7 @@ const CodeUtils = require("@truffle/code-utils");
 const { Compile } = require("../index");
 const fs = require("fs");
 
-describe.skip("vyper compiler", function () {
+describe("vyper compiler", function () {
   this.timeout(20000);
 
   const defaultSettings = {

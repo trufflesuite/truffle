@@ -64,7 +64,7 @@ describe("ABIEncoderV2", function () {
       );
     });
 
-    it.only("should be capable of returning structs from calls", async function () {
+    it("should be capable of returning structs from calls", async function () {
       const returnedUser = await userDirectory.user(user.addr);
       console.log(returnedUser);
 
