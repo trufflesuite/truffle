@@ -77,7 +77,6 @@ describe("Provider", function () {
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
-        console.error(error);
         assert.fail("There was an error testing the provider.");
       }
     }
@@ -91,7 +90,6 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(provider);
     } catch (error) {
-      console.error(error);
       assert.fail("There was an error testing the provider.");
     }
   });
