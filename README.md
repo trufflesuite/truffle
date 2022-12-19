@@ -56,7 +56,7 @@ We welcome pull requests. To get started, just fork this repo, clone it locally,
 ```shell
 # Install
 npm install -g yarn
-yarn bootstrap
+yarn
 
 # Test
 yarn test

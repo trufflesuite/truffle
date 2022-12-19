@@ -14,6 +14,7 @@
   },
   "version": "6.0.50",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "run-s build:compile build:bundle",
     "build:compile": "ttsc -b .",
@@ -52,7 +53,7 @@
     "solc": "0.8.17",
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
-    "ts-node": "10.7.0",
+    "ts-node": "10.9.1",
     "ttypescript": "1.5.13",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1",

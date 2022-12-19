@@ -46,6 +46,7 @@
     "original-require": "^1.0.1"
   },
   "devDependencies": {
+    "@truffle/dashboard": "^0.2.3",
     "@types/webpack": "~5.28.0",
     "app-module-path": "^2.2.0",
     "chai": "^4.2.0",

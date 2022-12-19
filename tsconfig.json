@@ -12,13 +12,13 @@
     { "path": "packages/compile-solidity" },
     { "path": "packages/compile-solidity-tests" },
     { "path": "packages/config" },
+    { "path": "packages/dashboard/tsconfig.json" },
     { "path": "packages/dashboard/tsconfig.server.json" },
     { "path": "packages/dashboard-message-bus-client" },
     { "path": "packages/dashboard-message-bus-common" },
     { "path": "packages/dashboard-message-bus" },
     { "path": "packages/db-kit" },
     { "path": "packages/db-loader" },
-    { "path": "packages/resolver" },
     { "path": "packages/db" },
     { "path": "packages/decoder" },
     { "path": "packages/encoder" },
@@ -36,8 +36,16 @@
     { "path": "packages/promise-tracker" },
     { "path": "packages/provisioner" },
     { "path": "packages/require" },
+    { "path": "packages/resolver" },
     { "path": "packages/source-fetcher" },
     { "path": "packages/spinners" },
+    { "path": "packages/test" },
     { "path": "packages/workflow-compile" }
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "suppressExcessPropertyErrors": true
+    }
+  },
 }

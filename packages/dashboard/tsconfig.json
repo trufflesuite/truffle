@@ -15,6 +15,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
+    "rootDir": "./src",
     "outDir": "./frontend-build",
     "strictBindCallApply": true,
     "strictNullChecks": true,
@@ -26,6 +27,7 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "composite": true,
     "paths": {
       "@truffle/dashboard": ["./src"],
       "@truffle/dashboard/*": ["./src/*"],
@@ -43,5 +45,10 @@
       "suppressExcessPropertyErrors": true
     }
   },
-  "include": ["src"]
+  "references": [
+    { "path": "../dashboard-message-bus-client" },
+    { "path": "../dashboard-message-bus-common" },
+    { "path": "../decoder" }
+  ],
+  "include": [ "src", "src/**/*.json"]
 }

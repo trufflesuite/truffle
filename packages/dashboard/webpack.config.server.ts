@@ -4,6 +4,7 @@ import { merge } from "webpack-merge";
 import baseConfig from "../../webpack/webpack.config.base";
 
 const config: Configuration = {
+  name: "dashboard-server",
   entry: {
     "index": {
       import: "./build/lib/index.js",

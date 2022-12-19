@@ -19,9 +19,9 @@
     ]
   },
   "include": ["./lib/**/*.ts"],
-  /*"references": [
+  "references": [
     { "path": "../compile-solidity" },
     { "path": "../expect" },
     { "path": "../provisioner" }
-  ]*/
+  ]
 }

@@ -15,6 +15,11 @@ const config: Configuration = merge(baseConfig, {
       type: "commonjs2"
     },
     chunkLoading: "require"
+  },
+  resolve: {
+    alias: {
+      lib: pathJoin(__dirname, "lib")
+    }
   }
 });
 

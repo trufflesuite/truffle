@@ -16,7 +16,7 @@
   "version": "0.1.9",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ttsc",
+    "build": "ttsc -b .",
     "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
@@ -36,7 +36,7 @@
     "mocha": "10.1.0",
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
-    "ts-node": "10.7.0",
+    "ts-node": "10.9.1",
     "typescript": "^4.7.4"
   },
   "keywords": [

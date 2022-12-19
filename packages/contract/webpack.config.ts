@@ -3,14 +3,10 @@ import { Configuration, ProvidePlugin } from "webpack";
 import { merge } from "webpack-merge";
 import baseConfig from "../../webpack/webpack.config.base";
 
-//TODO: there's probably a better way to do this where webpack is called once
-//and it will generate both production and development packs
-const suffix = process.env.NODE_ENV === "production" ? ".min" : "";
-const entryName = `truffle-contract${suffix}`;
-
-const config: Configuration = merge(baseConfig, {
+const mainConfig: Configuration = merge(baseConfig, {
+  mode: "production",
   entry: {
-    [entryName]: "./index.js"
+    "truffle-contract.min": "./index.js"
   },
   context: __dirname,
   output: {
@@ -44,4 +40,10 @@ const config: Configuration = merge(baseConfig, {
   }
 });
 
-export default config;
+export default [
+  mainConfig,
+  merge(mainConfig, {
+    mode: "development",
+    entry: { "truffle-contract": "./index.js" }
+  })
+];

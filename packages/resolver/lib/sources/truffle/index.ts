@@ -16,11 +16,14 @@ export class Truffle implements ResolverSource {
     if (importPath === `truffle${path.sep}DeployedAddresses.sol`) {
       const sourceFiles = await findContracts(this.options.contracts_directory);
 
-      const buildDirFiles: string[] =
-        fse.existsSync(this.options.contracts_build_directory)
-          ? fse.readdirSync(this.options.contracts_build_directory)
-          : [];
-      const abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
+      const buildDirFiles: string[] = fse.existsSync(
+        this.options.contracts_build_directory
+      )
+        ? fse.readdirSync(this.options.contracts_build_directory)
+        : [];
+      const abstractionFiles = buildDirFiles.filter(file =>
+        file.match(/^.*.json$/)
+      );
 
       const mapping: { [key: string]: string | false } = {};
 
@@ -30,7 +33,10 @@ export class Truffle implements ResolverSource {
       // to prevent any compile errors in tests.
       sourceFiles.forEach((file: string) => {
         // we need to account for .json and .abi.json files
-        const name = path.basename(path.basename(path.basename(file, ".sol"), ".json"), ".abi");
+        const name = path.basename(
+          path.basename(path.basename(file, ".sol"), ".json"),
+          ".abi"
+        );
         if (blacklist.has(name)) return;
         mapping[name] = false;
       });
@@ -93,7 +99,7 @@ export class Truffle implements ResolverSource {
           // @ts-ignore
           typeof BUNDLE_VERSION !== "undefined"
             ? path.resolve(path.join(__dirname, `${lib}.sol`))
-            : path.resolve(__dirname, "../../../..", "solidity", `${lib}.sol`);
+            : path.resolve(__dirname, "../../..", "solidity", `${lib}.sol`);
         const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
         return { body, filePath: importPath };
       }

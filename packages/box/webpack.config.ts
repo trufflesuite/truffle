@@ -5,7 +5,11 @@ import baseConfig from "../../webpack/webpack.config.base";
 
 const config: Configuration = merge(baseConfig, {
   entry: {
-    index: "./build/index.js"
+    index: "./build/index.js",
+
+    // these entrypoints are exposed for testing purposes and are not considered public:
+    utils: "./build/utils/index.js",
+    config: "./build/config.js"
   },
   context: __dirname,
   output: {

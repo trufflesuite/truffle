@@ -5,12 +5,12 @@
     "rootDir": "test",
     "outDir": "./dist",
     "types": ["mocha", "node", "sinon"],
-    "allowJs": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "strictNullChecks": false,
     "strictPropertyInitialization": false,
     "useUnknownInCatchVariables": false,
+    "noEmit": true,
     "paths": {
       "@truffle/compile-solidity-tests": ["./test"],
       "@truffle/compile-solidity-tests/*": ["./test/*"]

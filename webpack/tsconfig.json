@@ -2,18 +2,25 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": "./lib",
-    "declarationDir": "./dist",
-    "outDir": "./build",
-    "resolveJsonModule": true,
+    "rootDir": ".",
+    "declaration": false,
+    "noEmit": true,
     "paths": {
       "@truffle/abi-utils": ["./lib"],
-      "@truffle/abi-utils/*": ["./lib/*"],
+      "@truffle/abi-utils/*": ["./lib/*"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": ["./lib/**/*.ts"]
+  "ts-node": {
+    "files": true,
+    "compilerOptions": {
+      "module": "commonjs",
+      "suppressExcessPropertyErrors": true,
+      "isolatedModules": false
+    },
+  },
+  "include": ["./*.ts"]
 }

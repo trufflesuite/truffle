@@ -78,7 +78,7 @@
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "ts-jest": "29.0.3",
-    "ts-node": "10.7.0",
+    "ts-node": "10.9.1",
     "tsconfig-paths": "^3.9.0",
     "ttypescript": "1.5.13",
     "typedoc": "0.22.18",

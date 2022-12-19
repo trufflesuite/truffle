@@ -25,7 +25,7 @@ export function getPackageConfig(
   packageName: string,
   env: Record<string, string | number | boolean>,
   argv: Record<string, any>
-): Configuration {
+): Configuration | Configuration[] {
   let packageConfig = require(`../packages/${packageName}/webpack.config`);
 
   packageConfig = packageConfig.default ? packageConfig.default : packageConfig;

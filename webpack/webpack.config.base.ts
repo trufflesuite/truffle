@@ -1,7 +1,7 @@
 import path from "path";
 import {
   BannerPlugin,
-  ProgressPlugin,
+  //ProgressPlugin,
   IgnorePlugin,
   Configuration
 } from "webpack";
@@ -19,7 +19,18 @@ const config: Configuration = {
   // There are many source map options we can choose. Choosing an option with
   // "nosources" allows us to reduce the size of the bundle while still allowing
   // high quality source maps.
-  devtool: "nosources-source-map",
+  devtool: "source-map",
+
+  module: {
+    rules: [
+      // load source maps from pre-built TS code
+      {
+        test: /\.(t|j)sx?$/,
+        enforce: "pre",
+        use: ["source-map-loader"]
+      }
+    ]
+  },
 
   optimization: {
     minimize: false,
@@ -114,7 +125,7 @@ const config: Configuration = {
     // Put the shebang back on.
     new BannerPlugin({ banner: "#!/usr/bin/env node\n", raw: true }),
 
-    new ProgressPlugin(),
+    //new ProgressPlugin(),
 
     // Make web3 1.0 packable
     new IgnorePlugin({ resourceRegExp: /^electron$/ })

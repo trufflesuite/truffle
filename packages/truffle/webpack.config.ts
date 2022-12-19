@@ -1,13 +1,20 @@
-import { join as pathJoin } from "path";
+// explicitly include the typing file here so it works from both the package
+// and base webpack.config.ts files
+/// /<reference path="./typings/event-hooks-webpack-plugin.d.ts" />
+
 import path from "path";
 import CopyWebpackPlugin from "copy-webpack-plugin";
+
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
 import { DefinePlugin, Configuration } from "webpack";
 import { merge } from "webpack-merge";
-import baseConfig from "../../webpack/webpack.config.base";
+const baseConfig = require("../../webpack/webpack.config.base").default;
 
 const pkg = require("./package.json");
 const commands = require("../core/lib/commands/commands");
+
+const outDir = path.join(__dirname, "dist");
+
 const truffleLibraryDirectory = path.join(
   __dirname,
   "../..",
@@ -42,6 +49,28 @@ const commandsEntries = commands.reduce(
   },
   {}
 );
+
+// const postEmitCopyOperations = [
+/*const _ = [
+  {
+    from: path.resolve(
+      __dirname,
+      "..",
+      "dashboard",
+      "dist",
+      "dashboard-frontend"
+    ),
+    to: path.resolve(outDir, "dashboard-frontend")
+  },
+  {
+    from: path.join(
+      truffleRequireDirectory,
+      "lib",
+      "sandboxGlobalContextTypes.ts"
+    ),
+    to: path.join(outDir, "sandboxGlobalContextTypes.ts")
+  }
+];*/
 
 const config: Configuration = merge(baseConfig, {
   entry: {
@@ -88,7 +117,7 @@ const config: Configuration = merge(baseConfig, {
   },
   context: __dirname,
   output: {
-    path: pathJoin(__dirname, "dist"),
+    path: outDir,
     filename: "[name].bundled.js",
     library: {
       type: "commonjs2"
@@ -197,11 +226,10 @@ const config: Configuration = merge(baseConfig, {
           to: "templates"
         },
         {
-          from: path.join(
+          from: path.resolve(
             __dirname,
-            "../..",
-            "node_modules",
-            "@truffle/dashboard",
+            "..",
+            "dashboard",
             "dist",
             "dashboard-frontend"
           ),

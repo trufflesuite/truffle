@@ -26,7 +26,6 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "useUnknownInCatchVariables": true,
-    // "disableSourceOfProjectReferenceRedirect": true,
 
     //emit
     "declaration": true,

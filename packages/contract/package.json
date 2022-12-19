@@ -16,9 +16,7 @@
   "main": "index.js",
   "scripts": {
     "build": "yarn bundle",
-    "bundle": "run-s bundle:prod bundle:dev",
-    "bundle:prod": "cross-env NODE_ENV=production webpack --config ./webpack.config.ts",
-    "bundle:dev": "cross-env NODE_ENV=development webpack --config ./webpack.config.ts",
+    "bundle": "cross-env webpack --config ./webpack.config.ts",
     "prepare": "yarn build",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next"
   },
