@@ -64,7 +64,7 @@
     "del": "^2.2.0",
     "ethereum-cryptography": "1.1.2",
     "fs-extra": "^9.1.0",
-    "ganache": "7.6.0",
+    "ganache": "7.7.2",
     "get-port": "^5.1.1",
     "get-random-values": "^1.2.2",
     "glob": "^7.1.6",
