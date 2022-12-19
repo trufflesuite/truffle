@@ -14258,10 +14258,10 @@ functions-have-names@^1.2.2:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.2.tgz#98d93991c39da9361f8e50b337c4f6e41f120e21"
   integrity sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
 
-ganache@7.7.1:
+"ganache@file:ganache-7.7.1.tgz":
   version "7.7.1"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.7.1.tgz#ff59d4d55c80df67ae021c85d33c2d59901c4e16"
-  integrity sha512-iqBf6PK2vIcQIPUM7tiqgJoc0Z2vYmnKvmaStysHNFVXVlHr8gzh207K4J1dAyBPR0yTd7GyVfvtEvUW/z+pvA==
+  uid "48600a2ef8f3d43b83a380308bd876d033940ec7"
+  resolved "file:ganache-7.7.1.tgz#48600a2ef8f3d43b83a380308bd876d033940ec7"
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.10"
     "@types/bn.js" "^5.1.0"
