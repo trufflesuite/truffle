@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.3.3",
+  "version": "0.3.4",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -37,11 +37,11 @@
     "@mantine/hooks": "^5.0.0",
     "@mantine/notifications": "^5.0.0",
     "@mantine/prism": "^5.0.0",
-    "@truffle/codec": "^0.14.10",
+    "@truffle/codec": "^0.14.11",
     "@truffle/dashboard-message-bus": "^0.1.10",
     "@truffle/dashboard-message-bus-client": "^0.1.9",
     "@truffle/dashboard-message-bus-common": "^0.1.5",
-    "@truffle/decoder": "^5.3.3",
+    "@truffle/decoder": "^5.3.4",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "ethers": "^5.6.9",
