@@ -1,5 +1,4 @@
 import { createInterfaceAdapter } from "@truffle/interface-adapter";
-import web3Utils from "web3-utils";
 import Config from "@truffle/config";
 import Migrate from "@truffle/migrate";
 import { Resolver } from "@truffle/resolver";
@@ -121,10 +120,8 @@ export class TestRunner {
   }
 
   async startTest() {
-    const blockNumber = web3Utils.toBN(
-      await this.interfaceAdapter.getBlockNumber()
-    );
-    const one = web3Utils.toBN(1);
+    const blockNumber = new BN(await this.interfaceAdapter.getBlockNumber());
+    const one = new BN(1);
 
     // Add one in base 10
     this.currentTestStartBlock = blockNumber.add(one);
