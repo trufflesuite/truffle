@@ -17,7 +17,7 @@ global.crypto = {
 };
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "12.0.0";
+const minimumNodeVersion = "14.0.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
