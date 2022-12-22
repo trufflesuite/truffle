@@ -3,7 +3,7 @@ module.exports = {
   description: "Call read-only contract function with arguments",
   builder: {
     "url": {
-      describe: "Use specified URL for ethereum provider",
+      describe: "Connect to a specified provider given via URL",
       type: "string"
     },
     "fetch-external": {
@@ -13,9 +13,9 @@ module.exports = {
       default: false
     },
     "block-number": {
-      describe: "Calls specified contract function at specific block",
+      describe: "Specify the block for the function to be called in.",
       alias: "b",
-      type: "integer",
+      type: "string",
       default: "latest"
     },
     "contract-address": {
@@ -25,13 +25,22 @@ module.exports = {
     "contract-name": {
       describe: "The contract name to be called",
       type: "string"
+    },
+    "function-name": {
+      describe: "The function name in the specified contract to be called",
+      type: "string"
+    },
+    "function-signature": {
+      describe:
+        "The full function ABI signature (not selector) in the specified contract to be called",
+      type: "string"
     }
   },
   help: {
     usage:
       "truffle call <contract-address>|<contract-name> <function-name>|<function-signature>\n" +
       "                             " + // spacing to align with previous line
-      "[<arg>...] [--fetch-external|-x] [--network <network>|--url <provider_url>]\n" +
+      "<arg1> ... <argN> [--fetch-external|-x] [--network <network>|--url <provider_url>]\n" +
       "                             " + // spacing to align with previous line
       "[--block-number|-b <block_number>]",
     options: [
@@ -41,31 +50,32 @@ module.exports = {
       },
       {
         option: "<contract-address>",
-        description: "The contract address to be called.\n"
+        description: "The contract address to be called."
       },
       {
         option: "<function-name>",
-        description:
-          "The function name inside the specified contract to be called."
+        description: "The function name in the specified contract to be called."
       },
       {
         option: "<function-signature>",
         description:
-          "The function signature inside the specified contract to be called."
+          "The full function ABI signature (not selector) in the specified contract to be called."
       },
       {
-        option: "<arg>...",
-        description: "List of arguments of the function to be called."
+        option: "<arg1> ... <argN>",
+        description:
+          "List of arguments to be passed to the function to be called."
       },
       {
         option: "--fetch-external|-x",
-        description: "Fetch referenced verified contracts as needed."
+        description:
+          "Fetches referenced verified contracts as needed.\n" +
+          "                    Works only with an external contract address."
       },
       {
         option: "--url",
         description:
-          "Creates a provider using the given url and connects to the network.\n" +
-          "                    This can be used outside of a Truffle project."
+          "Connects to a specified provider given via URL, ignoring networks in config."
       },
       {
         option: "--network",
@@ -74,7 +84,7 @@ module.exports = {
       },
       {
         option: "--block-number|-b",
-        description: "The block number from which the contract is to be called."
+        description: "Specifies the block for the function to be called in."
       }
     ],
     allowedGlobalOptions: ["from", "config"]
