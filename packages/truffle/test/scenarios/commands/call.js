@@ -1,11 +1,11 @@
 const CommandRunner = require("../commandRunner");
 const Server = require("../server");
 const MemoryLogger = require("../MemoryLogger");
-const assert = require("assert");
+const { assert } = require("chai");
 const path = require("path");
 const sandbox = require("../sandbox");
 
-describe("truffle call", () => {
+describe.only("truffle call", () => {
   let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/call");
@@ -34,10 +34,7 @@ describe("truffle call", () => {
       });
       const output = logger.contents();
       const expectedValue = "You are a failure";
-      assert(
-        output.includes(expectedValue),
-        `Expected "${expectedValue}" in output`
-      );
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
 
     it("returns the set value of the variable in the contract", async () => {
@@ -56,13 +53,10 @@ describe("truffle call", () => {
       });
       const output = logger.contents();
       const expectedValue = "100";
-      assert(
-        output.includes(expectedValue),
-        `Expected "${expectedValue}" in output`
-      );
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
 
-    it("checks if the function overloading works", async () => {
+    it("correctly resolves overloads", async () => {
       const networkName = config.network;
       await CommandRunner.runInREPL({
         inputCommands: [
@@ -78,13 +72,10 @@ describe("truffle call", () => {
       });
       const output = logger.contents();
       const expectedValue = "210";
-      assert(
-        output.includes(expectedValue),
-        `Expected "${expectedValue}" in output`
-      );
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
 
-    it("checks if the function signature works", async () => {
+    it("correctly resolves full function ABI signature", async () => {
       const networkName = config.network;
       await CommandRunner.runInREPL({
         inputCommands: [
@@ -100,10 +91,7 @@ describe("truffle call", () => {
       });
       const output = logger.contents();
       const expectedValue = "310";
-      assert(
-        output.includes(expectedValue),
-        `Expected "${expectedValue}" in output`
-      );
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
   });
 });
