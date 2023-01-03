@@ -39,7 +39,9 @@ module.exports = async function (options) {
 
   if (functionEntry.stateMutability !== "view") {
     console.log(
-      `WARNING!!! Not a view function\n  ABI stateMutability: ${functionEntry.stateMutability}`
+      `WARNING!!! Not a view function\n` +
+        `Any changes this function attempts to make will not be saved\n` +
+        `ABI stateMutability: ${functionEntry.stateMutability}\n`
     );
   }
 
