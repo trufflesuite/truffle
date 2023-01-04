@@ -40,7 +40,7 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let inputStrings = process.argv.slice(2);
+const inputStrings = process.argv.slice(2);
 
 //check if user wants some help
 if (inputStrings.length === 0) {
