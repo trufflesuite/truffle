@@ -263,21 +263,27 @@ class Console extends EventEmitter {
           "utf8"
         );
         const json = JSON.parse(body);
-        const metadata = JSON.parse(json.metadata);
-        const sources = Object.keys(metadata.sources);
-        // filter out Truffle's console.log. We don't want users to interact with in the REPL.
-        // user contracts named console.log will be imported, and a warning will be issued.
-        if (
-          sources.length > 1 ||
-          (sources.length === 1 &&
-            !sources.some(source => {
-              return (
-                source === "truffle/console.sol" ||
-                source === "truffle/Console.sol"
-              );
-            }))
-        ) {
+        // Artifacts may not contain metadata. For example, early Solidity versions as well as
+        // Vyper contracts do not include metadata. Just push them to json blobs.
+        if (json.metadata === undefined) {
           jsonBlobs.push(json);
+        } else {
+          // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+          // user contracts named console.log will be imported, and a warning will be issued.
+          const metadata = JSON.parse(json.metadata);
+          const sources = Object.keys(metadata.sources);
+          if (
+            sources.length > 1 ||
+            (sources.length === 1 &&
+              !sources.some(source => {
+                return (
+                  source === "truffle/console.sol" ||
+                  source === "truffle/Console.sol"
+                );
+              }))
+          ) {
+            jsonBlobs.push(json);
+          }
         }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
