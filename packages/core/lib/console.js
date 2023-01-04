@@ -268,10 +268,10 @@ class Console extends EventEmitter {
         if (json.metadata === undefined) {
           jsonBlobs.push(json);
         } else {
-          const metadata = JSON.parse(json.metadata);
-          const sources = Object.keys(metadata.sources);
           // filter out Truffle's console.log. We don't want users to interact with in the REPL.
           // user contracts named console.log will be imported, and a warning will be issued.
+          const metadata = JSON.parse(json.metadata);
+          const sources = Object.keys(metadata.sources);
           if (
             sources.length > 1 ||
             (sources.length === 1 &&
