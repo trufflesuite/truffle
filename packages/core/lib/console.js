@@ -263,7 +263,8 @@ class Console extends EventEmitter {
           "utf8"
         );
         const json = JSON.parse(body);
-        // Vyper contracts may not have metadata field included, just push them to json blobs
+        // Artifacts may not contain metadata. For example, early Solidity versions as well as
+        // Vyper contracts do not include metadata. Just push them to json blobs.
         if (json.metadata === undefined) {
           jsonBlobs.push(json);
         } else {
