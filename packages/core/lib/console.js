@@ -263,21 +263,26 @@ class Console extends EventEmitter {
           "utf8"
         );
         const json = JSON.parse(body);
-        const metadata = JSON.parse(json.metadata);
-        const sources = Object.keys(metadata.sources);
-        // filter out Truffle's console.log. We don't want users to interact with in the REPL.
-        // user contracts named console.log will be imported, and a warning will be issued.
-        if (
-          sources.length > 1 ||
-          (sources.length === 1 &&
-            !sources.some(source => {
-              return (
-                source === "truffle/console.sol" ||
-                source === "truffle/Console.sol"
-              );
-            }))
-        ) {
+        // Vyper contracts may not have metadata field included, just push them to json blobs
+        if (json.metadata === undefined) {
           jsonBlobs.push(json);
+        } else {
+          const metadata = JSON.parse(json.metadata);
+          const sources = Object.keys(metadata.sources);
+          // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+          // user contracts named console.log will be imported, and a warning will be issued.
+          if (
+            sources.length > 1 ||
+            (sources.length === 1 &&
+              !sources.some(source => {
+                return (
+                  source === "truffle/console.sol" ||
+                  source === "truffle/Console.sol"
+                );
+              }))
+          ) {
+            jsonBlobs.push(json);
+          }
         }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
