@@ -99,15 +99,19 @@ module.exports = async function (options) {
     }
 
     if (contractNameOrAddress.startsWith("0x")) {
+      // contract address case
+      const contractAddress = contractNameOrAddress;
       const projectInfo = {
         artifacts: Object.values(contracts)
       };
 
       ({ encoder, decoder } = await getEncoderDecoderForContractAddress(
-        contractNameOrAddress,
+        contractAddress,
         projectInfo
       ));
     } else {
+      // contract name case
+      const contractName = contractNameOrAddress;
       const settings = {
         provider: config.provider,
         projectInfo: {
@@ -115,7 +119,7 @@ module.exports = async function (options) {
         }
       };
 
-      const contract = contracts[contractNameOrAddress];
+      const contract = contracts[contractName];
       // Error handling to remind users to run truffle migrate first
       const instance = await contract.deployed();
       encoder = await Encoder.forContractInstance(instance, settings);
@@ -124,18 +128,15 @@ module.exports = async function (options) {
     return { encoder, decoder };
   }
 
-  async function sourceFromExternal(contractNameOrAddress, config) {
-    const { compileResult } = await fetchAndCompile(
-      contractNameOrAddress,
-      config
-    );
+  async function sourceFromExternal(contractAddress, config) {
+    const { compileResult } = await fetchAndCompile(contractAddress, config);
 
     const projectInfo = {
       commonCompilations: compileResult.compilations
     };
 
     const { encoder, decoder } = await getEncoderDecoderForContractAddress(
-      contractNameOrAddress,
+      contractAddress,
       projectInfo
     );
 
@@ -143,7 +144,7 @@ module.exports = async function (options) {
   }
 
   async function getEncoderDecoderForContractAddress(
-    contractNameOrAddress,
+    contractAddress,
     projectInfo
   ) {
     const projectEncoder = await Encoder.forProject({
@@ -151,7 +152,7 @@ module.exports = async function (options) {
       projectInfo
     });
     const encoder = await projectEncoder.forAddress(
-      contractNameOrAddress,
+      contractAddress,
       config.blockNumber
     );
 
@@ -160,7 +161,7 @@ module.exports = async function (options) {
       projectInfo
     });
     const decoder = await projectDecoder.forAddress(
-      contractNameOrAddress,
+      contractAddress,
       config.blockNumber
     );
 
