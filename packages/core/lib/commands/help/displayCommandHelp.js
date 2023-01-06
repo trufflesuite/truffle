@@ -1,24 +1,20 @@
 module.exports = async function (selectedCommand, subCommand, options) {
   const commands = require("../index");
   const globalCommandOptions = require("../../global-command-options");
+  const TruffleError = require("@truffle/error");
 
   let commandHelp, commandDescription;
+
+  const inputStrings = process.argv.slice(2);
 
   const chosenCommand = commands[selectedCommand].meta;
 
   if (subCommand) {
-    if (!chosenCommand.subCommands) {
-      console.log(`WARNING: ${selectedCommand} does not have sub commands.`);
-      process.exit();
-    }
-
-    if (!chosenCommand.subCommands[subCommand]) {
-      console.log(
-        `WARNING: ${subCommand} is an invalid sub command for ${selectedCommand}.`
+    if (!chosenCommand.subCommands || !chosenCommand.subCommands[subCommand]) {
+      throw new TruffleError(
+        `"truffle ${inputStrings.join(" ")}" is an anvalid command`
       );
-      process.exit();
     }
-
     commandHelp = chosenCommand.subCommands[subCommand].help;
     commandDescription = chosenCommand.subCommands[subCommand].description;
   } else {
