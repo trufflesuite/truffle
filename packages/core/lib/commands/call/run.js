@@ -79,7 +79,6 @@ module.exports = async function (options) {
   }
 
   async function sourceFromLocal(contractNameOrAddress, config) {
-    let encoder, decoder;
     const contractNames = fs
       .readdirSync(config.contracts_build_directory)
       .filter(filename => filename.endsWith(".json"))
@@ -105,10 +104,10 @@ module.exports = async function (options) {
         artifacts: Object.values(contracts)
       };
 
-      ({ encoder, decoder } = await getEncoderDecoderForContractAddress(
+      return await getEncoderDecoderForContractAddress(
         contractAddress,
         projectInfo
-      ));
+      );
     } else {
       // contract name case
       const contractName = contractNameOrAddress;
@@ -122,10 +121,10 @@ module.exports = async function (options) {
       const contract = contracts[contractName];
       // Error handling to remind users to run truffle migrate first
       const instance = await contract.deployed();
-      encoder = await Encoder.forContractInstance(instance, settings);
-      decoder = await Decoder.forContractInstance(instance, settings);
+      const encoder = await Encoder.forContractInstance(instance, settings);
+      const decoder = await Decoder.forContractInstance(instance, settings);
+      return { encoder, decoder };
     }
-    return { encoder, decoder };
   }
 
   async function sourceFromExternal(contractAddress, config) {
@@ -135,12 +134,10 @@ module.exports = async function (options) {
       commonCompilations: compileResult.compilations
     };
 
-    const { encoder, decoder } = await getEncoderDecoderForContractAddress(
+    return await getEncoderDecoderForContractAddress(
       contractAddress,
       projectInfo
     );
-
-    return { encoder, decoder };
   }
 
   async function getEncoderDecoderForContractAddress(
