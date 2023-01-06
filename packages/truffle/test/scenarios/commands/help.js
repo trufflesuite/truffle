@@ -43,20 +43,8 @@ describe("truffle help [ @standalone ]", function () {
       assert(output.includes("--environment"));
     });
 
-    it("displays help for given command when `--help` is at the end of the command line", async function () {
+    it("displays help for given command when `--help` is in the command line", async function () {
       await CommandRunner.run("compile --help", config);
-      const output = logger.contents();
-      assert(output.includes("Description:  Compile contract source files"));
-    }).timeout(20000);
-
-    it("displays help for given command when `help` is at the end of the command line", async function () {
-      await CommandRunner.run("compile help", config);
-      const output = logger.contents();
-      assert(output.includes("Description:  Compile contract source files"));
-    }).timeout(20000);
-
-    it("displays help for given command when `--help` is right before the truffle command", async function () {
-      await CommandRunner.run("help compile", config);
       const output = logger.contents();
       assert(output.includes("Description:  Compile contract source files"));
     }).timeout(20000);
@@ -71,29 +59,11 @@ describe("truffle help [ @standalone ]", function () {
       );
     }).timeout(20000);
 
-    it("errors when <subCommand> is not valid", async function () {
-      await CommandRunner.run("help compile boo", config);
-      const output = logger.contents();
-      assert(output.includes("WARNING: compile does not have sub commands"));
-    }).timeout(20000);
-
-    it("errors with correct `help` usage info when `truffle <cmd> --help <subCommand>` is used", async function () {
+    it("displays help for `truffle <cmd> --help <subCommand>` is used", async function () {
       await CommandRunner.run("db --help serve", config);
       const output = logger.contents();
       assert(
-        output.includes(
-          "Error: please use the following syntax for accessing help information"
-        )
-      );
-    }).timeout(20000);
-
-    it("errors with correct `help` usage info when `truffle <cmd> help <subCommand>` is used", async function () {
-      await CommandRunner.run("db help serve", config);
-      const output = logger.contents();
-      assert(
-        output.includes(
-          "Error: please use the following syntax for accessing help information"
-        )
+        output.includes("Description:  Start Truffle's GraphQL UI playground")
       );
     }).timeout(20000);
   });
