@@ -204,33 +204,20 @@ const runCommand = async function (command, options) {
 };
 
 const processHelpInput = inputStrings => {
-  //When we think user is trying to access help incorrectly, provide them with some helpful information.
-  if (inputStrings.length > 2 && ["help", "--help"].includes(inputStrings[1])) {
-    const help = require("./commands/help").meta;
-    console.log(
-      "Error: please use the following syntax for accessing help information\n",
-      "\n               ",
-      help.help.usage
-    );
-    process.exit();
-  }
-
-  // when `truffle --help <cmd>` is used, convert inputStrings to run as `truffle help <cmd>`
-  if (inputStrings.length > 1 && inputStrings[0] === "--help") {
-    inputStrings[inputStrings.indexOf("--help")] = "help";
-  }
-
-  // when `truffle <cmd> help | --help` is used, convert inputStrings  to run as `truffle help <cmd>`
-  if (["help", "--help"].includes(inputStrings[1])) {
-    inputStrings.pop();
-    inputStrings.unshift("help");
-  }
-
   //when user wants general help
   if (inputStrings.length === 1) {
     displayGeneralHelp();
     process.exit();
   }
+
+  //check if --help is used
+  const helpIndex = inputStrings.findIndex(x => x === "--help");
+
+  if (helpIndex !== -1) {
+    inputStrings.splice(helpIndex, 1);
+    inputStrings.unshift("help");
+  }
+
   return inputStrings;
 };
 
