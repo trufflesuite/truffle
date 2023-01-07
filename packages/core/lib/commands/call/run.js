@@ -32,10 +32,17 @@ module.exports = async function (options) {
     ? await sourceFromExternal(contractNameOrAddress, config)
     : await sourceFromLocal(contractNameOrAddress, config);
 
-  ({ abi: functionEntry, tx: transaction } = await encoder.encodeTransaction(
-    functionNameOrSignature,
-    args
-  ));
+  try {
+    ({ abi: functionEntry, tx: transaction } = await encoder.encodeTransaction(
+      functionNameOrSignature,
+      args
+    ));
+  } catch (error) {
+    throw new TruffleError(
+      "The function name, function signature or function arguments you entered are invalid!\n" +
+        "Please run the command again with valid function name, function signature and function arguments (if any)!"
+    );
+  }
 
   if (functionEntry.stateMutability !== "view") {
     console.log(
