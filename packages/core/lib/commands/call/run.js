@@ -92,8 +92,8 @@ module.exports = async function (options) {
 
     const isEmpty = Object.keys(contracts).length === 0;
     if (isEmpty) {
-      throw new Error(
-        "No artifacts found! Please run `truffle compile` first to compile your contracts"
+      throw new TruffleError(
+        "No artifacts found! Please run `truffle compile` first to compile your contracts!"
       );
     }
 
@@ -120,7 +120,15 @@ module.exports = async function (options) {
 
       const contract = contracts[contractName];
       // Error handling to remind users to run truffle migrate first
-      const instance = await contract.deployed();
+      let instance;
+      try {
+        instance = await contract.deployed();
+      } catch (error) {
+        throw new TruffleError(
+          "This contract has not been deployed to the detected network.\n" +
+            "Please run `truffle migrate` to deploy the contract!"
+        );
+      }
       const encoder = await Encoder.forContractInstance(instance, settings);
       const decoder = await Decoder.forContractInstance(instance, settings);
       return { encoder, decoder };
