@@ -1,8 +1,6 @@
 {
   "name": "Truffle Decoding and Encoding",
-  "theme": "../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
   "excludeExternals": true,
-  "plugin": ["typedoc-plugin-remove-references"],
   "categoryOrder": [
     "Data",
     "ABI data location",
