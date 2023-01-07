@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "bootstrap": "yarn exec lerna bootstrap",
-    "prepare": "lerna run prepare --stream --concurrency=1 && husky install",
+    "docs": "lerna run docs --stream --concurrency=1",
+    "prepare": "lerna run prepare --stream --concurrency=1 && husky install && yarn docs",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
     "prepare-release": "./scripts/prepare-release.sh",
