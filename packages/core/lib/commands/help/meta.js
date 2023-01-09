@@ -6,11 +6,11 @@ module.exports = {
     "List all commands or provide information about a specific command",
   help: {
     usage:
-      "truffle help [<command> <subCommand>]" +
+      "truffle help [<command> [<subCommand>]]" +
       OS.EOL +
-      "                truffle --help [<command> <subCommand>]" +
+      "                truffle --help [<command> [<subCommand>]]" +
       OS.EOL +
-      "                truffle [<command> <subCommand>] --help",
+      "                truffle [<command> [<subCommand>]] --help",
     options: [
       {
         option: "<command>",
