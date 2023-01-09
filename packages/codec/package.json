@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.4.11",
-    "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^6.0.2",
     "@types/bn.js": "^5.1.0",
     "@types/cbor": "^5.0.1",
