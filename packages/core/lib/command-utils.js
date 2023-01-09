@@ -203,26 +203,6 @@ const runCommand = async function (command, options) {
   return await command.run(options);
 };
 
-const processHelpInput = inputStrings => {
-  //  handle general help case and displayCommand Help cases
-
-  //when user wants general help
-  if (inputStrings.length === 0 || inputStrings.length === 1) {
-    displayGeneralHelp();
-    process.exit();
-  }
-
-  //check where is --help used
-  const helpIndex = inputStrings.indexOf("--help");
-
-  if (helpIndex !== -1) {
-    inputStrings.splice(helpIndex, 1);
-    inputStrings.unshift("help");
-  }
-
-  return inputStrings;
-};
-
 const displayGeneralHelp = () => {
   const yargs = require("yargs/yargs")();
   commands.forEach(command => {
@@ -327,7 +307,6 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
 };
 
 module.exports = {
-  processHelpInput,
   displayGeneralHelp,
   getCommand,
   prepareOptions,

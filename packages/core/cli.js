@@ -46,15 +46,32 @@ const {
   getCommand,
   prepareOptions,
   runCommand,
-  processHelpInput
+  displayGeneralHelp
 } = require("./lib/command-utils");
 
-//if `help` or `--help` is in the command, validate and transform the input
+//User only enter truffle with no commands, let's show them what's available.
+if (inputStrings.length === 0) {
+  displayGeneralHelp();
+  process.exit();
+}
+
+//if `help` or `--help` is in the command, validate and transform the input argument for help
 if (
   inputStrings.some(inputString => ["help", "--help"].includes(inputString))
 ) {
-  //handle general help case and displayCommand Help cases and return the inputStrings to be process further
-  processHelpInput(inputStrings);
+  //when user wants general help
+  if (inputStrings.length === 1) {
+    displayGeneralHelp();
+    process.exit();
+  }
+
+  //check where is --help used, mutate argument into a proper help command
+  const helpIndex = inputStrings.indexOf("--help");
+
+  if (helpIndex !== -1) {
+    inputStrings.splice(helpIndex, 1);
+    inputStrings.unshift("help");
+  }
 }
 
 const command = getCommand({
