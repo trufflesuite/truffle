@@ -12,7 +12,7 @@ module.exports = async function (selectedCommand, subCommand, options) {
   if (subCommand) {
     if (!chosenCommand.subCommands || !chosenCommand.subCommands[subCommand]) {
       throw new TruffleError(
-        `"truffle ${inputStrings.join(" ")}" is an anvalid command`
+        `"truffle ${inputStrings.join(" ")}" is an invalid command`
       );
     }
     commandHelp = chosenCommand.subCommands[subCommand].help;
