@@ -42,24 +42,20 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 
 const inputStrings = process.argv.slice(2);
 
-//check if user wants some help
-if (inputStrings.length === 0) {
-  const { displayGeneralHelp } = require("./lib/command-utils");
-  displayGeneralHelp();
-  process.exit();
-} else if (
-  inputStrings.some(inputString => ["help", "--help"].includes(inputString))
-) {
-  //check what kind of help the user is looking for
-  const { processHelpInput } = require("./lib/command-utils");
-  processHelpInput(inputStrings);
-}
-
 const {
   getCommand,
   prepareOptions,
-  runCommand
+  runCommand,
+  processHelpInput
 } = require("./lib/command-utils");
+
+//if `help` or `--help` is in the command, validate and transform the input
+if (
+  inputStrings.some(inputString => ["help", "--help"].includes(inputString))
+) {
+  //handle general help case and displayCommand Help cases and return the inputStrings to be process further
+  processHelpInput(inputStrings);
+}
 
 const command = getCommand({
   inputStrings,
