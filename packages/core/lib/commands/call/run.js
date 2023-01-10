@@ -35,7 +35,11 @@ module.exports = async function (options) {
   try {
     ({ abi: functionEntry, tx: transaction } = await encoder.encodeTransaction(
       functionNameOrSignature,
-      args
+      args,
+      {
+        allowJson: true,
+        strictBooleans: true
+      }
     ));
   } catch (error) {
     throw new TruffleError(
