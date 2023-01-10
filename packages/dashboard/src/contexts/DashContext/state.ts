@@ -46,6 +46,11 @@ export const initialState: State = {
   notice: {
     show: false,
     type: "LOADING"
+  },
+  analyticsConfig: {
+    enableAnalytics: null,
+    analyticsSet: null,
+    analyticsMessageDateTime: null
   }
 };
 
@@ -58,6 +63,8 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, chainInfo: data };
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
+    case "set-analytics-config":
+      return { ...state, analyticsConfig: data };
     case "handle-message":
       // Copy state,
       // modify it depending on message type,
