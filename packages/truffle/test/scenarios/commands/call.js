@@ -93,5 +93,26 @@ describe.only("truffle call", () => {
       const expectedValue = "310";
       assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
+
+    it("throws error on entering invalid input", async () => {
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: [
+          "migrate",
+          "const s = await Sample.deployed()",
+          "s.setValue(100)",
+          "call Sample getValue 10 20"
+        ],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      const expectedError =
+        "The function name, function signature or function arguments you entered are invalid!\n" +
+        "Please run the command again with valid function name, function signature and function arguments (if any)!";
+      assert.include(output, expectedError, `Output includes ${expectedError}`);
+    }).timeout(90000);
   });
 });
