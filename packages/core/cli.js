@@ -69,7 +69,9 @@ if (
   const helpIndex = inputStrings.indexOf("--help");
 
   if (helpIndex !== -1) {
+    //remove `--help` from array
     inputStrings.splice(helpIndex, 1);
+    //insert `help` in first position
     inputStrings.unshift("help");
   }
 }
