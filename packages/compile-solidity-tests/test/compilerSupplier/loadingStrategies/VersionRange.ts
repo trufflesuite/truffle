@@ -77,11 +77,13 @@ describe("VersionRange loading strategy", () => {
       sinon.stub(instance, "getCachedSolcByVersionRange");
       sinon.stub(instance, "getSolcFromCacheOrUrl");
       sinon.stub(instance, "versionIsCached").returns("compilerFilename.js");
+      sinon.stub(instance, "compilerFromString");
     });
     afterEach(() => {
       unStub(instance, "getCachedSolcByVersionRange");
       unStub(instance, "getSolcFromCacheOrUrl");
       unStub(instance, "versionIsCached");
+      unStub(instance, "compilerFromString");
     });
 
     it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
