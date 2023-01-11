@@ -246,7 +246,7 @@ async function invokeCompiler({ compilerInput, options, solc }): Promise<{
     parser: options.parser,
     events: options.events,
     solcConfig: options.compilers.solc,
-    cache: options.compilers.cache
+    cache: options.compilers.solc?.cache
   };
 
   // in the browser, compile in a worker and return the result
