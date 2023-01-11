@@ -1,3 +1,6 @@
 {
-    "extends": ["../../.eslintrc.package.json"]
+    "extends": ["../../.eslintrc.package.json"],
+    "env": {
+      "browser": "readonly"
+    }
 }

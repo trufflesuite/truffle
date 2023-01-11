@@ -136,7 +136,7 @@ async function tryFetchAndCompileAddress(
     });
 
     // @ts-ignore
-    if (window) {
+    if (typeof window === "undefined") {
       externalConfig.compilers.cache = "noCache";
     }
 
