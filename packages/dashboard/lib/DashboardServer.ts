@@ -105,7 +105,7 @@ export class DashboardServer {
     });
 
     this.expressApp.put("/analytics", (req, _res) => {
-      const { enable } = req.body as { enable: boolean };
+      const { value } = req.body as { value: boolean };
 
       const userConfig = Config.getUserConfig();
 
@@ -113,7 +113,7 @@ export class DashboardServer {
       if (!uid) userConfig.set("uniqueId", uuid());
 
       userConfig.set({
-        enableAnalytics: !!enable,
+        enableAnalytics: !!value,
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });

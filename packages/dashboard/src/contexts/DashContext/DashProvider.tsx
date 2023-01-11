@@ -283,7 +283,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       await fetch(`http://${host}:${port}/analytics`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enable: value })
+        body: JSON.stringify({ value })
       });
       // No need to update state afterwards
     }
