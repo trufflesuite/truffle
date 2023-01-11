@@ -14,7 +14,7 @@ import {
   analyticsNotificationId
 } from "src/utils/notifications";
 
-const ARBITRARY_ANALYTICS_NEXT_ASK_THRESHOLD = 31544444444; // 365 days
+const ARBITRARY_ANALYTICS_NEXT_ASK_THRESHOLD_IN_DAYS = 365;
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
   main: {
@@ -30,15 +30,26 @@ function Layout(): JSX.Element {
   } = useDash()!;
   const { classes } = useStyles();
 
+  // Analytics notifications
   useEffect(() => {
-    if (notice.show || analyticsConfig.analyticsSet === null) return;
+    // Don't ask if...
+    if (
+      // There's currently a fullscreen notice
+      notice.show ||
+      // Analytics is already enabled
+      analyticsConfig.enableAnalytics ||
+      // Analytics config info is not in state yet
+      analyticsConfig.analyticsMessageDateTime === null
+    )
+      return;
 
-    const shouldAsk =
-      !analyticsConfig.enableAnalytics && !analyticsConfig.analyticsSet;
-    const shouldAskAgain =
-      !analyticsConfig.enableAnalytics &&
-      Date.now() - analyticsConfig.analyticsMessageDateTime! >
-        ARBITRARY_ANALYTICS_NEXT_ASK_THRESHOLD;
+    const askAfter = new Date(analyticsConfig.analyticsMessageDateTime);
+    askAfter.setDate(
+      askAfter.getDate() + ARBITRARY_ANALYTICS_NEXT_ASK_THRESHOLD_IN_DAYS
+    );
+
+    const shouldAsk = !analyticsConfig.analyticsSet;
+    const shouldAskAgain = new Date() > askAfter;
 
     const analyticsNotificationArgs = [
       () => {
