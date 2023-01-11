@@ -48,7 +48,11 @@ export const analyticsNotifications: Record<
       <Stack>
         <Text>
           Would you consider enabling it? It helps us make Truffle a better
-          experience for you.
+          experience for you. View the Truffle Analytics policy&nbsp;
+          <Anchor href="https://trufflesuite.com/analytics" target="_blank">
+            here
+          </Anchor>
+          .
         </Text>
         <Group grow>
           <Button onClick={disable} color="gray" variant="light">
