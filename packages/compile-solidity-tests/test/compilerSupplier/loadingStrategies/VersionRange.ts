@@ -150,28 +150,22 @@ describe("VersionRange loading strategy", () => {
     describe("when the version is not cached", () => {
       beforeEach(() => {
         sinon.stub(instance.cache!, "has").returns(false);
-        sinon.stub(instance.cache!, "add");
-        sinon
-          .stub(instance, "compilerFromString")
-          .returns(Promise.resolve("compiler"));
+        sinon.stub(instance, "getAndCacheSoljsonByUrl");
       });
       afterEach(() => {
         unStub(instance.cache!, "has");
-        unStub(instance.cache!, "add");
-        unStub(instance, "compilerFromString");
+        unStub(instance, "getAndCacheSoljsonByUrl");
       });
 
-      it("eventually calls add and compilerFromString", async () => {
+      it("eventually calls .getAndCacheSoljsonByUrl", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
         // @ts-ignore
-        assert.isTrue(instance.cache.add.called);
-        // @ts-ignore
-        assert.isTrue(instance.compilerFromString.called);
+        assert.isTrue(instance.getAndCacheSoljsonByUrl.called);
       }).timeout(60000);
     });
   });
 
-  describe(".getAndCacheSolcByUrl(fileName)", () => {
+  describe(".getAndCacheSoljsonByUrl(fileName)", () => {
     beforeEach(() => {
       fileName = "someSolcFile";
       sinon
@@ -180,15 +174,10 @@ describe("VersionRange loading strategy", () => {
         .returns(Promise.resolve({ data: "requestReturn" }));
       // @ts-ignore
       sinon.stub(instance.cache, "add").withArgs("requestReturn");
-      sinon
-        .stub(instance, "compilerFromString")
-        .withArgs("requestReturn")
-        .returns(Promise.resolve("success"));
     });
     afterEach(() => {
       unStub(axios, "get");
       unStub(instance.cache!, "add");
-      unStub(instance, "compilerFromString");
     });
 
     it("calls add with the response and the file name", async () => {
@@ -197,7 +186,7 @@ describe("VersionRange loading strategy", () => {
         // @ts-ignore
         instance.cache.add.calledWith("requestReturn", "someSolcFile")
       );
-      assert.equal(result, "success");
+      assert.equal(result, "requestReturn");
     });
   });
 
