@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
-import originalRequire from "original-require";
+import fs from "fs";
 
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
@@ -141,9 +141,9 @@ export class VersionRange {
     const listeners = observeListeners();
     try {
       const filePath = this.cache.resolve(fileName);
-      const soljson = originalRequire(filePath);
+      const soljson = fs.readFileSync(filePath).toString();
       debug("soljson %o", soljson);
-      return solcWrap(soljson);
+      return soljson;
     } finally {
       listeners.cleanup();
     }
