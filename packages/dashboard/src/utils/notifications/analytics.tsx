@@ -22,7 +22,7 @@ export const analyticsNotifications: Record<
       <Stack>
         <Text>
           You can help us improve Truffle by allowing us to track how you use
-          our tools. Would you like to share anonymous telemetry data? View the
+          our tools. Would you like to share anonymous telemetry? View the
           Truffle Analytics policy&nbsp;
           <Anchor href="https://trufflesuite.com/analytics" target="_blank">
             here
