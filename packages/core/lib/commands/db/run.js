@@ -13,6 +13,6 @@ module.exports = async function (args) {
       break;
 
     default:
-      console.log(`Unknown command: ${subCommand}`);
+      console.log(`Unknown truffle db command: ${subCommand}`);
   }
 };

@@ -93,8 +93,10 @@ const prepareOptions = ({ command, inputStrings, options }) => {
   const yargs = require("yargs/yargs")();
   yargs
     .command(require(`./commands/${command.name}/meta`))
-    //Turn off yargs' default behavior when handling "truffle --version"
-    .version(false);
+    //Turn off yargs' default behavior when handling `truffle --version` & `truffle <cmd> --help`
+    .version(false)
+    .help(false);
+
   const commandOptions = yargs.parse(inputStrings);
 
   // remove the task name itself put there by yargs

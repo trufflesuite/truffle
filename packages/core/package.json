@@ -35,6 +35,7 @@
     "@truffle/debugger": "^11.0.22",
     "@truffle/decoder": "^5.3.5",
     "@truffle/deployer": "^3.3.2",
+    "@truffle/db-loader": "^0.2.10",
     "@truffle/environment": "^0.2.135",
     "@truffle/error": "^0.2.0",
     "@truffle/expect": "^0.1.4",
@@ -69,6 +70,7 @@
     "get-random-values": "^1.2.2",
     "glob": "^7.1.6",
     "inquirer": "8.2.2",
+    "iter-tools": "^7.5.0",
     "js-interpreter": "2.2.0",
     "lodash": "^4.17.21",
     "mocha": "10.1.0",
@@ -82,6 +84,7 @@
     "universal-analytics": "^0.4.17",
     "web3": "1.8.1",
     "web3-utils": "1.8.1",
+    "uuid": "^9.0.0",
     "xregexp": "^4.2.4",
     "yargs": "^13.3.0"
   },

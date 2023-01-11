@@ -42,5 +42,37 @@ describe("truffle help [ @standalone ]", function () {
       );
       assert(output.includes("--environment"));
     });
+
+    it("displays help for the `help` command", async function () {
+      await CommandRunner.run("help help", config);
+      const output = logger.contents();
+      assert(
+        output.includes(
+          " Description:  List all commands or provide information about a specific command"
+        )
+      );
+    }).timeout(20000);
+
+    it("displays help for given command when `--help` is at final position of the command line", async function () {
+      await CommandRunner.run("compile --help", config);
+      const output = logger.contents();
+      assert(output.includes("Description:  Compile contract source files"));
+    }).timeout(20000);
+
+    it("displays help for given command when `--help` is at first position of the command line", async function () {
+      await CommandRunner.run("--help db serve", config);
+      const output = logger.contents();
+      assert(
+        output.includes("Description:  Start Truffle's GraphQL UI playground")
+      );
+    }).timeout(20000);
+
+    it("displays help for given command when `--help` is in the middle of the command line", async function () {
+      await CommandRunner.run("db --help serve", config);
+      const output = logger.contents();
+      assert(
+        output.includes("Description:  Start Truffle's GraphQL UI playground")
+      );
+    }).timeout(20000);
   });
 });

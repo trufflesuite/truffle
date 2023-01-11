@@ -3,7 +3,7 @@ module.exports = {
   description:
     "List all commands or provide information about a specific command",
   help: {
-    usage: "truffle help [<command>]",
+    usage: "truffle help [<command> [<subCommand>]]",
     options: [
       {
         option: "<command>",
