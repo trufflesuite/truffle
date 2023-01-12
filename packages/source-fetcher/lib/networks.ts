@@ -31,8 +31,9 @@ export const networkNamesById: { [id: number]: string } = {
   43113: "fuji-avalanche",
   11111: "wagmi-avalanche",
   53935: "dfk-avalanche",
-  432201: "dexalot-avalanche",
   335: "testnet-dfk-avalance",
+  432204: "dexalot-avalanche",
+  432201: "testnet-dexalot-avalanche",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -83,7 +84,13 @@ export const networkNamesById: { [id: number]: string } = {
   592: "astar",
   336: "shiden-astar",
   8217: "cypress-klaytn",
-  1001: "baobab-klaytn"
+  1001: "baobab-klaytn",
+  7000: "zetachain", //not presently supported by either fetcher, but...
+  7001: "athens-zetachain",
+  42262: "emerald-oasis",
+  42261: "testnet-emerald-oasis",
+  23294: "sapphire-oasis", //not presently supported by either fetcher, but...
+  23295: "testnet-sapphire-oasis"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
