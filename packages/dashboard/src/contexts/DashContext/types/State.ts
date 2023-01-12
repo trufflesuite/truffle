@@ -28,4 +28,9 @@ export interface State {
     show: boolean;
     type: NoticeContent | null;
   };
+  analyticsConfig: {
+    enableAnalytics: boolean | null;
+    analyticsSet: boolean | null;
+    analyticsMessageDateTime: number | null;
+  };
 }
