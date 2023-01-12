@@ -19,8 +19,7 @@ let providerOptions,
 describe("ENS class", () => {
   before(() => {
     providerOptions = {
-      // note that when vmErrorsOnRPCResponse is true, `"eager"` instamine must be enabled (default)
-      vmErrorsOnRPCResponse: true,
+      miner: { instamine: "eager" },
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
       total_accounts: 1,

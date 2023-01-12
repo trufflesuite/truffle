@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha --no-warnings --timeout 10000 --exit"
+    "test": "mocha --no-warnings --timeout 10000"
   },
   "dependencies": {
     "@ensdomains/ensjs": "^2.1.0",
