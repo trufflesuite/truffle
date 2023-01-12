@@ -188,6 +188,25 @@ export class ProviderAdapter {
     return result;
   }
 
+  public async call(
+    fromAddress: string,
+    contractAddress: string,
+    data: string,
+    blockNumber: string
+  ): Promise<any> {
+    return await this.request({
+      method: "eth_call",
+      params: [
+        {
+          from: fromAddress,
+          to: contractAddress,
+          data: data
+        },
+        blockNumber
+      ]
+    });
+  }
+
   public async getCode(
     address: string,
     block: BlockSpecifier //making this one not regularized to support encoder
