@@ -21,21 +21,22 @@ const checkForCompilerPlugin = async (config, name) => {
 
   if (pluginCompiler) {
     if (await isPluginNewFormat(config)) {
-      // if truffle config plugins is an object array then
-      // use compiler name only as input to Plugins.compile()
-      let workConfig = config;
+      // if plugin is an object, then pass compiler name as input to Plugins.compile()
+      // save config.plugins
+      let currentPlugins = config.plugins;
       let newPlugins: string[] = [];
       config.plugins.map(plugin => {
         if (plugin.hasOwnProperty("compiler") && plugin.compiler === name) {
           newPlugins.push(plugin.name);
         }
       });
-      workConfig.plugins = newPlugins;
-      pluginCompiler = Plugins.compile(workConfig);
-
+      config.plugins = newPlugins;
+      pluginCompiler = Plugins.compile(config);
+      // restore config.plugins
+      config.plugins = currentPlugins;
       return pluginCompiler;
     } else {
-      // plugin is old format: array of strings
+      // plugin fomrat is string
       pluginCompiler = Plugins.compile(config);
       return pluginCompiler;
     }
