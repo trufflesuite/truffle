@@ -71,6 +71,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "dfk-avalanche",
     "testnet-dfk-avalanche",
     "dexalot-avalanche",
+    "testnet-dexalot-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -110,7 +111,13 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "astar",
     "shiden-astar",
     "cypress-klaytn",
-    "baobab-klaytn"
+    "baobab-klaytn",
+    //sourcify does *not* support zetachain mainnet?
+    "athens-zetachain",
+    "emerald-oasis",
+    "testnet-emerald-oasis",
+    //sourcify does *not* support oasis sapphire mainnet?
+    "testnet-sapphire-oasis"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
