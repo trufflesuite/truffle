@@ -49,6 +49,10 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
       // Did we find only one command that matches? If so, use that one.
       if (possibleCommands.length === 1) {
         chosenCommand = possibleCommands[0];
+        // if they miskey a command we need to make sure it is correct so that
+        // yargs can parse it correctly later
+        inputStrings.shift();
+        inputStrings.unshift(chosenCommand);
         break;
       }
       currentLength += 1;
