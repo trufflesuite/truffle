@@ -240,11 +240,11 @@ contract MyContract {
 }
 ```
 
-From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
+From JavaScript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
 
 #### Making a transaction via a contract function
 
-When we call `setValue()`, this creates a transaction. From Javascript:
+When we call `setValue()`, this creates a transaction. From JavaScript:
 
 ```javascript
 const result = instance.setValue(5);
@@ -309,6 +309,52 @@ const val = instance.getValue();
 // val reprsents the `value` storage object in the solidity contract
 // since the contract returns that value.
 ```
+
+#### Overloaded functions
+
+You may find yourself in the situation of having a Truffle contract object that has multiple functions with the same name.
+You can call these "overloaded functions" just like you would a normal contract function. Truffle contract instances
+actually wrap web3's contract abstraction (`web3.eth.Contract`) and so when you call an overloaded function, it
+uses the same function resolution that web3 uses. However, we must give a warning that this overloaded function
+resolution is a bit dodgy and can resolve to the wrong function when you call it. So be careful!
+
+The more unambiguous way of calling these types of functions is to use the `methods` namespace on Truffle contract
+objects. Consider the following contrived code sample:
+
+```solidity
+contract MyContract {
+  uint256 public myUint;
+  string public myString;
+
+  function setValue(uint val) {
+    myUint = val;
+  }
+
+  function setValue(string str) {
+    myString = str;
+  }
+}
+```
+
+This Solidity contract contains two functions named `setValue`, each taking a different type of input. In your JavaScript you
+might do something like the following:
+
+```javascript
+await instance.setValue("this is not string cheese");
+```
+
+Truffle contract (internally using web3's overloaded function resolution) will see that you input a string and
+call the second method in the contract to set `myString`. Again however, sometimes when your contract is more
+complex there might be some ambiguousness and it might fail to resolve to the correct function. In cases where
+you want to explicitly specify which function you would like, you should do something similar to the following:
+
+```javascript
+await instance.methods["setValue(string)"]("this is not string cheese");
+```
+
+The `methods` property is an object whose keys are strings that correspond to the contract function's names
+and signatures. The values are the functions themselves. We recommend using this method of calling overloaded
+functions since it will unambiguously resolve to the correct function.
 
 #### Processing transaction results
 
