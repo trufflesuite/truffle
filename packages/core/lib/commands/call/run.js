@@ -9,7 +9,6 @@ module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
   const { fetchAndCompile } = require("@truffle/fetch-and-compile");
   const loadConfig = require("../../loadConfig");
-  const web3EthAbi = require("web3-eth-abi");
   const DebugUtils = require("@truffle/debug-utils");
 
   if (options.url && options.network) {
@@ -59,73 +58,39 @@ module.exports = async function (options) {
   }
 
   const provider = new Encoder.ProviderAdapter(config.provider);
-  let result;
+  let decoding;
   try {
-    result = await provider.call(
+    const result = await provider.call(
       config.from,
       transaction.to,
       transaction.data,
       config.blockNumber
     );
+    [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
+      status: true
+    });
   } catch (error) {
-    const reasonString = decodeRawData(error.data);
-    throw new TruffleError(
-      `The call returned an error: ${reasonString}\n` +
-        `Error code: ${error.code}`
-    );
-  }
+    [decoding] = await decoder.decodeReturnValue(functionEntry, error.data, {
+      status: false
+    });
 
-  const [decoding] = await decoder.decodeReturnValue(functionEntry, result);
-
-  for (const { value: result } of decoding.arguments) {
-    console.log(
-      util.inspect(new Codec.Export.ResultInspector(result), {
-        colors: true,
-        depth: null,
-        maxArrayLength: null,
-        breakLength: 79
-      })
-    );
-  }
-
-  // Decodes raw data from the eth_call error response and returns the reason string
-  function decodeRawData(rawData) {
-    const errorStringHash = "0x08c379a0";
-    const panicCodeHash = "0x4e487b71";
-    const selectorLength = 2 + 2 * 4; //0x then 4 bytes (0x then 8 hex digits)
-    const wordLength = 2 * 32; //32 bytes (64 hex digits)
-    if (!rawData) {
-      return undefined;
-    } else if (rawData === "0x") {
-      //no revert message
-      return undefined;
-    } else if (rawData.startsWith(errorStringHash)) {
-      try {
-        return web3EthAbi.decodeParameter(
-          "string",
-          rawData.slice(selectorLength)
-        );
-      } catch (_) {
-        //no reasonable way to handle this case at present
-        return undefined;
-      }
-    } else if (rawData.startsWith(panicCodeHash)) {
-      if (rawData.length === selectorLength + wordLength) {
-        const panicCode = web3EthAbi.decodeParameter(
-          "uint256",
-          rawData.slice(selectorLength)
-        ); //this returns a decimal string
-        return `Panic: ${DebugUtils.panicString(panicCode)}`;
-      } else {
-        //incorrectly encoded panic...?
-        return undefined;
-      }
-    } else {
-      //we can't reasonably handle custom errors here
-      //(but we can probably assume it is one?)
-      return "Custom error (could not decode)";
+    // Gives a readable interpretation of the panic code returned from the call
+    if (decoding.abi.name === "Panic") {
+      const panicCode = decoding.arguments[0].value.value.asBN;
+      throw new TruffleError(
+        `Error thrown: Panic: ${DebugUtils.panicString(panicCode)}`
+      );
     }
   }
+
+  config.logger.log(
+    util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
+      colors: true,
+      depth: null,
+      maxArrayLength: null,
+      breakLength: 79
+    })
+  );
 
   async function sourceFromLocal(contractNameOrAddress, config) {
     const contractNames = fs
