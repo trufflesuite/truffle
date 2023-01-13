@@ -10,6 +10,7 @@ module.exports = async function (options) {
   const { fetchAndCompile } = require("@truffle/fetch-and-compile");
   const loadConfig = require("../../loadConfig");
   const DebugUtils = require("@truffle/debug-utils");
+  const web3Utils = require("web3-utils");
 
   if (options.url && options.network) {
     const message =
@@ -150,6 +151,14 @@ module.exports = async function (options) {
   }
 
   async function sourceFromExternal(contractAddress, config) {
+    const isValidAddress = web3Utils.isAddress(contractAddress);
+    if (isValidAddress === "false") {
+      throw new TruffleError(
+        "The address entered is not a valid Ethereum address!\n" +
+          "Please check the address and run the command again!"
+      );
+    }
+
     const { compileResult } = await fetchAndCompile(contractAddress, config);
 
     const projectInfo = {
