@@ -3,7 +3,6 @@ require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
 const TruffleError = require("@truffle/error");
-const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
@@ -107,15 +106,7 @@ runCommand(command, options)
     process.exit();
   })
   .catch(error => {
-    if (error instanceof TaskError) {
-      analytics.send({
-        exception: "TaskError - display general help message",
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
-      command.displayGeneralHelp();
-    } else if (error instanceof TruffleError) {
+    if (error instanceof TruffleError) {
       analytics.send({
         exception: "TruffleError - missing configuration file",
         version: versionInfo.bundle
