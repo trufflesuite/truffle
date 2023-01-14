@@ -41,13 +41,38 @@ const handlers = {
    * @param {Object}       context  execution state
    * @param {PromiEvent}   emitter  promiEvent returned by a web3 method call
    */
-  setup: function(emitter, context) {
+  setup: function (emitter, context) {
     emitter.on("error", handlers.error.bind(emitter, context));
     emitter.on("transactionHash", handlers.hash.bind(emitter, context));
+
     // web3 block polls if the confirmation listener is enabled so we want to
     // give users a way of opting out of this behavior - it causes problems in testing
     if (!context.contract.disableConfirmationListener) {
-      emitter.on("confirmation", handlers.confirmation.bind(emitter, context));
+      // maintain a count of confirmation listeners
+      let confirmationListenersCount = 0;
+
+      // a new promievent listener...
+      context.promiEvent.eventEmitter.on("newListener", event => {
+        if (event === "confirmation") {
+          //connect listener to confirmation messages one time
+          if (++confirmationListenersCount === 1) {
+            emitter.on(
+              "confirmation",
+              handlers.confirmation.bind(emitter, context)
+            );
+          }
+        }
+      });
+
+      // a listener de-registers...
+      context.promiEvent.eventEmitter.on("removerListener", event => {
+        // clean up if its the confirmation listener
+        if (event === "confirmation") {
+          if (--confirmationListenersCount === 0) {
+            emitter.removeListener("confirmation", handlers.confirmation);
+          }
+        }
+      });
     }
     emitter.on("receipt", handlers.receipt.bind(emitter, context));
   },
@@ -59,7 +84,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} error     error
    */
-  error: function(context, error) {
+  error: function (context, error) {
     if (!handlers.ignoreTimeoutError(context, error)) {
       context.promiEvent.eventEmitter.emit("error", error);
       this.removeListener("error", handlers.error);
@@ -72,13 +97,13 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {String} hash      transaction hash
    */
-  hash: function(context, hash) {
+  hash: function (context, hash) {
     context.transactionHash = hash;
     context.promiEvent.eventEmitter.emit("transactionHash", hash);
     this.removeListener("transactionHash", handlers.hash);
   },
 
-  confirmation: function(context, number, receipt) {
+  confirmation: function (context, number, receipt) {
     context.promiEvent.eventEmitter.emit("confirmation", number, receipt);
 
     // Per web3: initial confirmation index is 0
@@ -93,7 +118,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: async function(context, receipt) {
+  receipt: async function (context, receipt) {
     // keep around the raw (not decoded) logs in the raw logs field as a
     // stopgap until we can get the ABI for all events, not just the current
     // contract
