@@ -35,7 +35,6 @@ describe("Deployer (sync)", function () {
     });
 
     web3 = new Web3(provider);
-    // web3.eth.transactionPollingTimeout = 5;
   });
 
   after(async function () {
