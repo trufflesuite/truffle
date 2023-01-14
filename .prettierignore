@@ -1,0 +1,2 @@
+# Ignored files:
+/packages/core/lib/commands/init/initSource/truffle-config.js

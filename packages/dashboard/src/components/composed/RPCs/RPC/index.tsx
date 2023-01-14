@@ -1,9 +1,18 @@
+import { useEffect, useState } from "react";
 import { createStyles } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import {
+  showNotification,
+  updateNotification,
+  hideNotification
+} from "@mantine/notifications";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import Overview from "src/components/composed/RPCs/RPC/Overview";
 import Details from "src/components/composed/RPCs/RPC/Details";
+import { useDash } from "src/hooks";
+import { messageIsDecodable, decodeMessage, Decoding } from "src/utils/dash";
+import { decodeNotifications } from "src/utils/notifications";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius, fn } = theme;
@@ -26,6 +35,9 @@ type RPCProps = {
 };
 
 function RPC({ lifecycle }: RPCProps): JSX.Element {
+  const { decoder } = useDash()!.state;
+  const [decoding, setDecoding] = useState<Decoding>("");
+  const [decodingSucceeded, setDecodingSucceeded] = useState(true);
   const [clicked, clickedHandlers] = useDisclosure(false);
   const [overviewBackHovered, overviewBackHoveredHandlers] =
     useDisclosure(false);
@@ -37,12 +49,47 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     useDisclosure(false);
   const { classes } = useStyles();
 
-  const detailsView = clicked ? "expanded" : "collapsed";
+  const decodable = messageIsDecodable(lifecycle.message);
+  const decodeNotificationId = `decode-rpc-request-${lifecycle.message.payload.id}`;
+
+  useEffect(() => {
+    const decode = async () => {
+      const { method, result, failed } = await decodeMessage(
+        lifecycle,
+        decoder!
+      );
+
+      setDecoding(result);
+      setDecodingSucceeded(!failed);
+
+      if (failed) {
+        showNotification({
+          ...decodeNotifications[method]["fail"],
+          id: decodeNotificationId
+        });
+      } else {
+        updateNotification({
+          ...decodeNotifications[method]["success"],
+          id: decodeNotificationId
+        });
+      }
+    };
+
+    if (decodable) decode();
+  }, [lifecycle, decoder, decodable, decodeNotificationId]);
+
+  useEffect(
+    () => () => void hideNotification(decodeNotificationId),
+    [decodeNotificationId]
+  );
 
   return (
     <div className={classes.container}>
       <Overview
         lifecycle={lifecycle}
+        showDecoding={decodable}
+        decoding={decoding}
+        decodingSucceeded={decodingSucceeded}
         active={
           clicked ||
           overviewBackHovered ||
@@ -59,7 +106,10 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
       />
       <Details
         lifecycle={lifecycle}
-        view={detailsView}
+        showDecoding={decodable}
+        decoding={decoding}
+        decodingSucceeded={decodingSucceeded}
+        view={clicked ? "expanded" : "collapsed"}
         hoverState={{
           overviewBackHovered,
           rejectButtonHovered,

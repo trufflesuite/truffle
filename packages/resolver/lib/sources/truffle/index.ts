@@ -4,7 +4,6 @@ import { Deployed } from "./Deployed";
 import findContracts from "@truffle/contract-sources";
 import type { ResolverSource } from "../../source";
 const contract = require("@truffle/contract");
-
 export class Truffle implements ResolverSource {
   options: any;
 
@@ -16,11 +15,14 @@ export class Truffle implements ResolverSource {
     if (importPath === `truffle${path.sep}DeployedAddresses.sol`) {
       const sourceFiles = await findContracts(this.options.contracts_directory);
 
-      const buildDirFiles: string[] =
-        fse.existsSync(this.options.contracts_build_directory)
-          ? fse.readdirSync(this.options.contracts_build_directory)
-          : [];
-      const abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
+      const buildDirFiles: string[] = fse.existsSync(
+        this.options.contracts_build_directory
+      )
+        ? fse.readdirSync(this.options.contracts_build_directory)
+        : [];
+      const abstractionFiles = buildDirFiles.filter(file =>
+        file.match(/^.*.json$/)
+      );
 
       const mapping: { [key: string]: string | false } = {};
 
@@ -30,7 +32,10 @@ export class Truffle implements ResolverSource {
       // to prevent any compile errors in tests.
       sourceFiles.forEach((file: string) => {
         // we need to account for .json and .abi.json files
-        const name = path.basename(path.basename(path.basename(file, ".sol"), ".json"), ".abi");
+        const name = path.basename(
+          path.basename(path.basename(file, ".sol"), ".json"),
+          ".abi"
+        );
         if (blacklist.has(name)) return;
         mapping[name] = false;
       });
@@ -68,6 +73,31 @@ export class Truffle implements ResolverSource {
         this.options.compilers
       );
       return { body: addressSource, filePath: importPath };
+    }
+
+    // Match both Camel and Pascal casing for console.sol
+    if (
+      importPath === `truffle${path.sep}Console.sol` ||
+      importPath === `truffle${path.sep}console.sol`
+    ) {
+      // calculating this in webpack env breaks
+      let unbundledGanacheConsoleSol;
+      // @ts-ignore
+      if (typeof BUNDLE_VERSION === "undefined") {
+        unbundledGanacheConsoleSol = path.resolve(
+          require.resolve("@ganache/console.log/console.sol")
+        );
+      }
+      const actualImportPath =
+        // @ts-ignore
+        typeof BUNDLE_VERSION !== "undefined"
+          ? path.resolve(path.join(__dirname, `console.sol`))
+          : unbundledGanacheConsoleSol;
+      const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
+      return {
+        body,
+        filePath: importPath
+      };
     }
 
     const truffleLibraries = [

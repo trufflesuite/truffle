@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.1",
+  "version": "2.1.5",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -24,22 +24,22 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "4.0.1",
-    "@truffle/hdwallet": "^0.1.0",
-    "@types/web3": "^1.0.20",
+    "@truffle/hdwallet": "^0.1.1",
+    "@types/ethereum-protocol": "^1.0.0",
+    "@types/web3": "1.0.20",
+    "@types/web3-provider-engine": "^14.0.0",
     "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
-    "web3": "1.7.4",
+    "web3": "1.8.1",
     "web3-provider-engine": "16.0.3"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
-    "@types/ethereum-protocol": "^1.0.0",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
-    "@types/web3-provider-engine": "^14.0.0",
-    "ganache": "7.5.0",
-    "mocha": "9.2.2",
+    "ganache": "7.7.3",
+    "mocha": "10.1.0",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4"
   },

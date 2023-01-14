@@ -49,12 +49,14 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "optimistic",
     "kovan-optimistic", //can no longer verify but can still fetch existing
     "goerli-optimistic",
+    "goerli-bedrock-optimistic",
     "arbitrum",
-    "rinkeby-arbitrum",
+    "rinkeby-arbitrum", //can no longer verify but can still fetch existing
     "goerli-arbitrum",
     "polygon",
     "mumbai-polygon",
     "gnosis",
+    "chiado-gnosis",
     "optimism-gnosis",
     "core-poa",
     "sokol-poa",
@@ -69,6 +71,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "dfk-avalanche",
     "testnet-dfk-avalanche",
     "dexalot-avalanche",
+    "testnet-dexalot-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -104,8 +107,19 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-godwoken",
     //sourcify does *not* support xinfin mainnet...?
     "apothem-xinfin",
-    "canto"
+    "canto",
+    "astar",
+    "shiden-astar",
+    "cypress-klaytn",
+    "baobab-klaytn",
+    //sourcify does *not* support zetachain mainnet?
+    "athens-zetachain",
+    "emerald-oasis",
+    "testnet-emerald-oasis",
+    //sourcify does *not* support oasis sapphire mainnet?
+    "testnet-sapphire-oasis"
     //I'm excluding crystaleum as it has network ID different from chain ID
+    //excluding kekchain for the same reason
   ]);
 
   constructor(networkId: number) {

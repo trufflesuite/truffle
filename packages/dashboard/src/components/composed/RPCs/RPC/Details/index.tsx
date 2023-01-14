@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import type { Decoding } from "src/utils/dash";
 import type {
   HoverState,
   DetailsView
@@ -49,6 +50,9 @@ const useStyles = createStyles((theme, _params, _getRef) => {
 
 type DetailsProps = {
   lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  showDecoding: boolean;
+  decoding: Decoding;
+  decodingSucceeded: boolean;
   view: DetailsView;
   hoverState: HoverState;
   onCollapsedClick: React.MouseEventHandler<HTMLDivElement>;
@@ -58,6 +62,9 @@ type DetailsProps = {
 
 function Details({
   lifecycle,
+  showDecoding,
+  decoding,
+  decodingSucceeded,
   view,
   hoverState,
   onCollapsedClick,
@@ -92,7 +99,14 @@ function Details({
               </Center>
             }
           >
-            <Expanded lifecycle={lifecycle} />
+            <Expanded
+              {...{
+                lifecycle,
+                showDecoding,
+                decoding,
+                decodingSucceeded
+              }}
+            />
           </Suspense>
         </>
       )}

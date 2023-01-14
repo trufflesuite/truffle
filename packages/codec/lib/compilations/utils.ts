@@ -674,7 +674,8 @@ function projectInfoIsArtifacts(
 }
 
 export function infoToCompilations(
-  projectInfo: ProjectInfo | undefined
+  projectInfo: ProjectInfo | undefined,
+  nonceString?: string
 ): Compilation[] {
   if (!projectInfo) {
     throw new NoProjectInfoError();
@@ -682,8 +683,22 @@ export function infoToCompilations(
   if (projectInfoIsCodecStyle(projectInfo)) {
     return projectInfo.compilations;
   } else if (projectInfoIsCommonStyle(projectInfo)) {
-    return shimCompilations(projectInfo.commonCompilations);
+    return shimCompilations(projectInfo.commonCompilations, nonceString);
   } else if (projectInfoIsArtifacts(projectInfo)) {
-    return shimArtifacts(projectInfo.artifacts);
+    return shimArtifacts(projectInfo.artifacts, undefined, nonceString);
   }
+}
+
+export function findRepeatCompilationIds(
+  compilations: Compilation[]
+): Set<string> {
+  let repeats: Set<string> = new Set();
+  for (let i = 0; i < compilations.length; i++) {
+    for (let j = i + 1; j < compilations.length; j++) {
+      if (compilations[i].id === compilations[j].id) {
+        repeats.add(compilations[i].id);
+      }
+    }
+  }
+  return repeats;
 }

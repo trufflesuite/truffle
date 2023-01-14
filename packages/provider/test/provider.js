@@ -73,7 +73,7 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
-      const snippet = `Could not connect to your Ethereum client`;
+      const snippet = `Couldn't connect to node`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -119,7 +119,7 @@ describe("Provider", function () {
         "The provider was instantiated correctly. That shouldn't have happened"
       );
     } catch (error) {
-      const snippet = `Could not connect to your Ethereum client`;
+      const snippet = `Couldn't connect to node`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -189,7 +189,12 @@ describe("Provider", function () {
 
         assert.deepStrictEqual(error, err);
         const _stubbedRawError = _stubbedFailedResult(payload);
-        assert.deepStrictEqual(error, new ProviderError(_stubbedRawError.error.message, { underlyingError: _stubbedRawError.error }));
+        assert.deepStrictEqual(
+          error,
+          new ProviderError(_stubbedRawError.error.message, {
+            underlyingError: _stubbedRawError.error
+          })
+        );
 
         assert.strictEqual(result, undefined);
       }

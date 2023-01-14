@@ -49,6 +49,10 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
       // Did we find only one command that matches? If so, use that one.
       if (possibleCommands.length === 1) {
         chosenCommand = possibleCommands[0];
+        // if they miskey a command we need to make sure it is correct so that
+        // yargs can parse it correctly later
+        inputStrings.shift();
+        inputStrings.unshift(chosenCommand);
         break;
       }
       currentLength += 1;
@@ -93,8 +97,10 @@ const prepareOptions = ({ command, inputStrings, options }) => {
   const yargs = require("yargs/yargs")();
   yargs
     .command(require(`./commands/${command.name}/meta`))
-    //Turn off yargs' default behavior when handling "truffle --version"
-    .version(false);
+    //Turn off yargs' default behavior when handling `truffle --version` & `truffle <cmd> --help`
+    .version(false)
+    .help(false);
+
   const commandOptions = yargs.parse(inputStrings);
 
   // remove the task name itself put there by yargs

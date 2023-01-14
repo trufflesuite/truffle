@@ -28,6 +28,11 @@ export const getInitialConfig = ({
       }
     },
     verboseRpc: false,
+    solidityLog: {
+      displayPrefix: "",
+      preventConsoleLogMigration: false
+    },
+    debugGlobal: "debug",
     gas: null,
     gasPrice: null,
     maxFeePerGas: null,
@@ -93,6 +98,7 @@ export const configProps = ({
     network() {},
     networks() {},
     verboseRpc() {},
+    solidityLog() {},
     build() {},
     resolver() {},
     artifactor() {},
@@ -103,6 +109,7 @@ export const configProps = ({
     console() {},
     mocha() {},
     quiet() {},
+    debugGlobal() {},
 
     build_directory: {
       default: () => path.join(configObject.working_directory, "build"),

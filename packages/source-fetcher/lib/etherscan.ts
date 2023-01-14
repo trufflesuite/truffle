@@ -62,11 +62,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "goerli": "api-goerli.etherscan.io",
       "sepolia": "api-sepolia.etherscan.io",
       "optimistic": "api-optimistic.etherscan.io",
-      "kovan-optimistic": "api-kovan-optimistic.etherscan.io",
       "goerli-optimistic": "api-goerli-optimism.etherscan.io", //yes this one is different!
       "arbitrum": "api.arbiscan.io",
       "nova-arbitrum": "api-nova.arbiscan.io",
-      "rinkeby-arbitrum": "api-testnet.arbiscan.io", //hidden now, but it still works!
       "goerli-arbitrum": "api-goerli.arbiscan.io",
       "polygon": "api.polygonscan.com",
       "mumbai-polygon": "api-mumbai.polygonscan.com",
@@ -91,7 +89,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "alfajores-celo": "api-alfajores.celoscan.io",
       "clover": "api.clvscan.com",
       "boba": "api.bobascan.com",
-      "rinkeby-boba": "api-testnet.bobascan.com",
+      "goerli-boba": "api-testnet.bobascan.com",
       "gnosis": "api.gnosisscan.io"
     };
 

@@ -3,7 +3,6 @@ require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
 const TruffleError = require("@truffle/error");
-const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
@@ -17,7 +16,7 @@ global.crypto = {
 };
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "12.0.0";
+const minimumNodeVersion = "14.0.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
@@ -42,21 +41,39 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 
 const inputStrings = process.argv.slice(2);
 
-const userWantsGeneralHelp =
-  inputStrings.length === 0 ||
-  (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
-
-if (userWantsGeneralHelp) {
-  const { displayGeneralHelp } = require("./lib/command-utils");
-  displayGeneralHelp();
-  process.exit(0);
-}
-
 const {
   getCommand,
   prepareOptions,
-  runCommand
+  runCommand,
+  displayGeneralHelp
 } = require("./lib/command-utils");
+
+//User only enter truffle with no commands, let's show them what's available.
+if (inputStrings.length === 0) {
+  displayGeneralHelp();
+  process.exit();
+}
+
+//if `help` or `--help` is in the command, validate and transform the input argument for help
+if (
+  inputStrings.some(inputString => ["help", "--help"].includes(inputString))
+) {
+  //when user wants general help
+  if (inputStrings.length === 1) {
+    displayGeneralHelp();
+    process.exit();
+  }
+
+  //check where is --help used, mutate argument into a proper help command
+  const helpIndex = inputStrings.indexOf("--help");
+
+  if (helpIndex !== -1) {
+    //remove `--help` from array
+    inputStrings.splice(helpIndex, 1);
+    //insert `help` in first position
+    inputStrings.unshift("help");
+  }
+}
 
 const command = getCommand({
   inputStrings,
@@ -67,7 +84,9 @@ const command = getCommand({
 //getCommand() will return null if a command not recognized by truffle is used.
 if (command === null) {
   console.log(
-    `\`truffle ${inputStrings}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
+    `\`truffle ${inputStrings.join(
+      " "
+    )}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
   );
   process.exit(1);
 }
@@ -87,15 +106,7 @@ runCommand(command, options)
     process.exit();
   })
   .catch(error => {
-    if (error instanceof TaskError) {
-      analytics.send({
-        exception: "TaskError - display general help message",
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
-      command.displayGeneralHelp();
-    } else if (error instanceof TruffleError) {
+    if (error instanceof TruffleError) {
       analytics.send({
         exception: "TruffleError - missing configuration file",
         version: versionInfo.bundle

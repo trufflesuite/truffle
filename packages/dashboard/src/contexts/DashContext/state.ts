@@ -1,10 +1,9 @@
-import { providers } from "ethers";
+import { openDB } from "idb/with-async-ittr";
+import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isDashboardProviderMessage,
-  isInvalidateMessage,
-  isLogMessage,
-  isDebugMessage
+  isInvalidateMessage
 } from "@truffle/dashboard-message-bus-common";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import {
@@ -13,17 +12,32 @@ import {
   rejectMessage,
   confirmMessage
 } from "src/utils/dash";
-import type { State, Action } from "src/contexts/DashContext";
+import type { State, Action, Schema } from "src/contexts/DashContext";
+
+const DB_NAME = "TruffleDashboard";
+const DB_VERSION = 1;
 
 export const initialState: State = {
-  host: window.location.hostname,
-  port:
-    process.env.NODE_ENV === "development"
-      ? 24012
-      : Number(window.location.port),
-  // @ts-ignore
-  provider: new providers.Web3Provider(window.ethereum),
-  client: null,
+  busClient: new DashboardMessageBusClient({
+    host: window.location.hostname,
+    port:
+      process.env.NODE_ENV === "development"
+        ? 24012
+        : Number(window.location.port)
+  }),
+  dbPromise: openDB<Schema>(DB_NAME, DB_VERSION, {
+    upgrade(db) {
+      const compilationStore = db.createObjectStore("Compilation", {
+        keyPath: "dataHash"
+      });
+      compilationStore.createIndex("TimeAdded", "timeAdded", {
+        unique: false
+      });
+    }
+  }),
+  decoder: null,
+  decoderCompilations: null,
+  decoderCompilationHashes: null,
   providerMessages: new Map(),
   chainInfo: {
     id: null,
@@ -32,27 +46,39 @@ export const initialState: State = {
   notice: {
     show: false,
     type: "LOADING"
+  },
+  analyticsConfig: {
+    enableAnalytics: null,
+    analyticsSet: null,
+    analyticsMessageDateTime: null
   }
 };
 
 export const reducer = (state: State, action: Action): State => {
   const { type, data } = action;
   switch (type) {
-    case "set-client":
-      return { ...state, client: data };
+    case "set-decoder":
+      return { ...state, ...data };
     case "set-chain-info":
       return { ...state, chainInfo: data };
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
+    case "set-analytics-config":
+      return { ...state, analyticsConfig: data };
     case "handle-message":
-      const { lifecycle, provider } = data;
+      // Copy state,
+      // modify it depending on message type,
+      // return new state.
+      const lifecycle = data;
       const { message } = lifecycle;
-      const { id } = message;
-      const updatedProviderMessages = new Map(state.providerMessages);
 
-      // Determine message type
+      const newState: State = {
+        ...state,
+        providerMessages: new Map(state.providerMessages)
+      };
+
       if (isDashboardProviderMessage(message)) {
-        window.devLog(
+        console.debug(
           `Received provider message: ${message.payload.method}`,
           message
         );
@@ -61,24 +87,18 @@ export const reducer = (state: State, action: Action): State => {
         if (messageIsUnsupported(message)) {
           rejectMessage(strictlyTypedLifecycle, "UNSUPPORTED");
         } else if (messageNeedsInteraction(message)) {
-          updatedProviderMessages.set(id, strictlyTypedLifecycle);
+          newState.providerMessages.set(message.id, strictlyTypedLifecycle);
         } else {
           // Confirm supported and non-interactive messages
-          confirmMessage(strictlyTypedLifecycle, provider);
+          confirmMessage(strictlyTypedLifecycle);
         }
       } else if (isInvalidateMessage(message)) {
-        window.devLog("Received invalidate message", message);
+        console.debug("Received invalidate message", message);
         const invalidatedID = message.payload;
-        updatedProviderMessages.delete(invalidatedID);
-      } else if (isLogMessage(message)) {
-        window.devLog(`Received log message`, message);
-        lifecycle.respond({ payload: undefined });
-      } else if (isDebugMessage(message)) {
-        window.devLog("Received debug message", message);
-        lifecycle.respond({ payload: undefined });
+        newState.providerMessages.delete(invalidatedID);
       }
 
-      return { ...state, providerMessages: updatedProviderMessages };
+      return newState;
     default:
       throw new Error("Undefined reducer action type");
   }

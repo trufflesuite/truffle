@@ -13,6 +13,7 @@ export interface ContextValue {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => any;
     toggleNotice: () => void;
+    updateAnalyticsConfig: (value: boolean) => void;
   };
   dispatch?: React.Dispatch<Action>;
 }

@@ -10,7 +10,7 @@ module.exports = {
       port: 24012
     };
 
-    this.messageBus = new DashboardMessageBusClient(dashboardConfig);
+    this.messageBusClient = new DashboardMessageBusClient(dashboardConfig);
 
     this._logger = {
       log: ((...args) => {
@@ -26,8 +26,10 @@ module.exports = {
   handlers: {
     "compile:start": [
       async function () {
+        if (!isDashboardNetwork(this.config)) return;
+
         try {
-          const publishLifecycle = await this.messageBus.publish({
+          const publishLifecycle = await this.messageBusClient.publish({
             type: "debug",
             payload: {
               message: "compile:start"
@@ -39,11 +41,23 @@ module.exports = {
         }
       }
     ],
+    "compile:succeed": [
+      async function ({ result }) {
+        try {
+          const publishLifecycle = await this.messageBusClient.publish({
+            type: "cli-event",
+            payload: {
+              label: "workflow-compile-result",
+              data: result
+            }
+          });
+          publishLifecycle.abandon();
+        } catch (err) {}
+      }
+    ],
     "rpc:request": [
       function (event) {
-        if (!isDashboardNetwork(this.config)) {
-          return;
-        }
+        if (!isDashboardNetwork(this.config)) return;
 
         const { payload } = event;
         if (payload.method === "eth_sendTransaction") {
@@ -57,9 +71,7 @@ module.exports = {
     ],
     "rpc:result": [
       function (event) {
-        if (!isDashboardNetwork(this.config)) {
-          return;
-        }
+        if (!isDashboardNetwork(this.config)) return;
 
         let { error } = event;
         const { payload, result } = event;

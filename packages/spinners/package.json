@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -32,7 +32,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "~12.12.0",
     "@types/semver": "^7.3.9",
-    "mocha": "9.2.2",
+    "mocha": "10.1.0",
     "ts-node": "10.7.0",
     "typescript": "^4.7.4"
   },

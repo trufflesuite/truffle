@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.63",
+  "version": "0.3.3",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -20,14 +20,14 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.1.1",
-    "@truffle/interface-adapter": "^0.5.24",
+    "@truffle/error": "^0.2.0",
+    "@truffle/interface-adapter": "^0.5.27",
     "debug": "^4.3.1",
-    "web3": "1.7.4"
+    "web3": "1.8.1"
   },
   "devDependencies": {
-    "ganache": "7.5.0",
-    "mocha": "9.2.2"
+    "ganache": "7.7.3",
+    "mocha": "10.1.0"
   },
   "keywords": [
     "ethereum",

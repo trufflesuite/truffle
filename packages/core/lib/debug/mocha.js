@@ -18,7 +18,7 @@ class CLIDebugHook {
     // turn off timeouts for the current runnable
     // HACK we don't turn it back on because it doesn't work...
     // tests that take a long time _after_ debug break just won't timeout
-    this.disableTimeout();
+    await this.disableTimeout();
 
     const { txHash, result, method } = await this.invoke(operation);
     debug("txHash: %o", txHash);
@@ -38,8 +38,8 @@ class CLIDebugHook {
 
   async start() {}
 
-  disableTimeout() {
-    this.runner.currentRunnable.timeout(0);
+  async disableTimeout() {
+    (await this.runner).currentRunnable.timeout(0);
   }
 
   async invoke(operation) {

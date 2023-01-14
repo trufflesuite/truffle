@@ -11,12 +11,10 @@ const path = require("path");
  * @param {boolean} isError - true if error
  */
 const Log = (message, isError) => {
-  const decoratedPrefix = `\t---truffle commandRunner ${
-    isError ? "stderr" : "stdout"
-  }--- |\t`;
+  const prefix = `* ${isError ? "E" : " "} * |\t`;
   const annotatedMessage = message
     .split("\n")
-    .map(l => `${decoratedPrefix}${l}`)
+    .map(l => `${prefix}${l}`)
     .join("\n");
   console.log(annotatedMessage);
 };

@@ -5,13 +5,14 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
+const os = require("os");
 const vm = require("vm");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
-const spawnSync = require("child_process").spawnSync;
+const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand } = require("./command-utils");
@@ -241,12 +242,10 @@ class Console extends EventEmitter {
   }
 
   provision() {
-    let files;
+    let files = [];
+    let jsonBlobs = [];
     try {
-      const unfilteredFiles = fse.readdirSync(
-        this.options.contracts_build_directory
-      );
-      files = unfilteredFiles.filter(file => file.endsWith(".json"));
+      files = fse.readdirSync(this.options.contracts_build_directory);
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
@@ -254,16 +253,38 @@ class Console extends EventEmitter {
       // doesn't exist" 99.9% of the time.
     }
 
-    let jsonBlobs = [];
-    files = files || [];
-
     files.forEach(file => {
+      // filter out non artifacts
+      if (!file.endsWith(".json")) return;
+
       try {
         const body = fse.readFileSync(
           path.join(this.options.contracts_build_directory, file),
           "utf8"
         );
-        jsonBlobs.push(JSON.parse(body));
+        const json = JSON.parse(body);
+        // Artifacts may not contain metadata. For example, early Solidity versions as well as
+        // Vyper contracts do not include metadata. Just push them to json blobs.
+        if (json.metadata === undefined) {
+          jsonBlobs.push(json);
+        } else {
+          // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+          // user contracts named console.log will be imported, and a warning will be issued.
+          const metadata = JSON.parse(json.metadata);
+          const sources = Object.keys(metadata.sources);
+          if (
+            sources.length > 1 ||
+            (sources.length === 1 &&
+              !sources.some(source => {
+                return (
+                  source === "truffle/console.sol" ||
+                  source === "truffle/Console.sol"
+                );
+              }))
+          ) {
+            jsonBlobs.push(json);
+          }
+        }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
       }
@@ -314,7 +335,7 @@ class Console extends EventEmitter {
     });
   }
 
-  runSpawn(inputStrings, options) {
+  async runSpawn(inputStrings, options) {
     let childPath;
     /* eslint-disable no-undef */
     if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
@@ -323,10 +344,7 @@ class Console extends EventEmitter {
       childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
-    // stderr is piped here because we don't need to repeatedly see the parent
-    // errors/warnings in child process - specifically the error re: having
-    // multiple config files
-    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
+    const spawnOptions = { stdio: "pipe" };
     const settings = ["config", "network", "url"]
       .filter(setting => options[setting])
       .map(setting => `--${setting} ${options[setting]}`)
@@ -334,27 +352,52 @@ class Console extends EventEmitter {
 
     const spawnInput = `${settings} -- ${inputStrings}`;
 
-    const spawnResult = spawnSync(
+    const spawnedProcess = spawn(
       "node",
       ["--no-deprecation", childPath, spawnInput],
       spawnOptions
     );
 
-    if (spawnResult.stderr) {
-      // Theoretically stderr can contain multiple errors.
-      // So let's just print it instead of throwing through
-      // the error handling mechanism. Bad call?
-      debug(spawnResult.stderr.toString());
-    }
+    // Theoretically stderr can contain multiple errors.
+    // So let's just print it instead of throwing through
+    // the error handling mechanism. Bad call? Who knows...
+    // better be safe and buffer stderr so that it doesn't
+    // interrupt stdout, and present it as a complete
+    // string at the end of the spawned process.
+    let bufferedError = "";
+    spawnedProcess.stderr.on("data", data => {
+      bufferedError += data.toString();
+    });
 
-    // re-provision to ensure any changes are available in the repl
-    this.provision();
+    spawnedProcess.stdout.on("data", data => {
+      // convert buffer to string
+      data = data.toString();
+      // workaround: remove extra newline in `truffle develop` console
+      // truffle test, for some reason, appends a newline to the data
+      // it emits here.
+      if (data.endsWith(os.EOL)) data = data.slice(0, -os.EOL.length);
+      console.log(data);
+    });
 
-    //display prompt when child repl process is finished
-    this.repl.displayPrompt();
+    return new Promise((resolve, reject) => {
+      spawnedProcess.on("close", code => {
+        // dump bufferedError
+        debug(bufferedError);
+
+        if (!code) {
+          // re-provision to ensure any changes are available in the repl
+          this.provision();
+
+          //display prompt when child repl process is finished
+          this.repl.displayPrompt();
+          return void resolve();
+        }
+        reject(code);
+      });
+    });
   }
 
-  interpret(input, context, filename, callback) {
+  async interpret(input, context, filename, callback) {
     const processedInput = processInput(input, this.allowedCommands);
     if (
       this.allowedCommands.includes(processedInput.split(" ")[0]) &&
@@ -365,7 +408,7 @@ class Console extends EventEmitter {
       }) !== null
     ) {
       try {
-        this.runSpawn(processedInput, this.options);
+        await this.runSpawn(processedInput, this.options);
       } catch (error) {
         // Perform error handling ourselves.
         if (error instanceof TruffleError) {
@@ -393,12 +436,12 @@ class Console extends EventEmitter {
 
     /*
     - allow whitespace before everything else
-    - optionally capture `var|let|const <varname> = `
-      - varname only matches if it starts with a-Z or _ or $
+    - optionally capture `var| let |const <varname> = `
+        - varname only matches if it starts with a-Z or _ or $
         and if contains only those chars or numbers
-      - this is overly restrictive but is easier to maintain
-    - capture `await <anything that follows it>`
-    */
+        - this is overly restrictive but is easier to maintain
+        - capture `await <anything that follows it>`
+          */
     let includesAwait =
       /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
@@ -420,11 +463,11 @@ class Console extends EventEmitter {
 
       // Wrap the await inside an async function.
       // Strange indentation keeps column offset correct in stack traces
-      source = `(async function() { try { ${
+      source = `(async function() { try {${
         assign ? `global.${RESULT} =` : "return"
       } (
-  ${expression.trim()}
-  ); } catch(e) { global.ERROR = e; throw e; } }())`;
+          ${expression.trim()}
+  ); } catch(e) {global.ERROR = e; throw e; } }())`;
 
       assignment = assign
         ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
