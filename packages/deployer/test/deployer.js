@@ -23,15 +23,27 @@ describe("Deployer (sync)", function () {
   let UsesExample;
   let IsLibrary;
   let UsesLibrary;
+  let web3;
+  let provider;
 
-  const provider = ganache.provider({
-    miner: {
-      instamine: "strict"
-    },
-    logging: { quiet: true }
+  before(async function () {
+    provider = ganache.provider({
+      miner: {
+        instamine: "eager"
+      },
+      logging: { quiet: true }
+    });
+
+    web3 = new Web3(provider);
+    // web3.eth.transactionPollingTimeout = 5;
   });
 
-  const web3 = new Web3(provider);
+  after(async function () {
+    if (provider) {
+      await provider.disconnect();
+    }
+    web3 = null;
+  });
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();
@@ -322,7 +334,7 @@ describe("Deployer (sync)", function () {
         deployer.then(async function () {
           await deployer._startBlockPolling(interfaceAdapter);
           await utils.waitMS(9000);
-          await deployer._startBlockPolling(interfaceAdapter);
+          await deployer._stopBlockPolling(interfaceAdapter);
         });
       };
 
