@@ -84,7 +84,7 @@ type FormattedBlock = {
 };
 const stringWhitelist = ["latest", "pending", "genesis", "earliest"];
 
-const formatBlockSpecifier = (block: BlockSpecifier): string => {
+export const formatBlockSpecifier = (block: BlockSpecifier): string => {
   if (typeof block === "string" && stringWhitelist.includes(block)) {
     // block is one of 'latest', 'pending', 'earliest', or 'genesis'
     return block === "genesis"
@@ -192,8 +192,9 @@ export class ProviderAdapter {
     fromAddress: string,
     contractAddress: string,
     data: string,
-    blockNumber: string
+    blockNumber: BlockSpecifier
   ): Promise<any> {
+    const blockToFetch = formatBlockSpecifier(blockNumber);
     return await this.request({
       method: "eth_call",
       params: [
@@ -202,7 +203,7 @@ export class ProviderAdapter {
           to: contractAddress,
           data: data
         },
-        blockNumber
+        blockToFetch
       ]
     });
   }

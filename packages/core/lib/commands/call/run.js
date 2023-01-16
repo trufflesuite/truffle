@@ -12,6 +12,7 @@ module.exports = async function (options) {
   const DebugUtils = require("@truffle/debug-utils");
   const web3Utils = require("web3-utils");
   const { getFirstDefinedValue } = require("../../configAdapter");
+  const { formatBlockSpecifier } = require("../../../../encoder/dist/adapter");
 
   if (options.url && options.network) {
     const message =
@@ -30,6 +31,8 @@ module.exports = async function (options) {
 
   const [contractNameOrAddress, functionNameOrSignature, ...args] = config._;
   let functionEntry, transaction;
+
+  const blockToFetch = formatBlockSpecifier(config.blockNumber);
 
   const { encoder, decoder } = config.fetchExternal
     ? await sourceFromExternal(contractNameOrAddress, config)
@@ -75,7 +78,7 @@ module.exports = async function (options) {
       fromAddress,
       transaction.to,
       transaction.data,
-      config.blockNumber
+      blockToFetch
     );
 
     [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
@@ -186,7 +189,7 @@ module.exports = async function (options) {
     });
     const encoder = await projectEncoder.forAddress(
       contractAddress,
-      config.blockNumber
+      blockToFetch
     );
 
     const projectDecoder = await Decoder.forProject({
@@ -195,7 +198,7 @@ module.exports = async function (options) {
     });
     const decoder = await projectDecoder.forAddress(
       contractAddress,
-      config.blockNumber
+      blockToFetch
     );
 
     return { encoder, decoder };

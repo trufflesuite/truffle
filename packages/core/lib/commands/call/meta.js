@@ -15,7 +15,7 @@ module.exports = {
     "block-number": {
       describe: "Specify the block for the function to be called in.",
       alias: "b",
-      type: "string",
+      type: "string" | "number",
       default: "latest"
     },
     "contract-address": {
