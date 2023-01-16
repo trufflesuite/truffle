@@ -11,6 +11,7 @@ module.exports = async function (options) {
   const loadConfig = require("../../loadConfig");
   const DebugUtils = require("@truffle/debug-utils");
   const web3Utils = require("web3-utils");
+  const { getFirstDefinedValue } = require("../../configAdapter");
 
   if (options.url && options.network) {
     const message =
@@ -60,13 +61,22 @@ module.exports = async function (options) {
 
   const provider = new Encoder.ProviderAdapter(config.provider);
   let decoding;
+
+  // Get the first defined "from" address
+  const fromAddress = getFirstDefinedValue(
+    options.from,
+    config.networks[config.network].from,
+    config.from
+  );
+
   try {
     const result = await provider.call(
-      config.from,
+      fromAddress,
       transaction.to,
       transaction.data,
       config.blockNumber
     );
+
     [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
       status: true
     });
@@ -152,7 +162,7 @@ module.exports = async function (options) {
 
   async function sourceFromExternal(contractAddress, config) {
     const isValidAddress = web3Utils.isAddress(contractAddress);
-    if (isValidAddress === "false") {
+    if (isValidAddress === false) {
       throw new TruffleError(
         "The address entered is not a valid Ethereum address!\n" +
           "Please check the address and run the command again!"
