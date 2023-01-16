@@ -47,7 +47,27 @@ export class WebpackTestHelper {
       `Module ${moduleName} is absolute, converted to absolute path '${absoluteModulePath}', relative path '${relativeModulePath}'`
     );
 
-    return this.webpackRequire(relativeModulePath);
+    try {
+      return this.webpackRequire(relativeModulePath);
+    } catch (err: unknown) {
+      if (
+        err instanceof Error &&
+        err.message.endsWith(
+          "Cannot read properties of undefined (reading 'call')"
+        )
+      ) {
+        // The cast to `any` is necessary to support error causes in newer node
+        // versions. In older node versions the extra argument is ignored.
+        throw new (Error as any)(
+          `Module ID "${moduleName}" could not be loaded from ${this.packageRoot}. ` +
+            `Either the module ID is incorrect, or it is not included in the bundle. ` +
+            `Please check your module ID, package.json, and/or webpack config.`,
+          { cause: err }
+        );
+      }
+
+      throw err;
+    }
   }
 }
 
