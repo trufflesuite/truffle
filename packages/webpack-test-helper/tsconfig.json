@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "./lib",
+    "outDir": "./build",
+    "declarationDir": "./dist",
+    "types": ["node", "mocha"],
+    "paths": {
+      "@truffle/dashboard-message-bus-client": ["./lib"],
+      "@truffle/dashboard-message-bus-client/*": ["./lib/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"],
+  "references": [
+    { "path": "../dashboard-message-bus-common" },
+    { "path": "../promise-tracker" }
+  ]
+}

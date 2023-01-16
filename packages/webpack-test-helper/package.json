@@ -1,0 +1,56 @@
+{
+  "name": "@truffle/webpack-test-helper",
+  "version": "0.1.0-0",
+  "description": "A library that makes it easy to stub/mock bundled Truffle packages and their dependencies",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "run-s build:compile build:bundle",
+    "build:compile": "ttsc -b .",
+    "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "watch": "run-p watch:tsc watch:webpack watch:test",
+    "watch:tsc": "ttsc -b . --watch",
+    "watch:webpack": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts --watch",
+    "watch:test": "mocha --require source-map-support/register --require ts-node/register --watch test/**/*.ts",
+    "prepare": "yarn build",
+    "test": "mocha --require source-map-support/register --require ts-node/register test/**/*.ts"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/webpack-test-helper#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/webpack-test-helper"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "private": true,
+  "dependencies": {
+    "original-require": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "~12.12.0",
+    "@types/sinon": "^9.0.10",
+    "@types/webpack": "~5.28.0",
+    "debug": "^4.3.1",
+    "mocha": "10.1.0",
+    "sinon": "^9.0.2",
+    "ts-node": "10.9.1",
+    "typescript": "^4.7.4",
+    "webpack": "^5.73.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
+  }
+}

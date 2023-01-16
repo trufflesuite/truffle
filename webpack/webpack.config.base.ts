@@ -1,10 +1,7 @@
 import path from "path";
-import {
-  BannerPlugin,
-  //ProgressPlugin,
-  IgnorePlugin,
-  Configuration
-} from "webpack";
+import { BannerPlugin, IgnorePlugin } from "webpack";
+
+import type { Configuration } from "webpack";
 
 const config: Configuration = {
   mode: "production",
@@ -34,6 +31,8 @@ const config: Configuration = {
 
   optimization: {
     minimize: false,
+    chunkIds: "named",
+    moduleIds: "named",
     splitChunks: {
       // The following two items splits the bundle into pieces ("chunks"),
       // where each chunk is less than 5 million bytes (shorthand for roughly
@@ -52,7 +51,10 @@ const config: Configuration = {
       // The negative here is creates more chunks. We can likely remove it and
       // let webpack decide with `chunks: all` if we prefer.
       maxSize: 5000000
-    }
+    },
+
+    // see https://bundlers.tooling.report/code-splitting/multi-entry/
+    runtimeChunk: "single"
   },
 
   externals: [
@@ -124,9 +126,6 @@ const config: Configuration = {
   plugins: [
     // Put the shebang back on.
     new BannerPlugin({ banner: "#!/usr/bin/env node\n", raw: true }),
-
-    //new ProgressPlugin(),
-
     // Make web3 1.0 packable
     new IgnorePlugin({ resourceRegExp: /^electron$/ })
   ]

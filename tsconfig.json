@@ -40,7 +40,8 @@
     { "path": "packages/source-fetcher" },
     { "path": "packages/spinners" },
     { "path": "packages/test" },
-    { "path": "packages/workflow-compile" }
+    { "path": "packages/workflow-compile" },
+    { "path": "packages/webpack-test-helper" }
   ],
   "ts-node": {
     "compilerOptions": {
