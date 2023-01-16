@@ -1,4 +1,4 @@
-import BlockchainUtils from "../";
+import BlockchainUtils from "../dist";
 import assert from "assert";
 import { describe, it } from "mocha";
 
