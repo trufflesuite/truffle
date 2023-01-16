@@ -1,4 +1,4 @@
-import * as CodeUtils from "../src";
+import * as CodeUtils from "../dist";
 import assert from "assert";
 import { describe, it } from "mocha";
 

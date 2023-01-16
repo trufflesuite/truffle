@@ -23,6 +23,7 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "devDependencies": {
+    "@truffle/webpack-test-helper": "^0.1.0-0",
     "@types/cbor": "^5.0.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "~12.12.0",
