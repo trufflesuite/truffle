@@ -1,5 +1,7 @@
 import assert from "assert";
-import { Shims, Bytecode } from "../src";
+import { Shims, Bytecode } from "../dist";
+
+import { describe, it } from "mocha";
 
 describe("Shims.NewToLegacy.forBytecode", () => {
   it("handles undefined", () => {
