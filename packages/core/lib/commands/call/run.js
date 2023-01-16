@@ -32,8 +32,9 @@ module.exports = async function (options) {
   const [contractNameOrAddress, functionNameOrSignature, ...args] = config._;
   let functionEntry, transaction;
 
-  // Validates the block number and returns the string representation of a number or
-  // an error if the string is other than "latest", "pending" and "earliest"
+  // Validates the block number and returns the hex string representation of a number or
+  // an error if the string is other than "latest", "pending" and "earliest" or
+  // a hex string representation of a number
   const blockToFetch = formatBlockSpecifier(config.blockNumber);
 
   const { encoder, decoder } = config.fetchExternal
@@ -207,8 +208,7 @@ module.exports = async function (options) {
   }
 
   function checkValidAddress(address) {
-    const isValidAddress = web3Utils.isAddress(address);
-    if (isValidAddress === false) {
+    if (!web3Utils.isAddress(address)) {
       throw new TruffleError(
         `The address ${address} is not a valid Ethereum address!\n` +
           "Please check the address and run the command again!"
