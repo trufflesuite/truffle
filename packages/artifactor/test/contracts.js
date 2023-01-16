@@ -1,5 +1,5 @@
 const assert = require("chai").assert;
-const Artifactor = require("../");
+const Artifactor = require("../dist");
 const contract = require("@truffle/contract");
 const Schema = require("@truffle/contract-schema");
 const path = require("path");
