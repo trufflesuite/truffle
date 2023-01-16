@@ -1,5 +1,8 @@
-const boxConfig = require("../dist/config");
 const assert = require("assert");
+const { WebpackTestHelper } = require("@truffle/webpack-test-helper");
+const webpackTestHelper = new WebpackTestHelper("@truffle/box");
+
+const boxConfig = webpackTestHelper.require("./build/config.js");
 
 describe("boxConfig", () => {
   it(".setDefaults sets truffle-box.json defaults if config settings unspecified", done => {

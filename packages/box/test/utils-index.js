@@ -1,7 +1,11 @@
 const assert = require("assert");
-const utils = require("../dist/utils");
 const sinon = require("sinon");
-const tmp = require("tmp");
+
+const { WebpackTestHelper } = require("@truffle/webpack-test-helper");
+const webpackTestHelper = new WebpackTestHelper("@truffle/box");
+
+const utils = webpackTestHelper.require("./build/utils/index.js");
+const tmp = webpackTestHelper.require("tmp");
 
 describe("utils", () => {
   it("setUpBox throws when passed an invalid boxConfig", () => {

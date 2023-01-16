@@ -1,14 +1,20 @@
 const path = require("path");
-const fse = require("fs-extra");
 const assert = require("assert");
-const inquirer = require("inquirer");
 const sinon = require("sinon");
+
 const Config = require("@truffle/config");
 const { default: Box } = require("../dist");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
 const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
-const utils = require("../dist/utils");
+
+const { WebpackTestHelper } = require("@truffle/webpack-test-helper");
+
+const webpackTestHelper = new WebpackTestHelper("@truffle/box");
+const utils = webpackTestHelper.require("./build/utils/index.js");
+const fse = webpackTestHelper.require("fs-extra");
+const inquirer = webpackTestHelper.require("inquirer");
+
 let options, cleanupCallback, config;
 
 describe("@truffle/box Box", () => {

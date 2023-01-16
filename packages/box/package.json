@@ -26,6 +26,7 @@
     "@truffle/config": "^1.3.44"
   },
   "devDependencies": {
+    "@truffle/webpack-test-helper": "^0.1.0-0",
     "@types/fs-extra": "^8.1.0",
     "@types/inquirer": "9.0.1",
     "@types/tmp": "^0.1.0",

@@ -1,7 +1,11 @@
 const assert = require("assert");
-const utils = require("../dist/utils/unbox");
-const axios = require("axios");
 const sinon = require("sinon");
+
+const { WebpackTestHelper } = require("@truffle/webpack-test-helper");
+const webpackTestHelper = new WebpackTestHelper("@truffle/box");
+
+const utils = webpackTestHelper.require("./build/utils/unbox.js");
+const axios = webpackTestHelper.require("axios");
 
 describe("utils", () => {
   describe("installBoxDependencies", () => {
