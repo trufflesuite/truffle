@@ -4,7 +4,14 @@ import { matchers } from "jest-json-schema";
 
 expect.extend(matchers);
 
-import * as Arbitrary from "./arbitrary";
+import type * as ArbitraryTypes from "./arbitrary";
+
+import { WebpackTestHelper } from "@truffle/webpack-test-helper";
+const webpackTestHelper = new WebpackTestHelper("@truffle/abi-utils");
+
+const Arbitrary = webpackTestHelper.require<typeof ArbitraryTypes>(
+  "./build/arbitrary.js"
+);
 
 // helper function to ensure that, when we match against a given subschema,
 // we also include all the definitions, in case the subschema references those

@@ -1,6 +1,13 @@
-import * as Signature from "./signature";
-import { FunctionEntry, EventEntry, ErrorEntry } from "./types";
+import type { FunctionEntry, EventEntry, ErrorEntry } from "./types";
 import assert from "assert";
+
+import { WebpackTestHelper } from "@truffle/webpack-test-helper";
+const webpackTestHelper = new WebpackTestHelper("@truffle/abi-utils");
+
+import type * as SignatureType from "./signature";
+const Signature = webpackTestHelper.require<typeof SignatureType>(
+  "./build/signature.js"
+);
 
 describe("signature computation", () => {
   it("computes simple signatures", () => {

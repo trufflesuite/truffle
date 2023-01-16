@@ -1,9 +1,18 @@
 import "jest-extended";
 import { testProp } from "@fast-check/jest";
 
-import * as Arbitrary from "./arbitrary";
+import { WebpackTestHelper } from "@truffle/webpack-test-helper";
+const webpackTestHelper = new WebpackTestHelper("@truffle/abi-utils");
 
-import { normalize } from "./normalize";
+import type * as ArbitraryTypes from "./arbitrary";
+import type * as NormalizeModule from "./normalize";
+
+const Arbitrary = webpackTestHelper.require<typeof ArbitraryTypes>(
+  "./build/arbitrary.js"
+);
+const { normalize } = webpackTestHelper.require<typeof NormalizeModule>(
+  "./build/normalize.js"
+);
 
 describe("normalize", () => {
   testProp(
