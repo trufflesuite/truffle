@@ -16,7 +16,15 @@ contract Sample {
     return storedData + y;
   }
 
-  function bad() public pure {
+  function getMultipleValues() public pure returns (string memory, uint256) {
+    return ("truffle", 20);
+  }
+
+  function getRevertMessage() public pure {
     revert("You are a failure");
+  }
+
+  function getPanicMessage() public pure {
+    assert(0 == 1);
   }
 }

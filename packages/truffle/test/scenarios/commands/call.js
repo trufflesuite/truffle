@@ -5,7 +5,7 @@ const { assert } = require("chai");
 const path = require("path");
 const sandbox = require("../sandbox");
 
-describe.only("truffle call", () => {
+describe("truffle call", () => {
   let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/call");
@@ -23,20 +23,6 @@ describe.only("truffle call", () => {
   });
 
   describe("when runs with basic contract", () => {
-    it("returns error message and error code from a revert function", async () => {
-      const networkName = config.network;
-      await CommandRunner.runInREPL({
-        inputCommands: ["migrate", "call Sample bad"],
-        config,
-        executableCommand: "console",
-        executableArgs: `--network ${networkName}`,
-        displayHost: networkName
-      });
-      const output = logger.contents();
-      const expectedValue = "You are a failure";
-      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
-    }).timeout(90000);
-
     it("returns the set value of the variable in the contract", async () => {
       const networkName = config.network;
       await CommandRunner.runInREPL({
@@ -94,6 +80,20 @@ describe.only("truffle call", () => {
       assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
 
+    it("returns multiple values of different types", async () => {
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample getMultipleValues"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      const expectedValue = "truffle" && 20;
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
+    }).timeout(90000);
+
     it("throws error on entering invalid input", async () => {
       const networkName = config.network;
       await CommandRunner.runInREPL({
@@ -113,6 +113,34 @@ describe.only("truffle call", () => {
         "The function name, function signature or function arguments you entered are invalid!\n" +
         "Please run the command again with valid function name, function signature and function arguments (if any)!";
       assert.include(output, expectedError, `Output includes ${expectedError}`);
+    }).timeout(90000);
+
+    it("returns a revert message", async () => {
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample getRevertMessage"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      const expectedValue = "You are a failure";
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
+    }).timeout(90000);
+
+    it("correctly resolves returned panic code", async () => {
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample getPanicMessage"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      const expectedValue = "Panic: Failed assertion";
+      assert.include(output, expectedValue, `Output includes ${expectedValue}`);
     }).timeout(90000);
   });
 });
