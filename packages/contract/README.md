@@ -313,7 +313,7 @@ const val = instance.getValue();
 #### Overloaded functions
 
 You may find yourself in the situation of having a Truffle contract object that has multiple functions with the same name.
-You can call these "overloaded functions" just like you would a normal contract function. Truffle contract instances
+You can invoke these "overloaded functions" just like you would a normal contract function. Truffle contract instances
 actually wrap web3's contract abstraction (`web3.eth.Contract`) and so when you call an overloaded function, it
 uses the same function resolution that web3 uses. However, we must give a warning that this overloaded function
 resolution is a bit dodgy and can resolve to the wrong function when you call it. So be careful!
