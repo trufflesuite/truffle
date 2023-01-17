@@ -26,21 +26,22 @@ export class Cache {
   add(code: string, fileName: string) {
     const filePath = this.resolve(fileName);
     fs.writeFileSync(filePath, code);
-    this.memoizedCompilers[fileName] = code;
+    this.memoizedCompilers[filePath] = code;
   }
 
   has(fileName: string) {
-    const file = this.resolve(fileName);
-    return fs.existsSync(file);
+    const filePath = this.resolve(fileName);
+    return fs.existsSync(filePath);
   }
 
   loadFile(fileName: string): string {
-    if (this.memoizedCompilers.has(fileName)) {
-      return this.memoizedCompilers[fileName];
+    const filePath = this.resolve(fileName);
+    if (this.memoizedCompilers.has(filePath)) {
+      return this.memoizedCompilers[filePath];
     }
     try {
-      const compiler = fs.readFileSync(fileName).toString();
-      this.memoizedCompilers[fileName] = compiler;
+      const compiler = fs.readFileSync(filePath).toString();
+      this.memoizedCompilers[filePath] = compiler;
       return compiler;
     } catch (error) {
       if (!error.message.includes("ENOENT: no such file")) {

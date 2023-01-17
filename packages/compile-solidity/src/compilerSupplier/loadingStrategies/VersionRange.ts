@@ -118,8 +118,7 @@ export class VersionRange {
   getCachedSolcByFileName(fileName: string) {
     const listeners = observeListeners();
     try {
-      const filePath = this.cache.resolve(fileName);
-      const soljson = this.cache.loadFile(filePath);
+      const soljson = this.cache.loadFile(fileName);
       debug("soljson %o", soljson);
       return this.compilerFromString(soljson);
     } finally {
