@@ -7,9 +7,26 @@ import { getTruffleDb } from "@truffle/db-loader";
 import { Plugins } from "@truffle/plugins";
 
 // check if the compiler plugin is new fomrat: array of objects
-const isPluginNewFormat = async plugin => {
-  if (typeof plugin === "object" && plugin.hasOwnProperty("compiler")) {
-    return true;
+const isPluginNewFormat = async (config, plugin) => {
+  if (typeof plugin === "object") {
+    if (plugin.hasOwnProperty("compiler")) {
+      for (const key in config.compilers) {
+        const compiler = config.compilers[key];
+        if (
+          compiler.hasOwnProperty("plugin") &&
+          compiler["plugin"] === plugin.name
+        ) {
+          return typeof plugin;
+        }
+      }
+    }
+  } else if (typeof plugin === "string") {
+    for (const key in config.compilers) {
+      const compiler = config.compilers[key];
+      if (compiler.hasOwnProperty("plugin") && compiler["plugin"] === plugin) {
+        return typeof plugin;
+      }
+    }
   }
   return false;
 };
@@ -19,21 +36,22 @@ const pluginCompilers = async (config, compilers) => {
   for (let j = compilers.length - 1; j >= 0; j--) {
     let isPlugin = false;
     for (const plugin of config.plugins) {
-      if (
-        (await isPluginNewFormat(plugin)) &&
-        plugin.compiler === compilers[j]
-      ) {
-        // plugin format is an object
+      const pluginFormat = await isPluginNewFormat(config, plugin);
+      if ("object" === pluginFormat && plugin.compiler === compilers[j]) {
+        // object format
         isPlugin = true;
         break;
-      } else if (plugin === config.compilers[compilers[j]].plugin) {
-        // plugin fomrat is a string
+      } else if (
+        "string" === pluginFormat &&
+        plugin === config.compilers[compilers[j]].plugin
+      ) {
+        // string format
         isPlugin = true;
         break;
       }
     }
 
-    // //if not a plugin compiler, remove from compilers
+    // if not a plugin compiler, remove from compilers
     if (!isPlugin) {
       compilers.splice(j, 1);
     }
@@ -45,7 +63,8 @@ const checkForCompilerPlugin = async (config, name) => {
 
   if (pluginCompiler) {
     for (const plugin of config.plugins) {
-      if (await isPluginNewFormat(plugin)) {
+      const pluginFormat = await isPluginNewFormat(config, plugin);
+      if ("object" === pluginFormat) {
         // if plugin is an object, then pass compiler name as input to Plugins.compile()
         // save config.plugins
         let currentPlugins = config.plugins;
@@ -60,9 +79,14 @@ const checkForCompilerPlugin = async (config, name) => {
         // restore config.plugins
         config.plugins = currentPlugins;
         return pluginCompiler;
-      } else {
+      } else if ("string" === pluginFormat) {
         // plugin fomrat is string
+        let currentPlugins = config.plugins;
+        let newPlugins: string[] = [plugin];
+        config.plugins = newPlugins;
         pluginCompiler = Plugins.compile(config);
+        // restore config.plugins
+        config.plugins = currentPlugins;
         return pluginCompiler;
       }
     }
@@ -95,11 +119,8 @@ async function compile(config) {
       let Compile = SUPPORTED_COMPILERS[name];
       const pluginCompile = await checkForCompilerPlugin(config, name);
       // shall we support multiple compiler plugins?
-      if (pluginCompile) {
-        pluginCompile.map(plugin => {
-          if (plugin.module === config.compilers[name].plugin)
-            Compile = plugin.loadCompiler();
-        });
+      if (pluginCompile[0].module === config.compilers[name].plugin) {
+        Compile = pluginCompile[0].loadCompiler();
       }
 
       if (!Compile && !pluginCompile)
