@@ -7,41 +7,65 @@ import { getTruffleDb } from "@truffle/db-loader";
 import { Plugins } from "@truffle/plugins";
 
 // check if the compiler plugin is new fomrat: array of objects
-const isPluginNewFormat = async config => {
-  for (const plugin of config.plugins) {
-    if (typeof plugin === "object" && plugin.hasOwnProperty("compiler")) {
-      return true;
-    }
+const isPluginNewFormat = async plugin => {
+  if (typeof plugin === "object" && plugin.hasOwnProperty("compiler")) {
+    return true;
   }
-
   return false;
 };
+
+// compilers array contains plugin compilers only
+const pluginCompilers = async (config, compilers) => {
+  for (let j = compilers.length - 1; j >= 0; j--) {
+    let isPlugin = false;
+    for (const plugin of config.plugins) {
+      if (
+        (await isPluginNewFormat(plugin)) &&
+        plugin.compiler === compilers[j]
+      ) {
+        // plugin format is an object
+        isPlugin = true;
+        break;
+      } else if (plugin === config.compilers[compilers[j]].plugin) {
+        // plugin fomrat is a string
+        isPlugin = true;
+        break;
+      }
+    }
+
+    // //if not a plugin compiler, remove from compilers
+    if (!isPlugin) {
+      compilers.splice(j, 1);
+    }
+  }
+};
+
 const checkForCompilerPlugin = async (config, name) => {
   let pluginCompiler = config.plugins ? config.plugins : null;
 
   if (pluginCompiler) {
-    if (await isPluginNewFormat(config)) {
-      // if plugin is an object, then pass compiler name as input to Plugins.compile()
-      // save config.plugins
-      let currentPlugins = config.plugins;
-      let newPlugins: string[] = [];
-      config.plugins.map(plugin => {
+    for (const plugin of config.plugins) {
+      if (await isPluginNewFormat(plugin)) {
+        // if plugin is an object, then pass compiler name as input to Plugins.compile()
+        // save config.plugins
+        let currentPlugins = config.plugins;
+        let newPlugins: string[] = [];
+
         if (plugin.hasOwnProperty("compiler") && plugin.compiler === name) {
           newPlugins.push(plugin.name);
         }
-      });
-      config.plugins = newPlugins;
-      pluginCompiler = Plugins.compile(config);
-      // restore config.plugins
-      config.plugins = currentPlugins;
-      return pluginCompiler;
-    } else {
-      // plugin fomrat is string
-      pluginCompiler = Plugins.compile(config);
-      return pluginCompiler;
+
+        config.plugins = newPlugins;
+        pluginCompiler = Plugins.compile(config);
+        // restore config.plugins
+        config.plugins = currentPlugins;
+        return pluginCompiler;
+      } else {
+        // plugin fomrat is string
+        pluginCompiler = Plugins.compile(config);
+        return pluginCompiler;
+      }
     }
-  } else {
-    return false;
   }
 };
 
@@ -61,42 +85,13 @@ async function compile(config) {
 
   // for a complier plugin, need to remove default compilers (solc and vyper) from compilers array
   if (config.plugins) {
-    const PluginIsNewFormat = await isPluginNewFormat(config);
-    // plugins is an array of objects
-    for (let j = compilers.length - 1; j >= 0; j--) {
-      let isPlugin = false;
-      if (PluginIsNewFormat) {
-        for (const plugin of config.plugins) {
-          if (
-            plugin.hasOwnProperty("compiler") &&
-            plugin.compiler === compilers[j]
-          ) {
-            isPlugin = true;
-            break;
-          }
-        }
-      } else {
-        // plugins is an array of strings
-        for (const plugin of config.plugins) {
-          if (plugin === config.compilers[compilers[j]].plugin) {
-            isPlugin = true;
-            break;
-          }
-        }
-      }
-
-      // //if not a plugin compiler, remove from compilers
-      if (!isPlugin) {
-        compilers.splice(j, 1);
-      }
-    }
+    await pluginCompilers(config, compilers);
   }
 
   // invoke compilers
-  //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
-      //NEED PLUGIN COMPILER TO BE IN SUPPORTED_COMPILERS
+      // NEED PLUGIN COMPILER TO BE IN SUPPORTED_COMPILERS
       let Compile = SUPPORTED_COMPILERS[name];
       const pluginCompile = await checkForCompilerPlugin(config, name);
       // shall we support multiple compiler plugins?
