@@ -6,7 +6,7 @@ const assert = require("assert");
 const Server = require("../server");
 const sandbox = require("../sandbox");
 
-describe.only("truffle exec [ @standalone ]", function () {
+describe("truffle exec [ @standalone ]", function () {
   let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/exec");
   const logger = new MemoryLogger();
