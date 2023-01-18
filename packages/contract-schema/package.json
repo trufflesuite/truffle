@@ -18,9 +18,10 @@
     "spec": "./spec"
   },
   "scripts": {
-    "build": "run-s build:declarations build:webpack",
-    "build:declarations": "sh ./scripts/generate-declarations",
+    "build": "run-s build:codegen build:webpack",
+    "build:codegen": "sh ./scripts/generate-declarations",
     "build:webpack": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
+    "clean:codegen": "rm spec/index.d.ts",
     "prepare": "yarn run build",
     "test": "mocha"
   },

@@ -1,9 +1,53 @@
 {
   "extends": "./tsconfig.base.json",
-  "ts-node": {
-    "transpileOnly": true
+  "compilerOptions": {
+    "paths": {
+      "@truffle/db": ["./src"],
+      "@truffle/db/*": ["./src/*"],
+
+      // added these paths so that codegen can succeed before config has been built
+      // this works because we run codegen under ts-node, so it can refer directly to
+      // the TS source files for a given package
+      "@truffle/abi-utils": ["../abi-utils/lib"],
+      "@truffle/abi-utils/*": ["../abi-utils/lib/*"],
+      "@truffle/code-utils": ["../code-utils/src"],
+      "@truffle/code-utils/*": ["../code-utils/src/*"],
+      "@truffle/config": ["../config/src"],
+      "@truffle/config/*": ["../config/src/*"],
+      "@truffle/dashboard-message-bus-client": ["../dashboard-message-bus-client/lib"],
+      "@truffle/dashboard-message-bus-client/*": ["../dashboard-message-bus-client/lib/*"],
+      "@truffle/dashboard-message-bus-common": ["../dashboard-message-bus-common/lib"],
+      "@truffle/dashboard-message-bus-common/*": ["../dashboard-message-bus-common/lib/*"],
+      "@truffle/error": ["../error/src"],
+      "@truffle/error/*": ["../error/src/*"],
+      "@truffle/events": ["../events/index.js"],
+      "@truffle/events/*": ["../events/*"],
+      "@truffle/interface-adapter": ["../interface-adapter/lib"],
+      "@truffle/interface-adapter/*": ["../interface-adapter/lib/*"],
+      "@truffle/promise-tracker": ["../promise-tracker/lib"],
+      "@truffle/promise-tracker/*": ["../promise-tracker/lib/*"],
+      "@truffle/provider": ["../provider/index.js"],
+      "@truffle/provider/*": ["../provider/*"],
+      "@truffle/spinners": ["../spinners/lib"],
+      "@truffle/spinners/*": ["../spinners/lib/*"],
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
   },
-  "include": ["src/**/*", "test/**/*.ts", "typings/*.d.ts"],
+  "ts-node": {
+    "compiler": "ttypescript",
+    "transpiler": "ttypescript",
+    "transpileOnly": true,
+    "files": true,
+    "require": [
+      "./bin/register",
+      "source-map-support/register",
+      "tsconfig-paths/register",
+    ],
+  },
+  "include": ["src/**/*", "typings/*.d.ts", "./bin/**/*.ts"],
   "references": [
     { "path": "../abi-utils" },
     { "path": "../code-utils" },

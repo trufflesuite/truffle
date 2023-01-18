@@ -23,11 +23,12 @@
     "dist": "dist"
   },
   "scripts": {
-    "build": "run-s build:types build:compile build:bundle build:docs",
+    "build": "run-s build:codegen build:compile build:bundle build:docs",
     "build:compile": "ttsc -b .",
     "build:bundle": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' webpack --config webpack.config.ts",
     "build:docs": "typedoc",
-    "build:types": "ts-node -r ./bin/register -r tsconfig-paths/register --project tsconfig.codegen.json ./bin/codegen.js",
+    "build:codegen": "ts-node --project tsconfig.codegen.json ./bin/codegen.js",
+    "clean:codegen": "rm typings/schema.d.ts",
     "clean": "rm -rf ./dist ./types/schema.d.ts",
     "madge": "madge ./src/index.ts",
     "prepare": "yarn build",
