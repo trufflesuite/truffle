@@ -19,5 +19,8 @@
     ]
   },
   "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"],
-  "references": [{ "path": "../config" }]
+  "references": [
+    { "path": "../config" },
+    { "path": "../webpack-test-helper" }
+  ]
 }

@@ -17,5 +17,8 @@
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts"],
+  "references": [
+    { "path": "../webpack-test-helper" }
+  ]
 }
