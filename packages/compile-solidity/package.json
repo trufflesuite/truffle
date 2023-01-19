@@ -28,6 +28,7 @@
     "axios-retry": "^3.1.9",
     "debug": "^4.3.1",
     "fs-extra": "^9.1.0",
+    "https-proxy-agent": "^5.0.1",
     "iter-tools": "^7.0.2",
     "lodash": "^4.17.21",
     "node-abort-controller": "^3.0.1",
