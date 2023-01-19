@@ -33,7 +33,7 @@ type DashProviderProps = {
 };
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
@@ -261,6 +261,16 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
     updateChainInfo();
   }, [chain]);
+
+  useEffect(() => {
+    const updateProviderMessages = () => {
+      if (address) {
+        dispatch({ type: "update-provider-message-sender", data: address });
+      }
+    };
+
+    updateProviderMessages();
+  }, [address]);
 
   useEffect(() => {
     dispatch({
