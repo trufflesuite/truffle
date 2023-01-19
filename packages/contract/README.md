@@ -312,49 +312,77 @@ const val = instance.getValue();
 
 #### Overloaded functions
 
-You may find yourself in the situation of having a Truffle contract object that has multiple functions with the same name.
-You can invoke these "overloaded functions" just like you would a normal contract function. Truffle contract instances
-actually wrap web3's contract abstraction (`web3.eth.Contract`) and so when you call an overloaded function, it
+Solidity supports a contract having multiple functions with the same name as long as the
+function argument types differ. And so you may find yourself in the situation of having a
+Truffle contract object with this property.
+You can invoke these "overloaded" functions just like you would a normal contract function. Truffle contract instances
+actually wrap web3's contract abstraction (`web3.eth.Contract`) and when you call an overloaded function, it
 uses the same function resolution that web3 uses. However, we must give a warning that this overloaded function
-resolution is a bit dodgy and can resolve to the wrong function when you call it. So be careful!
+resolution is often imprecise and can resolve to the wrong function when you call it.
 
-The more unambiguous way of calling these types of functions is to use the `methods` namespace on Truffle contract
-objects. Consider the following contrived code sample:
+Consider the following contrived code sample:
 
 ```solidity
 contract MyContract {
   uint256 public myUint;
   string public myString;
+  string public myOtherString;
 
-  function setValue(uint val) {
+  function setValues(uint256 val, string str) {
     myUint = val;
+    myString = str
   }
 
-  function setValue(string str) {
+  function setValues(string str, string otherStr) {
     myString = str;
+    myOtherString = otherStr;
+  }
+
+  function setValues(uint256 val, string str, string otherStr) {
+    myUint = val;
+    myString = str;
+    myOtherString = otherStr;
   }
 }
 ```
 
-This Solidity contract contains two functions named `setValue`, each taking a different type of input. In your JavaScript you
+This Solidity contract contains three functions named `setValues`, each taking a different type of input. In your JavaScript you
 might do something like the following:
 
 ```javascript
-await instance.setValue("this is not string cheese");
+await instance.setValue(
+  666,
+  "this is not string cheese",
+  "this is string cheese"
+);
 ```
 
-Truffle contract (internally using web3's overloaded function resolution) will see that you input a string and
-call the second method in the contract to set `myString`. Again however, sometimes when your contract is more
-complex there might be some ambiguousness and it might fail to resolve to the correct function. In cases where
-you want to explicitly specify which function you would like, you should do something similar to the following:
+As mentioned above, Truffle contract wraps web3 `Contract` objects and uses web3's overloaded function resolution.
+To resolve these functions, web3's strategy is to look at the number of arguments that the function was invoked with and try
+one that takes that many arguments. This works for some cases but is not ideal in that it
+can invoke the incorrect function. Take, for example, the case where we do something like the following:
 
 ```javascript
-await instance.methods["setValue(string)"]("this is not string cheese");
+await instance.setValue("this is not string cheese", "this is string cheese");
+```
+
+We know that in our contract there are two functions named `setValues` that take
+two arguments. In the above case, we cannot be sure whether web3's resolution will resolve to the first or second
+function. The more precise way to reference functions like this is to use
+the `methods` property on the contract instance. The following is an example of how you
+access these methods:
+
+```javascript
+await instance.methods["setValue(string,string)"](
+  "this is not string cheese",
+  "this is string cheese"
+);
 ```
 
 The `methods` property is an object whose keys are strings that correspond to the contract function's names
-and signatures. The values are the functions themselves. We recommend using this method of calling overloaded
-functions since it will unambiguously resolve to the correct function.
+and signatures with no spaces. The values are the functions themselves. You can inspect the
+`methods` property to see the key names in this object and match the function signature.
+We recommend using this method of calling overloaded functions since it will unambiguously resolve to the correct function.
 
 #### Processing transaction results
 
