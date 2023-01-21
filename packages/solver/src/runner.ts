@@ -1,12 +1,12 @@
 import { Solver } from "@truffle/solver";
-import { DeclarationTarget } from "./types/";
+import { configOptions, DeclarationTarget, DeploymentSteps } from "./types/";
 import Deployer from "@truffle/deployer";
 import Config from "@truffle/config";
 import { ResolverIntercept } from "./ResolverIntercept";
 import { Environment } from "@truffle/environment";
 
 const Runner = {
-  async prepareForDeployments(options: Config) {
+  async prepareForDeployments(config: Config) {
     //this function comes from the current migration flow; may or may not be needed
     // ultimately; for now have commented out the irrelevant parts
 
@@ -19,12 +19,12 @@ const Runner = {
     //   networkType: options.networks[options.network].type
     // });
 
-    const resolver = new ResolverIntercept(options.resolver);
+    const resolver = new ResolverIntercept(config.resolver);
 
     // Initial context.
     // const context = { web3, interfaceAdapter, config: options };
 
-    const deployer = new Deployer(options);
+    const deployer = new Deployer(config);
 
     return { resolver, deployer };
   },
@@ -37,12 +37,13 @@ const Runner = {
     let Contract;
 
     try {
-      Contract = resolver.require(deploymentStep.contractName);
+      Contract = resolver.require(deploymentStep.contractName as string);
     } catch (e) {
       throw new Error(JSON.stringify(e));
     }
 
     //TODO handle multiple links
+    //@ts-ignore
     const link = resolver.require(deploymentStep.links[0]);
     let linkFunc = async function (link, Contract) {
       const linkInstance = await deployer.link(link, Contract);
@@ -117,7 +118,11 @@ const Runner = {
     //   //   //execute script
     //   // }
   },
-  async orchestrate(declarationSteps: any, config: any, options: any) {
+  async orchestrate(
+    declarationSteps: DeploymentSteps,
+    config: Config,
+    options?: configOptions
+  ) {
     // run each target through the run function, hold output until all are completed,
     // or throw an error
     // Using a for loop here because we want fine-grained
@@ -137,7 +142,7 @@ const Runner = {
 
     return deploymentSteps;
   },
-  async solve(config: any, options: any) {
+  async solve(config: Config, options: configOptions) {
     const declarationSteps = await Solver.orchestrate(
       config.declarativeDeployment.filepath
     );

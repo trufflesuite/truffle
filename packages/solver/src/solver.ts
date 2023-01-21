@@ -1,13 +1,21 @@
 import { loadAll } from "js-yaml";
 import { readFile } from "fse";
-import { DeploymentSteps, DeclarationEntry } from "./types/";
+import {
+  DeploymentSteps,
+  DeclarationEntry,
+  UserDeclaration,
+  DeclarationTarget,
+  DeclarationObject
+} from "./types/";
 import * as validate from "./schema/validate";
-
-const toposort = require("toposort");
+import toposort from "toposort";
+// const toposort = require("toposort");
 
 const Solver = {
-  async read(filepath: string): Promise<any> {
-    const declarations: any = loadAll(await readFile(filepath, "utf8"));
+  async read(filepath: string): Promise<UserDeclaration | Error> {
+    const declarations: UserDeclaration[] = loadAll(
+      await readFile(filepath, "utf8")
+    );
     // loadAll returns an array, we just want the first item; we will assume a user only has one declaration per project
     const valid = validate.validate(declarations[0]);
 
@@ -23,14 +31,20 @@ const Solver = {
       throw new Error("Invalid declaration file");
     }
   },
-  async sort(dependencies: Array<string>, deploymentSteps: DeploymentSteps) {
-    let sortedSteps: Array<any> = [];
+  async sort(
+    dependencies: string[][],
+    deploymentSteps: DeploymentSteps
+  ): Promise<DeclarationTarget[]> {
+    let sortedSteps: DeclarationTarget[] = [];
     const sortedContracts = toposort(dependencies);
     // let's rearrange our deploymentSteps so that dependencies are added first
     sortedContracts.map((step: string) => {
-      let item: any = deploymentSteps.find(item => item.contractName === step);
-      if (item !== null && item !== undefined) {
-        sortedSteps.push(item);
+      let item: DeclarationTarget | undefined = deploymentSteps.find(
+        item => item.contractName === step
+      );
+
+      if (item !== undefined) {
+        sortedSteps.push(item as DeclarationTarget);
       }
     });
     return sortedSteps;
@@ -38,19 +52,19 @@ const Solver = {
   // put together a list of contracts that need to be deployed, with relevant information for the deployment
   async orchestrate(filepath: string): Promise<DeploymentSteps> {
     //TODO change this any to a type
-    let declarations: Array<any> = await this.read(filepath);
+    let declarations: UserDeclaration[] = await this.read(filepath);
     let deploymentSteps: DeploymentSteps = [];
-    let dependencies: Array<any> = [];
+    let dependencies: string[][] = [];
 
     declarations["deployed"].map((entry: DeclarationEntry) => {
       // should I split up the actions here? a declaration with a linked contract will need the link
       // part and then the deploy
-      const entryValues: Array<any> = Object.values(entry)[0];
+      const entryValues: Array<DeclarationObject> = Object.values(entry)[0];
       entryValues.map(contract => {
-        let runActions: Array<string> = ["deploy"];
+        let runActions: Array<"deploy" | "link" | "execute"> = ["deploy"];
         // will have capture variables to add to dependencies also, this is just the start
         //pairs of dependencies for topological sort
-        let links = [];
+        let links: string[] = [];
         if (contract.links) {
           runActions.push("link");
           links = contract.links;
@@ -61,7 +75,7 @@ const Solver = {
           dependencies.push([contract.contract]);
         }
 
-        let declarationTarget = {
+        let declarationTarget: DeclarationTarget = {
           contractName: contract.contract,
           network: Object.keys(entry)[0],
           dependencies: links,

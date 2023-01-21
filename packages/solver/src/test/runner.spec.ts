@@ -1,58 +1,35 @@
 import { Runner } from "@truffle/solver";
+import { DeploymentSteps } from "../types";
+import Config from "@truffle/config";
 
-const expectedDeclarationTargets = [
+const expectedDeclarationTargets: DeploymentSteps = [
   {
     contractName: "SafeMathLib",
     network: "ethereum",
-    action: "deploy",
-    dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
-    run: (network, contractName, deployer, artifacts) => {
-      artifacts.require(contractName);
-      deployer.deploy(contractName);
-    }
+    links: [],
+    isCompleted: false,
+    run: ["deploy"]
   },
   {
     contractName: "SumDAO",
     network: "ethereum",
-    action: "link",
-    dependencies: ["SafeMathLib"],
-    isCompleted: () => {
-      return false;
-    },
-    run: (network, link, contractName, deployer, artifacts) => {
-      artifacts.require(link);
-      artifacts.require(contractName);
-      deployer.link(link, contractName);
-    }
+    links: ["SafeMathLib"],
+    isCompleted: false,
+    run: ["deploy", "link"]
   },
   {
-    contractName: "SumDAO",
-    network: "ethereum",
-    action: "deploy",
-    dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
-    run: (network, contractName, deployer, artifacts) => {
-      artifacts.require(contractName);
-      deployer.deploy(contractName);
-    }
+    contractName: "SumDAOAgain",
+    network: "arbitrum",
+    links: [],
+    isCompleted: false,
+    run: ["deploy"]
   },
   {
     contractName: "ArbiDAO",
     network: "arbitrum",
-    action: "deploy",
-    dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
-    run: (network, contractName, deployer, artifacts) => {
-      artifacts.require(contractName);
-      deployer.deploy(contractName);
-    }
+    links: ["SumDAOAgain"],
+    isCompleted: false,
+    run: ["deploy", "link"]
   }
 ];
 const expectedResult = [
@@ -65,7 +42,10 @@ const expectedResult = [
 ];
 let runnerResult;
 beforeAll(async () => {
-  runnerResult = await Runner.orchestrate(expectedDeclarationTargets, {}, {});
+  runnerResult = await Runner.orchestrate(
+    expectedDeclarationTargets,
+    Config.default()
+  );
 });
 
 describe("Runner", () => {
