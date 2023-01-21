@@ -54,6 +54,10 @@ module.exports = {
       type: "boolean",
       default: true,
       hidden: true
+    },
+    "env": {
+      describe: "Specify the environment to use (declarative deployments only)",
+      type: "string"
     }
   },
   help: {
@@ -62,7 +66,7 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run] [--show-plan]",
+      "[--skip-dry-run] [--describe-json] [--dry-run] [--show-plan] [--env <string>]",
     options: [
       {
         option: "--reset",
@@ -118,6 +122,11 @@ module.exports = {
         option: "--save",
         description: "Specify whether the migration will save on chain",
         hidden: true
+      },
+      {
+        option: "--env",
+        description:
+          "Only for use with declarative deployments. Indicate which environment from the declaration file to use."
       }
     ],
     allowedGlobalOptions: ["network", "config", "quiet"]
