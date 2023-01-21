@@ -144,7 +144,8 @@ const Runner = {
   },
   async solve(config: Config, options: configOptions) {
     const declarationSteps = await Solver.orchestrate(
-      config.declarativeDeployment.filepath
+      config.declarativeDeployment.filepath,
+      config.env
     );
     await this.orchestrate(declarationSteps, config, options);
     return declarationSteps;

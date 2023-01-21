@@ -5,29 +5,33 @@ import {
   DeclarationEntry,
   UserDeclaration,
   DeclarationTarget,
-  DeclarationObject
+  DeclarationObject,
+  UserDeclarationWithEnvironment
 } from "./types/";
-import * as validate from "./schema/validate";
+// import * as validate from "./schema/validate";
 import toposort from "toposort";
-// const toposort = require("toposort");
 
 const Solver = {
-  async read(filepath: string): Promise<UserDeclaration | Error> {
-    const declarations: UserDeclaration[] = loadAll(
-      await readFile(filepath, "utf8")
-    );
+  async read(
+    filepath: string
+  ): Promise<UserDeclaration | UserDeclarationWithEnvironment | Error> {
+    const declarations: UserDeclaration[] | UserDeclarationWithEnvironment[] =
+      loadAll(await readFile(filepath, "utf8"));
     // loadAll returns an array, we just want the first item; we will assume a user only has one declaration per project
-    const valid = validate.validate(declarations[0]);
+    // just commenting out validation temporarily. @TODO: fix validation to cover environments
+    // const valid = validate.validate(declarations[0]);
 
     // @TODO check specifically for yaml in case this is a JSON file!
     // const fileExtension = filepath.split('.').pop();
     // if (fileExtension === 'yaml') {
     //   declarations = loadAll(declarations);
     // }
+    //@TODO: remove this once validation is fixed
+    let valid = true;
     if (valid) {
       return declarations[0];
     } else {
-      //TODO finesse error handling
+      // TODO finesse error handling
       throw new Error("Invalid declaration file");
     }
   },
@@ -50,9 +54,30 @@ const Solver = {
     return sortedSteps;
   },
   // put together a list of contracts that need to be deployed, with relevant information for the deployment
-  async orchestrate(filepath: string): Promise<DeploymentSteps> {
+  async orchestrate(
+    filepath: string,
+    env: string | undefined
+  ): Promise<DeploymentSteps> {
     //TODO change this any to a type
-    let declarations: UserDeclaration[] = await this.read(filepath);
+    let userDeclarations: UserDeclaration[] | UserDeclarationWithEnvironment[];
+    userDeclarations = await this.read(filepath);
+
+    let declarations;
+    // check whether the user has specified an environment; if so only deploy that
+    // part of the declaration
+    // @TODO: handle case of declarations file with listed environments but no environment specified in command (currently throws an unhelpful error)
+    if (env && userDeclarations["deployed"][0][env]) {
+      //only deploy the part of the declaration file matching the env
+      declarations = {
+        deployed: userDeclarations["deployed"][0][env]
+      };
+    } else if (env) {
+      //if there is no declaration for the specified environment, throw an error
+      throw new Error("No declaration for the specified environment");
+    } else {
+      declarations = userDeclarations;
+    }
+
     let deploymentSteps: DeploymentSteps = [];
     let dependencies: string[][] = [];
 

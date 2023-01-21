@@ -38,6 +38,20 @@ export interface UserDeclaration {
     }
   ];
 }
+
+export interface UserDeclarationWithEnvironment {
+  [deployed: string]: {
+    [environment: string]: {
+      [network: string]: [
+        {
+          contract: string;
+          links?: string[];
+        }
+      ];
+    };
+  };
+}
+
 type ScriptObject = {
   path: string;
   before?: string;
@@ -65,8 +79,13 @@ export type DeclarationObject = {
   contract: string;
   links?: string[];
 };
+
 export interface DeclarationEntry {
   [network: string]: [DeclarationObject];
+}
+
+export interface DeclarationEnvironment {
+  [environment: string]: [DeclarationEntry];
 }
 
 export type DeploymentSteps = DeclarationTarget[];
