@@ -58,4 +58,21 @@ describe("truffle exec [ @standalone ]", function () {
     const output = logger.contents();
     assert(output.includes("5"));
   });
+
+  it("runs script when --url option is passed", async function () {
+    this.timeout(30000);
+    await CommandRunner.run("compile", config);
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "Executable.json")
+      )
+    );
+
+    await CommandRunner.run(
+      "exec script.js --url http://127.0.0.1:8545",
+      config
+    );
+    const output = logger.contents();
+    assert(output.includes("5"));
+  });
 });
