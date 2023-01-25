@@ -6,18 +6,16 @@ import originalRequire from "original-require";
 
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
-import { default as axios_plain, AxiosResponse } from "axios";
+import { default as axiosPlain, AxiosResponse } from "axios";
 
-var proxy = process.env.https_proxy || process.env.http_proxy;
-var axios;
+const environmentProxy = process.env.https_proxy || process.env.http_proxy;
+let axios = axiosPlain;
 if (proxy) {
   const HttpsProxyAgent = require("https-proxy-agent");
-  const agent = new HttpsProxyAgent(proxy);
-  axios = axios_plain.create({
+  const agent = new HttpsProxyAgent(environmentProxy);
+  axios = axiosPlain.create({
     httpsAgent: agent
   });
-} else {
-  axios = axios_plain;
 }
 
 import semver from "semver";
