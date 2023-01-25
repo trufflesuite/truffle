@@ -4,6 +4,8 @@ import Deployer from "@truffle/deployer";
 import Config from "@truffle/config";
 import { ResolverIntercept } from "./ResolverIntercept";
 import { Environment } from "@truffle/environment";
+import path from "path";
+import { spawnSync } from "child_process";
 
 const Runner = {
   async prepareForDeployments(config: Config) {
@@ -82,6 +84,7 @@ const Runner = {
 
     await deployer.start();
 
+    // @TODO handle multiple links
     if (deploymentStep.run.includes("link")) {
       await this.link(deploymentStep, config, deployer, resolver);
     }
@@ -104,19 +107,49 @@ const Runner = {
       }
 
       await deployer.finish();
+    }
 
-      if (await Contract.isDeployed()) {
-        deploymentStep.isCompleted = true;
+    if (await Contract.isDeployed()) {
+      deploymentStep.isCompleted = true;
+    }
+
+    // @TODO: add Contract/artifact info to deploymentStep?
+    // Or save somewhere
+    return deploymentStep;
+  },
+  async runScript(config: Config, filePath: string) {
+    if (typeof filePath !== "string") {
+      throw new Error("No file path provided");
+    }
+
+    let file = filePath;
+    if (path.isAbsolute(filePath) === false) {
+      try {
+        file = path.join(process.cwd(), filePath);
+      } catch (err) {
+        console.error(`Error: ${err}`);
+        return;
+      }
+    }
+
+    try {
+      const { stdout, stderr, status } = spawnSync("node", [file]);
+
+      // @TODO consider finding a prettier way to present this output
+      if (stdout) {
+        console.log(`stdout: ${stdout}`);
+      }
+      if (await stderr["data"]) {
+        console.error(`stderr: ${stderr}`);
+        return false;
       }
 
-      // @TODO: add Contract/artifact info to deploymentStep?
-      // Or save somewhere
-      return deploymentStep;
+      console.log(`child process exited with code ${status}`);
+    } catch (err) {
+      console.error(`Error: ${err}`);
     }
-    // @TODO: add script handling
-    // if (deploymentStep.run.includes("script")) {
-    //   //   //execute script
-    //   // }
+
+    return true;
   },
   async orchestrate(
     declarationSteps: DeploymentSteps,
@@ -132,8 +165,16 @@ const Runner = {
     let deploymentSteps: DeclarationTarget[] = [];
     for (const step of declarationSteps) {
       try {
-        const deploymentStep = await this.run(step, config, options);
-        deploymentSteps.push(deploymentStep);
+        if (!step.run.includes("execute")) {
+          const deploymentStep = await this.run(step, config, options);
+          deploymentSteps.push(deploymentStep);
+        } else if (step.run.includes("execute")) {
+          const result = this.runScript(config, step.script as string);
+          if (result) {
+            step.isCompleted = true;
+            deploymentSteps.push(step);
+          }
+        }
       } catch (error) {
         //handle rejected promises
         throw new Error(JSON.stringify(error));
