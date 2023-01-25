@@ -24,7 +24,7 @@
     "@truffle/contract-sources": "^0.2.0",
     "@truffle/expect": "^0.1.4",
     "@truffle/profiler": "^0.1.41",
-    "axios": "0.27.2",
+    "axios": "1.2.4",
     "axios-retry": "^3.1.9",
     "debug": "^4.3.1",
     "fs-extra": "^9.1.0",
