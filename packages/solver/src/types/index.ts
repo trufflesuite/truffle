@@ -60,24 +60,27 @@ type ScriptObject = {
   afterEach?: string[];
 };
 export interface DeclarationTarget {
-  script?: ScriptObject;
+  script?: string;
   contractName?: string;
   network: string;
   // other contracts, any captured variables from a previous deployment
-  // not sure what the best way to arrange these will be, just an array of any for now
-  dependencies?: string[];
-  //this will be a function to check whether the target in question
-  //has finished successfully
   isCompleted: boolean;
   links?: string[];
   //this is the function to complete this target, this is the function that will
-  //actually deploy, link, execute, etc.; ultimately the execution layer of the declarative
-  //deployments module will look something like DeploymentSteps[0].run(contractName, options), etc.;
+  //actually deploy, link, execute, etc.;
   run: Array<"deploy" | "link" | "execute">;
 }
+
+export type scriptObject = {
+  path: string;
+  before?: string[];
+  after?: string[];
+};
+
 export type DeclarationObject = {
-  contract: string;
+  contract?: string;
   links?: string[];
+  process?: ScriptObject;
 };
 
 export interface DeclarationEntry {
