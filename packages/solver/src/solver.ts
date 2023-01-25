@@ -26,7 +26,7 @@ const Solver = {
     // if (fileExtension === 'yaml') {
     //   declarations = loadAll(declarations);
     // }
-    //@TODO: remove this once validation is fixed
+    //@TODO: remove this once validation is fixed to include environments & scripts
     let valid = true;
     if (valid) {
       return declarations[0];
@@ -44,7 +44,8 @@ const Solver = {
     // let's rearrange our deploymentSteps so that dependencies are added first
     sortedContracts.map((step: string) => {
       let item: DeclarationTarget | undefined = deploymentSteps.find(
-        item => item.contractName === step
+        item =>
+          item.contractName === (step ?? "") || item.script === (step ?? "")
       );
 
       if (item !== undefined) {
@@ -85,35 +86,58 @@ const Solver = {
       // should I split up the actions here? a declaration with a linked contract will need the link
       // part and then the deploy
       const entryValues: Array<DeclarationObject> = Object.values(entry)[0];
-      entryValues.map(contract => {
+      entryValues.map(instruction => {
         let runActions: Array<"deploy" | "link" | "execute"> = ["deploy"];
         // will have capture variables to add to dependencies also, this is just the start
         //pairs of dependencies for topological sort
         let links: string[] = [];
-        if (contract.links) {
+        if (instruction.contract && instruction.links) {
           runActions.push("link");
-          links = contract.links;
+          links = instruction.links;
           links.map(link => {
-            dependencies.push([link, contract.contract]);
+            dependencies.push([link, instruction.contract as string]);
           });
-        } else {
-          dependencies.push([contract.contract]);
+        } else if (instruction.contract) {
+          dependencies.push([instruction.contract as string]);
+        }
+
+        //handle adding scripts to deployment
+        // TODO: error handling -- can't find script, etc.
+        let script;
+        if (instruction.process) {
+          runActions.push("execute");
+          script = instruction.process;
+          if (script.before) {
+            script.before.map((before: string) => {
+              dependencies.push([script.path, before]);
+            });
+          } else if (script.after) {
+            script.after.map((after: string) => {
+              dependencies.push([after, script.path]);
+            });
+          } else {
+            throw new Error(
+              "You must specify contracts that should be deployed before or after a script. For example, to deploy a script before a SimpleStorage.sol, you would add the following to your declaration file: \n\nscripts: \n  - path: ./scripts/deployScript.js \n    before: [SimpleStorage.sol]"
+            );
+          }
         }
 
         let declarationTarget: DeclarationTarget = {
-          contractName: contract.contract,
+          contractName: instruction.contract ? instruction.contract : undefined,
+          script: script ? script.path : undefined,
           network: Object.keys(entry)[0],
-          dependencies: links,
           links: links,
           isCompleted: false,
           run: runActions
         };
+
         deploymentSteps.push(declarationTarget);
       });
     });
 
     // ok now get our deploymentSteps in the correct order accounting for dependencies
     const sortedSteps = await this.sort(dependencies, deploymentSteps);
+    console.log("sorted steps " + JSON.stringify(sortedSteps, null, 2));
     return sortedSteps;
   }
 };
