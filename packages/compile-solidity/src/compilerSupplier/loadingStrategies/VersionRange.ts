@@ -7,15 +7,17 @@ import originalRequire from "original-require";
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
 import { default as axiosPlain, AxiosResponse } from "axios";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 const environmentProxy = process.env.https_proxy || process.env.http_proxy;
-let axios = axiosPlain;
-if (proxy) {
-  const HttpsProxyAgent = require("https-proxy-agent");
+let axios;
+if (environmentProxy) {
   const agent = new HttpsProxyAgent(environmentProxy);
   axios = axiosPlain.create({
     httpsAgent: agent
   });
+} else {
+  axios = axiosPlain;
 }
 
 import semver from "semver";
@@ -196,7 +198,7 @@ export class VersionRange {
     return this.compilerFromString(response.data);
   }
 
-  async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
+  async getSolcFromCacheOrUrl(versionConstraint: string, index = 0) {
     // go through all sources (compilerRoots) trying to locate a
     // suitable version of the Solidity compiler
     const { compilerRoots, events } = this.config;
@@ -267,7 +269,7 @@ export class VersionRange {
       version.includes("nightly") || version.includes("commit");
 
     if (isPrerelease) {
-      for (let build of allVersions.builds) {
+      for (const build of allVersions.builds) {
         const exists =
           build["prerelease"] === version ||
           build["build"] === version ||
