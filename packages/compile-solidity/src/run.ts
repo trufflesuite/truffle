@@ -1,7 +1,8 @@
+/* eslint-env node, browser */
 import { zeroLinkReferences, formatLinkReferences } from "./shims";
 import debugModule from "debug";
 const debug = debugModule("compile:run");
-import OS = require("os");
+import OS from "os";
 import semver from "semver";
 import { CompilerSupplier } from "./compilerSupplier";
 import * as Common from "@truffle/compile-common";
@@ -22,6 +23,7 @@ import type {
   Targets
 } from "./types";
 import type Config from "@truffle/config";
+import { compileInWebWorker } from "./compileInWebWorker";
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
@@ -243,8 +245,21 @@ async function invokeCompiler({ compilerInput, options, solc }): Promise<{
   const supplierOptions = {
     parser: options.parser,
     events: options.events,
-    solcConfig: options.compilers.solc
+    solcConfig: options.compilers.solc,
+    cache: options.compilers.solc?.cache
   };
+
+  // in the browser, compile in a worker and return the result
+  // @ts-ignore
+  if (typeof window !== "undefined") {
+    const supplier = new CompilerSupplier(supplierOptions);
+    const { soljson } = await supplier.loadSoljson();
+    debug(
+      "about to compile in a web worker with the following compilerInput -- %o",
+      compilerInput
+    );
+    return await compileInWebWorker({ soljson, compilerInput });
+  }
 
   if (!solc) {
     const supplier = new CompilerSupplier(supplierOptions);

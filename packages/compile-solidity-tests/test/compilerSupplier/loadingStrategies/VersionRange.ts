@@ -8,10 +8,11 @@ import Config from "@truffle/config";
 const config = Config.default();
 let versionRangeOptions = {
   events: config.events,
-  solcConfig: config.compilers.solc
+  solcConfig: config.compilers.solc,
+  cache: "fileSystem"
 };
 const instance = new LoadingStrategies.VersionRange(versionRangeOptions);
-let fileName, expectedResult;
+let fileName: string, expectedResult: any;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
   "soljson-v0.4.23+commit.1534a40d.js",
@@ -76,11 +77,13 @@ describe("VersionRange loading strategy", () => {
       sinon.stub(instance, "getCachedSolcByVersionRange");
       sinon.stub(instance, "getSolcFromCacheOrUrl");
       sinon.stub(instance, "versionIsCached").returns("compilerFilename.js");
+      sinon.stub(instance, "compilerFromString");
     });
     afterEach(() => {
       unStub(instance, "getCachedSolcByVersionRange");
       unStub(instance, "getSolcFromCacheOrUrl");
       unStub(instance, "versionIsCached");
+      unStub(instance, "compilerFromString");
     });
 
     it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
@@ -105,32 +108,32 @@ describe("VersionRange loading strategy", () => {
 
     describe("when a version constraint is specified", () => {
       beforeEach(() => {
-        sinon.stub(instance, "getAndCacheSolcByUrl");
-        sinon.stub(instance.cache, "has").returns(false);
+        sinon.stub(instance, "getAndCacheSoljsonByUrl");
+        sinon.stub(instance.cache!, "has").returns(false);
       });
       afterEach(() => {
-        unStub(instance, "getAndCacheSolcByUrl");
-        unStub(instance.cache, "has");
+        unStub(instance, "getAndCacheSoljsonByUrl");
+        unStub(instance.cache!, "has");
       });
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
         await instance.getSolcFromCacheOrUrl("^0.5.0");
         assert.isTrue(
           // @ts-ignore
-          instance.getAndCacheSolcByUrl.calledWith(
+          instance.getAndCacheSoljsonByUrl.calledWith(
             "soljson-v0.5.4+commit.9549d8ff.js"
           ),
-          "getAndCacheSolcByUrl not called with the compiler file name"
+          "getAndCacheSoljsonByUrl not called with the compiler file name"
         );
       });
     });
 
     describe("when the version is cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "has").returns(true);
+        sinon.stub(instance.cache!, "has").returns(true);
       });
       afterEach(() => {
-        unStub(instance.cache, "has");
+        unStub(instance.cache!, "has");
       });
 
       it("calls getCachedSolcByFileName", async () => {
@@ -146,27 +149,23 @@ describe("VersionRange loading strategy", () => {
 
     describe("when the version is not cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "has").returns(false);
-        sinon.stub(instance.cache, "add");
-        sinon.stub(instance, "compilerFromString").returns("compiler");
+        sinon.stub(instance.cache!, "has").returns(false);
+        sinon.stub(instance, "getAndCacheSoljsonByUrl");
       });
       afterEach(() => {
-        unStub(instance.cache, "has");
-        unStub(instance.cache, "add");
-        unStub(instance, "compilerFromString");
+        unStub(instance.cache!, "has");
+        unStub(instance, "getAndCacheSoljsonByUrl");
       });
 
-      it("eventually calls add and compilerFromString", async () => {
+      it("eventually calls .getAndCacheSoljsonByUrl", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
         // @ts-ignore
-        assert.isTrue(instance.cache.add.called);
-        // @ts-ignore
-        assert.isTrue(instance.compilerFromString.called);
+        assert.isTrue(instance.getAndCacheSoljsonByUrl.called);
       }).timeout(60000);
     });
   });
 
-  describe(".getAndCacheSolcByUrl(fileName)", () => {
+  describe(".getAndCacheSoljsonByUrl(fileName)", () => {
     beforeEach(() => {
       fileName = "someSolcFile";
       sinon
@@ -175,24 +174,19 @@ describe("VersionRange loading strategy", () => {
         .returns(Promise.resolve({ data: "requestReturn" }));
       // @ts-ignore
       sinon.stub(instance.cache, "add").withArgs("requestReturn");
-      sinon
-        .stub(instance, "compilerFromString")
-        .withArgs("requestReturn")
-        .returns("success");
     });
     afterEach(() => {
       unStub(axios, "get");
-      unStub(instance.cache, "add");
-      unStub(instance, "compilerFromString");
+      unStub(instance.cache!, "add");
     });
 
     it("calls add with the response and the file name", async () => {
-      const result = await instance.getAndCacheSolcByUrl(fileName, 0);
+      const result = await instance.getAndCacheSoljsonByUrl(fileName, 0);
       assert.isTrue(
         // @ts-ignore
         instance.cache.add.calledWith("requestReturn", "someSolcFile")
       );
-      assert.equal(result, "success");
+      assert.equal(result, "requestReturn");
     });
   });
 
@@ -216,10 +210,10 @@ describe("VersionRange loading strategy", () => {
 
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
-      sinon.stub(instance.cache, "list").returns(compilerFileNames);
+      sinon.stub(instance.cache!, "list").returns(compilerFileNames);
     });
     afterEach(() => {
-      unStub(instance.cache, "list");
+      unStub(instance.cache!, "list");
     });
 
     describe("when a cached version of the compiler is present", () => {
@@ -246,11 +240,11 @@ describe("VersionRange loading strategy", () => {
   describe("getCachedSolcByVersionRange(version)", () => {
     beforeEach(() => {
       expectedResult = "soljson-v0.4.23+commit.1534a40d.js";
-      sinon.stub(instance.cache, "list").returns(compilerFileNames);
+      sinon.stub(instance.cache!, "list").returns(compilerFileNames);
       sinon.stub(instance, "getCachedSolcByFileName");
     });
     afterEach(() => {
-      unStub(instance.cache, "list");
+      unStub(instance.cache!, "list");
       unStub(instance, "getCachedSolcByFileName");
     });
 

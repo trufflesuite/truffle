@@ -62,6 +62,7 @@ export const getInitialConfig = ({
     },
     compilers: {
       solc: {
+        cache: "fileSystem",
         settings: {
           //Note: The default solc version is *not* set here!
           //It's set in compilerSupplier/index.js in compile-solidity

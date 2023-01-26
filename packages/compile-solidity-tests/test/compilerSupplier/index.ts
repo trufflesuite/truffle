@@ -64,7 +64,8 @@ let fakeReturn = {
 describe("CompilerSupplier", () => {
   beforeEach(function () {
     supplierOptions = {
-      events: config.events
+      events: config.events,
+      cache: "fileSystem"
     };
   });
 

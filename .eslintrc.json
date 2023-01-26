@@ -9,7 +9,8 @@
     "BUNDLE_CHAIN_FILENAME": "readonly",
     "BUNDLE_ANALYTICS_FILENAME": "readonly",
     "BUNDLE_LIBRARY_FILENAME": "readonly",
-    "BUNDLE_CONSOLE_CHILD_FILENAME": "readonly"
+    "BUNDLE_CONSOLE_CHILD_FILENAME": "readonly",
+    "WORKER_CODE_BASE64": "readonly"
   },
   "extends": [
     "plugin:react-hooks/recommended"

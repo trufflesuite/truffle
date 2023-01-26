@@ -1,6 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("fetch-and-compile");
-import type Config from "@truffle/config";
+import Config from "@truffle/config";
 import { SingleRecognizer } from "./recognizer";
 import { MultipleRecognizer } from "./multiple";
 import { DebugRecognizer } from "./debug";

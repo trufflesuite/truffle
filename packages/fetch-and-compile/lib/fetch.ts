@@ -134,6 +134,12 @@ async function tryFetchAndCompileAddress(
         solc: options
       }
     });
+
+    // @ts-ignore
+    if (typeof window === "undefined") {
+      externalConfig.compilers.cache = "noCache";
+    }
+
     //if using docker, transform it (this does nothing if not using docker)
     externalConfig = transformIfUsingDocker(
       externalConfig,

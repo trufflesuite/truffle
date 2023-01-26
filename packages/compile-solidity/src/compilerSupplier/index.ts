@@ -1,10 +1,22 @@
+/* eslint-env node, browser */
 import path from "path";
 import fs from "fs";
 import semver from "semver";
 import { StrategyOptions } from "./types";
 import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
-
 const defaultSolcVersion = "0.5.16";
+
+type CompilerSupplierConstructorArgs = {
+  events?: any;
+  solcConfig: {
+    version?: string;
+    docker?: boolean;
+    compilerRoots?: string[];
+    dockerTagsUrl?: string;
+    spawn?: any;
+  };
+  cache?: string;
+};
 
 type CompilerSupplierStrategy =
   | Docker
@@ -15,10 +27,10 @@ type CompilerSupplierStrategy =
 
 export class CompilerSupplier {
   private version: string;
-  private docker: boolean;
+  private docker?: boolean;
   private strategyOptions: StrategyOptions;
 
-  constructor({ events, solcConfig }) {
+  constructor({ events, solcConfig, cache }: CompilerSupplierConstructorArgs) {
     const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
@@ -28,17 +40,22 @@ export class CompilerSupplier {
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
     if (spawn) this.strategyOptions.spawn = spawn;
+    if (cache) this.strategyOptions.cache = cache;
   }
 
-  async load() {
+  getStrategy() {
     const userSpecification = this.version;
-
     let strategy: CompilerSupplierStrategy;
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
-    const useSpecifiedLocal =
-      userSpecification &&
-      (fs.existsSync(userSpecification) || path.isAbsolute(userSpecification));
+    let useSpecifiedLocal: boolean | string | undefined;
+    // don't attempt file system access in browser environment
+    if (typeof window === "undefined") {
+      useSpecifiedLocal =
+        userSpecification &&
+        (fs.existsSync(userSpecification) ||
+          path.isAbsolute(userSpecification));
+    }
     const isValidVersionRange = semver.validRange(userSpecification);
 
     if (useDocker) {
@@ -50,7 +67,24 @@ export class CompilerSupplier {
     } else if (isValidVersionRange) {
       strategy = new VersionRange(this.strategyOptions);
     }
+    return {
+      strategy,
+      userSpecification
+    };
+  }
 
+  async loadSoljson() {
+    const { strategy, userSpecification } = this.getStrategy();
+    if (strategy) {
+      const soljson = await strategy.loadSoljson(userSpecification);
+      return { soljson };
+    } else {
+      throw new BadInputError(userSpecification);
+    }
+  }
+
+  async load() {
+    const { strategy, userSpecification } = this.getStrategy();
     if (strategy) {
       const solc = await strategy.load(userSpecification);
       return { solc };

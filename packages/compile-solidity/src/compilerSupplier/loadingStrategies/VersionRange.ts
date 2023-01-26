@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
-import originalRequire from "original-require";
+import fs from "fs";
 
 // must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
 import "../../polyfill";
@@ -24,7 +24,7 @@ type SolidityCompilersList = {
 
 export class VersionRange {
   public config: StrategyOptions;
-  public cache: Cache;
+  public cache: Cache | null;
 
   constructor(options: StrategyOptions) {
     const defaultConfig = {
@@ -41,23 +41,41 @@ export class VersionRange {
     };
     this.config = Object.assign({}, defaultConfig, options);
 
-    this.cache = new Cache();
+    switch (options.cache) {
+      case "fileSystem":
+        this.cache = new Cache();
+        break;
+      case "noCache":
+        this.cache = null;
+        break;
+      default:
+        this.cache = new Cache();
+    }
   }
 
-  async load(versionRange: string) {
+  async loadSoljson(versionRange: string) {
     const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+    if (
+      rangeIsSingleVersion &&
+      this.cache &&
+      this.versionIsCached(versionRange)
+    ) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
 
     try {
       return await this.getSolcFromCacheOrUrl(versionRange);
     } catch (error) {
-      if (error.message.includes("Failed to complete request")) {
+      if (error.message.includes("Failed to complete request") && this.cache) {
         return this.getSatisfyingVersionFromCache(versionRange);
       }
       throw error;
     }
+  }
+
+  async load(versionRange: string) {
+    const soljson = await this.loadSoljson(versionRange);
+    return await this.compilerFromString(soljson);
   }
 
   async list(index = 0) {
@@ -96,7 +114,7 @@ export class VersionRange {
     };
   }
 
-  compilerFromString(code: string) {
+  async compilerFromString(code: string) {
     const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
@@ -117,12 +135,15 @@ export class VersionRange {
   }
 
   getCachedSolcByFileName(fileName: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const listeners = observeListeners();
     try {
       const filePath = this.cache.resolve(fileName);
-      const soljson = originalRequire(filePath);
+      const soljson = fs.readFileSync(filePath).toString();
       debug("soljson %o", soljson);
-      return solcWrap(soljson);
+      return soljson;
     } finally {
       listeners.cleanup();
     }
@@ -130,6 +151,9 @@ export class VersionRange {
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -144,6 +168,9 @@ export class VersionRange {
   }
 
   getCachedSolcFileName(commit: string) {
+    if (!this.cache) {
+      this.throwNoCacheError();
+    }
     const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
@@ -168,7 +195,7 @@ export class VersionRange {
     throw new NoVersionError(versionRange);
   }
 
-  async getAndCacheSolcByUrl(fileName: string, index: number) {
+  async getAndCacheSoljsonByUrl(fileName: string, index: number) {
     const { events, compilerRoots } = this.config;
     const url = `${compilerRoots![index].replace(/\/+$/, "")}/${fileName}`;
     events.emit("downloadCompiler:start", {
@@ -182,8 +209,10 @@ export class VersionRange {
       throw error;
     }
     events.emit("downloadCompiler:succeed");
-    this.cache.add(response.data, fileName);
-    return this.compilerFromString(response.data);
+    if (this.cache) {
+      this.cache.add(response.data, fileName);
+    }
+    return response.data;
   }
 
   async getSolcFromCacheOrUrl(versionConstraint: string, index: number = 0) {
@@ -219,11 +248,12 @@ export class VersionRange {
       );
       if (!fileName) throw new NoVersionError(versionToUse);
 
-      if (this.cache.has(fileName)) {
+      if (this.cache?.has(fileName)) {
         return this.getCachedSolcByFileName(fileName);
       }
-      return await this.getAndCacheSolcByUrl(fileName, index);
+      return await this.getAndCacheSoljsonByUrl(fileName, index);
     } catch (error) {
+      debug("there was an error fetching soljson -- %o", error.message);
       const attemptNumber = index + 1;
       return await this.getSolcFromCacheOrUrl(versionConstraint, attemptNumber);
     }
@@ -240,6 +270,10 @@ export class VersionRange {
     const url = `${urlRoot.replace(/\/+$/, "")}/list.json`;
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
+      debug(
+        `obtained the following version list from ${url} -- %o`,
+        response.data
+      );
       return response.data;
     } catch (error) {
       events.emit("fetchSolcList:fail");
@@ -268,13 +302,21 @@ export class VersionRange {
     }
 
     const versionToUse = this.findNewestValidVersion(version, allVersions);
-
-    if (versionToUse) return allVersions.releases[versionToUse];
+    if (versionToUse) {
+      debug(
+        "the solc filename that we will use -- %o",
+        allVersions.releases[versionToUse]
+      );
+      return allVersions.releases[versionToUse];
+    }
 
     return null;
   }
 
   versionIsCached(version: string) {
+    if (!this.cache) {
+      return false;
+    }
     const cachedCompilerFileNames = this.cache.list();
     const cachedVersions = cachedCompilerFileNames
       .map(fileName => {
@@ -284,6 +326,13 @@ export class VersionRange {
       .filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
+    );
+  }
+
+  throwNoCacheError(): never {
+    throw new Error(
+      "You are trying to access the cache but your configuration specifies " +
+        "no cache."
     );
   }
 }
