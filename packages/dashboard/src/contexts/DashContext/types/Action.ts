@@ -42,7 +42,7 @@ export interface HandleMessageAction extends BaseAction {
   data: ReceivedMessageLifecycle<Message>;
 }
 
-export interface UpdateProviderMessageSender extends BaseAction {
+export interface UpdateProviderMessageSenderAction extends BaseAction {
   type: "update-provider-message-sender";
   data: string;
 }
@@ -53,4 +53,4 @@ export type Action =
   | SetNoticeAction
   | SetAnalyticsConfigAction
   | HandleMessageAction
-  | UpdateProviderMessageSender;
+  | UpdateProviderMessageSenderAction;
