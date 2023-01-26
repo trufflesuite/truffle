@@ -26,12 +26,15 @@ export type configOptions = {
   "t": boolean;
   "$0": string;
 };
+
+type variables = Record<string, any>;
 export interface UserDeclaration {
   [deployed: string]: [
     {
       [network: string]: [
         {
           contract: string;
+          variables?: variables;
           links?: string[];
         }
       ];
@@ -45,6 +48,7 @@ export interface UserDeclarationWithEnvironment {
       [network: string]: [
         {
           contract: string;
+          variables?: variables;
           links?: string[];
         }
       ];
@@ -66,6 +70,7 @@ export interface DeclarationTarget {
   // other contracts, any captured variables from a previous deployment
   isCompleted: boolean;
   links?: string[];
+  variables?: variables;
   //this is the function to complete this target, this is the function that will
   //actually deploy, link, execute, etc.;
   run: Array<"deploy" | "link" | "execute">;
@@ -79,6 +84,7 @@ export type scriptObject = {
 
 export type DeclarationObject = {
   contract?: string;
+  variables?: variables;
   links?: string[];
   process?: ScriptObject;
 };
