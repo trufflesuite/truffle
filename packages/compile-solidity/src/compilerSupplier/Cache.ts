@@ -4,7 +4,7 @@ import fs from "fs";
 
 export class Cache {
   private compilerCachePath: string;
-  private memoizedCompilers: Map<string, string>;
+  public memoizedCompilers: Map<string, string>;
 
   constructor() {
     const compilersDir = path.resolve(
