@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-message-bus-client",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Client library for accessing the truffle dashboard's message bus",
   "main": "dist/index.js",
   "scripts": {
