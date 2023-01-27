@@ -137,7 +137,7 @@ const Solver = {
 
     // ok now get our deploymentSteps in the correct order accounting for dependencies
     const sortedSteps = await this.sort(dependencies, deploymentSteps);
-    console.log("sorted steps " + JSON.stringify(sortedSteps, null, 2));
+
     return sortedSteps;
   }
 };
