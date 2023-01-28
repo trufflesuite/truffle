@@ -402,7 +402,10 @@ class Console extends EventEmitter {
     if (
       this.allowedCommands.includes(processedInput.split(" ")[0]) &&
       getCommand({
-        inputStrings: processedInput.split(" "),
+        inputStrings: processedInput.split(" "), //note: splitting on spaces
+        //here isn't really correct (doesn't handle quotes), but I'm pretty
+        //sure it's good enough for the limited purposes of this line, so
+        //I'm leaving it alone
         options: {},
         noAliases: this.options.noAliases
       }) !== null

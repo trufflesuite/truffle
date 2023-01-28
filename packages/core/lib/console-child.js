@@ -1,11 +1,17 @@
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const yargs = require("yargs");
+const shellQuote = require("shell-quote");
 const { deriveConfigEnvironment } = require("./command-utils");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
-const inputStrings = input[1].split(" ");
+const inputStrings = shellQuote
+  .parse(input[1], process.env)
+  .map(stringOrOp =>
+    typeof stringOrOp === "string" ? stringOrOp : stringOrOp.op
+  ); //we don't want bash operators treated specially, let's
+//just replace them with the underlying string
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
