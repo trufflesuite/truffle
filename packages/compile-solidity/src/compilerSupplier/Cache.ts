@@ -1,6 +1,8 @@
 import Config from "@truffle/config";
 import path from "path";
 import fs from "fs";
+// @ts-ignore
+import * as fsPromises from "fs/promises";
 
 export class Cache {
   private compilerCachePath: string;
@@ -19,28 +21,28 @@ export class Cache {
     this.memoizedCompilers = new Map();
   }
 
-  list() {
-    return fs.readdirSync(this.compilerCachePath);
+  async list() {
+    return await fsPromises.readdir(this.compilerCachePath);
   }
 
-  add(code: string, fileName: string) {
+  async add(code: string, fileName: string) {
     const filePath = this.resolve(fileName);
-    fs.writeFileSync(filePath, code);
+    await fsPromises.writeFile(filePath, code);
     this.memoizedCompilers.set(filePath, code);
   }
 
-  has(fileName: string) {
+  async has(fileName: string) {
     const filePath = this.resolve(fileName);
-    return fs.existsSync(filePath);
+    return await fsPromises.exists(filePath);
   }
 
-  loadFile(fileName: string): string {
+  async loadFile(fileName: string): Promise<string> {
     const filePath = this.resolve(fileName);
     if (this.memoizedCompilers.has(filePath)) {
       return this.memoizedCompilers.get(filePath)!;
     }
     try {
-      const compiler = fs.readFileSync(filePath).toString();
+      const compiler = (await fsPromises.readFile(filePath)).toString();
       this.memoizedCompilers.set(filePath, compiler);
       return compiler;
     } catch (error) {

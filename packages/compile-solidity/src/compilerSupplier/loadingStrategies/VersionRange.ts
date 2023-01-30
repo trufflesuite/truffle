@@ -45,15 +45,15 @@ export class VersionRange {
 
   async load(versionRange: string) {
     const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
+    if (rangeIsSingleVersion && (await this.versionIsCached(versionRange))) {
+      return await this.getCachedSolcByVersionRange(versionRange);
     }
 
     try {
       return await this.getSolcFromCacheOrUrl(versionRange);
     } catch (error) {
       if (error.message.includes("Failed to complete request")) {
-        return this.getSatisfyingVersionFromCache(versionRange);
+        return await this.getSatisfyingVersionFromCache(versionRange);
       }
       throw error;
     }
@@ -115,10 +115,10 @@ export class VersionRange {
     );
   }
 
-  getCachedSolcByFileName(fileName: string) {
+  async getCachedSolcByFileName(fileName: string) {
     const listeners = observeListeners();
     try {
-      const soljson = this.cache.loadFile(fileName);
+      const soljson = await this.cache.loadFile(fileName);
       debug("soljson %o", soljson);
       return this.compilerFromString(soljson);
     } finally {
@@ -127,8 +127,8 @@ export class VersionRange {
   }
 
   // Range can also be a single version specification like "0.5.0"
-  getCachedSolcByVersionRange(version: string) {
-    const cachedCompilerFileNames = this.cache.list();
+  async getCachedSolcByVersionRange(version: string) {
+    const cachedCompilerFileNames = await this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return semver.satisfies(match[0], version);
@@ -138,11 +138,11 @@ export class VersionRange {
     const compilerFileName = multipleValidVersions
       ? this.getMostRecentVersionOfCompiler(validVersions)
       : validVersions[0];
-    return this.getCachedSolcByFileName(compilerFileName);
+    return await this.getCachedSolcByFileName(compilerFileName);
   }
 
-  getCachedSolcFileName(commit: string) {
-    const cachedCompilerFileNames = this.cache.list();
+  async getCachedSolcFileName(commit: string) {
+    const cachedCompilerFileNames = await this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
@@ -159,9 +159,9 @@ export class VersionRange {
     }, "-v0.0.0+commit");
   }
 
-  getSatisfyingVersionFromCache(versionRange: string) {
-    if (this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
+  async getSatisfyingVersionFromCache(versionRange: string) {
+    if (await this.versionIsCached(versionRange)) {
+      return await this.getCachedSolcByVersionRange(versionRange);
     }
     throw new NoVersionError(versionRange);
   }
@@ -217,8 +217,8 @@ export class VersionRange {
       );
       if (!fileName) throw new NoVersionError(versionToUse);
 
-      if (this.cache.has(fileName)) {
-        return this.getCachedSolcByFileName(fileName);
+      if (await this.cache.has(fileName)) {
+        return await this.getCachedSolcByFileName(fileName);
       }
       return await this.getAndCacheSolcByUrl(fileName, index);
     } catch (error) {
@@ -272,8 +272,8 @@ export class VersionRange {
     return null;
   }
 
-  versionIsCached(version: string) {
-    const cachedCompilerFileNames = this.cache.list();
+  async versionIsCached(version: string) {
+    const cachedCompilerFileNames = await this.cache.list();
     const cachedVersions = cachedCompilerFileNames
       .map(fileName => {
         const match = fileName.match(/v\d+\.\d+\.\d+.*/);
