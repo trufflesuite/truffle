@@ -11,9 +11,7 @@ const escapeCharacter = path.sep === "\\" ? "^" : "\\"; //set escape character
 //based on current OS; backslash for Unix, caret for Windows
 const inputStrings = shellQuote
   .parse(input[1], process.env, { escape: escapeCharacter })
-  .map(stringOrOp =>
-    typeof stringOrOp === "string" ? stringOrOp : stringOrOp.op
-  ); //we don't want bash operators treated specially, let's
+  .map(stringOrObj => stringOrObj.op ?? stringOrObj.comment ?? stringOrObj); //we don't want bash operators or comments treated specially; let's
 //just replace them with the underlying string
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
