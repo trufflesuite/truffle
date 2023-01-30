@@ -31,7 +31,7 @@
     "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
-    "web3": "1.8.1",
+    "web3": "1.8.2",
     "web3-provider-engine": "16.0.3"
   },
   "devDependencies": {
