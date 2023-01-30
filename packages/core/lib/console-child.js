@@ -2,12 +2,15 @@ const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const yargs = require("yargs");
 const shellQuote = require("shell-quote");
+const path = require("path");
 const { deriveConfigEnvironment } = require("./command-utils");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
+const escapeCharacter = path.sep === "\\" ? "^" : "\\"; //set escape character
+//based on current OS; backslash for Unix, caret for Windows
 const inputStrings = shellQuote
-  .parse(input[1], process.env)
+  .parse(input[1], process.env, { escape: escapeCharacter })
   .map(stringOrOp =>
     typeof stringOrOp === "string" ? stringOrOp : stringOrOp.op
   ); //we don't want bash operators treated specially, let's
