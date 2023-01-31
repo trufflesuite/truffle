@@ -58,7 +58,7 @@ export class Cache {
       if (!error.message.includes("ENOENT: no such file")) {
         throw error;
       } else {
-        throw new Error("The file specified could not be found.");
+        throw new Error("The specified file could not be found.");
       }
     }
   }
