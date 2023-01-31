@@ -133,11 +133,16 @@ const Runner = {
     }
 
     try {
-      const { stdout, stderr, status } = spawnSync("node", [file]);
-
+      const scriptNetwork = config.network;
+      const { stdout, stderr, status } = spawnSync("truffle", [
+        "exec",
+        file,
+        "--network",
+        scriptNetwork
+      ]);
       // @TODO consider finding a prettier way to present this output
       if (stdout) {
-        console.log(`stdout: ${stdout}`);
+        console.log(`${stdout}`);
       }
       if (await stderr["data"]) {
         console.error(`stderr: ${stderr}`);
@@ -169,6 +174,13 @@ const Runner = {
           const deploymentStep = await this.run(step, config, options);
           deploymentSteps.push(deploymentStep);
         } else if (step.run.includes("execute")) {
+          // @TODO move network checking to its own function, this is also used in run()
+          const configNetworks = config.networks;
+          if (configNetworks[step.network]) {
+            config.network = step.network;
+          } else {
+            throw new Error(`Network ${step.network} not found in config`);
+          }
           const result = this.runScript(config, step.script as string);
           if (result) {
             step.isCompleted = true;
