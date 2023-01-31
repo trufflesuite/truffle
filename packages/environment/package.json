@@ -31,7 +31,7 @@
     "ganache": "7.7.3",
     "node-ipc": "9.2.1",
     "source-map-support": "^0.5.19",
-    "web3": "1.8.1"
+    "web3": "1.8.2"
   },
   "devDependencies": {
     "debug": "^4.3.1",
