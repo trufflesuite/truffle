@@ -180,7 +180,7 @@ export class VersionRange {
       throw error;
     }
     events.emit("downloadCompiler:succeed");
-    this.cache.add(response.data, fileName);
+    await this.cache.add(response.data, fileName);
     return this.compilerFromString(response.data);
   }
 

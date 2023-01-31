@@ -31,9 +31,18 @@ export class Cache {
     this.memoizedCompilers.set(filePath, code);
   }
 
-  async has(fileName: string) {
+  async has(fileName: string): Promise<boolean> {
     const filePath = this.resolve(fileName);
-    return await fsPromises.exists(filePath);
+    try {
+      await fsPromises.stat(filePath);
+      return true;
+    } catch (error) {
+      // only throw if the error is due to something other than it not existing
+      if (!error.message.includes("no such file or directory")) {
+        throw error;
+      }
+      return false;
+    }
   }
 
   async loadFile(fileName: string): Promise<string> {

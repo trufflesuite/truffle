@@ -231,8 +231,8 @@ describe("VersionRange loading strategy", () => {
         expectedResult = "v0.4.11+commit.124234rd.js";
       });
 
-      it("returns the file name with the prefix removed", () => {
-        assert.equal(instance.versionIsCached("0.4.11"), expectedResult);
+      it("returns the file name with the prefix removed", async () => {
+        assert.equal(await instance.versionIsCached("0.4.11"), expectedResult);
       });
     });
 
@@ -241,8 +241,8 @@ describe("VersionRange loading strategy", () => {
         expectedResult = undefined;
       });
 
-      it("returns undefined", () => {
-        assert.equal(instance.versionIsCached("0.4.29"), expectedResult);
+      it("returns undefined", async () => {
+        assert.equal(await instance.versionIsCached("0.4.29"), expectedResult);
       });
     });
   });
@@ -260,15 +260,15 @@ describe("VersionRange loading strategy", () => {
       unStub(instance, "getCachedSolcByFileName");
     });
 
-    it("returns the compiler when a single version is specified", () => {
-      instance.getCachedSolcByVersionRange("0.4.23");
+    it("returns the compiler when a single version is specified", async () => {
+      await instance.getCachedSolcByVersionRange("0.4.23");
       assert.isTrue(
         // @ts-ignore
         instance.getCachedSolcByFileName.calledWith(expectedResult)
       );
     });
-    it("returns the newest compiler when there are multiple valid ones", () => {
-      instance.getCachedSolcByVersionRange("^0.4.1");
+    it("returns the newest compiler when there are multiple valid ones", async () => {
+      await instance.getCachedSolcByVersionRange("^0.4.1");
       assert.isTrue(
         // @ts-ignore
         instance.getCachedSolcByFileName.calledWith(expectedResult)
