@@ -4,6 +4,8 @@ import fs from "fs";
 // @ts-ignore
 import * as fsPromises from "fs/promises";
 
+const fileNotFoundMessage = "no such file or directory";
+
 export class Cache {
   private compilerCachePath: string;
   public memoizedCompilers: Map<string, string>;
@@ -38,7 +40,7 @@ export class Cache {
       return true;
     } catch (error) {
       // only throw if the error is due to something other than it not existing
-      if (!error.message.includes("no such file or directory")) {
+      if (!error.message.includes(fileNotFoundMessage)) {
         throw error;
       }
       return false;
@@ -55,7 +57,7 @@ export class Cache {
       this.memoizedCompilers.set(filePath, compiler);
       return compiler;
     } catch (error) {
-      if (!error.message.includes("ENOENT: no such file")) {
+      if (!error.message.includes(fileNotFoundMessage)) {
         throw error;
       } else {
         throw new Error("The specified file could not be found.");
