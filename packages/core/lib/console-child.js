@@ -11,8 +11,15 @@ const escapeCharacter = path.sep === "\\" ? "^" : "\\"; //set escape character
 //based on current OS; backslash for Unix, caret for Windows
 const inputStrings = shellQuote
   .parse(input[1], process.env, { escape: escapeCharacter })
-  .map(stringOrObj => stringOrObj.op ?? stringOrObj.comment ?? stringOrObj); //we don't want bash operators or comments treated specially; let's
+  .map(
+    stringOrObj =>
+      stringOrObj.pattern ??
+      stringOrObj.op ??
+      stringOrObj.comment ??
+      stringOrObj
+  ); //we don't want globs or bash operators or comments treated specially; let's
 //just replace them with the underlying string
+//note that it's important that pattern comes before op here, as globs have both
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
