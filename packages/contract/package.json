@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.6.12",
+  "version": "4.6.13",
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",
@@ -30,11 +30,11 @@
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",
-    "web3": "1.8.1",
-    "web3-core-helpers": "1.8.1",
-    "web3-core-promievent": "1.8.1",
-    "web3-eth-abi": "1.8.1",
-    "web3-utils": "1.8.1"
+    "web3": "1.8.2",
+    "web3-core-helpers": "1.8.2",
+    "web3-core-promievent": "1.8.2",
+    "web3-eth-abi": "1.8.2",
+    "web3-utils": "1.8.2"
   },
   "devDependencies": {
     "assert": "^2.0.0",
