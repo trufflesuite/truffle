@@ -1,25 +1,17 @@
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const yargs = require("yargs");
-const shellQuote = require("shell-quote");
 const path = require("path");
-const { deriveConfigEnvironment } = require("./command-utils");
+const {
+  deriveConfigEnvironment,
+  parseQuotesAndEscapes
+} = require("./command-utils");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
-const escapeCharacter = path.sep === "\\" ? "^" : "\\"; //set escape character
-//based on current OS; backslash for Unix, caret for Windows
-const inputStrings = shellQuote
-  .parse(input[1], process.env, { escape: escapeCharacter })
-  .map(
-    stringOrObj =>
-      stringOrObj.pattern ??
-      stringOrObj.op ??
-      stringOrObj.comment ??
-      stringOrObj
-  ); //we don't want globs or bash operators or comments treated specially; let's
-//just replace them with the underlying string
-//note that it's important that pattern comes before op here, as globs have both
+const escapeCharacters = path.sep === "\\" ? "^`" : "\\"; //set escape character
+//based on current OS; backslash for Unix, caret or grave for Windows
+const inputStrings = parseQuotesAndEscapes(input[1], escapeCharacters);
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib

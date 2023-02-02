@@ -22960,11 +22960,6 @@ shell-quote@^1.7.3:
   resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.7.4.tgz#33fe15dee71ab2a81fcbd3a52106c5cfb9fb75d8"
   integrity sha512-8o/QEhSSRb1a5i7TFR0iM4G16Z0vYB2OQVs4G3aAFXjn3T6yEx8AZxy1PgDF7I00LZHYA3WxaSYIf5e5sAX8Rw==
 
-shell-quote@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.8.0.tgz#20d078d0eaf71d54f43bd2ba14a1b5b9bfa5c8ba"
-  integrity sha512-QHsz8GgQIGKlRi24yFc6a6lN69Idnx634w49ay6+jA5yFh7a1UY+4Rp6HPx/L/1zcEDPEij8cIsiqR6bQsE5VQ==
-
 shiki@^0.10.1:
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/shiki/-/shiki-0.10.1.tgz#6f9a16205a823b56c072d0f1a0bcd0f2646bef14"

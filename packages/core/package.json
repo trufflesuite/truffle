@@ -78,7 +78,6 @@
     "original-require": "^1.0.1",
     "sane": "^4.0.2",
     "semver": "7.3.7",
-    "shell-quote": "^1.8.0",
     "source-map-support": "^0.5.19",
     "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
