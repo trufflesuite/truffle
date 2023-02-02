@@ -14,7 +14,8 @@ export type SolidityFamily =
   | "0.5.x"
   | "0.8.x"
   | "0.8.7+"
-  | "0.8.9+";
+  | "0.8.9+"
+  | "0.8.18+";
 
 export interface Settings {
   //this type is deliberately incomplete,

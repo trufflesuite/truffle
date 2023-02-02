@@ -103,8 +103,21 @@ export function* decodeMagic(
           info
         )
       };
-      //the other ones are all uint's, so let's handle them all at once; due to
-      //the lack of generator arrow functions, we do it by mutating block
+      //now we handle prevrandao. this one gets special handling
+      //because the name isn't equal to the location name (it's an alias of difficulty)
+      if (solidityVersionHasPrevrandao(info.currentContext.compiler)) {
+        block.prevrandao = yield* Basic.Decode.decodeBasic(
+          {
+            typeClass: "uint" as const,
+            bits: 256
+          },
+          { location: "special" as const, special: "difficulty" },
+          info
+        );
+      }
+      //the other ones are all uint's and all work the same, so let's handle
+      //them all at once; due to the lack of generator arrow functions, we do
+      //it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       if (solidityVersionHasChainId(info.currentContext.compiler)) {
         variables.push("chainid");
@@ -169,6 +182,7 @@ function coinbaseType(
     case "0.8.x":
     case "0.8.7+":
     case "0.8.9+":
+    case "0.8.18+":
       return {
         typeClass: "address",
         kind: "specific",
@@ -198,6 +212,22 @@ function solidityVersionHasBaseFee(
     case "pre-0.5.0":
     case "0.5.x":
     case "0.8.x":
+      return false;
+    default:
+      return true;
+  }
+}
+
+function solidityVersionHasPrevrandao(
+  compiler: Compiler.CompilerVersion
+): boolean {
+  switch (Compiler.Utils.solidityFamily(compiler)) {
+    case "unknown":
+    case "pre-0.5.0":
+    case "0.5.x":
+    case "0.8.x":
+    case "0.8.7+":
+    case "0.8.9+":
       return false;
     default:
       return true;

@@ -34,6 +34,7 @@ contract GlobalTest {
   struct Block {
     address payable coinbase;
     uint difficulty;
+    uint prevrandao;
     uint gaslimit;
     uint number;
     uint timestamp;
@@ -50,7 +51,7 @@ contract GlobalTest {
     _this = this;
     _msg = Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = Tx(tx.origin, tx.gasprice);
-    _block = Block(block.coinbase, block.difficulty,
+    _block = Block(block.coinbase, block.difficulty, block.prevrandao,
       block.gaslimit, block.number, block.timestamp, block.chainid,
       block.basefee);
     emit Done(x); //BREAK SIMPLE
@@ -68,7 +69,7 @@ contract GlobalTest {
     __this = this;
     __msg = Msg(msg.data, msg.sender, msg.sig, 0);
     __tx = Tx(tx.origin, tx.gasprice);
-    __block = Block(block.coinbase, block.difficulty,
+    __block = Block(block.coinbase, block.difficulty, block.prevrandao,
       block.gaslimit, block.number, block.timestamp, block.chainid,
       block.basefee);
     return x + uint160(address(__this)) //BREAK STATIC
@@ -109,7 +110,7 @@ contract CreationTest {
     _this = this;
     _msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = GlobalTest.Tx(tx.origin, tx.gasprice);
-    _block = GlobalTest.Block(block.coinbase, block.difficulty,
+    _block = GlobalTest.Block(block.coinbase, block.difficulty, block.prevrandao,
       block.gaslimit, block.number, block.timestamp, block.chainid,
       block.basefee);
     require(succeed); //BREAK CREATE
@@ -127,7 +128,7 @@ library GlobalTestLib {
     GlobalTest.Block memory __block;
     __msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     __tx = GlobalTest.Tx(tx.origin, tx.gasprice);
-    __block = GlobalTest.Block(block.coinbase, block.difficulty,
+    __block = GlobalTest.Block(block.coinbase, block.difficulty, block.prevrandao,
       block.gaslimit, block.number, block.timestamp, block.chainid, block.basefee);
     emit Done(x + __msg.value + __tx.gasprice + __block.number); //BREAK LIBRARY
   }
