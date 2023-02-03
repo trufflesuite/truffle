@@ -5,6 +5,7 @@ import open from "open";
 import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import { sha1 } from "object-hash";
 import { v4 as uuid } from "uuid";
+import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import Config from "@truffle/config";
 import {
   dashboardProviderMessageType,
