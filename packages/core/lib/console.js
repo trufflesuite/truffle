@@ -15,7 +15,7 @@ const EventEmitter = require("events");
 const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
-const { getCommand } = require("./command-utils");
+const { getCommand, parseQuotesAndEscapes } = require("./command-utils");
 const validTruffleCommands = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
@@ -400,17 +400,17 @@ class Console extends EventEmitter {
   async interpret(input, context, filename, callback) {
     const processedInput = processInput(input, this.allowedCommands);
     if (
-      this.allowedCommands.includes(processedInput.split(" ")[0]) &&
+      this.allowedCommands.includes(processedInput.split(/\s+/)[0]) &&
       getCommand({
-        inputStrings: processedInput.split(" "), //note: splitting on spaces
-        //here isn't really correct (doesn't handle quotes), but I'm pretty
-        //sure it's good enough for the limited purposes of this line, so
-        //I'm leaving it alone
+        inputStrings: processedInput.split(/\s+/),
         options: {},
         noAliases: this.options.noAliases
       }) !== null
     ) {
       try {
+        parseQuotesAndEscapes(processedInput); //we're just doing this to see
+        //if it errors. unfortunately we need to throw out the result and recompute
+        //it afterward (but the input string is probably short so it's OK).
         await this.runSpawn(processedInput, this.options);
       } catch (error) {
         // Perform error handling ourselves.

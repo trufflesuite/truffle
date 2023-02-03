@@ -7,6 +7,7 @@ const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
 const Web3 = require("web3");
+const TruffleError = require("@truffle/error");
 
 const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
@@ -84,10 +85,12 @@ function parseQuotesAndEscapes(args, escapeCharacters = "\\") {
   }
   //having reached the end of the string, let's check for unterminated quotes & such
   if (currentQuote !== undefined) {
-    throw new Error(`Error: quote with ${currentQuote} not terminated`);
+    throw new TruffleError(`Error: quote with ${currentQuote} not terminated`);
   }
   if (currentEscape !== undefined) {
-    throw new Error(`Error: line ended with escape character ${currentEscape}`);
+    throw new TruffleError(
+      `Error: line ended with escape character ${currentEscape}`
+    );
   }
   //now, we push our final argument,
   //assuming of course that it's nonempty

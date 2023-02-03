@@ -11,7 +11,7 @@ const {
 const input = process.argv[2].split(" -- ");
 const escapeCharacters = path.sep === "\\" ? "^`" : "\\"; //set escape character
 //based on current OS; backslash for Unix, caret or grave for Windows
-const inputStrings = parseQuotesAndEscapes(input[1], escapeCharacters);
+const inputStrings = parseQuotesAndEscapes(input[1], escapeCharacters); //note this shouldn't error since it's a recomputation
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
