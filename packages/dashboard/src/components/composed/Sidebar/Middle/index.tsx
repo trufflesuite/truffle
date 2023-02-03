@@ -1,5 +1,5 @@
 import { Navbar, Badge, Indicator } from "@mantine/core";
-import { Zap, Archive, Aperture } from "react-feather";
+import { Zap, Crosshair, Archive, Aperture } from "react-feather";
 import NavButton from "src/components/composed/Sidebar/Middle/NavButton";
 import { useDash } from "src/hooks";
 
@@ -39,6 +39,11 @@ function Middle(): JSX.Element {
             <Zap {...featherIconProps} />
           </Indicator>
         }
+      />
+      <NavButton
+        label="Debugger"
+        to="/debugger"
+        icon={<Crosshair {...featherIconProps} />}
       />
       <NavButton
         label="Contracts"
