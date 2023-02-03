@@ -69,6 +69,40 @@ function MantineGlobal(): JSX.Element {
                     ? colors["truffle-brown"][5]
                     : colors["truffle-beige"][5]
               }
+            },
+            ".hljs-comment, .hljs-quote": {
+              color: colors["truffle-beige"][8],
+              fontStyle: "italic"
+            },
+            ".hljs-keyword, .hljs-selector-tag": {
+              color: colors.pink[7],
+              fontWeight: "bold"
+            },
+            ".hljs-subst": {
+              color: colors.pink[7],
+              fontWeight: "normal"
+            },
+            ".hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-attr":
+              {
+                color: colors.violet[7]
+              },
+            ".hljs-string, .hljs-doctag": {
+              color: colors.yellow[6]
+            },
+            ".hljs-title, .hljs-section, .hljs-selector-id": {
+              color: colors["truffle-teal"][8],
+              fontWeight: "bold"
+            },
+            ".hljs-type, .hljs-class, .hljs-title": {
+              color: colors["truffle-teal"][8],
+              fontWeight: "bold"
+            },
+            ".hljs-tag, .hljs-name, .hljs-attribute": {
+              color: colors["truffle-teal"][8],
+              fontWeight: "normal"
+            },
+            ".hljs-built_in, .hljs-builtin-name": {
+              color: colors["truffle-teal"][8]
             }
           }
         ];
