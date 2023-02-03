@@ -15,7 +15,6 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
   },
   sourceContent: {
     height: "100%"
-    // overflow: "scroll"
   }
 }));
 
