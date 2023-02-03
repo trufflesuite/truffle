@@ -3,6 +3,7 @@ import path from "path";
 import getPort from "get-port";
 import open from "open";
 import { v4 as uuid } from "uuid";
+import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import Config from "@truffle/config";
 import {
   dashboardProviderMessageType,
@@ -94,6 +95,23 @@ export class DashboardServer {
       await this.connectToMessageBus();
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
+
+    this.expressApp.get("/fetch-and-compile", async (req, res) => {
+      const { address, network } = req.query as Record<string, string>;
+      const config = Config.default().merge({
+        networks: {
+          mainnet: { network_id: 1 },
+          goerli: { network_id: 5 },
+          sepolia: { network_id: 11155111 }
+        },
+        network
+      });
+
+      const { compilations } = (await fetchAndCompile(address, config))
+        .compileResult;
+
+      res.json({ compilations });
+    });
 
     this.expressApp.get("/analytics", (_req, res) => {
       const userConfig = Config.getUserConfig();
