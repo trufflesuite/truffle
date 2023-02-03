@@ -111,7 +111,7 @@ describe("command-utils", function () {
     });
     it("escapes correctly outside of a quote", function () {
       const parsed = parseQuotesAndEscapes("ab\\c\\'\\\"\\\\ ");
-      assert.deepEqual(parsed, ["ab'\"\\"]);
+      assert.deepEqual(parsed, ["abc'\"\\"]);
     });
     it("escapes correctly inside a double-quote", function () {
       const parsed = parseQuotesAndEscapes('"ab\\"c\\d"');
