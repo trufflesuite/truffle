@@ -300,8 +300,7 @@ const displayGeneralHelp = () => {
     // Exclude "install" and "publish" commands from the generated help list
     // because they have been deprecated/removed.
     if (command !== "install" && command !== "publish") {
-      const thing = require(`./commands/${command}/meta`);
-      yargs.command(thing);
+      yargs.command(require(`./commands/${command}/meta`));
     }
   });
   yargs
