@@ -41,6 +41,7 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 
 const inputStrings = process.argv.slice(2);
 
+const { handleHelpInput } = require("./lib/cliHelp");
 const {
   getCommand,
   prepareOptions,
@@ -48,31 +49,11 @@ const {
   displayGeneralHelp
 } = require("./lib/command-utils");
 
-//User only enter truffle with no commands, let's show them what's available.
-if (inputStrings.length === 0) {
+// handle cases where input indicates the user wants to access Truffle's help
+const { displayHelp } = handleHelpInput({ inputStrings });
+if (displayHelp) {
   displayGeneralHelp();
   process.exit();
-}
-
-//if `help` or `--help` is in the command, validate and transform the input argument for help
-if (
-  inputStrings.some(inputString => ["help", "--help"].includes(inputString))
-) {
-  //when user wants general help
-  if (inputStrings.length === 1) {
-    displayGeneralHelp();
-    process.exit();
-  }
-
-  //check where is --help used, mutate argument into a proper help command
-  const helpIndex = inputStrings.indexOf("--help");
-
-  if (helpIndex !== -1) {
-    //remove `--help` from array
-    inputStrings.splice(helpIndex, 1);
-    //insert `help` in first position
-    inputStrings.unshift("help");
-  }
 }
 
 const command = getCommand({

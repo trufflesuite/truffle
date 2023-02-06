@@ -300,7 +300,8 @@ const displayGeneralHelp = () => {
     // Exclude "install" and "publish" commands from the generated help list
     // because they have been deprecated/removed.
     if (command !== "install" && command !== "publish") {
-      yargs.command(require(`./commands/${command}/meta`));
+      const thing = require(`./commands/${command}/meta`);
+      yargs.command(thing);
     }
   });
   yargs
@@ -313,7 +314,9 @@ const displayGeneralHelp = () => {
         "Usage: truffle <command> [options]"
     )
     .epilog("See more at http://trufflesuite.com/docs")
-    .showHelp();
+    // showHelp prints using console.error, this won't log in a
+    // child process - "log" forces it to use console.log instead
+    .showHelp("log");
 };
 
 /**
