@@ -73,7 +73,7 @@ export const askHardhatConsole = async (
     const prefix = `${sos}truffle-start${st}`;
     const suffix = `${sos}truffle-end${st}`;
 
-    const hardhat = spawn(`npx`, ["hardhat", "console"], {
+    const hardhat = spawn(`npx`, ["hardhat", "console", "--no-compile"], {
       stdio: ["pipe", "pipe", "inherit"],
       cwd: workingDirectory
     });
