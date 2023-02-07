@@ -1,15 +1,14 @@
 const handleHelpInput = function ({ inputStrings }) {
-  let displayHelp = false;
   //User only enter truffle with no commands, let's show them what's available.
   if (inputStrings.length === 0) {
-    displayHelp = true;
+    return { displayHelp: true };
   }
   // handle 'truffle help' and 'truffle --help'
   if (
     inputStrings.length === 1 &&
     (inputStrings[0] === "help" || inputStrings[0] === "--help")
   ) {
-    displayHelp = true;
+    return { displayHelp: true };
   }
 
   //if `--help` is in the input, validate and transform the input
@@ -27,7 +26,7 @@ const handleHelpInput = function ({ inputStrings }) {
     }
   }
   // let Truffle know whether to display the general help
-  return { displayHelp };
+  return { displayHelp: false };
 };
 
 module.exports = { handleHelpInput };
