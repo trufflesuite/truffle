@@ -153,6 +153,7 @@ export class ProjectDecoder {
    * WARNING: this code is copypasted (w/slight modifications) from encoder!!
    */
   public async init(): Promise<void> {
+    debug("initting!");
     const { provider, registryAddress } = this.ensSettings;
     if (provider) {
       debug("provider given!");
@@ -389,17 +390,21 @@ export class ProjectDecoder {
    * @protected
    */
   public async reverseEnsResolve(address: string): Promise<Uint8Array | null> {
+    debug("reverse resolving %s", address);
     if (this.ens === null) {
+      debug("no ens set up!");
       return null;
     }
     if (address in this.ensCache) {
+      debug("got cached: %o", this.ensCache[address]);
       return this.ensCache[address];
     }
     let name: string | null;
     try {
       //try-catch because ensjs throws on bad UTF-8 :-/
       //this should be fixed later
-      name = await this.ens.getName(address).name;
+      name = (await this.ens.getName(address)).name;
+      debug("got name: %o", name);
     } catch {
       //Normally I'd rethrow unexpected errors, but given the context here
       //that seems like it might be a problem
@@ -1831,7 +1836,9 @@ export class ContractInstanceDecoder {
           response = await this.getCode(request.address, block);
           break;
         case "ens":
+          debug("ens request for: %s", request.address);
           response = await this.reverseEnsResolve(request.address);
+          debug("response: %o", response);
           break;
       }
       result = decoder.next(response);
