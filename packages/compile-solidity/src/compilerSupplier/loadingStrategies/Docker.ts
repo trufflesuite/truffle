@@ -3,6 +3,7 @@ import "../../polyfill";
 import axios from "axios";
 
 import axiosRetry from "axios-retry";
+// @ts-ignore
 import fs from "fs";
 import { execSync } from "child_process";
 import semver from "semver";
@@ -118,7 +119,7 @@ export class Docker {
     const fileName = image + ".version";
 
     // Skip validation if they've validated for this image before.
-    if (this.cache.has(fileName)) {
+    if (await this.cache.has(fileName)) {
       const cachePath = this.cache.resolve(fileName);
       return fs.readFileSync(cachePath, "utf-8");
     }
@@ -145,7 +146,7 @@ export class Docker {
       "docker run --platform=linux/amd64 ethereum/solc:" + image + " --version"
     );
     const normalized = normalizeSolcVersion(version);
-    this.cache.add(normalized, fileName);
+    await this.cache.add(normalized, fileName);
     return normalized;
   }
 

@@ -151,13 +151,13 @@ describe("CompilerSupplier", () => {
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
         sinon.stub(Cache.prototype, "add");
-        sinon.stub(Cache.prototype, "has").returns(false);
+        sinon.stub(Cache.prototype, "has").returns(Promise.resolve(false));
         sinon
           .stub(VersionRange.prototype, "getSolcVersionsForSource")
           .returns(Promise.resolve(allVersions));
         sinon
           .stub(VersionRange.prototype, "versionIsCached")
-          .returns(undefined);
+          .returns(Promise.resolve(undefined));
         sinon.stub(VersionRange.prototype, "compilerFromString");
         sinon
           .stub(axios, "get")
