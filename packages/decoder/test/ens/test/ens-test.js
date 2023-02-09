@@ -24,7 +24,7 @@ describe("ENS reverse resolution", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(60000);
+    this.timeout(75000);
 
     const prepared = await prepareContracts(
       provider,

@@ -31,11 +31,15 @@ class ENS {
     const ENSRegistryArtifact = require("./builtContracts/ENSRegistry");
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
+    debug("deploying registry");
     const ensRegistry = await ENSRegistry.new({ from });
+    debug("deployed");
     this.ens.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
     this.setENSJS();
+    debug("deploying reverse registrar");
     await this.deployNewDevReverseRegistrar(from);
+    debug("deployed rr");
     return ensRegistry;
   }
 
@@ -115,6 +119,7 @@ class ENS {
       this.setENSJS();
     } catch (error) {
       if (error.message.includes("error instantiating the ENS")) {
+        debug("deploying new dev registry");
         await this.deployNewDevENSRegistry(from);
         this.setENSJS();
       }
@@ -141,8 +146,11 @@ class ENS {
     const { resolvedAddress } = await this.ensureResolverExists({ from, name });
     // If the resolver points to a different address or is not set,
     // then set it to the specified address
+    debug("ensured resolver exists for %s", name);
     if (resolvedAddress !== address) {
+      debug("setting address for %s to %s", name, address);
       await this.ensjs.name(name).setAddress("ETH", address);
+      debug("address set");
     }
   }
 

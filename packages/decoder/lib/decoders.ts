@@ -412,8 +412,11 @@ export class ProjectDecoder {
     }
     if (name !== null) {
       //do a forward resolution check to make sure it matches
+      debug("performing forward check on %s, should get %s", name, address);
       const checkAddress = await this.ens.name(name).getAddress();
+      debug("got: %o", checkAddress);
       if (checkAddress !== address) {
+        debug("mismatch! forward check failed!");
         //if it doesn't, the name is no good!
         name = null;
       }
