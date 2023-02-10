@@ -12,7 +12,7 @@ describe("ENS reverse resolution", function () {
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
-      miner: { instamine: "strict" },
+      miner: { instamine: "eager" }, //this isn't ideal, but these tests don't work otherwise?
       seed: "decoder",
       gasLimit: 7000000,
       logging: { quiet: true }

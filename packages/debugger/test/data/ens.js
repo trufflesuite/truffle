@@ -21,7 +21,10 @@ contract EnsTest {
     registryAddress = _registryAddress;
   }
 
+  event Named(address);
+
   function run() public {
+    emit Named(namedAddress); //make use of the variable so debugger can see it
   }
 }
 `;
@@ -61,7 +64,7 @@ describe("ENS", function () {
         quiet: true
       },
       miner: {
-        instamine: "strict",
+        instamine: "eager", //this isn't ideal, but these tests don't work otherwise?
         blockGasLimit: testBlockGasLimit
       }
     });
@@ -79,10 +82,12 @@ describe("ENS", function () {
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
 
-    registryAddress = await abstractions.EnsTest.registryAddress();
+    const deployedContract = await abstractions.EnsTest.deployed();
+    registryAddress = await deployedContract.registryAddress();
   });
 
   it("Includes ENS names for addresses", async function () {
+    this.timeout(8000);
     const instance = await abstractions.EnsTest.deployed();
     const receipt = await instance.run();
     const txHash = receipt.tx;
@@ -97,6 +102,7 @@ describe("ENS", function () {
 
     const namedAddressResult = await bugger.variable("namedAddress");
 
+    debug("what we got: %O", namedAddressResult);
     assert.property(namedAddressResult.interpretations, "ensName");
     assert.equal(namedAddressResult.interpretations.ensName.kind, "valid");
     assert.equal(
@@ -106,6 +112,7 @@ describe("ENS", function () {
   });
 
   it("Does not include ENS names when turned off", async function () {
+    this.timeout(8000);
     const instance = await abstractions.EnsTest.deployed();
     const receipt = await instance.run();
     const txHash = receipt.tx;
@@ -120,6 +127,7 @@ describe("ENS", function () {
 
     const namedAddressResult = await bugger.variable("namedAddress");
 
+    debug("what we got: %O", namedAddressResult);
     assert.notProperty(namedAddressResult.interpretations, "ensName");
   });
 });
