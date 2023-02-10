@@ -313,7 +313,9 @@ const displayGeneralHelp = () => {
         "Usage: truffle <command> [options]"
     )
     .epilog("See more at http://trufflesuite.com/docs")
-    .showHelp();
+    // showHelp prints using console.error, this won't log in a
+    // child process - "log" forces it to use console.log instead
+    .showHelp("log");
 };
 
 /**
