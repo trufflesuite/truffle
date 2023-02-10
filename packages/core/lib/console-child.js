@@ -13,10 +13,10 @@ const { handleHelpInput } = require("./cliHelp");
 const input = process.argv[2].split(" -- ");
 const escapeCharacters = path.sep === "\\" ? "^`" : "\\"; //set escape character
 //based on current OS; backslash for Unix, caret or grave for Windows
-const inputStrings = parseQuotesAndEscapes(input[1], escapeCharacters); //note this shouldn't error since it's a recomputation
+const inputArguments = parseQuotesAndEscapes(input[1], escapeCharacters); //note this shouldn't error since it's a recomputation
 
 // handle cases where input indicates the user wants to access Truffle's help
-const { displayHelp } = handleHelpInput({ inputStrings });
+const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
 if (displayHelp) {
   displayGeneralHelp();
   process.exit();

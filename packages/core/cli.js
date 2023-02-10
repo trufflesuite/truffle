@@ -39,8 +39,6 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-const inputStrings = process.argv.slice(2);
-
 const { handleHelpInput } = require("./lib/cliHelp");
 const {
   getCommand,
@@ -49,8 +47,9 @@ const {
   displayGeneralHelp
 } = require("./lib/command-utils");
 
+const inputArguments = process.argv.slice(2);
 // handle cases where input indicates the user wants to access Truffle's help
-const { displayHelp } = handleHelpInput({ inputStrings });
+const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
 if (displayHelp) {
   displayGeneralHelp();
   process.exit();
