@@ -30,7 +30,7 @@
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "10.1.0",
-    "solc": "0.8.17"
+    "solc": "0.8.18"
   },
   "keywords": [
     "artifacts",
