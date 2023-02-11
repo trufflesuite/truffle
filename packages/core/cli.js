@@ -51,7 +51,7 @@ const inputArguments = process.argv.slice(2);
 // handle cases where input indicates the user wants to access Truffle's help
 const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
 if (displayHelp) {
-  displayGeneralHelp();
+  displayGeneralHelp({});
   process.exit();
 }
 
