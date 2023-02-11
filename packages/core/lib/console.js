@@ -16,7 +16,10 @@ const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand, parseQuotesAndEscapes } = require("./command-utils");
-const validTruffleCommands = require("./commands/commands");
+const {
+  validTruffleCommands,
+  validTruffleConsoleCommands
+} = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
 // by the REPL
@@ -526,9 +529,7 @@ class Console extends EventEmitter {
   }
 }
 
-const excludedCommands = new Set(["console", "db", "init", "watch", "develop"]);
-
 module.exports = {
-  excludedCommands,
+  validTruffleConsoleCommands,
   Console
 };

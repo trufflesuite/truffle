@@ -8,6 +8,7 @@ const {
   displayGeneralHelp
 } = require("./command-utils");
 const { handleHelpInput } = require("./cliHelp");
+const { validTruffleConsoleCommands } = require("./console");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
@@ -18,7 +19,7 @@ const inputArguments = parseQuotesAndEscapes(input[1], escapeCharacters); //note
 // handle cases where input indicates the user wants to access Truffle's help
 const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
 if (displayHelp) {
-  displayGeneralHelp();
+  displayGeneralHelp({ commands: validTruffleConsoleCommands });
   process.exit();
 }
 

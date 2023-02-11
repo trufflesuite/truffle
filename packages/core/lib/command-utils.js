@@ -5,7 +5,7 @@ const { extractFlags } = require("./utils/utils"); // contains utility methods
 const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
-const commands = require("./commands/commands");
+const { validTruffleCommands } = require("./commands/commands");
 const Web3 = require("web3");
 const TruffleError = require("@truffle/error");
 
@@ -116,11 +116,11 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
   // for inferring the command.
   if (firstInputString === "-v" || firstInputString === "--version") {
     chosenCommand = "version";
-  } else if (commands.includes(firstInputString)) {
+  } else if (validTruffleCommands.includes(firstInputString)) {
     chosenCommand = firstInputString;
   } else if (noAliases !== true) {
     let currentLength = 1;
-    const availableCommandNames = commands;
+    const availableCommandNames = validTruffleCommands;
 
     // Loop through each letter of the input until we find a command
     // that uniquely matches.
@@ -294,7 +294,7 @@ const runCommand = async function (command, options) {
   return await command.run(options);
 };
 
-const displayGeneralHelp = () => {
+const displayGeneralHelp = ({ commands = validTruffleCommands }) => {
   const yargs = require("yargs/yargs")();
   commands.forEach(command => {
     // Exclude "install" and "publish" commands from the generated help list
