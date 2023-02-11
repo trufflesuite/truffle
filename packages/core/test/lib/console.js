@@ -1,16 +1,13 @@
 const assert = require("chai").assert;
 const path = require("path");
-const { Console, excludedCommands } = require("../../lib/console");
-const commands = require("../../lib/commands");
+const { Console } = require("../../lib/console");
+const { validTruffleConsoleCommands } = require("../../lib/commands/commands");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
-const allowedConsoleCommands = Object.keys(commands).filter(
-  cmd => !excludedCommands.has(cmd)
-);
 let truffleConsole, consoleOptions;
 
 describe("Console", function () {
@@ -40,7 +37,7 @@ describe("Console", function () {
         { path: pathToMoreUserJs },
         { path: pathToUserJs, as: "namespace" }
       ];
-      truffleConsole = new Console(allowedConsoleCommands, consoleOptions);
+      truffleConsole = new Console(validTruffleConsoleCommands, consoleOptions);
       sinon
         .stub(truffleConsole.interfaceAdapter, "getAccounts")
         .returns(["0x0"]);
@@ -87,7 +84,7 @@ describe("Console", function () {
         );
         otherConsoleOptions["require-none"] = true;
         otherTruffleConsole = new Console(
-          allowedConsoleCommands,
+          validTruffleConsoleCommands,
           otherConsoleOptions
         );
       });
@@ -119,7 +116,7 @@ describe("Console", function () {
           "test/sources/nameConflicts.js"
         );
         otherTruffleConsole = new Console(
-          allowedConsoleCommands,
+          validTruffleConsoleCommands,
           otherConsoleOptions
         );
       });
@@ -148,7 +145,7 @@ describe("Console", function () {
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(
-          allowedConsoleCommands,
+          validTruffleConsoleCommands,
           otherConsoleOptions
         );
       });
