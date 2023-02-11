@@ -1,9 +1,9 @@
 module.exports = async function (options) {
   const OS = require("os");
-  const { Console, excludedCommands } = require("../../console");
+  const { Console } = require("../../console");
+  const { validTruffleConsoleCommands } = require("../commands");
   const { Environment } = require("@truffle/environment");
   const TruffleError = require("@truffle/error");
-  const commands = require("../commands");
   const loadConfig = require("../../loadConfig");
 
   if (options.url && options.network) {
@@ -19,14 +19,9 @@ module.exports = async function (options) {
   }
 
   let config = loadConfig(options);
-
-  const allowedConsoleCommands = commands.filter(
-    cmd => !excludedCommands.has(cmd)
-  );
-
   await Environment.detect(config);
   const c = new Console(
-    allowedConsoleCommands,
+    validTruffleConsoleCommands,
     config.with({ noAliases: true })
   );
   return await c.start();
