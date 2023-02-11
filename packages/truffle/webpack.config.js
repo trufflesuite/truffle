@@ -5,7 +5,7 @@ const webpack = require("webpack");
 const pkg = require("./package.json");
 const rootDir = path.join(__dirname, "../..");
 const outputDir = path.join(__dirname, "build");
-const commands = require("../core/lib/commands/commands");
+const { validTruffleCommands } = require("../core/lib/commands/commands");
 const truffleLibraryDirectory = path.join(
   __dirname,
   "../..",
@@ -27,7 +27,7 @@ const truffleRequireDistDirectory = path.join(
 
 const ganacheConsoleSol = require.resolve("@ganache/console.log/console.sol");
 
-const commandsEntries = commands.reduce((a, command) => {
+const commandsEntries = validTruffleCommands.reduce((a, command) => {
   a[command] = path.join(
     __dirname,
     "../..",
