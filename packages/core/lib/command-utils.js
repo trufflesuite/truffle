@@ -304,6 +304,7 @@ const displayGeneralHelp = () => {
     }
   });
   yargs
+    .scriptName("truffle")
     .usage(
       "Truffle v" +
         (bundled || core) +
