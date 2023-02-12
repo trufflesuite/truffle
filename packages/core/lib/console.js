@@ -491,7 +491,7 @@ class Console extends EventEmitter {
 
     const runScript = script => {
       const options = {
-        displayErrors: true,
+        displayErrors: false,
         breakOnSigint: true,
         filename: filename
       };
