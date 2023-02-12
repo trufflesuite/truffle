@@ -1,7 +1,6 @@
 const assert = require("chai").assert;
 const path = require("path");
 const { Console } = require("../../lib/console");
-const { validTruffleConsoleCommands } = require("../../lib/commands/commands");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
@@ -37,7 +36,7 @@ describe("Console", function () {
         { path: pathToMoreUserJs },
         { path: pathToUserJs, as: "namespace" }
       ];
-      truffleConsole = new Console(validTruffleConsoleCommands, consoleOptions);
+      truffleConsole = new Console(consoleOptions);
       sinon
         .stub(truffleConsole.interfaceAdapter, "getAccounts")
         .returns(["0x0"]);
@@ -83,10 +82,7 @@ describe("Console", function () {
           "test/sources/moreUserVariables.js"
         );
         otherConsoleOptions["require-none"] = true;
-        otherTruffleConsole = new Console(
-          validTruffleConsoleCommands,
-          otherConsoleOptions
-        );
+        otherTruffleConsole = new Console(otherConsoleOptions);
       });
 
       it("won't load any user-defined JS", async function () {
@@ -115,10 +111,7 @@ describe("Console", function () {
           config.working_directory,
           "test/sources/nameConflicts.js"
         );
-        otherTruffleConsole = new Console(
-          validTruffleConsoleCommands,
-          otherConsoleOptions
-        );
+        otherTruffleConsole = new Console(otherConsoleOptions);
       });
 
       it("won't let users clobber Truffle variables", async function () {
@@ -144,10 +137,7 @@ describe("Console", function () {
           provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
-        otherTruffleConsole = new Console(
-          validTruffleConsoleCommands,
-          otherConsoleOptions
-        );
+        otherTruffleConsole = new Console(otherConsoleOptions);
       });
 
       it("accepts options.r", async function () {

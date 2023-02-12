@@ -16,16 +16,13 @@ const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { getCommand, parseQuotesAndEscapes } = require("./command-utils");
-const {
-  validTruffleCommands,
-  validTruffleConsoleCommands
-} = require("./commands/commands");
+const { validTruffleConsoleCommands } = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;
 
-const processInput = (input, allowedCommands) => {
+const processInput = input => {
   const words = input.trim().split(/\s+/);
 
   // empty input
@@ -42,12 +39,11 @@ const processInput = (input, allowedCommands) => {
     }
 
     const normalizedCommand = cmd.toLowerCase();
-    if (validTruffleCommands.includes(normalizedCommand)) {
-      return allowedCommands.includes(normalizedCommand)
-        ? words.slice(1).join(" ")
-        : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
-    }
-    return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
+    return validTruffleConsoleCommands.includes(normalizedCommand)
+      ? words.slice(1).join(" ")
+      : makeIIFE(
+          `ℹ️ : '${words[0]} ${cmd}' is not valid in Console environment.`
+        );
   }
 
   // an expression
@@ -55,7 +51,7 @@ const processInput = (input, allowedCommands) => {
 };
 
 class Console extends EventEmitter {
-  constructor(allowedCommands, options) {
+  constructor(options) {
     super();
     EventEmitter.call(this);
 
@@ -72,7 +68,6 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
-    this.allowedCommands = allowedCommands;
     this.options = options;
 
     this.repl = null;
@@ -401,9 +396,9 @@ class Console extends EventEmitter {
   }
 
   async interpret(input, context, filename, callback) {
-    const processedInput = processInput(input, this.allowedCommands);
+    const processedInput = processInput(input);
     if (
-      this.allowedCommands.includes(processedInput.split(/\s+/)[0]) &&
+      validTruffleConsoleCommands.includes(processedInput.split(/\s+/)[0]) &&
       getCommand({
         inputStrings: processedInput.split(/\s+/),
         options: {},
@@ -530,6 +525,5 @@ class Console extends EventEmitter {
 }
 
 module.exports = {
-  validTruffleConsoleCommands,
   Console
 };

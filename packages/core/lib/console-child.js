@@ -8,7 +8,7 @@ const {
   displayGeneralHelp
 } = require("./command-utils");
 const { handleHelpInput } = require("./cliHelp");
-const { validTruffleConsoleCommands } = require("./console");
+const { validTruffleConsoleCommands } = require("./commands/commands");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");

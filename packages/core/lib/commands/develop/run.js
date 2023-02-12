@@ -6,14 +6,11 @@ const {
 } = require("../../configAdapter");
 
 const runConsole = async (config, ganacheOptions) => {
-  const { Console, validTruffleConsoleCommands } = require("../../console");
+  const { Console } = require("../../console");
   const { Environment } = require("@truffle/environment");
 
   await Environment.develop(config, ganacheOptions);
-  const c = new Console(
-    validTruffleConsoleCommands,
-    config.with({ noAliases: true })
-  );
+  const c = new Console(config.with({ noAliases: true }));
   c.on("exit", () => process.exit());
   return await c.start();
 };
