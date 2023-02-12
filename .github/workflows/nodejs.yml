@@ -73,16 +73,16 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       if: failure()
 
-  slack_notification:
-    needs: [yarncheck, build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: 8398a7/action-slack@v3
-        with:
-          channel: '#truffle-ci-notifications'
-          status: success
-          fields: commit,author,pullRequest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
+  # slack_notification:
+  #   needs: [yarncheck, build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: 8398a7/action-slack@v3
+  #       with:
+  #         channel: '#truffle-ci-notifications'
+  #         status: success
+  #         fields: commit,author,pullRequest
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  #       if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
