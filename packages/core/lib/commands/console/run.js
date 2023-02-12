@@ -1,7 +1,6 @@
 module.exports = async function (options) {
   const OS = require("os");
   const { Console } = require("../../console");
-  const { validTruffleConsoleCommands } = require("../commands");
   const { Environment } = require("@truffle/environment");
   const TruffleError = require("@truffle/error");
   const loadConfig = require("../../loadConfig");
@@ -20,9 +19,6 @@ module.exports = async function (options) {
 
   let config = loadConfig(options);
   await Environment.detect(config);
-  const c = new Console(
-    validTruffleConsoleCommands,
-    config.with({ noAliases: true })
-  );
+  const c = new Console(config.with({ noAliases: true }));
   return await c.start();
 };
