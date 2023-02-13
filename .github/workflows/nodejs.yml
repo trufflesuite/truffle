@@ -26,15 +26,6 @@ jobs:
       - run: npm install -g yarn
       - run: yarn install --ignore-scripts --ignore-engines
       - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
-      - uses: 8398a7/action-slack@v3
-        with:
-          channel: '#truffle-ci-notifications'
-          status: ${{ job.status }}
-          fields: job,commit,author,pullRequest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: failure()
 
   build:
     needs: yarncheck
@@ -62,27 +53,3 @@ jobs:
     - run: ${{ matrix.env }} yarn ci
       env:
         CI: true
-    - uses: 8398a7/action-slack@v3
-      with:
-        channel: '#truffle-ci-notifications'
-        status: ${{ job.status }}
-        fields: job,commit,author,pullRequest
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        MATRIX_CONTEXT: ${{ toJson(matrix) }} # required for matrix field: job
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: failure()
-
-  # slack_notification:
-  #   needs: [yarncheck, build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: 8398a7/action-slack@v3
-  #       with:
-  #         channel: '#truffle-ci-notifications'
-  #         status: success
-  #         fields: commit,author,pullRequest
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #       if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
