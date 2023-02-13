@@ -46,7 +46,7 @@ module.exports = async function (options) {
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
       ganacheOptions,
-      truffleConfig
+      truffleConfig?.solidityLog?.displayPrefix ?? ""
     );
     const ipcDisconnect = disconnect;
     await Environment.develop(truffleConfig, ganacheOptions);

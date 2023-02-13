@@ -1,6 +1,5 @@
 const assert = require("chai").assert;
 const Develop = require("../develop");
-const TruffleConfig = require("@truffle/config");
 
 describe("connectOrStart test network", async function () {
   const ipcOptions = { network: "test" };
@@ -9,6 +8,7 @@ describe("connectOrStart test network", async function () {
     network_id: 666,
     port: 6969
   };
+  const defaultSolidityLogDisplayPrefix = "";
 
   it("starts Ganache when no Ganache instance is running", async function () {
     let connection;
@@ -16,7 +16,7 @@ describe("connectOrStart test network", async function () {
       connection = await Develop.connectOrStart(
         ipcOptions,
         ganacheOptions,
-        TruffleConfig.default()
+        defaultSolidityLogDisplayPrefix
       );
       assert.isTrue(connection.started, "A new Ganache server did not spin up");
       assert.isFunction(connection.disconnect, "disconnect is not a function");
@@ -34,19 +34,19 @@ describe("connectOrStart test network", async function () {
     try {
       //Establish IPC Ganache service
       spawnedGanache = await Develop.start(ipcOptions.network, ganacheOptions);
-      connectionOneDisconnect = await Develop.connect(
-        {
+      connectionOneDisconnect = await Develop.connect({
+        ipcOptions: {
           ...ipcOptions,
           retry: true
         },
-        TruffleConfig.default()
-      );
+        defaultSolidityLogDisplayPrefix
+      });
 
       //Test
       connectionTwo = await Develop.connectOrStart(
         ipcOptions,
         ganacheOptions,
-        TruffleConfig.default()
+        defaultSolidityLogDisplayPrefix
       );
 
       //Validate
