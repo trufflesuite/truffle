@@ -369,7 +369,11 @@ var DebugUtils = {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
-    var suffix = [""];
+    var suffix = [
+      "",
+      "Docs: https://trufflesuite.com/docs/truffle/how-to/debug-test/use-the-truffle-debugger/",
+      ""
+    ];
 
     var lines = prefix.concat(commandSections).concat(suffix);
 
