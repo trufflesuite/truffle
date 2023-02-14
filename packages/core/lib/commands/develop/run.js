@@ -60,7 +60,7 @@ module.exports = async options => {
   const { started } = await Develop.connectOrStart(
     ipcOptions,
     ganacheOptions,
-    config
+    config?.solidityLog?.displayPrefix ?? ""
   );
   const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
