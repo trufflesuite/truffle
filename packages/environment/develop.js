@@ -153,7 +153,10 @@ const Develop = {
    * @param {string} ipcOptions.network - the network name.
    * @param {Object} ganacheOptions - Ganache options if service is necessary.
    * @param {string} solidityLogDisplayPrefix - solidity log messages prefix.
-   * @returns void
+   * @returns {Promise<Object>} - object with `disconnect` function and
+   *     `started` boolean. The `disconnect` function is used to disconnect
+   *     from the Ganache service. The `started` boolean is true if a new
+   *     Ganache service was started, false otherwise.
    */
   connectOrStart: async function (
     ipcOptions,
