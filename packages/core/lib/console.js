@@ -491,7 +491,7 @@ class Console extends EventEmitter {
 
     const runScript = script => {
       const options = {
-        displayErrors: true,
+        displayErrors: false,
         breakOnSigint: true,
         filename: filename
       };
@@ -502,7 +502,7 @@ class Console extends EventEmitter {
 
     let script;
     try {
-      const options = { displayErrors: true, lineOffset: -1 };
+      const options = { lineOffset: -1 };
       script = vm.createScript(source, options);
     } catch (error) {
       // If syntax error, or similar, bail.
