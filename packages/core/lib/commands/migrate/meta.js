@@ -54,6 +54,11 @@ module.exports = {
       type: "boolean",
       default: true,
       hidden: true
+    },
+    "url": {
+      describe:
+        "Creates a provider using the given url and connects to the network",
+      type: "string"
     }
   },
   help: {
@@ -62,7 +67,9 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run]",
+      "[--skip-dry-run] [--describe-json] [--dry-run]\n" +
+      "                                " + // spacing to align with previous line
+      "[--network <network>|--url <provider_url>]",
     options: [
       {
         option: "--reset",
@@ -118,8 +125,18 @@ module.exports = {
         option: "--save",
         description: "Specify whether the migration will save on chain",
         hidden: true
+      },
+      {
+        option: "--url",
+        description:
+          "Creates a provider using the given url and connects to the network."
+      },
+      {
+        option: "--network",
+        description:
+          "The network to connect to, as specified in the Truffle config."
       }
     ],
-    allowedGlobalOptions: ["network", "config", "quiet"]
+    allowedGlobalOptions: ["config", "quiet"]
   }
 };

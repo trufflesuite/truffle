@@ -94,12 +94,44 @@ describe("truffle develop", function () {
       },
       {
         cmd: "",
-        expectedError: `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+        expectedError: `ℹ️ : Missing truffle command. Please include a valid truffle command.`
       }
     ].forEach(({ cmd, expectedError }) => {
       it(`alerts on 'truffle ${cmd}'`, async function () {
         await CommandRunner.runInREPL({
           inputCommands: [`truffle ${cmd}`],
+          config,
+          executableCommand: "develop",
+          displayHost: "develop"
+        });
+
+        const output = logger.contents();
+        assert(
+          output.includes(expectedError),
+          `Expected string in output: "${expectedError}"\n${formatLines(
+            output
+          )}`
+        );
+      });
+    });
+  });
+
+  describe("Improper command options", async function () {
+    this.timeout(7000);
+
+    [
+      {
+        option: "--url",
+        expectedError: `ℹ️ : url option is not supported within Truffle REPL`
+      },
+      {
+        option: "--network",
+        expectedError: `ℹ️ : network option is not supported within Truffle REPL`
+      }
+    ].forEach(({ option, expectedError }) => {
+      it(`alerts on 'migrate ${option}'`, async function () {
+        await CommandRunner.runInREPL({
+          inputCommands: [`migrate ${option}`],
           config,
           executableCommand: "develop",
           displayHost: "develop"

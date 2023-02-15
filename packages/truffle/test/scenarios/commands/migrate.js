@@ -34,5 +34,15 @@ describe("truffle migrate", () => {
         assert.fail();
       }
     }).timeout(20000);
+
+    it("doesn't throw when --url option is passed", async () => {
+      try {
+        await CommandRunner.run("migrate --url http://127.0.0.1:8545", config);
+      } catch (error) {
+        console.log("the logger contents -- %o", config.logger.loggedStuff);
+        console.log("the following error occurred -- %o", error.message);
+        assert.fail();
+      }
+    }).timeout(20000);
   });
 });

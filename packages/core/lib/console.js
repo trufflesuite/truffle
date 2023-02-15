@@ -22,6 +22,17 @@ const validTruffleCommands = require("./commands/commands");
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;
 
+function hasMutuallyExclusiveOptions(words) {
+  if (words.includes("--url")) {
+    const message = "url option is not supported within Truffle REPL";
+    return makeIIFE(`ℹ️ : ${message}`);
+  }
+  if (words.includes("--network")) {
+    const message = "network option is not supported within Truffle REPL";
+    return makeIIFE(`ℹ️ : ${message}`);
+  }
+}
+
 const processInput = (input, allowedCommands) => {
   const words = input.trim().split(/\s+/);
 
@@ -34,17 +45,25 @@ const processInput = (input, allowedCommands) => {
 
     if (cmd === undefined) {
       return makeIIFE(
-        `ℹ️ : 'Missing truffle command. Please include a valid truffle command.`
+        `ℹ️ : Missing truffle command. Please include a valid truffle command.`
       );
     }
 
     const normalizedCommand = cmd.toLowerCase();
     if (validTruffleCommands.includes(normalizedCommand)) {
+      const errorMessage = hasMutuallyExclusiveOptions(words);
+      if (errorMessage) return errorMessage;
+
       return allowedCommands.includes(normalizedCommand)
         ? words.slice(1).join(" ")
         : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
     }
     return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
+  }
+
+  if (validTruffleCommands.includes(words[0].toLowerCase())) {
+    const errorMessage = hasMutuallyExclusiveOptions(words);
+    if (errorMessage) return errorMessage;
   }
 
   // an expression
