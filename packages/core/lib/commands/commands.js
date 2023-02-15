@@ -26,30 +26,22 @@ const validTruffleCommands = [
   "watch"
 ];
 
-//Subset of truffle commands that are allowed to run in console REPLS.
-//Excluded commands are:
-//  console, dashboard, db, develop, init and watch
-const validTruffleConsoleCommands = [
-  "build",
-  "compile",
-  "config",
-  "create",
-  "debug",
-  "deploy",
-  "exec",
-  "help",
-  "migrate",
-  "networks",
-  "obtain",
-  "opcode",
-  "preserve",
-  "run",
-  "test",
-  "unbox",
-  "version"
+//List of truffle commands that are excluded from the console REPLS.
+const excludedTruffleConsoleCommands = [
+  "console",
+  "dashboard",
+  "db",
+  "develop",
+  "init",
+  "watch"
 ];
 
+const validTruffleConsoleCommands = validTruffleCommands.filter(
+  command => !excludedTruffleConsoleCommands.includes(command)
+);
+
 module.exports = {
+  excludedTruffleConsoleCommands,
   validTruffleCommands,
   validTruffleConsoleCommands
 };
