@@ -15,7 +15,7 @@ const EventEmitter = require("events");
 const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
-const { getCommand, parseQuotesAndEscapes } = require("./command-utils");
+const { parseQuotesAndEscapes } = require("./command-utils");
 const { validTruffleConsoleCommands } = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
@@ -397,14 +397,7 @@ class Console extends EventEmitter {
 
   async interpret(input, context, filename, callback) {
     const processedInput = processInput(input);
-    if (
-      validTruffleConsoleCommands.includes(processedInput.split(/\s+/)[0]) &&
-      getCommand({
-        inputStrings: processedInput.split(/\s+/),
-        options: {},
-        noAliases: this.options.noAliases
-      }) !== null
-    ) {
+    if (validTruffleConsoleCommands.includes(processedInput.split(/\s+/)[0])) {
       try {
         parseQuotesAndEscapes(processedInput); //we're just doing this to see
         //if it errors. unfortunately we need to throw out the result and recompute
