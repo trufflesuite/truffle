@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Set geth version to stable, or pin to a specific version
+# as necessary when geth release breaks CI
+# Snoop these 
+# - https://hub.docker.com/r/ethereum/client-go
+# - https://github.com/ethereum/go-ethereum/releases
+# GETH_VERSION="stable"
+GETH_VERSION="v1.10.26"
+
 # Exit script as soon as a command fails.
 set -o errexit
 
@@ -11,7 +19,7 @@ run_geth() {
 		-p 8545:8545 \
 		-p 8546:8546 \
 		-p 30303:30303 \
-		ethereum/client-go:stable \
+		"ethereum/client-go:$GETH_VERSION" \
 		--http \
 		--http.addr '0.0.0.0' \
 		--http.port 8545 \
@@ -41,7 +49,7 @@ if [ "$INTEGRATION" = true ]; then
 elif [ "$GETH" = true ]; then
 
 	sudo apt install -y jq
-	docker pull ethereum/client-go:v1.10.19
+	docker pull "ethereum/client-go:$GETH_VERSION"
 	run_geth
 	sleep 30
 	lerna run --scope truffle test --stream -- --exit
