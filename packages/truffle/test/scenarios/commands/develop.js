@@ -78,19 +78,19 @@ describe("truffle develop", function () {
     [
       {
         cmd: "console",
-        expectedError: `ℹ️ : 'truffle console' is not valid in Console environment.`
+        expectedError: `ℹ️ : 'truffle console' is not allowed in Console environment.`
       },
       {
         cmd: "CONSOLE",
-        expectedError: `ℹ️ : 'truffle CONSOLE' is not valid in Console environment.`
+        expectedError: `ℹ️ : 'truffle CONSOLE' is not allowed in Console environment.`
       },
       {
         cmd: "develop",
-        expectedError: `ℹ️ : 'truffle develop' is not valid in Console environment.`
+        expectedError: `ℹ️ : 'truffle develop' is not allowed in Console environment.`
       },
       {
         cmd: "alakazam",
-        expectedError: `ℹ️ : 'truffle alakazam' is not valid in Console environment`
+        expectedError: `ℹ️ : 'truffle alakazam' is not a valid truffle command.`
       },
       {
         cmd: "",

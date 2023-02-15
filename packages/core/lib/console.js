@@ -16,7 +16,10 @@ const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
 const { parseQuotesAndEscapes } = require("./command-utils");
-const { validTruffleConsoleCommands } = require("./commands/commands");
+const {
+  excludedTruffleConsoleCommands,
+  validTruffleConsoleCommands
+} = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
 // by the REPL
@@ -39,11 +42,22 @@ const processInput = input => {
     }
 
     const normalizedCommand = cmd.toLowerCase();
-    return validTruffleConsoleCommands.includes(normalizedCommand)
-      ? words.slice(1).join(" ")
-      : makeIIFE(
-          `ℹ️ : '${words[0]} ${cmd}' is not valid in Console environment.`
-        );
+    const isExcludedInREPL =
+      excludedTruffleConsoleCommands.includes(normalizedCommand);
+
+    if (isExcludedInREPL) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not allowed in Console environment.`
+      );
+    }
+
+    if (!validTruffleConsoleCommands.includes(normalizedCommand)) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not a valid truffle command.`
+      );
+    }
+
+    return words.slice(1).join(" ");
   }
 
   // an expression
