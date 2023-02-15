@@ -5,6 +5,8 @@ module.exports = async function (options) {
   const CodeUtils = require("@truffle/code-utils");
   const { Conversion, Compilations } = require("@truffle/codec");
 
+  /* this is an extraneous comment to test CI */
+
   if (options._.length === 0) {
     throw new TruffleError("Please specify a contract name.");
   }
