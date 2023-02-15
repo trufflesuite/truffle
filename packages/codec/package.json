@@ -1,5 +1,5 @@
 {
-  "name": "@truffle/codec",
+  "name": "@sentio/truffle-codec",
   "description": "Library for encoding and decoding smart contract data",
   "license": "MIT",
   "author": "",
@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.14.14",
+  "version": "0.0.3",
   "main": "dist/lib/index.js",
   "files": [
     "dist"

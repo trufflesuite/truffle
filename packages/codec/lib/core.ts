@@ -27,6 +27,7 @@ import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 import Web3Utils from "web3-utils";
+import BN from "bn.js";
 
 /**
  * @Category Decoding
@@ -43,6 +44,14 @@ export function* decodeVariable(
     compilationId,
     compiler
   );
+  // temporary workaround
+  if (dataType.typeClass === "array") {
+    const length = (dataType as any)?.length as BN;
+    if (length?.toNumber() > 512) {
+      debug("skip decoding, def: %o", definition);
+      return null;
+    }
+  }
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
