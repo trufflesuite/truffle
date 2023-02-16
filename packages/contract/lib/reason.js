@@ -81,9 +81,22 @@ const reason = {
         return undefined;
       }
     } else {
-      //we can't reasonably handle custom errors here
-      //(but we can probably assume it is one?)
-      return "Custom error (could not decode)";
+      const bytesLength = (rawData.length - 2) / 2; //length of raw data in bytes
+      if (bytesLength % 32 === 4) {
+        //we can't reasonably handle custom errors here at present, sorry
+        return "Custom error (could not decode)";
+      } else {
+        //if the length isn't 4 mod 32, just give up and return undefined.
+        //the reason for this is that sometimes this function can accidentally get
+        //called on a return value rather than an error (because the tx ran out of
+        //gas or failed for a reason other than a revert, e.g., getting refused by
+        //the user in MetaMask), meaning the eth_call rerun will *succeed*, potentially
+        //resulting in a return value.  We don't want to attach an additional
+        //error message in that case, so we return undefined.
+        //(What if e.g. the tx is refused by the user in MetaMask, but the rerun yields
+        //a revert string...?  Well, that's a problem for another time...)
+        return undefined;
+      }
     }
   },
 
