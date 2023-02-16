@@ -15,14 +15,17 @@ const EventEmitter = require("events");
 const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
-const { getCommand, parseQuotesAndEscapes } = require("./command-utils");
-const validTruffleCommands = require("./commands/commands");
+const { parseQuotesAndEscapes } = require("./command-utils");
+const {
+  excludedTruffleConsoleCommands,
+  validTruffleConsoleCommands
+} = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;
 
-const processInput = (input, allowedCommands) => {
+const processInput = input => {
   const words = input.trim().split(/\s+/);
 
   // empty input
@@ -39,12 +42,22 @@ const processInput = (input, allowedCommands) => {
     }
 
     const normalizedCommand = cmd.toLowerCase();
-    if (validTruffleCommands.includes(normalizedCommand)) {
-      return allowedCommands.includes(normalizedCommand)
-        ? words.slice(1).join(" ")
-        : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
+    const isExcludedInREPL =
+      excludedTruffleConsoleCommands.includes(normalizedCommand);
+
+    if (isExcludedInREPL) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not allowed in Console environment.`
+      );
     }
-    return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
+
+    if (!validTruffleConsoleCommands.includes(normalizedCommand)) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not a valid truffle command.`
+      );
+    }
+
+    return words.slice(1).join(" ");
   }
 
   // an expression
@@ -52,7 +65,7 @@ const processInput = (input, allowedCommands) => {
 };
 
 class Console extends EventEmitter {
-  constructor(allowedCommands, options) {
+  constructor(options) {
     super();
     EventEmitter.call(this);
 
@@ -69,7 +82,6 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
-    this.allowedCommands = allowedCommands;
     this.options = options;
 
     this.repl = null;
@@ -398,15 +410,8 @@ class Console extends EventEmitter {
   }
 
   async interpret(input, context, filename, callback) {
-    const processedInput = processInput(input, this.allowedCommands);
-    if (
-      this.allowedCommands.includes(processedInput.split(/\s+/)[0]) &&
-      getCommand({
-        inputStrings: processedInput.split(/\s+/),
-        options: {},
-        noAliases: this.options.noAliases
-      }) !== null
-    ) {
+    const processedInput = processInput(input);
+    if (validTruffleConsoleCommands.includes(processedInput.split(/\s+/)[0])) {
       try {
         parseQuotesAndEscapes(processedInput); //we're just doing this to see
         //if it errors. unfortunately we need to throw out the result and recompute
@@ -526,9 +531,6 @@ class Console extends EventEmitter {
   }
 }
 
-const excludedCommands = new Set(["console", "db", "init", "watch", "develop"]);
-
 module.exports = {
-  excludedCommands,
   Console
 };

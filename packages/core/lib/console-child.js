@@ -18,7 +18,7 @@ const inputArguments = parseQuotesAndEscapes(input[1], escapeCharacters); //note
 // handle cases where input indicates the user wants to access Truffle's help
 const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
 if (displayHelp) {
-  displayGeneralHelp();
+  displayGeneralHelp({ isREPL: true });
   process.exit();
 }
 

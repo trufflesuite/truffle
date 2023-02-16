@@ -3,7 +3,7 @@ const {
   prepareOptions,
   runCommand
 } = require("../lib/command-utils");
-const commandsArray = require("../lib/commands/commands");
+const { validTruffleCommands } = require("../lib/commands/commands");
 const allCommands = require("../lib/commands");
 const { assert } = require("chai");
 
@@ -14,13 +14,13 @@ describe("commands", function () {
     it("contains an array item for each command", function () {
       assert(
         Object.keys(allCommands).every(command =>
-          commandsArray.includes(command)
+          validTruffleCommands.includes(command)
         )
       );
     });
     it("contains a command for every array item", function () {
       assert(
-        commandsArray.every(command =>
+        validTruffleCommands.every(command =>
           Object.keys(allCommands).includes(command)
         )
       );
