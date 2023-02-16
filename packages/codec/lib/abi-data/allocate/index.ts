@@ -1014,9 +1014,7 @@ function constructorOutputAllocation(
   if (contractKind === "library") {
     //note: I am relying on this being present!
     //(also this part is a bit HACKy)
-    const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
-      16
-    ); //"73"
+    const pushAddressInstruction = (0x5f + Evm.Utils.ADDRESS_SIZE).toString(16); //"73"
     const delegateCallGuardString =
       "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
     if (binary.startsWith(delegateCallGuardString)) {

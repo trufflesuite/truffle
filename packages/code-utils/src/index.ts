@@ -75,7 +75,7 @@ export function parseCode(
       name: parseOpcode(code[pc])
     };
     if (opcode.name.slice(0, 4) === "PUSH") {
-      const length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
+      const length = code[pc] - 0x5f; //0x5f is code for PUSH0
       let pushData = code.subarray(pc + 1, pc + length + 1);
       if (pushData.length < length) {
         //if we run out of bytes for our pushdata, fill the rest

@@ -551,7 +551,11 @@ var DebugUtils = {
 
   formatInstruction: function (instruction) {
     return truffleColors.mint(
-      instruction.name + " " + (instruction.pushData || "")
+      instruction.name +
+        " " +
+        (instruction.pushData !== undefined && instruction.pushData !== "0x"
+          ? instruction.pushData
+          : "") //display just "PUSH0", not "PUSH0 0x"
     );
   },
 
