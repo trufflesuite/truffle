@@ -5,8 +5,8 @@
 # Snoop these 
 # - https://hub.docker.com/r/ethereum/client-go
 # - https://github.com/ethereum/go-ethereum/releases
-# GETH_VERSION="stable"
-GETH_VERSION="v1.10.26"
+GETH_VERSION="stable"
+# GETH_VERSION="v1.10.26"
 
 docker pull "ethereum/client-go:$GETH_VERSION"
 
