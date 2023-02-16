@@ -327,6 +327,30 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
       }
     });
 
+    it("Reports that a custom error occurred when one did", async function () {
+      const example = await Example.new(1);
+      try {
+        await example.triggerCustomError();
+        assert.fail();
+      } catch (e) {
+        assert.include(e.reason, "Custom error");
+        assert.include(e.message, "Custom error");
+      }
+    });
+
+    it("Does not report a custom error when there is none", async function () {
+      const example = await Example.new(1);
+      //there was a bug where custom errors were incorrectly reported when
+      //a function that returns a value failed due to OOG or due to not occurring
+      //(e.g. refused in MetaMask).  This test is meant to check that case.
+      try {
+        await example.returnsInt.sendTransaction({ gas: 5 }); //deliberately too little gas
+        assert.fail();
+      } catch (e) {
+        assert.notInclude(e.message, "Custom error");
+      }
+    });
+
     it("appends original stacktrace for .calls", async function () {
       const example = await Example.new(1);
       try {
