@@ -48,7 +48,7 @@
     "change-case": "3.0.2",
     "faker": "5.5.3",
     "fs-extra": "^9.1.0",
-    "ganache": "7.7.3",
+    "ganache": "7.7.5",
     "mocha": "10.1.0",
     "mochapack": "^2.1.2",
     "nyc": "^13.0.1",
