@@ -28,6 +28,7 @@ CID=$(docker run \
   --nodiscover \
   --dev \
   --dev.period 0 \
+  --rpc.enabledeprecatedpersonal \
   --allow-insecure-unlock \
   --preload ./scripts/geth-accounts.js \
   console)
