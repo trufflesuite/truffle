@@ -117,7 +117,11 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "emerald-oasis",
     "testnet-emerald-oasis",
     //sourcify does *not* support oasis sapphire mainnet?
-    "testnet-sapphire-oasis"
+    "testnet-sapphire-oasis",
+    "flare",
+    "songbird-flare",
+    //sourcify does *not* support stratos mainnet?
+    "testnet-stratos"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);

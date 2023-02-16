@@ -90,7 +90,11 @@ export const networkNamesById: { [id: number]: string } = {
   42262: "emerald-oasis",
   42261: "testnet-emerald-oasis",
   23294: "sapphire-oasis", //not presently supported by either fetcher, but...
-  23295: "testnet-sapphire-oasis"
+  23295: "testnet-sapphire-oasis",
+  14: "flare",
+  19: "songbird-flare",
+  2048: "stratos", //not presently supported by either fetcher, but...
+  2047: "testnet-stratos"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
