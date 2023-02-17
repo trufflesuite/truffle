@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.6.14",
+  "version": "4.6.15",
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",
@@ -23,10 +23,10 @@
   "dependencies": {
     "@ensdomains/ensjs": "^2.1.0",
     "@truffle/blockchain-utils": "^0.1.6",
-    "@truffle/contract-schema": "^3.4.11",
-    "@truffle/debug-utils": "^6.0.45",
+    "@truffle/contract-schema": "^3.4.12",
+    "@truffle/debug-utils": "^6.0.46",
     "@truffle/error": "^0.2.0",
-    "@truffle/interface-adapter": "^0.5.28",
+    "@truffle/interface-adapter": "^0.5.29",
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",
