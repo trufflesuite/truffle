@@ -1,5 +1,9 @@
 import SourceLine from "src/components/composed/Debugger/Sources/Source/SourceLine";
-import { highlightSourceContent } from "src/utils/debugger";
+import {
+  highlightSourceContent,
+  addTextHighlightedClass,
+  finalizeSource
+} from "src/utils/debugger";
 import type { Source as SourceType, SourceRange } from "src/utils/debugger";
 
 interface SourceProps {
@@ -8,13 +12,25 @@ interface SourceProps {
 }
 
 function Source({ source, sourceRange }: SourceProps): JSX.Element {
-  const lines = highlightSourceContent(source).split("\n");
+  // add comment markers for where spans will go later designating debugger
+  // highlighting - comments so lowlight doesn't choke on html
+  const sourceWithHighlightedMarkings = addTextHighlightedClass(
+    source,
+    sourceRange
+  );
+  // run the source through lowlight for syntax highlighting
+  const highlightedLines = highlightSourceContent(
+    sourceWithHighlightedMarkings
+  ).split("\n");
+  // replace comment markers with spans denoting the debugger's highlighted text
+  const finishedLines = finalizeSource(highlightedLines);
+
   const { start, end } = sourceRange;
-  const lineNumberGutterWidth = lines.length.toString().length;
+  const lineNumberGutterWidth = finishedLines.length.toString().length;
 
   return (
     <pre>
-      {lines.map((line, index) => {
+      {finishedLines.map((line, index) => {
         const key = `${source.id}-line-${index}`;
         const selected =
           source.id === sourceRange.source.id &&
@@ -23,16 +39,17 @@ function Source({ source, sourceRange }: SourceProps): JSX.Element {
             end.column === null ||
             (end.column === 0 && index < end.line) ||
             (end.column > 0 && index <= end.line));
-        const multiline = start.line !== end.line;
+        // const multiline = start.line !== end.line;
 
         const props = {
           key,
           line,
           lineNumber: index + 1,
           lineNumberGutterWidth,
-          lastLine: index === lines.length - 1,
-          multiline,
-          selected
+          lastLine: index === finishedLines.length - 1,
+          // multiline,
+          selected,
+          sourceRange
         };
 
         return <SourceLine {...props} />;
