@@ -1,4 +1,5 @@
 import { createStyles } from "@mantine/core";
+import type { SourceRange } from "src/utils/debugger";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   lineNumber: {
@@ -14,8 +15,9 @@ interface SourceLineProps {
   lineNumber: number;
   lineNumberGutterWidth: number;
   lastLine: boolean;
-  multiline: boolean;
+  // multiline: boolean;
   selected: boolean;
+  sourceRange: SourceRange;
 }
 
 function SourceLine({
@@ -24,7 +26,8 @@ function SourceLine({
   lineNumberGutterWidth,
   lastLine,
   // multiline,
-  selected
+  selected,
+  sourceRange
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
 
@@ -36,12 +39,7 @@ function SourceLine({
     "  " +
     "</span>";
 
-  return (
-    <div
-      dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
-      className={selected ? classes.selected : ""}
-    />
-  );
+  return <div dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }} />;
 }
 
 export default SourceLine;
