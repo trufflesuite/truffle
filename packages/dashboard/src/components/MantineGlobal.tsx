@@ -42,6 +42,11 @@ function MantineGlobal(): JSX.Element {
             [`${truffleBgColorSelectors}, ${truffleOffBgColorSelectors}`]: {
               transition: "background-color 0.1s"
             },
+            // class for highlighting source material in debugger
+            ".truffle-debugger-text-highlighted": {
+              backgroundColor:
+                theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
+            },
             ".mantine-Alert-icon": {
               "width": 28,
               "height": "auto",
