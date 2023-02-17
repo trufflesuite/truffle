@@ -89,7 +89,7 @@ export const networkNamesById: { [id: number]: string } = {
   7001: "athens-zetachain",
   42262: "emerald-oasis",
   42261: "testnet-emerald-oasis",
-  23294: "sapphire-oasis", //not presently supported by either fetcher, but...
+  23294: "sapphire-oasis",
   23295: "testnet-sapphire-oasis",
   14: "flare",
   19: "songbird-flare",
