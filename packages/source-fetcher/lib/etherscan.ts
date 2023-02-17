@@ -83,8 +83,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "testnet-cronos": "api-testnet.cronoscan.com",
       "bttc": "api.bttcscan.com",
       "donau-bttc": "api-testnet.bttcscan.com",
-      "aurora": "api.aurorascan.dev",
-      "testnet-aurora": "api-testnet.aurorascan.dev",
       "celo": "api.celoscan.io",
       "alfajores-celo": "api-alfajores.celoscan.io",
       "clover": "api.clvscan.com",
