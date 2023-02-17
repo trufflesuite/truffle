@@ -45,6 +45,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const dbHelper = useMemo(
     () => ({
       dbPromise: stateRef.current.dbPromise,
+      async getAllCompilations() {
+        const tx = (await this.dbPromise).transaction(
+          "Compilation",
+          "readonly"
+        );
+        const store = tx.objectStore("Compilation");
+        const compilations = await store.getAll();
+        return compilations.map(entry => entry.data);
+      },
       async has(hash: string) {
         return !!(await (await this.dbPromise).getKey("Compilation", hash));
       },
@@ -296,6 +305,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         body: JSON.stringify({ value })
       });
       // No need to update state afterwards
+    },
+    getCompilations: async () => {
+      return await dbHelper.getAllCompilations();
     }
   };
 
