@@ -116,7 +116,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "athens-zetachain",
     "emerald-oasis",
     "testnet-emerald-oasis",
-    //sourcify does *not* support oasis sapphire mainnet?
+    "sapphire-oasis",
     "testnet-sapphire-oasis",
     "flare",
     "songbird-flare",
