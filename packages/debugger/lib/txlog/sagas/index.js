@@ -262,7 +262,9 @@ function callKind(context, calldata, instant) {
 export function* reset() {
   const initialCall = yield select(txlog.transaction.initialCall);
   yield put(actions.reset());
-  yield put(initialCall);
+  if (initialCall) {
+    yield put(initialCall);
+  }
 }
 
 export function* unload() {
