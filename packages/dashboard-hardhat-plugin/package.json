@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-hardhat-plugin",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Truffle Dashboard for Hardhat plugin",
   "repository": "github:trufflesuite/dashboard-hardhat-plugin",
   "author": "ConsenSys Software Inc",
