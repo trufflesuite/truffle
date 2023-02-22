@@ -84,7 +84,6 @@ function Sources({
   }
 
   return (
-    // @ts-ignore
     <Tabs
       value={currentSourceId}
       onTabChange={setCurrentSourceId}
