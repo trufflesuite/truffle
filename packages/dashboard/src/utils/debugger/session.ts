@@ -3,6 +3,7 @@ import * as Codec from "@truffle/codec";
 import { provider } from "ganache";
 import type { Session } from "src/utils/debugger";
 import type { Compilation } from "@truffle/compile-common";
+import { getTransactionSourcesBeforeStarting } from "@truffle/debug-utils";
 
 export async function setupSession(
   transactionHash: string,
@@ -14,9 +15,9 @@ export async function setupSession(
     onStart?: () => void;
     onReady?: () => void;
   }
-): Promise<Session> {
+): Promise<{ session: Session; relevantSources: any }> {
   callbacks?.onInit?.();
-  const session = await createSession(
+  const { session, relevantSources } = await createSession(
     transactionHash,
     networkName,
     compilations
@@ -29,20 +30,30 @@ export async function setupSession(
   await session.startFullMode();
 
   callbacks?.onReady?.();
-  return session;
+  return { session, relevantSources };
 }
 
 async function createSession(
   transactionHash: string,
   networkName: any,
   compilations: Compilation[]
-): Promise<Session> {
-  console.log("tx hash - %o", transactionHash);
-  return forTx(transactionHash, {
+): Promise<{ session: Session; relevantSources: any }> {
+  const bugger = await forTx(transactionHash, {
     provider: provider({ fork: { network: networkName } }),
     compilations: Codec.Compilations.Utils.shimCompilations(compilations),
     lightMode: true
   });
+  const sources = await getTransactionSourcesBeforeStarting(bugger);
+  // we need to transform these into the format dashboard uses
+  const transformedSources = Object.values(sources).flatMap(
+    ({ id, sourcePath, source: contents, language }: any) =>
+      language === "Solidity" ? [{ id, sourcePath, contents, language }] : []
+  );
+  await bugger.startFullMode();
+  return {
+    relevantSources: transformedSources,
+    session: bugger
+  };
 }
 
 async function fetchCompilationsAndAddToSession(
@@ -57,7 +68,6 @@ async function fetchCompilationsAndAddToSession(
   const fetchAndCompileEndpoint = `http://${host}:${port}/fetch-and-compile`;
   const instances = session.view($.session.info.affectedInstances);
   // @ts-ignore
-  console.log("the addresses -- %o", instances);
   const addresses = Object.entries(instances)
     .filter(([_, { contractName }]: any) => contractName === undefined)
     .map(([address, _]) => address);
