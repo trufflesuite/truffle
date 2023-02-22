@@ -43,6 +43,7 @@
     "@truffle/dashboard-message-bus-client": "^0.1.10",
     "@truffle/dashboard-message-bus-common": "^0.1.5",
     "@truffle/decoder": "^5.3.15",
+    "@truffle/debug-utils": "^6.0.48",
     "@truffle/debugger": "^11.0.32",
     "cors": "^2.8.5",
     "debug": "^4.3.2",

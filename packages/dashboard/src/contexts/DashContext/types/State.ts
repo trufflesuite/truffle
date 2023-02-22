@@ -7,10 +7,15 @@ import type {
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import type { Schema } from "src/contexts/DashContext";
 import type { NoticeContent } from "src/components/composed/Notice/content/types";
+import type { Source, Session } from "src/utils/debugger";
 
 export interface State {
   busClient: DashboardMessageBusClient;
   dbPromise: Promise<IDBPDatabase<Schema>>;
+  debugger: {
+    sources: Source[] | null;
+    session: Session | null;
+  };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
   decoderCompilationHashes: Set<
