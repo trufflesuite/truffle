@@ -29,6 +29,7 @@ import type {
   ToggleDebuggerBreakpointArgs
 } from "src/contexts/DashContext/types";
 
+
 const ARBITRARY_DB_MAX_BYTES = 500_000_000;
 const ARBITRARY_DB_MAX_PERCENT = 0.8;
 
