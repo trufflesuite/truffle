@@ -50,6 +50,7 @@
     "@truffle/debugger": "^11.0.27",
     "@truffle/debug-utils": "^6.0.46",
     "browser-util-inspect": "0.2.0",
+    "@truffle/debug-utils": "^6.0.48",
     "@truffle/debugger": "^11.0.32",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
