@@ -24,6 +24,7 @@ import {
   rejectMessage,
   getChainNameByID
 } from "src/utils/dash";
+import type { SetDebuggerSourcesAndSessionArgs } from "src/contexts/DashContext/types";
 
 const ARBITRARY_DB_MAX_BYTES = 500_000_000;
 const ARBITRARY_DB_MAX_PERCENT = 0.8;
@@ -306,8 +307,20 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       });
       // No need to update state afterwards
     },
-    getCompilations: async () => {
+    getCompilations: async (): Promise<Compilation[]> => {
       return await dbHelper.getAllCompilations();
+    },
+    setDebuggerSourcesAndSession: ({
+      sources,
+      session
+    }: SetDebuggerSourcesAndSessionArgs) => {
+      dispatch({
+        type: "set-debugger-sources-and-session",
+        data: {
+          sources,
+          session
+        }
+      });
     }
   };
 

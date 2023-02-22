@@ -5,14 +5,6 @@ import { solidity } from "highlightjs-solidity";
 import { selectors as $ } from "@truffle/debugger";
 import type { Session, Source, SourceRange } from "src/utils/debugger";
 
-export function getSources(session: Session) {
-  const sourcesView = session.view($.sourcemapping.views.sources);
-  return Object.values(sourcesView).flatMap(
-    ({ id, sourcePath, source: contents, language }: any) =>
-      language === "Solidity" ? [{ id, sourcePath, contents, language }] : []
-  );
-}
-
 export function getCurrentSourceRange(session: Session) {
   const traceIndex = session.view($.trace.index);
   const { id } = session.view($.sourcemapping.current.source);
