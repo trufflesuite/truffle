@@ -1,13 +1,13 @@
-import { forTx } from "@truffle/debugger";
-import * as Codec from "@truffle/codec";
+import { forTx, selectors as $ } from "@truffle/debugger";
 import { provider } from "ganache";
-import type { Session } from "src/utils/debugger";
+import * as Codec from "@truffle/codec";
+import type { Session, Source } from "src/utils/debugger";
 import type { Compilation } from "@truffle/compile-common";
 import { getTransactionSourcesBeforeStarting } from "@truffle/debug-utils";
 
 export async function setupSession(
   transactionHash: string,
-  networkName: string,
+  providedProvider: any,
   compilations: Compilation[],
   callbacks?: {
     onInit?: () => void;
@@ -15,11 +15,11 @@ export async function setupSession(
     onStart?: () => void;
     onReady?: () => void;
   }
-): Promise<{ session: Session; relevantSources: any }> {
+): Promise<{ session: Session; sources: Source[] }> {
   callbacks?.onInit?.();
-  const { session, relevantSources } = await createSession(
+  const { session, sources } = await createSession(
     transactionHash,
-    networkName,
+    providedProvider,
     compilations
   );
 
@@ -30,19 +30,21 @@ export async function setupSession(
   await session.startFullMode();
 
   callbacks?.onReady?.();
-  return { session, relevantSources };
+  return { session, sources };
 }
 
 async function createSession(
   transactionHash: string,
-  networkName: any,
+  providedProvider: any,
   compilations: Compilation[]
-): Promise<{ session: Session; relevantSources: any }> {
+): Promise<{ session: Session; sources: Source[] }> {
   const bugger = await forTx(transactionHash, {
-    provider: provider({ fork: { network: networkName } }),
+    provider: provider({ fork: { provider: providedProvider } }),
     compilations: Codec.Compilations.Utils.shimCompilations(compilations),
     lightMode: true
   });
+  const affectedInstances = bugger.view($.session.info.affectedInstances);
+  console.log("the instances -- %o", affectedInstances);
   const sources = await getTransactionSourcesBeforeStarting(bugger);
   // we need to transform these into the format dashboard uses
   const transformedSources = Object.values(sources).flatMap(
@@ -51,7 +53,7 @@ async function createSession(
   );
   await bugger.startFullMode();
   return {
-    relevantSources: transformedSources,
+    sources: transformedSources,
     session: bugger
   };
 }
