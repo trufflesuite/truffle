@@ -222,6 +222,14 @@ export class VersionRange {
       }
       return await this.getAndCacheSolcByUrl(fileName, index);
     } catch (error) {
+      if (error.message.includes("EACCES: permission denied")) {
+        throw new Error(
+          "There was an error attempting to save the compiler to the cache." +
+            "The current user likely does not have sufficient permissions to " +
+            "write to disk in Truffle's compiler cache directory. See the full" +
+            `error below: \n${error}`
+        );
+      }
       const attemptNumber = index + 1;
       return await this.getSolcFromCacheOrUrl(versionConstraint, attemptNumber);
     }
