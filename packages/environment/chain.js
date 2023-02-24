@@ -74,18 +74,20 @@ class Logger {
 
   // log a message to be sent to all active subscribers
   // buffers if there are no active subscribers (to send on first subscribe)
-  log(message) {
+  log(...messages) {
     const subscriberIDs = Object.keys(this.subscribers);
+    const formattedMessages = util.formatWithOptions(
+      { colors: true },
+      ...messages
+    );
     if (subscriberIDs.length === 0) {
-      this.messages.push(message);
-
+      this.messages.push(formattedMessages);
       return;
     }
 
     subscriberIDs.forEach(subscriberID => {
       const callback = this.subscribers[subscriberID];
-
-      callback(message);
+      callback(formattedMessages);
     });
   }
 }
