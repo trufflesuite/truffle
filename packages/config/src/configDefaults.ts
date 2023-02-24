@@ -70,7 +70,8 @@ export const getInitialConfig = ({
             runs: 200
           },
           remappings: []
-        }
+        },
+        disableDefaults: false
       },
       vyper: {
         settings: {}
