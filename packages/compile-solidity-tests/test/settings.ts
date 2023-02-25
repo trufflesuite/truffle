@@ -17,7 +17,7 @@ before("Set up config", () => {
   Environment.detect(config);
 });
 describe("Compile with disableDefaults flag", () => {
-  it("should not add the optimizer when missing if disableDefaults is true", async () => {
+  it("should not add missing optimizer when `disableDefaults` is true", async () => {
     //compile when optimizer is set to false
     const compilationWithOptimizer = await Compile.all(config);
 
