@@ -10,10 +10,15 @@ export const normalizeOptions = (options: Config) => {
   options.compilers.solc.settings.evmVersion =
     options.compilers.solc.settings.evmVersion ||
     options.compilers.solc.evmVersion;
-  options.compilers.solc.settings.optimizer =
-    options.compilers.solc.settings.optimizer ||
-    options.compilers.solc.optimizer ||
-    {};
+
+  if (options.compilers.solc.disableDefaults) {
+    options.compilers.solc.settings = options.compilers.solc.settings || {};
+  } else {
+    options.compilers.solc.settings.optimizer =
+      options.compilers.solc.settings.optimizer ||
+      options.compilers.solc.optimizer ||
+      {};
+  }
 
   // Grandfather in old solc config
   if (options.solc) {

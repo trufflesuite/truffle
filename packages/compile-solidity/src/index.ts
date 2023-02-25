@@ -59,14 +59,9 @@ export const Compile = {
   // NOTE: this function does *not* transform the source path prefix to
   // "project:/" before passing to the compiler!
   async sources({ sources, options }: SourcesArgs) {
-    let originalSettings = options.compilers.solc.settings;
     options = Config.default().merge(options);
     options = normalizeOptions(options);
-    // if disableDefaults is set, we don't want to insert
-    // the default optimizer settings
-    if (options.compilers.solc.disableDefaults) {
-      options.compilers.solc.settings = originalSettings;
-    }
+
     //note: "solidity" here includes JSON as well!
     const [yulNames, solidityNames] = partition(Object.keys(sources), name =>
       name.endsWith(".yul")
@@ -146,14 +141,8 @@ export const Compile = {
       "resolver"
     ]);
 
-    let originalSettings = options.compilers.solc.settings;
     options = Config.default().merge(options);
     options = normalizeOptions(options);
-    // if disableDefaults is set, we don't want to insert
-    // the default optimizer settings
-    if (options.compilers.solc.disableDefaults) {
-      options.compilers.solc.settings = originalSettings;
-    }
 
     const supplier = new CompilerSupplier({
       events: options.events,
