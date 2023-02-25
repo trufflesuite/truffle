@@ -11,8 +11,7 @@ module.exports = {
     solc: {
       settings: {
         optimizer: {
-          enabled: false, // Default: false
-          runs: 200 // Default: 200
+          enabled: false // Default: false
         }
       }
     }
