@@ -9,9 +9,10 @@ module.exports = {
   },
   compilers: {
     solc: {
+      version: "0.6.9",
       settings: {
         optimizer: {
-          enabled: true, // Default: false
+          enabled: false, // Default: false
           runs: 200 // Default: 200
         }
       }
