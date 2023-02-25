@@ -59,8 +59,6 @@ export const Compile = {
   // NOTE: this function does *not* transform the source path prefix to
   // "project:/" before passing to the compiler!
   async sources({ sources, options }: SourcesArgs) {
-    //this inserts optimizer settings
-    // TODO: do we need a deep copy here?
     let originalSettings = options.compilers.solc.settings;
     options = Config.default().merge(options);
     options = normalizeOptions(options);

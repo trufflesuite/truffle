@@ -114,8 +114,8 @@ module.exports = {
       //    runs: 200
       //  },
       //  evmVersion: "byzantium",
-      //  disableDefaults: false, // Disable the default solc optimizations
-      // }
+      // },
+      // disableDefaults: false, // Disable the default solc optimizations
     }
   },
 
