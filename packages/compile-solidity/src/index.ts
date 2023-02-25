@@ -148,8 +148,14 @@ export const Compile = {
       "resolver"
     ]);
 
+    let originalSettings = options.compilers.solc.settings;
     options = Config.default().merge(options);
     options = normalizeOptions(options);
+    // if disableDefaults is set, we don't want to insert
+    // the default optimizer settings
+    if (options.compilers.solc.disableDefaults) {
+      options.compilers.solc.settings = originalSettings;
+    }
 
     const supplier = new CompilerSupplier({
       events: options.events,
