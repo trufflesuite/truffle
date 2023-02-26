@@ -12,7 +12,8 @@ export const normalizeOptions = (options: Config) => {
     options.compilers.solc.evmVersion;
 
   if (options.compilers.solc.disableDefaults) {
-    options.compilers.solc.settings = options.compilers.solc.settings || {};
+    options.compilers.solc.settings.optimizer =
+      options.compilers.solc.settings.optimizer || {};
   } else {
     options.compilers.solc.settings.optimizer =
       options.compilers.solc.settings.optimizer ||
