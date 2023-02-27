@@ -16,8 +16,8 @@ interface SourceLineProps {
   lineNumberGutterWidth: number;
   lastLine: boolean;
   // multiline: boolean;
-  selected: boolean;
-  sourceRange: SourceRange;
+  scrollRef: any;
+  firstHighlightedLine: boolean;
 }
 
 function SourceLine({
@@ -26,8 +26,8 @@ function SourceLine({
   lineNumberGutterWidth,
   lastLine,
   // multiline,
-  selected,
-  sourceRange
+  scrollRef,
+  firstHighlightedLine
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
 
@@ -39,7 +39,14 @@ function SourceLine({
     "  " +
     "</span>";
 
-  return <div dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }} />;
+  return firstHighlightedLine ? (
+    <div
+      dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
+      ref={scrollRef}
+    />
+  ) : (
+    <div dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }} />
+  );
 }
 
 export default SourceLine;
