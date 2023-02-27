@@ -21,13 +21,15 @@ function Debugger(): JSX.Element {
     status === SessionStatus.Fetching ||
     status === SessionStatus.Starting;
   const formDisabled =
-    // !/0x[a-z0-9]{64}/i.test(inputValue) || !selectValue || inputsDisabled;
+    // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
     inputsDisabled;
 
   const initDebugger = async () => {
     const compilations = await operations.getCompilations();
     const testTxHash =
       "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389";
+    // "0x2650974eb6390dc787df16ab86308822855f907e7463107248cfd5e424923176"
+
     const provider = window.ethereum;
     if (!provider) {
       throw new Error(

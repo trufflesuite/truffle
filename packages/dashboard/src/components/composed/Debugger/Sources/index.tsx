@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState, useRef } from "react";
 import { basename } from "path";
 import { Tabs } from "@mantine/core";
@@ -21,8 +22,11 @@ function Sources({
   const [currentSourceId, setCurrentSourceId] = useState(sourceIds[0]);
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
+  const scrollRef = React.createRef();
 
   useEffect(() => {
+    // @ts-ignore
+    scrollRef.current.scrollIntoView();
     const sessionSourceId = currentSourceRange.source.id;
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
@@ -42,7 +46,11 @@ function Sources({
 
       {sources.map((source: SourceType) => (
         <Tabs.Panel key={source.id} value={source.id}>
-          <Source source={source} sourceRange={currentSourceRange} />
+          <Source
+            scrollRef={scrollRef}
+            source={source}
+            sourceRange={currentSourceRange}
+          />
         </Tabs.Panel>
       ))}
     </Tabs>
