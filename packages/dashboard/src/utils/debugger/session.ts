@@ -55,16 +55,12 @@ async function createSession(
     method: "net_version",
     params: []
   });
-  const unknownAddresses: string[] = Object.entries(affectedInstances).reduce(
-    (a, item) => {
-      if (item[1].contractName === undefined) {
-        // @ts-ignore
-        a.push(item[0]);
-      }
-      return a;
-    },
-    []
-  );
+  let unknownAddresses: string[] = [];
+  for (const [address, value] of Object.entries(affectedInstances)) {
+    if (value.contractName === undefined) {
+      unknownAddresses.push(address);
+    }
+  }
   if (unknownAddresses.length > 0 && networkId) {
     await fetchCompilationsAndAddToSession(bugger, networkId, unknownAddresses);
   }
