@@ -97,20 +97,26 @@ export class DashboardServer {
     }
 
     this.expressApp.get("/fetch-and-compile", async (req, res) => {
-      const { address, network } = req.query as Record<string, string>;
+      const { address, networkId } = req.query as Record<string, string>;
       const config = Config.default().merge({
         networks: {
-          mainnet: { network_id: 1 },
-          goerli: { network_id: 5 },
-          sepolia: { network_id: 11155111 }
+          custom: { network_id: networkId }
         },
-        network
+        network: "custom"
       });
-
-      const { compilations } = (await fetchAndCompile(address, config))
-        .compileResult;
-
-      res.json({ compilations });
+      let result;
+      try {
+        result = (await fetchAndCompile(address, config)).compileResult;
+      } catch (error) {
+        if (!error.message.includes("No verified sources")) {
+          throw error;
+        }
+      }
+      if (result) {
+        res.json({ compilations: result.compilations });
+      } else {
+        res.json({ compilations: [] });
+      }
     });
 
     this.expressApp.get("/analytics", (_req, res) => {
