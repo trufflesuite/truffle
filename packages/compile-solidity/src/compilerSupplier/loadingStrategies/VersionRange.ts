@@ -189,7 +189,7 @@ export class VersionRange {
           "The current user likely does not have sufficient permissions to " +
           "write to disk in Truffle's compiler cache directory. See the error" +
           `printed below for more information about this directory.\n${error}`;
-        console.log(warningMessage);
+        console.warn(warningMessage);
       }
     }
     return this.compilerFromString(response.data);
