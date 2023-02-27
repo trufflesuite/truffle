@@ -17,8 +17,7 @@
   ],
   "scripts": {
     "lint:fix": "prettier --write 'src/**/*.{js,ts}' 'test/**/*.{js,ts}' && tslint --fix --config tslint.json --project tsconfig.json",
-    "lint": "tslint --config tslint.json --project tsconfig.json",
-    "test": "mocha --exit --recursive 'test/**/*.test.ts'",
+    "test": "mocha --timeout 10000",
     "build": "tsc",
     "watch": "tsc -w",
     "prepublishOnly": "npm run build"
@@ -30,13 +29,15 @@
     "README.md"
   ],
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "2.0.0",
     "@types/chai": "^4.1.7",
     "@types/fs-extra": "^5.0.4",
     "@types/mocha": "^5.2.6",
-    "@types/node": "^8.10.38",
+    "@types/node": "^18.14.1",
     "chai": "^4.2.0",
     "hardhat": "^2.0.0",
-    "mocha": "^7.1.2",
+    "mocha": "10.1.0",
+    "mocha-suppress-logs": "^0.3.1",
     "prettier": "2.0.5",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
