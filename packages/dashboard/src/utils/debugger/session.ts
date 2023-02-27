@@ -1,4 +1,4 @@
-import { forTx, selectors as $ } from "@truffle/debugger";
+import { forTx } from "@truffle/debugger";
 import { provider } from "ganache";
 import * as Codec from "@truffle/codec";
 import type { Session, Source } from "src/utils/debugger";
@@ -43,11 +43,26 @@ async function createSession(
   networkId: string;
   unknownAddresses: string[];
 }> {
-  const bugger = await forTx(transactionHash, {
-    provider: provider({ fork: { provider: providedProvider } }),
-    compilations: Codec.Compilations.Utils.shimCompilations(compilations),
-    lightMode: true
-  });
+  let bugger;
+  try {
+    bugger = await forTx(transactionHash, {
+      provider: provider({ fork: { provider: providedProvider } }),
+      compilations: Codec.Compilations.Utils.shimCompilations(compilations),
+      lightMode: true
+    });
+  } catch (error) {
+    // @ts-ignore
+    if (!error.message.includes("Unknown transaction")) {
+      throw error;
+    }
+    throw new Error(
+      `The transaction hash isn't recognized on the network you are connected` +
+        `to. Please ensure you are on the appropriate network for ` +
+        `transaction hash ${transactionHash}.`
+    );
+  }
+
+  const $ = bugger.selectors;
   const affectedInstances: { [address: string]: any } = bugger.view(
     $.session.info.affectedInstances
   );
@@ -55,6 +70,7 @@ async function createSession(
     method: "net_version",
     params: []
   });
+
   let unknownAddresses: string[] = [];
   for (const [address, value] of Object.entries(affectedInstances)) {
     if (value.contractName === undefined) {
