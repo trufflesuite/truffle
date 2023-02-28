@@ -8,7 +8,7 @@ import {
 } from "@truffle/from-hardhat";
 import path from "path";
 import { resetHardhatContext } from "hardhat/plugins-testing";
-import { useEnvironment } from "../helpers";
+import { useEnvironment } from "./helpers";
 
 describe("Truffle dashboard hardhat plugin compilation tests", function () {
   before(async function () {
@@ -61,14 +61,8 @@ describe("Truffle dashboard hardhat plugin compilation tests", function () {
     it("should fail when attempting to compile", async function () {
       try {
         process.chdir(
-          path.join(
-            __dirname,
-            "..",
-            "fixture-projects",
-            "hardhat-project-empty"
-          )
+          path.join(__dirname, "fixture-projects", "hardhat-project-empty")
         );
-        process.env.HARDHAT_NETWORK = "dashboard";
         this.env = require("hardhat");
         await this.env.run(TASK_COMPILE, { force: false, quiet: true });
       } catch (reason) {

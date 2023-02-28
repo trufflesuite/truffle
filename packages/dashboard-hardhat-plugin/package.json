@@ -16,11 +16,10 @@
     "truffle-dashboard"
   ],
   "scripts": {
-    "lint:fix": "prettier --write 'src/**/*.{js,ts}' 'test/**/*.{js,ts}' && tslint --fix --config tslint.json --project tsconfig.json",
-    "test": "mocha --timeout 10000",
+    "test": "mocha test/**/*.test.ts",
     "build": "tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run build"
+    "prepare": "yarn build"
   },
   "files": [
     "dist/src/",
