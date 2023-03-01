@@ -70,7 +70,7 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, notice: { ...state.notice, ...data } };
     case "set-analytics-config":
       return { ...state, analyticsConfig: data };
-    case "set-debugger-sources-and-session":
+    case "set-debugger-session-data":
       return { ...state, debugger: data };
     case "handle-message":
       // Copy state,
