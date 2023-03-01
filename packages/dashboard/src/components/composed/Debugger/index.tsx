@@ -3,8 +3,10 @@ import { Input, Button } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
+import Variables from "src/components/composed/Debugger/Variables";
 import { setupSession, SessionStatus } from "src/utils/debugger";
 import { useDash } from "src/hooks";
+import { getCurrentSourceRange } from "src/utils/debugger";
 
 function Debugger(): JSX.Element {
   const [inputValue, setInputValue] = useInputState("");
@@ -48,11 +50,18 @@ function Debugger(): JSX.Element {
         onReady: () => setStatus(SessionStatus.Ready)
       }
     );
-    operations.setDebuggerSourcesAndSession({ sources, session });
+    operations.setDebuggerSessionData({ sources, session });
   };
 
+  let currentSourceRange, $, currentStep;
+  if (session) {
+    currentSourceRange = getCurrentSourceRange(session);
+    $ = session.selectors;
+    currentStep = session.view($.trace.index);
+  }
+
   let content;
-  if (session && sources) {
+  if (session && sources && currentSourceRange) {
     content = (
       <>
         <Controls session={session} stepEffect={sessionTick} />
@@ -60,7 +69,9 @@ function Debugger(): JSX.Element {
           sources={sources}
           session={session}
           sessionUpdated={sessionUpdated}
+          currentSourceRange={currentSourceRange}
         />
+        <Variables currentStep={currentStep} session={session} />
       </>
     );
   } else {
