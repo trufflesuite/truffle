@@ -15,7 +15,7 @@ export async function setupSession(
     onStart?: () => void;
     onReady?: () => void;
   }
-): Promise<{ session: Session; sources: Source[] }> {
+): Promise<{ session: Session; sources: Source[]; variables: any }> {
   callbacks?.onInit?.();
   const { session, sources, networkId, unknownAddresses } = await createSession(
     transactionHash,
@@ -29,8 +29,14 @@ export async function setupSession(
   callbacks?.onStart?.();
   await session.startFullMode();
 
+  const $ = session.selectors;
+  // @ts-ignore
+  window.dollar = $;
+  // @ts-ignore
+  window.bugger = session;
+  const variables = await session.variables();
   callbacks?.onReady?.();
-  return { session, sources };
+  return { session, sources, variables };
 }
 
 async function createSession(
@@ -86,7 +92,6 @@ async function createSession(
     ({ id, sourcePath, source: contents, language }: any) =>
       language === "Solidity" ? [{ id, sourcePath, contents, language }] : []
   );
-  await bugger.startFullMode();
   return {
     sources: transformedSources,
     session: bugger,
