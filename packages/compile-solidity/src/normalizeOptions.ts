@@ -12,6 +12,7 @@ export const normalizeOptions = (options: Config) => {
     options.compilers.solc.evmVersion;
 
   if (options.compilers.solc.disableDefaults) {
+    // if the user has disabled defaults, we don't want to set optimizer defaults; Solidity versions prior to 0.8.6 will produce different bytecodes if optimizer settings are missing vs. set to false; this matters for how Blockscout does verification
     options.compilers.solc.settings.optimizer =
       options.compilers.solc.settings.optimizer || {};
   } else {

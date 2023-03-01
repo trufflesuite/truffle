@@ -115,7 +115,10 @@ module.exports = {
       //  },
       //  evmVersion: "byzantium",
       // },
-      // disableDefaults: false, // Disable the default solc optimizations
+      // disableDefaults: false, // Disable the default solc optimizer settings; if true,
+      //                         // whatever setting is passed in settings.optimizer will be respected;
+      //                         // if false, the default when settings.optimizer is missing is
+      //                         // { enabled: false }.
     }
   },
 

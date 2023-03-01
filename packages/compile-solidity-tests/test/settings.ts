@@ -42,7 +42,8 @@ describe("Compile with disableDefaults flag", () => {
     // Verify that the bytecode is different
     assert.notStrictEqual(
       bytecodeWithDefaultsDisabled,
-      bytecodeWithOptimizerSetting
+      bytecodeWithOptimizerSetting,
+      "Bytecode should be different when disableDefaults is true and optimizer is missing"
     );
   });
 
@@ -71,7 +72,8 @@ describe("Compile with disableDefaults flag", () => {
     // Verify that the bytecode is different
     assert.strictEqual(
       bytecodeWithDefaultsEnabled,
-      bytecodeWithOptimizerSetting
+      bytecodeWithOptimizerSetting,
+      "Bytecode should be the same when disableDefaults is false and optimizer is missing"
     );
   });
 });
