@@ -3,7 +3,7 @@
   "scripts": {
     "bootstrap": "yarn exec lerna bootstrap",
     "docs": "lerna run docs --stream --concurrency=1",
-    "prepare": "lerna run prepare --stream --concurrency=1 && husky install && yarn docs",
+    "prepare": "lerna run prepare --stream && husky install && yarn docs",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
     "prepare-release": "./scripts/prepare-release.sh",
@@ -24,7 +24,7 @@
     "eslint": "^8.4.1",
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^7.0.4",
-    "lerna": "^5.6.2",
+    "lerna": "^6.6.1",
     "lerna-dependency-graph": "^1.1.0",
     "lerna-update-wizard": "1.1.2",
     "lint-staged": "^12.1.2",
