@@ -10,9 +10,9 @@ export type ActionType =
   | "set-analytics-config"
   | "handle-message"
   | "update-provider-message-sender"
-  | "set-debugger-sources-and-session";
+  | "set-debugger-session-data";
 
-export type SetDebuggerSourcesAndSessionArgs = {
+export type SetDebuggerSessionDataArgs = {
   sources: Source[];
   session: Session;
 };
@@ -29,9 +29,9 @@ export interface SetDecoderAction extends BaseAction {
   >;
 }
 
-export interface SetDebuggerSourcesAndSessionAction extends BaseAction {
-  type: "set-debugger-sources-and-session";
-  data: SetDebuggerSourcesAndSessionArgs;
+export interface SetDebuggerSessionDataAction extends BaseAction {
+  type: "set-debugger-session-data";
+  data: SetDebuggerSessionDataArgs;
 }
 
 export interface SetChainInfoAction extends BaseAction {
@@ -66,4 +66,4 @@ export type Action =
   | SetAnalyticsConfigAction
   | HandleMessageAction
   | UpdateProviderMessageSenderAction
-  | SetDebuggerSourcesAndSessionAction;
+  | SetDebuggerSessionDataAction;
