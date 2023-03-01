@@ -3,22 +3,26 @@ import { useEffect, useState, useRef } from "react";
 import { basename } from "path";
 import { Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
-import { getCurrentSourceRange } from "src/utils/debugger";
-import type { Session, Source as SourceType } from "src/utils/debugger";
+import type {
+  SourceRange,
+  Session,
+  Source as SourceType
+} from "src/utils/debugger";
 
 interface SourcesProps {
   session: Session;
   sessionUpdated: any;
   sources: SourceType[];
+  currentSourceRange: SourceRange;
 }
 
 function Sources({
   sources,
   session,
-  sessionUpdated
+  sessionUpdated,
+  currentSourceRange
 }: SourcesProps): JSX.Element {
   const sourceIds = sources.map(({ id }) => id);
-  const currentSourceRange = getCurrentSourceRange(session);
   const [currentSourceId, setCurrentSourceId] = useState(sourceIds[0]);
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
