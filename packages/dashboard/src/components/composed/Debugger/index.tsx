@@ -53,11 +53,10 @@ function Debugger(): JSX.Element {
     operations.setDebuggerSessionData({ sources, session });
   };
 
-  let currentSourceRange, $, currentStep;
+  let currentSourceRange, currentStep;
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
-    $ = session.selectors;
-    currentStep = session.view($.trace.index);
+    currentStep = session.view(session.selectors.trace.index);
   }
 
   let content;
