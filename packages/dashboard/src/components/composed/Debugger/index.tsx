@@ -118,6 +118,11 @@ function Debugger(): JSX.Element {
     return item.source !== undefined;
   };
 
+  if (session) {
+    currentSourceRange = getCurrentSourceRange(session);
+    currentStep = session.view(session.selectors.trace.index);
+  }
+
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
