@@ -29,8 +29,10 @@ function Sources({
   const scrollRef = React.createRef();
 
   useEffect(() => {
-    // @ts-ignore
-    scrollRef.current.scrollIntoView();
+    if (scrollRef) {
+      // @ts-ignore
+      scrollRef.current.scrollIntoView();
+    }
     const sessionSourceId = currentSourceRange.source.id;
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
