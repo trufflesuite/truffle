@@ -52,7 +52,7 @@ function Sources({
   }, [sources, currentSourceId, setCurrentSourceId]);
 
   useEffect(() => {
-    if (scrollRef) {
+    if (scrollRef?.current) {
       // @ts-ignore
       scrollRef.current.scrollIntoView();
     }
