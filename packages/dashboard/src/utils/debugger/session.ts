@@ -15,16 +15,21 @@ export async function setupSession(
     onStart?: () => void;
     onReady?: () => void;
   }
-): Promise<{ session: Session; sources: Source[]; variables: any }> {
+): Promise<{
+  session: Session;
+  sources: Source[];
+  unknownAddresses: string[];
+}> {
   callbacks?.onInit?.();
-  const { session, sources, networkId, unknownAddresses } = await createSession(
-    transactionHash,
-    providedProvider,
-    compilations
-  );
+  const { session, sources, networkId, unrecognizedAddresses } =
+    await createSession(transactionHash, providedProvider, compilations);
 
   callbacks?.onFetch?.();
-  await fetchCompilationsAndAddToSession(session, networkId, unknownAddresses);
+  const { unknownAddresses } = await fetchCompilationsAndAddToSession(
+    session,
+    networkId,
+    unrecognizedAddresses
+  );
 
   callbacks?.onStart?.();
   await session.startFullMode();
@@ -34,9 +39,8 @@ export async function setupSession(
   window.dollar = $;
   // @ts-ignore
   window.bugger = session;
-  const variables = await session.variables();
   callbacks?.onReady?.();
-  return { session, sources, variables };
+  return { session, sources, unknownAddresses };
 }
 
 async function createSession(
@@ -47,7 +51,7 @@ async function createSession(
   session: Session;
   sources: Source[];
   networkId: string;
-  unknownAddresses: string[];
+  unrecognizedAddresses: string[];
 }> {
   let bugger;
   try {
@@ -77,14 +81,18 @@ async function createSession(
     params: []
   });
 
-  let unknownAddresses: string[] = [];
+  let unrecognizedAddresses: string[] = [];
   for (const [address, value] of Object.entries(affectedInstances)) {
     if (value.contractName === undefined) {
-      unknownAddresses.push(address);
+      unrecognizedAddresses.push(address);
     }
   }
-  if (unknownAddresses.length > 0 && networkId) {
-    await fetchCompilationsAndAddToSession(bugger, networkId, unknownAddresses);
+  if (unrecognizedAddresses.length > 0 && networkId) {
+    await fetchCompilationsAndAddToSession(
+      bugger,
+      networkId,
+      unrecognizedAddresses
+    );
   }
   const sources = await getTransactionSourcesBeforeStarting(bugger);
   // we need to transform these into the format dashboard uses
@@ -96,7 +104,7 @@ async function createSession(
     sources: transformedSources,
     session: bugger,
     networkId,
-    unknownAddresses
+    unrecognizedAddresses
   };
 }
 
@@ -104,18 +112,20 @@ async function fetchCompilationsAndAddToSession(
   session: Session,
   networkId: string,
   addresses: string[]
-) {
+): Promise<{ unknownAddresses: string[] }> {
   const host = window.location.hostname;
   const port =
     process.env.NODE_ENV === "development" ? 24012 : window.location.port;
   const fetchAndCompileEndpoint = `http://${host}:${port}/fetch-and-compile`;
 
+  let unknownAddresses = [];
   for (const address of addresses) {
     const fetchResult = await fetch(
       `${fetchAndCompileEndpoint}?address=${address}&networkId=${networkId}`
     );
     const { compilations } = await fetchResult.json();
     if (compilations.length === 0) {
+      unknownAddresses.push(address);
       continue;
     }
     const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
@@ -125,4 +135,5 @@ async function fetchCompilationsAndAddToSession(
 
     await session.addExternalCompilations(shimmedCompilations);
   }
+  return { unknownAddresses };
 }
