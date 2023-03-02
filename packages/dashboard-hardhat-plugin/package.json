@@ -16,10 +16,11 @@
     "truffle-dashboard"
   ],
   "scripts": {
-    "test": "mocha test/**/*.test.ts",
+    "test": "yarn setup-fixtures && mocha test/**/*.test.ts",
     "build": "tsc",
     "watch": "tsc -w",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "setup-fixtures": "cd test/fixture-projects/hardhat-project-incorrect-version && yarn"
   },
   "files": [
     "dist/src/",
@@ -49,6 +50,6 @@
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-client": "^0.1.10",
-    "@truffle/from-hardhat": "^0.2.1"
+    "@truffle/from-hardhat": "^0.2.2"
   }
 }

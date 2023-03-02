@@ -1,6 +1,6 @@
 {
   "name": "hardhat-project-incorrect-version",
   "devDependencies": {
-    "hardhat": "^2.0.0"
+    "hardhat": "2.0.0"
   }
 }
