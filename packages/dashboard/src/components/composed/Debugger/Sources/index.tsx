@@ -14,13 +14,15 @@ interface SourcesProps {
   sessionUpdated: any;
   sources: SourceType[];
   currentSourceRange: SourceRange;
+  unknownAddresses: string[];
 }
 
 function Sources({
   sources,
   session,
   sessionUpdated,
-  currentSourceRange
+  currentSourceRange,
+  unknownAddresses
 }: SourcesProps): JSX.Element {
   const sourceIds = sources.map(({ id }) => id);
   const [currentSourceId, setCurrentSourceId] = useState(sourceIds[0]);
@@ -29,7 +31,7 @@ function Sources({
   const scrollRef = React.createRef();
 
   useEffect(() => {
-    if (scrollRef) {
+    if (scrollRef?.current) {
       // @ts-ignore
       scrollRef.current.scrollIntoView();
     }
@@ -38,7 +40,12 @@ function Sources({
       setCurrentSourceId(sessionSourceId);
     }
   }, [session, sessionUpdated, currentSourceRange.source.id]);
-
+  const unknownSources = unknownAddresses.map(address => ({
+    id: address,
+    sourcePath: "",
+    contents: `Could not locate source material for address ${address}.`,
+    language: ""
+  }));
   return (
     // @ts-ignore
     <Tabs value={currentSourceId} onTabChange={setCurrentSourceId}>
@@ -48,12 +55,26 @@ function Sources({
             {basename(source.sourcePath)}
           </Tabs.Tab>
         ))}
+        {unknownSources.map((source: SourceType) => (
+          <Tabs.Tab key={source.id} value={source.id}>
+            Unknown Contract
+          </Tabs.Tab>
+        ))}
       </Tabs.List>
 
       {sources.map((source: SourceType) => (
         <Tabs.Panel key={source.id} value={source.id}>
           <Source
             scrollRef={scrollRef}
+            source={source}
+            sourceRange={currentSourceRange}
+          />
+        </Tabs.Panel>
+      ))}
+      {unknownSources.map((source: SourceType) => (
+        <Tabs.Panel key={source.id} value={source.id}>
+          <Source
+            scrollRef={undefined}
             source={source}
             sourceRange={currentSourceRange}
           />
