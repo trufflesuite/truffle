@@ -39,8 +39,11 @@ import type {
 } from "./elementary";
 import type * as Common from "@truffle/codec/common";
 import type * as Abi from "@truffle/abi-utils";
+import { typeGuardsForBaseTypes } from "./guard";
 
 export * from "./elementary"; //can't do 'export type *'
+
+const typeGuards = typeGuardsForBaseTypes<Value, Errors.ErrorResult, Result>();
 
 /*
  * SECTION 1: Generic types for values in neneral (including errors).
@@ -149,12 +152,24 @@ export type ElementaryResult =
  */
 export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
+export const [isBytesValue, isBytesErrorResult, isBytesResult] = typeGuards<
+  BytesValue,
+  Errors.BytesErrorResult,
+  BytesResult
+>(data => data.type.typeClass === "bytes");
+
 /**
  * An unsigned integer value or error
  *
  * @Category Elementary types
  */
 export type UintResult = UintValue | Errors.UintErrorResult;
+
+export const [isUintValue, isUintErrorResult, isUintResult] = typeGuards<
+  UintValue,
+  Errors.UintErrorResult,
+  UintResult
+>(data => data.type.typeClass === "uint");
 
 /**
  * A signed integer value or error
@@ -163,12 +178,24 @@ export type UintResult = UintValue | Errors.UintErrorResult;
  */
 export type IntResult = IntValue | Errors.IntErrorResult;
 
+export const [isIntValue, isIntErrorResult, isIntResult] = typeGuards<
+  IntValue,
+  Errors.IntErrorResult,
+  IntResult
+>(data => data.type.typeClass === "int");
+
 /**
  * A boolean value or error
  *
  * @Category Elementary types
  */
 export type BoolResult = BoolValue | Errors.BoolErrorResult;
+
+export const [isBoolValue, isBoolErrorResult, isBoolResult] = typeGuards<
+  BoolValue,
+  Errors.BoolErrorResult,
+  BoolResult
+>(data => data.type.typeClass === "bool");
 
 /**
  * A bytestring value or error (static-length)
@@ -179,6 +206,16 @@ export type BytesStaticResult =
   | BytesStaticValue
   | Errors.BytesStaticErrorResult;
 
+export const [
+  isBytesStaticValue,
+  isBytesStaticErrorResult,
+  isBytesStaticResult
+] = typeGuards<
+  BytesStaticValue,
+  Errors.BytesStaticErrorResult,
+  BytesStaticResult
+>(data => data.type.typeClass === "bytes" && data.type.kind === "static");
+
 /**
  * A bytestring value or error (dynamic-length)
  *
@@ -188,12 +225,27 @@ export type BytesDynamicResult =
   | BytesDynamicValue
   | Errors.BytesDynamicErrorResult;
 
+export const [
+  isBytesDynamicValue,
+  isBytesDynamicErrorResult,
+  isBytesDynamicResult
+] = typeGuards<
+  BytesDynamicValue,
+  Errors.BytesDynamicErrorResult,
+  BytesDynamicResult
+>(data => data.type.typeClass === "bytes" && data.type.kind === "dynamic");
+
 /**
  * An address value or error
  *
  * @Category Elementary types
  */
 export type AddressResult = AddressValue | Errors.AddressErrorResult;
+
+export const [isAddressValue, isAddressErrorResult, isAddressResult] =
+  typeGuards<AddressValue, Errors.AddressErrorResult, AddressResult>(
+    data => data.type.typeClass === "address"
+  );
 
 /**
  * A string value or error
@@ -202,6 +254,12 @@ export type AddressResult = AddressValue | Errors.AddressErrorResult;
  */
 export type StringResult = StringValue | Errors.StringErrorResult;
 
+export const [isStringValue, isStringErrorResult, isStringResult] = typeGuards<
+  StringValue,
+  Errors.StringErrorResult,
+  StringResult
+>(data => data.type.typeClass === "string");
+
 /**
  * A signed fixed-point value or error
  *
@@ -209,12 +267,24 @@ export type StringResult = StringValue | Errors.StringErrorResult;
  */
 export type FixedResult = FixedValue | Errors.FixedErrorResult;
 
+export const [isFixedValue, isFixedErrorResult, isFixedResult] = typeGuards<
+  FixedValue,
+  Errors.FixedErrorResult,
+  FixedResult
+>(data => data.type.typeClass === "fixed");
+
 /**
  * An unsigned fixed-point value or error
  *
  * @Category Elementary types
  */
 export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
+
+export const [isUfixedValue, isUfixedErrorResult, isUfixedResult] = typeGuards<
+  UfixedValue,
+  Errors.UfixedErrorResult,
+  UfixedResult
+>(data => data.type.typeClass === "ufixed");
 
 /*
  * SECTION 3: User-defined elementary types
@@ -227,12 +297,30 @@ export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
  */
 export type EnumResult = EnumValue | Errors.EnumErrorResult;
 
+export const [isEnumValue, isEnumErrorResult, isEnumResult] = typeGuards<
+  EnumValue,
+  Errors.EnumErrorResult,
+  EnumResult
+>(data => data.type.typeClass === "enum");
+
 /**
  * A UDVT value or error
  *
  * @Category User-defined elementary types
  */
-export type UserDefinedValueTypeResult = UserDefinedValueTypeValue | Errors.UserDefinedValueTypeErrorResult;
+export type UserDefinedValueTypeResult =
+  | UserDefinedValueTypeValue
+  | Errors.UserDefinedValueTypeErrorResult;
+
+export const [
+  isUserDefinedValueTypeValue,
+  isUserDefinedValueTypeErrorResult,
+  isUserDefinedValueTypeResult
+] = typeGuards<
+  UserDefinedValueTypeValue,
+  Errors.UserDefinedValueTypeErrorResult,
+  UserDefinedValueTypeResult
+>(data => data.type.typeClass === "userDefinedValueType");
 
 /**
  * A contract value or error
@@ -240,6 +328,11 @@ export type UserDefinedValueTypeResult = UserDefinedValueTypeValue | Errors.User
  * @Category User-defined elementary types
  */
 export type ContractResult = ContractValue | Errors.ContractErrorResult;
+
+export const [isContractValue, isContractErrorResult, isContractResult] =
+  typeGuards<ContractValue, Errors.ContractErrorResult, ContractResult>(
+    data => data.type.typeClass === "contract"
+  );
 
 /*
  * SECTION 4: Container types (including magic)
@@ -251,6 +344,12 @@ export type ContractResult = ContractValue | Errors.ContractErrorResult;
  * @Category Container types
  */
 export type ArrayResult = ArrayValue | Errors.ArrayErrorResult;
+
+export const [isArrayValue, isArrayErrorResult, isArrayResult] = typeGuards<
+  ArrayValue,
+  Errors.ArrayErrorResult,
+  ArrayResult
+>(data => data.type.typeClass === "array");
 
 /**
  * An array value (may contain errors!)
@@ -273,6 +372,11 @@ export interface ArrayValue {
  * @Category Container types
  */
 export type MappingResult = MappingValue | Errors.MappingErrorResult;
+
+export const [isMappingValue, isMappingErrorResult, isMappingResult] =
+  typeGuards<MappingValue, Errors.MappingErrorResult, MappingResult>(
+    data => data.type.typeClass === "mapping"
+  );
 
 /**
  * A mapping value (may contain errors!)
@@ -301,6 +405,12 @@ export interface KeyValuePair {
  * @Category Container types
  */
 export type StructResult = StructValue | Errors.StructErrorResult;
+
+export const [isStructValue, isStructErrorResult, isStructResult] = typeGuards<
+  StructValue,
+  Errors.StructErrorResult,
+  StructResult
+>(data => data.type.typeClass === "struct");
 
 /**
  * A struct value (may contain errors!)
@@ -334,6 +444,12 @@ export interface NameValuePair {
  */
 export type TupleResult = TupleValue | Errors.TupleErrorResult;
 
+export const [isTupleValue, isTupleErrorResult, isTupleResult] = typeGuards<
+  TupleValue,
+  Errors.TupleErrorResult,
+  TupleResult
+>(data => data.type.typeClass === "tuple");
+
 /**
  * A tuple value (may contain errors!)
  *
@@ -357,6 +473,12 @@ export interface OptionallyNamedValue {
  */
 export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
+export const [isMagicValue, isMagicErrorResult, isMagicResult] = typeGuards<
+  MagicValue,
+  Errors.MagicErrorResult,
+  MagicResult
+>(data => data.type.typeClass === "magic");
+
 /**
  * A magic variable's value (may contain errors?)
  *
@@ -378,6 +500,12 @@ export interface MagicValue {
  * @Category Special container types (debugger-only)
  */
 export type TypeResult = TypeValue | Errors.TypeErrorResult;
+
+export const [isTypeValue, isTypeErrorResult, isTypeResult] = typeGuards<
+  TypeValue,
+  Errors.TypeErrorResult,
+  TypeResult
+>(data => data.type.typeClass === "type");
 
 /**
  * A type's value -- for now, we consider the value of a contract type to
@@ -429,6 +557,19 @@ export interface TypeValueEnum {
 export type FunctionExternalResult =
   | FunctionExternalValue
   | Errors.FunctionExternalErrorResult;
+
+export const [
+  isFunctionExternalValue,
+  isFunctionExternalErrorResult,
+  isFunctionExternalResult
+] = typeGuards<
+  FunctionExternalValue,
+  Errors.FunctionExternalErrorResult,
+  FunctionExternalResult
+>(
+  data =>
+    data.type.typeClass === "function" && data.type.visibility === "external"
+);
 
 /**
  * An external function pointer value; see [[FunctionExternalValueInfo]] for more detail
@@ -510,6 +651,19 @@ export interface FunctionExternalValueInfoUnknown {
 export type FunctionInternalResult =
   | FunctionInternalValue
   | Errors.FunctionInternalErrorResult;
+
+export const [
+  isFunctionInternalValue,
+  isFunctionInternalErrorResult,
+  isFunctionInternalResult
+] = typeGuards<
+  FunctionInternalValue,
+  Errors.FunctionInternalErrorResult,
+  FunctionInternalResult
+>(
+  data =>
+    data.type.typeClass === "function" && data.type.visibility === "internal"
+);
 
 /**
  * An internal function pointer value; see [[FunctionInternalValueInfo]] for more detail
@@ -615,3 +769,8 @@ export interface OptionsValue {
   kind: "value";
   value: Common.Options;
 }
+
+export const [isOptionsValue, isOptionsErrorResult, isOptionsResult] =
+  typeGuards<OptionsValue, Errors.OptionsErrorResult, OptionsResult>(
+    data => data.type.typeClass === "options"
+  );
