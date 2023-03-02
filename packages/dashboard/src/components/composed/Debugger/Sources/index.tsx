@@ -52,8 +52,10 @@ function Sources({
   }, [sources, currentSourceId, setCurrentSourceId]);
 
   useEffect(() => {
-    // @ts-ignore
-    scrollRef.current.scrollIntoView();
+    if (scrollRef) {
+      // @ts-ignore
+      scrollRef.current.scrollIntoView();
+    }
     const sessionSourceId = currentSourceRange.source.id;
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
