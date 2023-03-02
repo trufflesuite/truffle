@@ -18,6 +18,7 @@ function Debugger(): JSX.Element {
     }
   } = useDash()!;
   const [status, setStatus] = useState<SessionStatus>();
+  const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
   const inputsDisabled =
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
@@ -29,7 +30,8 @@ function Debugger(): JSX.Element {
   const initDebugger = async () => {
     const compilations = await operations.getCompilations();
     const testTxHash =
-      "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389";
+      "0x8d093f67b6501ff576f259a683ac3ac0a0adb3280b66e272ebbaf691242d99b1";
+    // "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389";
     // "0x2650974eb6390dc787df16ab86308822855f907e7463107248cfd5e424923176"
 
     const provider = window.ethereum;
@@ -39,7 +41,7 @@ function Debugger(): JSX.Element {
           "MetaMask connected to the current page."
       );
     }
-    const { session, sources } = await setupSession(
+    const { session, sources, unknownAddresses } = await setupSession(
       testTxHash,
       provider,
       compilations,
@@ -50,6 +52,9 @@ function Debugger(): JSX.Element {
         onReady: () => setStatus(SessionStatus.Ready)
       }
     );
+    if (unknownAddresses.length > 0) {
+      setUnknownAddresses(unknownAddresses);
+    }
     operations.setDebuggerSessionData({ sources, session });
   };
 
@@ -66,6 +71,7 @@ function Debugger(): JSX.Element {
         <Controls session={session} stepEffect={sessionTick} />
         <Sources
           sources={sources}
+          unknownAddresses={unknownAddresses}
           session={session}
           sessionUpdated={sessionUpdated}
           currentSourceRange={currentSourceRange}
