@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session } from "src/utils/debugger";
 import inspect from "browser-util-inspect";
+import { Container } from "@mantine/core";
 import * as Codec from "@truffle/codec";
 
 type VariablesArgs = {
@@ -20,10 +21,10 @@ function Variables({
       setVariables(variables);
     }
     getVariables();
-  }, [currentStep]);
+  }, [currentStep, session]);
 
   return (
-    <div>
+    <Container>
       {Object.entries(variables).map(([name, result]) => {
         return (
           <div key={name}>
@@ -34,7 +35,7 @@ function Variables({
           </div>
         );
       })}
-    </div>
+    </Container>
   );
 }
 
