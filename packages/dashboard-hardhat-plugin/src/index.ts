@@ -54,6 +54,6 @@ const processCompilation: ActionType<CompilationArgs> = async (
   return result;
 };
 
-task("compile", "Compile with add Truffle Dashboard goodness").setAction(
+task("compile", "Compile with Truffle Dashboard support").setAction(
   processCompilation
 );
