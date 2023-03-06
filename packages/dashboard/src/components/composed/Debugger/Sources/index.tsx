@@ -39,7 +39,7 @@ function Sources({
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
     }
-  }, [session, sessionUpdated, currentSourceRange.source.id]);
+  }, [session, sessionUpdated, currentSourceRange.source.id, scrollRef]);
   const unknownSources = unknownAddresses.map(address => ({
     id: address,
     sourcePath: "",
