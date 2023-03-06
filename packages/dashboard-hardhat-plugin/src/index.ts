@@ -47,8 +47,10 @@ const processCompilation: ActionType<CompilationArgs> = async (
 
     console.log("Compilation successfully sent!");
   } catch (hardhatError) {
-    console.log("Error: ", hardhatError);
-    throw hardhatError;
+    console.warn(
+      "The Truffle Dashboard plugin failed to compile: ",
+      hardhatError
+    );
   }
 
   return result;
