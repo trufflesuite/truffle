@@ -1,4 +1,5 @@
 import { createStyles } from "@mantine/core";
+import { useDash } from "src/hooks";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   lineNumber: {
@@ -16,6 +17,7 @@ interface SourceLineProps {
   lastLine: boolean;
   scrollRef: any;
   firstHighlightedLine: boolean;
+  sourceId: string;
 }
 
 function SourceLine({
@@ -24,9 +26,13 @@ function SourceLine({
   lineNumberGutterWidth,
   lastLine,
   scrollRef,
-  firstHighlightedLine
+  firstHighlightedLine,
+  sourceId
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
+  const {
+    operations: { toggleDebuggerBreakpoint }
+  } = useDash()!;
 
   if (!lastLine) line += "\n";
   const lineNumberDisplay =
@@ -35,14 +41,27 @@ function SourceLine({
     lineNumber +
     "  " +
     "</span>";
+  const handleClick = (({
+    line,
+    sourceId
+  }: {
+    line: number;
+    sourceId: string;
+  }) => {
+    toggleDebuggerBreakpoint({ line, sourceId });
+  }).bind(undefined, { line: lineNumber, sourceId });
 
   return firstHighlightedLine ? (
     <div
+      onClick={handleClick}
       dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
       ref={scrollRef}
     />
   ) : (
-    <div dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }} />
+    <div
+      onClick={handleClick}
+      dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
+    />
   );
 }
 
