@@ -24,7 +24,10 @@ import {
   rejectMessage,
   getChainNameByID
 } from "src/utils/dash";
-import type { SetDebuggerSessionDataArgs } from "src/contexts/DashContext/types";
+import type {
+  SetDebuggerSessionDataArgs,
+  ToggleDebuggerBreakpointArgs
+} from "src/contexts/DashContext/types";
 
 const ARBITRARY_DB_MAX_BYTES = 500_000_000;
 const ARBITRARY_DB_MAX_PERCENT = 0.8;
@@ -319,6 +322,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         data: {
           sources,
           session
+        }
+      });
+    },
+    toggleDebuggerBreakpoint({ line, sourceId }: ToggleDebuggerBreakpointArgs) {
+      dispatch({
+        type: "toggle-debugger-breakpoint",
+        data: {
+          line,
+          sourceId
         }
       });
     }
