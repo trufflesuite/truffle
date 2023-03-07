@@ -9,12 +9,17 @@ import type { Schema } from "src/contexts/DashContext";
 import type { NoticeContent } from "src/components/composed/Notice/content/types";
 import type { Source, Session } from "src/utils/debugger";
 
+type BreakpointState = {
+  [sourceId: string]: Set<number>;
+};
+
 export interface State {
   busClient: DashboardMessageBusClient;
   dbPromise: Promise<IDBPDatabase<Schema>>;
   debugger: {
     sources: Source[] | null;
     session: Session | null;
+    breakpoints: BreakpointState | null;
   };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
