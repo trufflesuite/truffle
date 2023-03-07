@@ -5,9 +5,10 @@ import { HardhatError } from "hardhat/internal/core/errors";
 import // IncompatibleHardhatBuildInfoFormatError,
 // IncompatibleHardhatVersionError
 "@truffle/from-hardhat";
-import path from "path";
 import { resetHardhatContext } from "hardhat/plugins-testing";
 import { useEnvironment } from "./helpers";
+import fs from "fs";
+import path from "path";
 
 describe("Truffle dashboard hardhat plugin compilation tests", function () {
   before(async function () {
@@ -42,6 +43,51 @@ describe("Truffle dashboard hardhat plugin compilation tests", function () {
     useEnvironment("hardhat-project-incompatible", "dashboard");
 
     it("should fail when incompatible hardhat build info (e.g. hh-sol-build-info-2) is detected", async function () {
+      await this.env.run(TASK_COMPILE, {
+        force: false,
+        quiet: false,
+        config: "hardhat.config.no.plugin.ts"
+      });
+
+      const buildInfoFiles = fs.readdirSync(
+        path.join(
+          __dirname,
+          "fixture-projects",
+          "hardhat-project-incompatible",
+          "artifacts",
+          "build-info"
+        )
+      );
+
+      const buildInfo = JSON.parse(
+        fs.readFileSync(
+          path.join(
+            __dirname,
+            "fixture-projects",
+            "hardhat-project-incompatible",
+            "artifacts",
+            "build-info",
+            buildInfoFiles[0]
+          ),
+          "utf8"
+        )
+      );
+
+      buildInfo._format = "hh-sol-build-info-2";
+
+      fs.writeFileSync(
+        path.join(
+          __dirname,
+          "fixture-projects",
+          "hardhat-project-incompatible",
+          "artifacts",
+          "build-info",
+          buildInfoFiles[0]
+        ),
+        JSON.stringify(buildInfo),
+        "utf8"
+      );
+
       return await this.env
         .run(TASK_COMPILE, { force: false, quiet: true })
         .then(() => {
