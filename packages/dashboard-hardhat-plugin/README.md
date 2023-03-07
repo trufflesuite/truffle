@@ -28,7 +28,7 @@ Alternatively, you can skip the installation and fetch (and run) it remotely wit
 
 ### Configuration
 
-To make sure the plugin knows where to send the compiled artifacts (and subsequent transactions), you'll need to add a `dashboard` network to your `hardhat.config.js`:
+To make sure the plugin knows where to send the compiled artifacts (and subsequent transactions), you'll need to add a `dashboard` network (or whatever name you like) to your `hardhat.config.js`:
 
 ```ts
 const config: HardhatUserConfig = {
