@@ -31,16 +31,26 @@ function SourceLine({
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
   const {
+    state: {
+      debugger: { breakpoints }
+    },
     operations: { toggleDebuggerBreakpoint }
   } = useDash()!;
 
   if (!lastLine) line += "\n";
-  const lineNumberDisplay =
+  let lineNumberDisplay =
     `<span class="${classes.lineNumber}">` +
     " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
     lineNumber +
     "  " +
     "</span>";
+
+  if (breakpoints && breakpoints[sourceId].has(lineNumber)) {
+    lineNumberDisplay = lineNumberDisplay.replace(
+      `${lineNumber.toString()} `,
+      `${lineNumber}*`
+    );
+  }
   const handleClick = (({
     line,
     sourceId
