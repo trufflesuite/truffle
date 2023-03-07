@@ -90,11 +90,16 @@ export const reducer = (state: State, action: Action): State => {
         }
       };
     case "set-debugger-session-data":
+      const breakpointsInitialState: { [sourceId: string]: Set<number> } = {};
+      for (const source of data.sources) {
+        breakpointsInitialState[source.id] = new Set();
+      }
       return {
         ...state,
         debugger: {
+          // @ts-ignore
           ...data,
-          breakpoints: null
+          breakpoints: breakpointsInitialState
         }
       };
     case "handle-message":
