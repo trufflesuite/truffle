@@ -10,9 +10,15 @@ interface SourceProps {
   source: SourceType;
   sourceRange: SourceRange;
   scrollRef: any;
+  sourceId: string;
 }
 
-function Source({ source, sourceRange, scrollRef }: SourceProps): JSX.Element {
+function Source({
+  source,
+  sourceRange,
+  scrollRef,
+  sourceId
+}: SourceProps): JSX.Element {
   // add comment markers for where spans will go later designating debugger
   // highlighting - comments so lowlight doesn't choke on html
   const sourceWithHighlightedMarkings = addTextHighlightedClass(
@@ -40,7 +46,6 @@ function Source({ source, sourceRange, scrollRef }: SourceProps): JSX.Element {
             end.column === null ||
             (end.column === 0 && index < end.line) ||
             (end.column > 0 && index <= end.line));
-        // const multiline = start.line !== end.line;
         const firstHighlightedLine = selected && index === start.line;
 
         const props = {
@@ -50,7 +55,7 @@ function Source({ source, sourceRange, scrollRef }: SourceProps): JSX.Element {
           lineNumberGutterWidth,
           lastLine: index === finishedLines.length - 1,
           firstHighlightedLine,
-          // multiline,
+          sourceId,
           scrollRef
         };
 
