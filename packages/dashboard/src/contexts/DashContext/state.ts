@@ -38,7 +38,8 @@ export const initialState: State = {
   }),
   debugger: {
     sources: null,
-    session: null
+    session: null,
+    breakpoints: null
   },
   decoder: null,
   decoderCompilations: null,
@@ -70,8 +71,32 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, notice: { ...state.notice, ...data } };
     case "set-analytics-config":
       return { ...state, analyticsConfig: data };
+    case "toggle-debugger-breakpoint":
+      const { line, sourceId } = data;
+      const newBreakpointStateForSource = new Set(
+        state.debugger.breakpoints![sourceId]
+      );
+      state.debugger.breakpoints![sourceId].has(line)
+        ? newBreakpointStateForSource.delete(line)
+        : newBreakpointStateForSource.add(line);
+      return {
+        ...state,
+        debugger: {
+          ...state.debugger,
+          breakpoints: {
+            ...state.debugger.breakpoints,
+            [sourceId]: newBreakpointStateForSource
+          }
+        }
+      };
     case "set-debugger-session-data":
-      return { ...state, debugger: data };
+      return {
+        ...state,
+        debugger: {
+          ...data,
+          breakpoints: null
+        }
+      };
     case "handle-message":
       // Copy state,
       // modify it depending on message type,

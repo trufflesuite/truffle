@@ -2,7 +2,10 @@ import { createContext } from "react";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import type { State, Action } from "src/contexts/DashContext";
-import type { SetDebuggerSessionDataArgs } from "src/contexts/DashContext/types";
+import type {
+  SetDebuggerSessionDataArgs,
+  ToggleDebuggerBreakpointArgs
+} from "src/contexts/DashContext/types";
 import type { Compilation } from "@truffle/compile-common";
 
 export interface ContextValue {
@@ -18,6 +21,7 @@ export interface ContextValue {
     updateAnalyticsConfig: (value: boolean) => void;
     setDebuggerSessionData: (value: SetDebuggerSessionDataArgs) => void;
     getCompilations: () => Promise<Compilation[]>;
+    toggleDebuggerBreakpoint: (value: ToggleDebuggerBreakpointArgs) => void;
   };
   dispatch?: React.Dispatch<Action>;
 }
