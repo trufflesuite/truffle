@@ -10,11 +10,17 @@ export type ActionType =
   | "set-analytics-config"
   | "handle-message"
   | "update-provider-message-sender"
-  | "set-debugger-session-data";
+  | "set-debugger-session-data"
+  | "toggle-debugger-breakpoint";
 
 export type SetDebuggerSessionDataArgs = {
   sources: Source[];
   session: Session;
+};
+
+export type ToggleDebuggerBreakpointArgs = {
+  line: number;
+  sourceId: string;
 };
 
 export interface BaseAction {
@@ -59,6 +65,14 @@ export interface UpdateProviderMessageSenderAction extends BaseAction {
   data: string;
 }
 
+export interface ToggleDebuggerBreakpointAction extends BaseAction {
+  type: "toggle-debugger-breakpoint";
+  data: {
+    line: number;
+    sourceId: string;
+  };
+}
+
 export type Action =
   | SetDecoderAction
   | SetChainInfoAction
@@ -66,4 +80,5 @@ export type Action =
   | SetAnalyticsConfigAction
   | HandleMessageAction
   | UpdateProviderMessageSenderAction
-  | SetDebuggerSessionDataAction;
+  | SetDebuggerSessionDataAction
+  | ToggleDebuggerBreakpointAction;
