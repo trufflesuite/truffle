@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { basename } from "path";
 import { Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
+import UnknownSource from "src/components/composed/Debugger/Sources/UnknownSource";
 import type {
   SourceRange,
   Session,
@@ -68,16 +69,13 @@ function Sources({
             scrollRef={scrollRef}
             source={source}
             sourceRange={currentSourceRange}
+            sourceId={currentSourceId}
           />
         </Tabs.Panel>
       ))}
       {unknownSources.map((source: SourceType) => (
         <Tabs.Panel key={source.id} value={source.id}>
-          <Source
-            scrollRef={undefined}
-            source={source}
-            sourceRange={currentSourceRange}
-          />
+          <UnknownSource sourceId={source.id} />
         </Tabs.Panel>
       ))}
     </Tabs>
