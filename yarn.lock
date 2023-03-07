@@ -14276,10 +14276,10 @@ functions-have-names@^1.2.2:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.2.tgz#98d93991c39da9361f8e50b337c4f6e41f120e21"
   integrity sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
 
-ganache@7.7.5:
-  version "7.7.5"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.7.5.tgz#e95f205c9d5d5483764cc1667a583d88d2c29ead"
-  integrity sha512-H8ybC7l9hhvor61uS4wvQ7UOYpgc4OcqZvFb3XGutPwbxQL4yYDoNjOumfUcq4JalYZF9ojzy95ss7lOvrw76w==
+ganache@7.7.6:
+  version "7.7.6"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.7.6.tgz#058d44ae6b743b66abec1d2b1731f988d9bb417c"
+  integrity sha512-1ba5CERykZijw1kIRGUKKPEUqTDU+sEMElYemAS42w1kunu+/3OS5v+eQsJQ+fCVMEmspploA7S9rEWBcyVsLg==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.10"
     "@types/bn.js" "^5.1.0"
