@@ -95,7 +95,7 @@ describe("Supported networks", function () {
       name: "mainnet",
       networkId: 1,
       chainId: 1,
-      fetchers: ["etherscan", "sourcify"]
+      fetchers: ["etherscan", "sourcify", "blockscout"]
     });
   });
 
@@ -285,6 +285,31 @@ describe("fetchAndCompileMultiple", function () {
       );
     }
   });
+});
+
+describe("blockscout fetchAndCompile", async function () {
+  // mainnet test blocked by bug in blockscout UI making it impossible to peruse verified contracts
+  // TODO uncomment once bug is fixed
+  // it("verifies contract from mainnet", async function () {
+  //   await runTestBody(
+  //   );
+  // });
+  it.only("verifies contract from zkevm goerli", async function () {
+    await runTestBody(
+      59140,
+      "0x52167ca84d9743CAF71A1aC176eeb177c18F3E37",
+      "blockscout",
+      "CryptoSchool"
+    );
+  }),
+    it("verifies contract from goerli", async function () {
+      await runTestBody(
+        5,
+        "0x462D3B18b63835f9a472693682514f57344DDEcb",
+        "blockscout",
+        "ConvertLib"
+      );
+    });
 });
 
 async function runTestBody(
