@@ -13,30 +13,47 @@ function Variables({
   session,
   currentStep
 }: VariablesArgs): JSX.Element | null {
-  const [variables, setVariables] = useState({});
+  const [output, setOutput] = useState(null as any);
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getVariables() {
+      const sections = session.view(
+        session.selectors.data.current.identifiers.sections
+      );
       const variables = await session!.variables();
-      setVariables(variables);
+      const entries = [];
+      for (const section in sections) {
+        const list: Array<any> = sections[section].map(
+          (variableName: keyof typeof variables) => {
+            if (variables)
+              return (
+                <>
+                  <dt>{variableName}</dt>
+                  <dd>
+                    {inspect(
+                      new Codec.Export.ResultInspector(variables[variableName])
+                    )}
+                  </dd>
+                </>
+              );
+          }
+        );
+        if (list.length > 0) {
+          entries.push(
+            <dl key={section}>
+              <h1>{section}</h1>
+              {...list}
+            </dl>
+          );
+        }
+      }
+
+      setOutput(entries);
     }
     getVariables();
   }, [currentStep, session]);
 
-  return (
-    <Container>
-      {Object.entries(variables).map(([name, result]) => {
-        return (
-          <div key={name}>
-            <>
-              {name} -{" "}
-              {inspect(new Codec.Export.ResultInspector(result as any))}
-            </>
-          </div>
-        );
-      })}
-    </Container>
-  );
+  return output ? <Container>{output}</Container> : null;
 }
 
 export default Variables;
