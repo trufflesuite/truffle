@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { basename } from "path";
 import { Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
@@ -41,12 +40,6 @@ function Sources({
       setCurrentSourceId(sessionSourceId);
     }
   }, [session, sessionUpdated, currentSourceRange.source.id, scrollRef]);
-  const unknownSources = unknownAddresses.map(address => ({
-    id: address,
-    sourcePath: "",
-    contents: `Could not locate source material for address ${address}.`,
-    language: ""
-  }));
   return (
     // @ts-ignore
     <Tabs value={currentSourceId} onTabChange={setCurrentSourceId}>
@@ -56,8 +49,8 @@ function Sources({
             {basename(source.sourcePath)}
           </Tabs.Tab>
         ))}
-        {unknownSources.map((source: SourceType) => (
-          <Tabs.Tab key={source.id} value={source.id}>
+        {unknownAddresses.map((address: string) => (
+          <Tabs.Tab key={address} value={address}>
             Unknown Contract
           </Tabs.Tab>
         ))}
@@ -73,9 +66,9 @@ function Sources({
           />
         </Tabs.Panel>
       ))}
-      {unknownSources.map((source: SourceType) => (
-        <Tabs.Panel key={source.id} value={source.id}>
-          <UnknownSource sourceId={source.id} />
+      {unknownAddresses.map((address: string) => (
+        <Tabs.Panel key={address} value={address}>
+          <UnknownSource address={address} />
         </Tabs.Panel>
       ))}
     </Tabs>
