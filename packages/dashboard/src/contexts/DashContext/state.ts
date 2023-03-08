@@ -15,6 +15,11 @@ import {
 import type { InteractiveRpcMethod } from "src/utils/constants";
 import type { State, Action, Schema } from "src/contexts/DashContext";
 
+type Breakpoint = {
+  line: number;
+  sourceId: string;
+};
+
 const DB_NAME = "TruffleDashboard";
 const DB_VERSION = 1;
 
@@ -73,12 +78,19 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, analyticsConfig: data };
     case "toggle-debugger-breakpoint":
       const { line, sourceId } = data;
+      const breakpointExists = state.debugger.breakpoints![sourceId].has(line);
       const newBreakpointStateForSource = new Set(
         state.debugger.breakpoints![sourceId]
       );
-      state.debugger.breakpoints![sourceId].has(line)
-        ? newBreakpointStateForSource.delete(line)
-        : newBreakpointStateForSource.add(line);
+      if (breakpointExists) {
+        // @ts-ignore
+        state.debugger.session!.removeBreakpoint({ line, sourceId });
+        newBreakpointStateForSource.delete(line);
+      } else {
+        // @ts-ignore
+        state.debugger.session!.addBreakpoint({ line, sourceId });
+        newBreakpointStateForSource.add(line);
+      }
       return {
         ...state,
         debugger: {
