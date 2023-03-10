@@ -32,6 +32,7 @@
   "files": [
     "dist/src/",
     "src/",
+    "assets/",
     "LICENSE",
     "README.md"
   ],
