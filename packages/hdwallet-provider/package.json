@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.7",
+  "version": "2.1.8",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

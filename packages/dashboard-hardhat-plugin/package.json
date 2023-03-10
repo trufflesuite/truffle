@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-hardhat-plugin",
-  "version": "0.1.0-0",
+  "version": "0.1.0",
   "description": "Truffle Dashboard for Hardhat plugin",
   "repository": "github:trufflesuite/dashboard-hardhat-plugin",
   "author": "ConsenSys Software Inc",
@@ -50,6 +50,6 @@
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-client": "^0.1.10",
-    "@truffle/from-hardhat": "^0.2.2"
+    "@truffle/from-hardhat": "^0.2.4"
   }
 }
