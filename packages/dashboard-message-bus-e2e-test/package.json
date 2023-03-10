@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@ganache/ethereum": "^0.1.5",
-    "@truffle/dashboard": "^0.3.13",
+    "@truffle/dashboard": "^0.3.12",
     "@truffle/dashboard-message-bus": "^0.1.10",
     "@truffle/dashboard-message-bus-client": "^0.1.10",
     "@truffle/dashboard-message-bus-common": "^0.1.5",
