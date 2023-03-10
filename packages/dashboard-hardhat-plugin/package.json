@@ -51,5 +51,9 @@
   "dependencies": {
     "@truffle/dashboard-message-bus-client": "^0.1.10",
     "@truffle/from-hardhat": "^0.2.4"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "a75816b8744eb4bb390866b45b4b7843c630abe3"
 }
