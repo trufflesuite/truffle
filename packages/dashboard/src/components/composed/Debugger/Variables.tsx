@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session } from "src/utils/debugger";
 import inspect from "browser-util-inspect";
-import { Container } from "@mantine/core";
 import * as Codec from "@truffle/codec";
 
 type VariablesArgs = {
@@ -13,7 +12,7 @@ function Variables({
   session,
   currentStep
 }: VariablesArgs): JSX.Element | null {
-  const [output, setOutput] = useState(null as any);
+  const [output, setOutput] = useState<JSX.Element[] | null>(null);
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getVariables() {
@@ -22,8 +21,10 @@ function Variables({
       );
       const variables = await session!.variables();
       const entries = [];
+      // section here is a variable category such as a Solidity built-in
+      // or contract variable
       for (const section in sections) {
-        const list: Array<any> = sections[section].map(
+        const variableValues: Array<JSX.Element> = sections[section].map(
           (variableName: keyof typeof variables) => {
             if (variables)
               return (
@@ -38,11 +39,11 @@ function Variables({
               );
           }
         );
-        if (list.length > 0) {
+        if (variableValues.length > 0) {
           entries.push(
             <dl key={section}>
-              <h1>{section}</h1>
-              {...list}
+              <h2>{section}</h2>
+              {...variableValues}
             </dl>
           );
         }
@@ -53,7 +54,9 @@ function Variables({
     getVariables();
   }, [currentStep, session]);
 
-  return output ? <Container>{output}</Container> : null;
+  return output ? (
+    <pre className="truffle-debugger-variables">{output}</pre>
+  ) : null;
 }
 
 export default Variables;
