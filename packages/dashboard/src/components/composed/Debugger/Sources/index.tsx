@@ -35,11 +35,14 @@ function Sources({
       // @ts-ignore
       scrollRef.current.scrollIntoView();
     }
+  }, [scrollRef, session]);
+
+  useEffect(() => {
     const sessionSourceId = currentSourceRange.source.id;
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
     }
-  }, [session, sessionUpdated, currentSourceRange.source.id, scrollRef]);
+  }, [session, sessionUpdated, currentSourceRange.source.id]);
   return (
     // @ts-ignore
     <Tabs value={currentSourceId} onTabChange={setCurrentSourceId}>
@@ -57,7 +60,11 @@ function Sources({
       </Tabs.List>
 
       {sources.map((source: SourceType) => (
-        <Tabs.Panel key={source.id} value={source.id}>
+        <Tabs.Panel
+          key={source.id}
+          value={source.id}
+          className="truffle-debugger-sources"
+        >
           <Source
             scrollRef={scrollRef}
             source={source}
