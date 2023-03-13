@@ -33,7 +33,7 @@ function Sources({
   useEffect(() => {
     if (scrollRef?.current) {
       // @ts-ignore
-      scrollRef.current.scrollIntoView();
+      scrollRef.current.scrollIntoView({ block: "center" });
     }
   }, [scrollRef, session]);
 
