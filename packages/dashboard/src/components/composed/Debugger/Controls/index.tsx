@@ -13,14 +13,15 @@ import ControlButton from "src/components/composed/Debugger/Controls/ControlButt
 import type { Session } from "src/utils/debugger";
 
 interface ControlsProps {
-  session: Session;
+  session: Session | null;
   stepEffect: () => void;
 }
 
 function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   const [stepping, setStepping] = useState(false);
-  const atStart = session.view($.trace.index) === 0;
-  const atEnd = session.view($.trace.finished);
+  const atStart = session?.view($.trace.index) === 0;
+  const atEnd = session?.view($.trace.finished);
+  const disabled = atEnd || !session;
 
   const status = stepping
     ? "stepping..."
@@ -37,40 +38,46 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   };
 
   return (
-    <Group>
+    <Group className="truffle-debugger-controls">
       <ControlButton
         {...controlButtonProps}
         icon={Play}
+        // @ts-ignore
         step={() => session.continueUntilBreakpoint()}
-        disabled={atEnd}
+        disabled={disabled}
       />
       <ControlButton
         {...controlButtonProps}
         icon={SkipForward}
+        // @ts-ignore
         step={() => session.stepNext()}
-        disabled={atEnd}
+        disabled={disabled}
       />
       <ControlButton
         {...controlButtonProps}
         icon={FastForward}
+        // @ts-ignore
         step={() => session.stepOver()}
-        disabled={atEnd}
+        disabled={disabled}
       />
       <ControlButton
         {...controlButtonProps}
         icon={Download}
+        // @ts-ignore
         step={() => session.stepInto()}
-        disabled={atEnd}
+        disabled={disabled}
       />
       <ControlButton
         {...controlButtonProps}
         icon={Upload}
+        // @ts-ignore
         step={() => session.stepOut()}
-        disabled={atEnd}
+        disabled={disabled}
       />
       <ControlButton
         {...controlButtonProps}
         icon={RotateCcw}
+        // @ts-ignore
         step={() => session.reset()}
         disabled={atStart}
       />
