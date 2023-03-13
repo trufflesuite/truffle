@@ -15,11 +15,6 @@ import {
 import type { InteractiveRpcMethod } from "src/utils/constants";
 import type { State, Action, Schema } from "src/contexts/DashContext";
 
-type Breakpoint = {
-  line: number;
-  sourceId: string;
-};
-
 const DB_NAME = "TruffleDashboard";
 const DB_VERSION = 1;
 
