@@ -36,7 +36,7 @@ function Source({
   const lineNumberGutterWidth = finishedLines.length.toString().length;
 
   return (
-    <pre>
+    <pre className="truffle-debugger-source">
       {finishedLines.map((line, index) => {
         const key = `${source.id}-line-${index}`;
         const selected =

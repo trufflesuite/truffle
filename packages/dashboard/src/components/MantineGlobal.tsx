@@ -42,10 +42,51 @@ function MantineGlobal(): JSX.Element {
             [`${truffleBgColorSelectors}, ${truffleOffBgColorSelectors}`]: {
               transition: "background-color 0.1s"
             },
+            ".trfl-AppShell-main": {
+              width: "auto"
+            },
             // class for highlighting source material in debugger
             ".truffle-debugger-text-highlighted": {
               backgroundColor:
                 theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
+            },
+            ".truffle-debugger": {
+              height: "100vh",
+              overflowY: "hidden"
+            },
+            ".truffle-debugger-input": {
+              display: "flex",
+              backgroundColor: "#1A1B1E"
+            },
+            ".truffle-debugger-input-group": {
+              display: "flex",
+              flexGrow: 1
+            },
+            ".trfl-Input-wrapper": {
+              flexGrow: 1
+            },
+            ".trfl-Tabs-root": {
+              overflow: "hidden",
+              height: "calc(100vh - 72px)",
+              paddingTop: 36,
+              zIndex: 1
+            },
+            ".trfl-Tabs-list": {
+              position: "fixed",
+              top: 36,
+              backgroundColor: "#1A1B1E",
+              width: "100%"
+            },
+            ".truffle-debugger-sources-variables": {
+              display: "flex"
+            },
+            ".truffle-debugger-sources": {
+              height: "100%",
+              overflow: "scroll"
+            },
+            ".truffle-debugger-source": {},
+            ".truffle-debugger-variables": {
+              overflowY: "scroll"
             },
             ".mantine-Alert-icon": {
               "width": 28,
