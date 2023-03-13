@@ -30,10 +30,12 @@ function Debugger(): JSX.Element {
   const initDebugger = async () => {
     const compilations = await operations.getCompilations();
     const testTxHash =
-      "0x8d093f67b6501ff576f259a683ac3ac0a0adb3280b66e272ebbaf691242d99b1";
-    // "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389";
+      // "0xf5ad7387297428dd152997aab72c190954bcce692daf022bb63ab9aa5f199c33"; // cross contract goerli text tx hash (link verified)
+      // "0xfb09532437064597ac2a07f62440dd45e3806d6299e4fc86da6231ab2856f021"; // cross contract goerli test tx hash (dai unverified)
+      // "0x8d093f67b6501ff576f259a683ac3ac0a0adb3280b66e272ebbaf691242d99b1";
+      "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389"; //goerli tx
     // "0x2650974eb6390dc787df16ab86308822855f907e7463107248cfd5e424923176"
-
+    // "0xab2cba8e3e57a173a125d3f77a9a0a485809b8a7098b540a13593631909ccf00"; //dai tx
     const provider = window.ethereum;
     if (!provider) {
       throw new Error(
@@ -68,15 +70,16 @@ function Debugger(): JSX.Element {
   if (session && sources && currentSourceRange) {
     content = (
       <>
-        <Controls session={session} stepEffect={sessionTick} />
-        <Sources
-          sources={sources}
-          unknownAddresses={unknownAddresses}
-          session={session}
-          sessionUpdated={sessionUpdated}
-          currentSourceRange={currentSourceRange}
-        />
-        <Variables currentStep={currentStep} session={session} />
+        <div className="truffle-debugger-sources-variables">
+          <Sources
+            sources={sources}
+            unknownAddresses={unknownAddresses}
+            session={session}
+            sessionUpdated={sessionUpdated}
+            currentSourceRange={currentSourceRange}
+          />
+          <Variables currentStep={currentStep} session={session} />
+        </div>
       </>
     );
   } else {
@@ -84,20 +87,25 @@ function Debugger(): JSX.Element {
   }
 
   return (
-    <>
-      <Input
-        value={inputValue}
-        onChange={setInputValue}
-        disabled={inputsDisabled}
-        type="text"
-        placeholder="Transaction hash"
-      />
-      <Button onClick={initDebugger} disabled={formDisabled}>
-        Debug
-      </Button>
+    <div className="truffle-debugger">
+      <div className="truffle-debugger-input">
+        <Controls session={session} stepEffect={sessionTick} />
+        <div className="truffle-debugger-input-group">
+          <Input
+            value={inputValue}
+            onChange={setInputValue}
+            disabled={inputsDisabled}
+            type="text"
+            placeholder="Transaction hash"
+          />
+          <Button onClick={initDebugger} disabled={formDisabled}>
+            Debug
+          </Button>
+        </div>
+      </div>
 
       {content}
-    </>
+    </div>
   );
 }
 
