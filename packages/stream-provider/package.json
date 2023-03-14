@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test:ts": "mocha -r ts-node/register test/*.ts",
+    "test:ts": "NODE_OPTIONS=--max-old-space-size=4096 mocha -r ts-node/register test/*.ts",
     "test": "yarn test:ts"
   },
   "types": "dist/index.d.ts",
