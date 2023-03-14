@@ -11,6 +11,7 @@ const {
 } = require("./commands/commands");
 const Web3 = require("web3");
 const TruffleError = require("@truffle/error");
+const { StreamingWeb3HttpProvider } = require("@truffle/stream-provider");
 
 const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
@@ -397,7 +398,7 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
     configuredNetwork = {
       network_id: customConfig.network_id || defaultNetworkId,
       provider: function () {
-        return new Web3.providers.HttpProvider(configuredNetworkUrl, {
+        return new StreamingWeb3HttpProvider(configuredNetworkUrl, {
           keepAlive: false
         });
       },

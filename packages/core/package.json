@@ -54,6 +54,7 @@
     "@truffle/source-fetcher": "^1.0.30",
     "@truffle/spinners": "^0.2.3",
     "@truffle/test": "^0.1.15",
+    "@truffle/stream-provider": "^0.0.1",
     "@truffle/workflow-compile": "^4.0.54",
     "JSONStream": "^1.3.5",
     "address": "^1.1.2",

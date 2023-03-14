@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es2016",
+    "downlevelIteration": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": [
+      "es2017"
+    ],
+    "paths": {},
+    "rootDir": "lib",
+    "types": [
+      "mocha",
+      "node"
+    ]
+  },
+  "include": [
+    "./lib/**/*.ts"
+  ]
+}
