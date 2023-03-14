@@ -1,6 +1,6 @@
 import assert from "assert";
 import http, { Server, ServerResponse } from "http";
-import StreamingWeb3HttpProvider from "../lib/";
+import { StreamingWeb3HttpProvider } from "../lib/";
 
 describe("test", () => {
   const PORT = 9451;
@@ -40,7 +40,8 @@ describe("test", () => {
   afterEach(async () => {
     server && server.close();
   });
-  (it("handle giant traces", async () => {
+  it("handles giant traces", async function () {
+    this.timeout(0);
     const provider = new StreamingWeb3HttpProvider(`http://localhost:${PORT}`);
     const { result } = await new Promise<any>((resolve, reject) => {
       provider.send(
@@ -60,5 +61,5 @@ describe("test", () => {
     result.structLogs.forEach((log: Buffer) => {
       assert.strictEqual(log.length, SIZE);
     });
-  }) as any).timeout(0);
+  });
 });

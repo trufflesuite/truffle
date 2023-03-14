@@ -3,7 +3,7 @@ const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
-const StreamingWeb3HttpProvider = require("@truffle/stream-provider").default;
+const { StreamingWeb3HttpProvider } = require("@truffle/stream-provider");
 
 module.exports = {
   wrap: function (provider, options) {

@@ -5,9 +5,9 @@ import _Web3HttpProvider, { HttpProvider } from "web3-providers-http";
 const JSONStream = require("JSONStream");
 
 // they export types, but in the wrong place
-const Web3HttpProvider = (_Web3HttpProvider as any) as typeof HttpProvider;
+const Web3HttpProvider = _Web3HttpProvider as any as typeof HttpProvider;
 
-export default class StreamingWeb3HttpProvider extends Web3HttpProvider {
+export class StreamingWeb3HttpProvider extends Web3HttpProvider {
   /**
    * Should be used to make async request
    *
