@@ -88,7 +88,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "clover": "api.clvscan.com",
       "boba": "api.bobascan.com",
       "goerli-boba": "api-testnet.bobascan.com",
-      "gnosis": "api.gnosisscan.io"
+      "gnosis": "api.gnosisscan.io",
+      //etherscan does *not* support base mainnet?
+      "goerli-base": "api-goerli.basescan.org"
     };
 
   constructor(networkId: number, apiKey: string = "") {
