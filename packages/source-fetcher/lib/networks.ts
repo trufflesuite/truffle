@@ -94,7 +94,10 @@ export const networkNamesById: { [id: number]: string } = {
   14: "flare",
   19: "songbird-flare",
   2048: "stratos", //not presently supported by either fetcher, but...
-  2047: "testnet-stratos"
+  2047: "testnet-stratos",
+  8453: "base", //not presently supported by either fetcher, but...
+  84531: "goerli-base",
+  641230: "bear"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };

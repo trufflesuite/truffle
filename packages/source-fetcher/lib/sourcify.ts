@@ -121,7 +121,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "flare",
     "songbird-flare",
     //sourcify does *not* support stratos mainnet?
-    "testnet-stratos"
+    "testnet-stratos",
+    //sourcify does *not* support base mainnet?
+    "goerli-base",
+    "bear"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
