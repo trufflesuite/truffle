@@ -4,6 +4,7 @@ import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
 import Variables from "src/components/composed/Debugger/Variables";
+import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import { setupSession, SessionStatus } from "src/utils/debugger";
 import { useDash } from "src/hooks";
 import { getCurrentSourceRange } from "src/utils/debugger";
@@ -69,18 +70,19 @@ function Debugger(): JSX.Element {
   let content;
   if (session && sources && currentSourceRange) {
     content = (
-      <>
-        <div className="truffle-debugger-sources-variables">
-          <Sources
-            sources={sources}
-            unknownAddresses={unknownAddresses}
-            session={session}
-            sessionUpdated={sessionUpdated}
-            currentSourceRange={currentSourceRange}
-          />
+      <div className="truffle-debugger-sources-variables">
+        <Sources
+          sources={sources}
+          unknownAddresses={unknownAddresses}
+          session={session}
+          sessionUpdated={sessionUpdated}
+          currentSourceRange={currentSourceRange}
+        />
+        <div className="truffle-debugger-variables-breakpoints">
           <Variables currentStep={currentStep} session={session} />
+          <Breakpoints sources={sources} />
         </div>
-      </>
+      </div>
     );
   } else {
     content = status;
