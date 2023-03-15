@@ -69,7 +69,8 @@ function MantineGlobal(): JSX.Element {
               overflow: "hidden",
               height: "calc(100vh - 72px)",
               paddingTop: 36,
-              zIndex: 1
+              zIndex: 1,
+              width: "65%"
             },
             ".trfl-Tabs-list": {
               position: "fixed",
@@ -85,6 +86,11 @@ function MantineGlobal(): JSX.Element {
               overflow: "scroll"
             },
             ".truffle-debugger-source": {},
+            ".truffle-debugger-variables-breakpoints": {
+              display: "flex",
+              flexDirection: "column",
+              width: "35%"
+            },
             ".truffle-debugger-variables": {
               overflowY: "scroll"
             },
