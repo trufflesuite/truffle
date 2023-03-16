@@ -39,7 +39,7 @@ export const initialState: State = {
   debugger: {
     sources: null,
     session: null,
-    breakpoints: null
+    breakpoints: {}
   },
   decoder: null,
   decoderCompilations: null,

@@ -8,6 +8,7 @@ import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import { setupSession, SessionStatus } from "src/utils/debugger";
 import { useDash } from "src/hooks";
 import { getCurrentSourceRange } from "src/utils/debugger";
+import type { SourceRange } from "src/utils/debugger";
 
 function Debugger(): JSX.Element {
   const [inputValue, setInputValue] = useInputState("");
@@ -20,6 +21,10 @@ function Debugger(): JSX.Element {
   } = useDash()!;
   const [status, setStatus] = useState<SessionStatus>();
   const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
+  const [manualSourceRange, setManualSourceRange] = useState<{
+    set: boolean;
+    sourceRange: SourceRange | null;
+  }>({ set: false, sourceRange: null });
   const inputsDisabled =
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
@@ -28,6 +33,14 @@ function Debugger(): JSX.Element {
     // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
     inputsDisabled;
 
+  const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
+
+  const handleBreakpointComponentClick = (sourceRange: SourceRange) => {
+    setManualSourceRange({
+      set: true,
+      sourceRange
+    });
+  };
   const initDebugger = async () => {
     const compilations = await operations.getCompilations();
     const testTxHash =
@@ -62,7 +75,13 @@ function Debugger(): JSX.Element {
   };
 
   let currentSourceRange, currentStep;
-  if (session) {
+  if (manualSourceRange.set && session) {
+    currentSourceRange = manualSourceRange.sourceRange;
+    setManualSourceRange({
+      set: false,
+      sourceRange: manualSourceRange.sourceRange
+    });
+  } else if (session) {
     currentSourceRange = getCurrentSourceRange(session);
     currentStep = session.view(session.selectors.trace.index);
   }
@@ -77,10 +96,15 @@ function Debugger(): JSX.Element {
           session={session}
           sessionUpdated={sessionUpdated}
           currentSourceRange={currentSourceRange}
+          currentSourceId={currentSourceId}
+          setCurrentSourceId={setCurrentSourceId}
         />
         <div className="truffle-debugger-variables-breakpoints">
           <Variables currentStep={currentStep} session={session} />
-          <Breakpoints sources={sources} />
+          <Breakpoints
+            sources={sources}
+            handleBreakpointComponentClick={handleBreakpointComponentClick}
+          />
         </div>
       </div>
     );
