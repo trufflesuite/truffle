@@ -19,7 +19,7 @@ export interface State {
   debugger: {
     sources: Source[] | null;
     session: Session | null;
-    breakpoints: BreakpointState | null;
+    breakpoints: BreakpointState;
   };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
