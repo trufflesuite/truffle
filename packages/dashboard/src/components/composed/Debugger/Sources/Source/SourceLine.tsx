@@ -45,7 +45,11 @@ function SourceLine({
     "  " +
     "</span>";
 
-  if (breakpoints && breakpoints[sourceId].has(lineNumber)) {
+  if (
+    breakpoints &&
+    breakpoints[sourceId] &&
+    breakpoints[sourceId].has(lineNumber)
+  ) {
     lineNumberDisplay = lineNumberDisplay.replace(
       `${lineNumber.toString()} `,
       `${lineNumber}*`
