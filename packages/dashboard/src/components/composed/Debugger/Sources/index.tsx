@@ -15,6 +15,8 @@ interface SourcesProps {
   sources: SourceType[];
   currentSourceRange: SourceRange;
   unknownAddresses: string[];
+  currentSourceId: string | null;
+  setCurrentSourceId: (sourceId: string) => void;
 }
 
 function Sources({
@@ -22,13 +24,20 @@ function Sources({
   session,
   sessionUpdated,
   currentSourceRange,
-  unknownAddresses
+  unknownAddresses,
+  currentSourceId,
+  setCurrentSourceId
 }: SourcesProps): JSX.Element {
-  const sourceIds = sources.map(({ id }) => id);
-  const [currentSourceId, setCurrentSourceId] = useState(sourceIds[0]);
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
   const scrollRef = React.createRef();
+
+  useEffect(() => {
+    if (currentSourceId === null) {
+      const sourceIds = sources.map(({ id }) => id);
+      setCurrentSourceId(sourceIds[0]);
+    }
+  });
 
   useEffect(() => {
     if (scrollRef?.current) {
@@ -43,6 +52,30 @@ function Sources({
       setCurrentSourceId(sessionSourceId);
     }
   }, [session, sessionUpdated, currentSourceRange.source.id]);
+
+  let sourcesContent, unknownSourcesContent;
+  if (currentSourceId !== null) {
+    sourcesContent = sources.map((source: SourceType) => (
+      <Tabs.Panel
+        key={source.id}
+        value={source.id}
+        className="truffle-debugger-sources"
+      >
+        <Source
+          scrollRef={scrollRef}
+          source={source}
+          sourceRange={currentSourceRange}
+          sourceId={currentSourceId}
+        />
+      </Tabs.Panel>
+    ));
+    unknownSourcesContent = unknownAddresses.map((address: string) => (
+      <Tabs.Panel key={address} value={address}>
+        <UnknownSource address={address} />
+      </Tabs.Panel>
+    ));
+  }
+
   return (
     // @ts-ignore
     <Tabs value={currentSourceId} onTabChange={setCurrentSourceId}>
@@ -58,26 +91,8 @@ function Sources({
           </Tabs.Tab>
         ))}
       </Tabs.List>
-
-      {sources.map((source: SourceType) => (
-        <Tabs.Panel
-          key={source.id}
-          value={source.id}
-          className="truffle-debugger-sources"
-        >
-          <Source
-            scrollRef={scrollRef}
-            source={source}
-            sourceRange={currentSourceRange}
-            sourceId={currentSourceId}
-          />
-        </Tabs.Panel>
-      ))}
-      {unknownAddresses.map((address: string) => (
-        <Tabs.Panel key={address} value={address}>
-          <UnknownSource address={address} />
-        </Tabs.Panel>
-      ))}
+      {sourcesContent}
+      {unknownSourcesContent}
     </Tabs>
   );
 }
