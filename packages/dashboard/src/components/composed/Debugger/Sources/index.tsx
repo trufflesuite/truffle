@@ -52,6 +52,13 @@ function Sources({
   }, [sources, currentSourceId, setCurrentSourceId]);
 
   useEffect(() => {
+    if (currentSourceId === null) {
+      const sourceIds = sources.map(({ id }) => id);
+      setCurrentSourceId(sourceIds[0]);
+    }
+  });
+
+  useEffect(() => {
     if (scrollRef?.current) {
       // @ts-ignore
       scrollRef.current.scrollIntoView({ block: "center" });
