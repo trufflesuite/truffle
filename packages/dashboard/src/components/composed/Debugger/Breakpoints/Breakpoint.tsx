@@ -1,9 +1,9 @@
-import type { SourceRange } from "src/utils/debugger";
+import type { BreakpointType } from "src/utils/debugger";
 type BreakpointProps = {
   sourceName: string;
   line: number;
   sourceId: string;
-  handleBreakpointComponentClick: (sourceRange: SourceRange) => void;
+  handleBreakpointComponentClick: (arg: BreakpointType) => void;
 };
 
 function Breakpoint({
@@ -17,17 +17,8 @@ function Breakpoint({
       className="truffle-debugger-breakpoint"
       onClick={() =>
         handleBreakpointComponentClick({
-          start: {
-            line,
-            column: 0
-          },
-          end: {
-            line,
-            column: 0
-          },
-          // I don't know what trace index is but we don't need it for this
-          traceIndex: 1,
-          source: { id: sourceId }
+          sourceId,
+          line: line.toString()
         })
       }
     >
