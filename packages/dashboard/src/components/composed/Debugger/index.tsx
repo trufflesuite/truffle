@@ -37,15 +37,16 @@ function Debugger(): JSX.Element {
     currentStep = session.view(session.selectors.trace.index);
   }
 
-  const scrollToLineForSource = ({
+  const scrollToLine = ({
     sourceId,
     line
   }: {
     sourceId: string;
     line: number;
   }) => {
+    const lineNumber = line + 1;
     const scrollTarget = document.getElementsByClassName(
-      `${sourceId.slice(-10)}-${line + 1}`
+      `${sourceId.slice(-10)}-${lineNumber}`
     );
     if (scrollTarget[0]) {
       scrollTarget[0].scrollIntoView({ block: "center" });
@@ -55,7 +56,7 @@ function Debugger(): JSX.Element {
   useEffect(() => {
     if (currentSourceRange) {
       const { source, start } = currentSourceRange!;
-      scrollToLineForSource({ sourceId: source.id, line: start.line });
+      scrollToLine({ sourceId: source.id, line: start.line });
     }
   }, [currentSourceRange]);
 
@@ -65,7 +66,7 @@ function Debugger(): JSX.Element {
   }: BreakpointType) => {
     setCurrentSourceId(sourceId);
     // @ts-ignore
-    scrollToLineForSource({ sourceId, line });
+    scrollToLine({ sourceId, line });
   };
 
   let content;
