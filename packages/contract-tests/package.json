@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.126",
+  "version": "0.1.127",
   "scripts": {
     "prepare": "exit 0",
     "test": "./scripts/test.sh",
@@ -21,9 +21,9 @@
     "test:trace": "$(yarn bin)/mocha --trace-warnings"
   },
   "devDependencies": {
-    "@truffle/blockchain-utils": "^0.1.6",
-    "@truffle/compile-solidity": "^6.0.63",
-    "@truffle/contract": "^4.6.17",
+    "@truffle/blockchain-utils": "^0.1.7",
+    "@truffle/compile-solidity": "^6.0.64",
+    "@truffle/contract": "^4.6.18",
     "bignumber.js": "^7.2.1",
     "chai": "^4.2.0",
     "debug": "^4.3.1",

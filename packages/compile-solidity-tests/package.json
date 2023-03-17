@@ -13,7 +13,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "private": true,
-  "version": "0.1.22",
+  "version": "0.1.23",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -21,10 +21,10 @@
     "test": "./scripts/test.sh"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.185",
-    "@truffle/compile-solidity": "^6.0.63",
-    "@truffle/config": "^1.3.53",
-    "@truffle/resolver": "^9.0.36",
+    "@truffle/artifactor": "^4.0.186",
+    "@truffle/compile-solidity": "^6.0.64",
+    "@truffle/config": "^1.3.54",
+    "@truffle/resolver": "^9.0.37",
     "@types/node": "12.12.21",
     "@types/sinon": "^9.0.10",
     "babel-core": "^6.26.0",

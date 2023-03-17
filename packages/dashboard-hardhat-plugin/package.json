@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-hardhat-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Truffle Dashboard for Hardhat plugin",
   "repository": {
     "type": "git",
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-client": "^0.1.10",
-    "@truffle/from-hardhat": "^0.2.4"
+    "@truffle/from-hardhat": "^0.2.5"
   },
   "publishConfig": {
     "access": "public"
