@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { basename } from "path";
-import React from "react";
 import { createStyles, Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
 import UnknownSource from "src/components/composed/Debugger/Sources/UnknownSource";
@@ -41,7 +40,6 @@ function Sources({
   const { classes } = useStyles();
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
-  const scrollRef = React.createRef();
 
   // initialize sources after we get all of them
   useEffect(() => {
@@ -57,13 +55,6 @@ function Sources({
       setCurrentSourceId(sourceIds[0]);
     }
   });
-
-  useEffect(() => {
-    if (scrollRef?.current) {
-      // @ts-ignore
-      scrollRef.current.scrollIntoView({ block: "center" });
-    }
-  }, [scrollRef, session]);
 
   useEffect(() => {
     const sessionSourceId = currentSourceRange.source.id;
