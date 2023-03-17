@@ -44,8 +44,9 @@ function Debugger(): JSX.Element {
     sourceId: string;
     line: number;
   }) => {
+    const lineNumber = line + 1;
     const scrollTarget = document.getElementsByClassName(
-      `${sourceId.slice(-10)}-${line + 1}`
+      `${sourceId.slice(-10)}-${lineNumber}`
     );
     if (scrollTarget[0]) {
       scrollTarget[0].scrollIntoView({ block: "center" });
