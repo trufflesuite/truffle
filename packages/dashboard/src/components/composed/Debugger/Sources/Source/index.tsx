@@ -9,16 +9,10 @@ import type { Source as SourceType, SourceRange } from "src/utils/debugger";
 interface SourceProps {
   source: SourceType;
   sourceRange: SourceRange;
-  scrollRef: any;
   sourceId: string;
 }
 
-function Source({
-  source,
-  sourceRange,
-  scrollRef,
-  sourceId
-}: SourceProps): JSX.Element {
+function Source({ source, sourceRange, sourceId }: SourceProps): JSX.Element {
   // add comment markers for where spans will go later designating debugger
   // highlighting - comments so lowlight doesn't choke on html
   const sourceWithHighlightedMarkings = addTextHighlightedClass(
@@ -55,8 +49,7 @@ function Source({
           lineNumberGutterWidth,
           lastLine: index === finishedLines.length - 1,
           firstHighlightedLine,
-          sourceId,
-          scrollRef
+          sourceId
         };
 
         return <SourceLine {...props} />;

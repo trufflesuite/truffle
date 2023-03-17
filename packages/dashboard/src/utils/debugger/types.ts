@@ -2,6 +2,11 @@ import type * as Codec from "@truffle/codec";
 
 export type Selector = any;
 
+export type BreakpointType = {
+  sourceId: string;
+  line: string;
+};
+
 export interface Source {
   id: string;
   sourcePath: string;

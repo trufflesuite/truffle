@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { basename } from "path";
 import { Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
@@ -30,7 +30,6 @@ function Sources({
 }: SourcesProps): JSX.Element {
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
-  const scrollRef = React.createRef();
 
   useEffect(() => {
     if (currentSourceId === null) {
@@ -38,13 +37,6 @@ function Sources({
       setCurrentSourceId(sourceIds[0]);
     }
   });
-
-  useEffect(() => {
-    if (scrollRef?.current) {
-      // @ts-ignore
-      scrollRef.current.scrollIntoView({ block: "center" });
-    }
-  }, [scrollRef, session]);
 
   useEffect(() => {
     const sessionSourceId = currentSourceRange.source.id;
@@ -62,7 +54,6 @@ function Sources({
         className="truffle-debugger-sources"
       >
         <Source
-          scrollRef={scrollRef}
           source={source}
           sourceRange={currentSourceRange}
           sourceId={currentSourceId}
