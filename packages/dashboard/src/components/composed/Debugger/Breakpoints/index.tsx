@@ -1,12 +1,12 @@
 import { Source } from "src/utils/debugger";
 import { useDash } from "src/hooks";
 import * as path from "path";
+import { BreakpointType } from "src/utils/debugger";
 import Breakpoint from "src/components/composed/Debugger/Breakpoints/Breakpoint";
-import type { SourceRange } from "src/utils/debugger";
 
 type BreakpointsArgs = {
   sources: Source[];
-  handleBreakpointComponentClick: (sourceRange: SourceRange) => void;
+  handleBreakpointComponentClick: (breakpoint: BreakpointType) => void;
 };
 
 function Breakpoints({
