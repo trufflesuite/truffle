@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input, Button } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
@@ -8,7 +8,7 @@ import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import { initDebugger, SessionStatus } from "src/utils/debugger";
 import { useDash } from "src/hooks";
 import { getCurrentSourceRange } from "src/utils/debugger";
-import type { SourceRange } from "src/utils/debugger";
+import type { BreakpointType, SourceRange } from "src/utils/debugger";
 
 function Debugger(): JSX.Element {
   const [inputValue, setInputValue] = useInputState("");
@@ -21,10 +21,6 @@ function Debugger(): JSX.Element {
   } = useDash()!;
   const [status, setStatus] = useState<SessionStatus>();
   const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
-  const [manualSourceRange, setManualSourceRange] = useState<{
-    set: boolean;
-    sourceRange: SourceRange | null;
-  }>({ set: false, sourceRange: null });
   const inputsDisabled =
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
@@ -35,23 +31,41 @@ function Debugger(): JSX.Element {
 
   const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
 
-  let currentSourceRange, currentStep;
-  if (manualSourceRange.set && session) {
-    currentSourceRange = manualSourceRange.sourceRange;
-    setManualSourceRange({
-      set: false,
-      sourceRange: manualSourceRange.sourceRange
-    });
-  } else if (session) {
+  let currentSourceRange: SourceRange | undefined, currentStep;
+  if (session) {
     currentSourceRange = getCurrentSourceRange(session);
     currentStep = session.view(session.selectors.trace.index);
   }
 
-  const handleBreakpointComponentClick = (sourceRange: SourceRange) => {
-    setManualSourceRange({
-      set: true,
-      sourceRange
-    });
+  const scrollToLineForSource = ({
+    sourceId,
+    line
+  }: {
+    sourceId: string;
+    line: number;
+  }) => {
+    const scrollTarget = document.getElementsByClassName(
+      `${sourceId.slice(-10)}-${line + 1}`
+    );
+    if (scrollTarget[0]) {
+      scrollTarget[0].scrollIntoView({ block: "center" });
+    }
+  };
+
+  useEffect(() => {
+    if (currentSourceRange) {
+      const { source, start } = currentSourceRange!;
+      scrollToLineForSource({ sourceId: source.id, line: start.line });
+    }
+  }, [currentSourceRange]);
+
+  const handleBreakpointComponentClick = ({
+    sourceId,
+    line
+  }: BreakpointType) => {
+    setCurrentSourceId(sourceId);
+    // @ts-ignore
+    scrollToLineForSource({ sourceId, line });
   };
 
   let content;

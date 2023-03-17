@@ -15,7 +15,6 @@ interface SourceLineProps {
   lineNumber: number;
   lineNumberGutterWidth: number;
   lastLine: boolean;
-  scrollRef: any;
   firstHighlightedLine: boolean;
   sourceId: string;
 }
@@ -25,8 +24,6 @@ function SourceLine({
   lineNumber,
   lineNumberGutterWidth,
   lastLine,
-  scrollRef,
-  firstHighlightedLine,
   sourceId
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
@@ -43,7 +40,7 @@ function SourceLine({
     " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
     lineNumber +
     "  " +
-    "</span>";
+    `</span>`;
 
   if (
     breakpoints &&
@@ -65,14 +62,10 @@ function SourceLine({
     toggleDebuggerBreakpoint({ line, sourceId });
   }).bind(undefined, { line: lineNumber, sourceId });
 
-  return firstHighlightedLine ? (
+  const lineClassName = `${sourceId.slice(-10)}-${lineNumber}`;
+  return (
     <div
-      onClick={handleClick}
-      dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
-      ref={scrollRef}
-    />
-  ) : (
-    <div
+      className={lineClassName}
       onClick={handleClick}
       dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
     />
