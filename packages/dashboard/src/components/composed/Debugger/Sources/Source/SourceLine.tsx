@@ -52,15 +52,9 @@ function SourceLine({
       `${lineNumber}*`
     );
   }
-  const handleClick = (({
-    line,
-    sourceId
-  }: {
-    line: number;
-    sourceId: string;
-  }) => {
-    toggleDebuggerBreakpoint({ line, sourceId });
-  }).bind(undefined, { line: lineNumber, sourceId });
+  const handleClick = () => {
+    toggleDebuggerBreakpoint({ line: lineNumber, sourceId });
+  };
 
   const lineClassName = `${sourceId.slice(-10)}-${lineNumber}`;
   return (
