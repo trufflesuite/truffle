@@ -7,11 +7,13 @@ import Breakpoint from "src/components/composed/Debugger/Breakpoints/Breakpoint"
 type BreakpointsArgs = {
   sources: Source[];
   handleBreakpointComponentClick: (breakpoint: BreakpointType) => void;
+  handleBreakpointDeleteClick: (breakpoint: BreakpointType) => void;
 };
 
 function Breakpoints({
   sources,
-  handleBreakpointComponentClick
+  handleBreakpointComponentClick,
+  handleBreakpointDeleteClick
 }: BreakpointsArgs): JSX.Element | null {
   const {
     state: {
@@ -39,6 +41,7 @@ function Breakpoints({
           line={line}
           sourceId={source.id}
           handleBreakpointComponentClick={handleBreakpointComponentClick}
+          handleBreakpointDeleteClick={handleBreakpointDeleteClick}
         />
       );
     }
