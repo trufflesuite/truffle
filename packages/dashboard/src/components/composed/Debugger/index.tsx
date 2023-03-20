@@ -37,7 +37,7 @@ function Debugger(): JSX.Element {
     currentStep = session.view(session.selectors.trace.index);
   }
 
-  const scrollToLineForSource = ({
+  const scrollToLine = ({
     sourceId,
     line
   }: {
@@ -56,7 +56,7 @@ function Debugger(): JSX.Element {
   useEffect(() => {
     if (currentSourceRange) {
       const { source, start } = currentSourceRange!;
-      scrollToLineForSource({ sourceId: source.id, line: start.line });
+      scrollToLine({ sourceId: source.id, line: start.line });
     }
   }, [currentSourceRange]);
 
@@ -66,7 +66,7 @@ function Debugger(): JSX.Element {
   }: BreakpointType) => {
     setCurrentSourceId(sourceId);
     // @ts-ignore
-    scrollToLineForSource({ sourceId, line });
+    scrollToLine({ sourceId, line });
   };
 
   let content;
