@@ -104,6 +104,7 @@ function Debugger(): JSX.Element {
   }: BreakpointType) => {
     setCurrentSourceId(sourceId);
     setGoToBreakpoint({ sourceId, line });
+
   };
 
   const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
