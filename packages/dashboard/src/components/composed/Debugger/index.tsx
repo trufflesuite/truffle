@@ -69,6 +69,13 @@ function Debugger(): JSX.Element {
     scrollToLine({ sourceId, line });
   };
 
+  const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
+    operations.toggleDebuggerBreakpoint({
+      sourceId,
+      line: parseInt(line)
+    });
+  };
+
   let content;
   if (session && sources && currentSourceRange) {
     content = (
@@ -87,6 +94,7 @@ function Debugger(): JSX.Element {
           <Breakpoints
             sources={sources}
             handleBreakpointComponentClick={handleBreakpointComponentClick}
+            handleBreakpointDeleteClick={handleBreakpointDeleteClick}
           />
         </div>
       </div>
