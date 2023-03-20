@@ -94,6 +94,19 @@ function MantineGlobal(): JSX.Element {
             ".truffle-debugger-variables": {
               overflowY: "scroll"
             },
+            ".truffle-debugger-breakpoint-group": {
+              display: "flex",
+              justifyContent: "space-between"
+            },
+            ".truffle-debugger-breakpoint-delete": {
+              borderRadius: 25,
+              textAlign: "center",
+              width: 25
+            },
+            ".truffle-debugger-breakpoint-delete:hover": {
+              cursor: "pointer",
+              backgroundColor: "red"
+            },
             ".mantine-Alert-icon": {
               "width": 28,
               "height": "auto",
