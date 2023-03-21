@@ -85,7 +85,9 @@ function MantineGlobal(): JSX.Element {
               height: "100%",
               overflow: "scroll"
             },
-            ".truffle-debugger-source": {},
+            ".truffle-debugger-source:hover": {
+              cursor: "pointer"
+            },
             ".truffle-debugger-variables-breakpoints": {
               display: "flex",
               flexDirection: "column",
@@ -102,6 +104,9 @@ function MantineGlobal(): JSX.Element {
               borderRadius: 25,
               textAlign: "center",
               width: 25
+            },
+            ".truffle-debugger-breakpoint:hover": {
+              cursor: "pointer"
             },
             ".truffle-debugger-breakpoint-delete:hover": {
               cursor: "pointer",
