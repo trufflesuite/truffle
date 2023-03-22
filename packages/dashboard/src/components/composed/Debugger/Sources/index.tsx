@@ -54,7 +54,7 @@ function Sources({
       const sourceIds = sources.map(({ id }) => id);
       setCurrentSourceId(sourceIds[0]);
     }
-  });
+  }, [sources]);
 
   useEffect(() => {
     const sessionSourceId = currentSourceRange.source.id;
