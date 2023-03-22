@@ -31,12 +31,13 @@ function Sources({
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
 
+  // initialize sources after we get all of them
   useEffect(() => {
     if (currentSourceId === null) {
       const sourceIds = sources.map(({ id }) => id);
       setCurrentSourceId(sourceIds[0]);
     }
-  });
+  }, [sources]);
 
   useEffect(() => {
     const sessionSourceId = currentSourceRange.source.id;

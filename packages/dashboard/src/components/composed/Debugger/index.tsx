@@ -21,6 +21,9 @@ function Debugger(): JSX.Element {
   } = useDash()!;
   const [status, setStatus] = useState<SessionStatus>();
   const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
+  const [goToBreakpoint, setGoToBreakpoint] = useState<BreakpointType | null>(
+    null
+  );
   const inputsDisabled =
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
@@ -53,6 +56,7 @@ function Debugger(): JSX.Element {
     }
   };
 
+  // scroll to highlighted source as debugger steps
   useEffect(() => {
     if (currentSourceRange) {
       const { source, start } = currentSourceRange!;
@@ -60,13 +64,23 @@ function Debugger(): JSX.Element {
     }
   }, [currentSourceRange]);
 
+  // check whether we need to scroll to a breakpoint
+  // this is to ensure the source has fully rendered before scrolling
+  useEffect(() => {
+    if (goToBreakpoint !== null) {
+      const { sourceId, line } = goToBreakpoint;
+      // @ts-ignore
+      scrollToLine({ sourceId, line });
+      setGoToBreakpoint(null);
+    }
+  }, [goToBreakpoint]);
+
   const handleBreakpointComponentClick = ({
     sourceId,
     line
   }: BreakpointType) => {
     setCurrentSourceId(sourceId);
-    // @ts-ignore
-    scrollToLine({ sourceId, line });
+    setGoToBreakpoint({ sourceId, line });
   };
 
   const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
