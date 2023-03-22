@@ -5,6 +5,28 @@ import { solidity } from "highlightjs-solidity";
 import { selectors as $ } from "@truffle/debugger";
 import type { Session, Source, SourceRange } from "src/utils/debugger";
 
+export function convertSourceToHtml({
+  source,
+  sourceRange
+}: {
+  source: Source;
+  sourceRange: SourceRange;
+}) {
+  // add comment markers for where spans will go later designating debugger
+  // highlighting - comments so lowlight doesn't choke on html
+  const sourceWithHighlightedMarkings = addTextHighlightedClass(
+    source,
+    sourceRange
+  );
+
+  // run the source through lowlight for syntax highlighting
+  const sourceWithSyntaxHighlighting = addSyntaxHighlighting(
+    sourceWithHighlightedMarkings
+  ).split("\n");
+  // replace comment markers with spans denoting the debugger's highlighted text
+  return replaceTextHighlightedMarkings(sourceWithSyntaxHighlighting);
+}
+
 export function getCurrentSourceRange(session: Session) {
   const traceIndex = session.view($.trace.index);
   const { id } = session.view($.sourcemapping.current.source);
@@ -22,7 +44,7 @@ export function getCurrentSourceRange(session: Session) {
 lowlight.registerLanguage("solidity", solidity);
 const processor = unified().use(rehypeStringify);
 
-export function highlightSourceContent(source: Source) {
+export function addSyntaxHighlighting(source: Source) {
   const highlighted = lowlight.highlight("solidity", source.contents);
   return processor.stringify(highlighted);
 }
@@ -123,7 +145,7 @@ const indexOfFirstNonWhitespaceChar = (str: string) => {
   return str.split("").findIndex(letter => letter !== " " && letter !== "\t");
 };
 
-export function finalizeSource(lines: string[]) {
+export function replaceTextHighlightedMarkings(lines: string[]) {
   return lines.map(line => {
     // we need to add the space to make lowlight parse the comment correctly
     // as a comment as there are some cases where it marks it incorrectly
