@@ -83,7 +83,7 @@ function Debugger(): JSX.Element {
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
       const { source, start } = currentSourceRange!;
-      scrollToLine({ sourceId: source.id, line: start.line });
+      scrollToLine({ sourceId: source!.id, line: start!.line });
     }
   });
 
