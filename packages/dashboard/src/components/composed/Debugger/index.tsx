@@ -34,7 +34,10 @@ function Debugger(): JSX.Element {
 
   const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
 
-  let currentSourceRange: SourceRange | undefined, currentStep;
+  let currentSourceRange: SourceRange | Partial<SourceRange> = {
+    traceIndex: -1
+  };
+  let currentStep;
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
     currentStep = session.view(session.selectors.trace.index);
@@ -58,11 +61,12 @@ function Debugger(): JSX.Element {
 
   // scroll to highlighted source as debugger steps
   useEffect(() => {
-    if (currentSourceRange) {
+    // if the source property exists it means we have a full SourceRange
+    if (currentSourceRange.source) {
       const { source, start } = currentSourceRange!;
-      scrollToLine({ sourceId: source.id, line: start.line });
+      scrollToLine({ sourceId: source!.id, line: start!.line });
     }
-  }, [currentSourceRange]);
+  }, [currentSourceRange.traceIndex]);
 
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
@@ -91,7 +95,7 @@ function Debugger(): JSX.Element {
   };
 
   let content;
-  if (session && sources && currentSourceRange) {
+  if (session && sources && currentSourceRange.source) {
     content = (
       <div className="truffle-debugger-sources-variables">
         <Sources
@@ -99,6 +103,7 @@ function Debugger(): JSX.Element {
           unknownAddresses={unknownAddresses}
           session={session}
           sessionUpdated={sessionUpdated}
+          // @ts-ignore - typeof currentSourceRange === SourceRange
           currentSourceRange={currentSourceRange}
           currentSourceId={currentSourceId}
           setCurrentSourceId={setCurrentSourceId}
