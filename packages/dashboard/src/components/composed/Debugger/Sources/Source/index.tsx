@@ -1,10 +1,6 @@
 import SourceLine from "src/components/composed/Debugger/Sources/Source/SourceLine";
-import {
-  highlightSourceContent,
-  addTextHighlightedClass,
-  finalizeSource
-} from "src/utils/debugger";
 import type { Source as SourceType, SourceRange } from "src/utils/debugger";
+import { convertSourceToHtml } from "src/utils/debugger";
 
 interface SourceProps {
   source: SourceType;
@@ -13,25 +9,14 @@ interface SourceProps {
 }
 
 function Source({ source, sourceRange, sourceId }: SourceProps): JSX.Element {
-  // add comment markers for where spans will go later designating debugger
-  // highlighting - comments so lowlight doesn't choke on html
-  const sourceWithHighlightedMarkings = addTextHighlightedClass(
-    source,
-    sourceRange
-  );
-  // run the source through lowlight for syntax highlighting
-  const highlightedLines = highlightSourceContent(
-    sourceWithHighlightedMarkings
-  ).split("\n");
-  // replace comment markers with spans denoting the debugger's highlighted text
-  const finishedLines = finalizeSource(highlightedLines);
+  const sourceLines = convertSourceToHtml({ source, sourceRange });
 
   const { start, end } = sourceRange;
-  const lineNumberGutterWidth = finishedLines.length.toString().length;
+  const lineNumberGutterWidth = sourceLines.length.toString().length;
 
   return (
     <pre className="truffle-debugger-source">
-      {finishedLines.map((line, index) => {
+      {sourceLines.map((line: string, index: number) => {
         const key = `${source.id}-line-${index}`;
         const selected =
           source.id === sourceRange.source.id &&
@@ -47,7 +32,7 @@ function Source({ source, sourceRange, sourceId }: SourceProps): JSX.Element {
           line,
           lineNumber: index + 1,
           lineNumberGutterWidth,
-          lastLine: index === finishedLines.length - 1,
+          lastLine: index === sourceLines.length - 1,
           firstHighlightedLine,
           sourceId
         };
