@@ -62,7 +62,7 @@ function Debugger(): JSX.Element {
   // scroll to highlighted source as debugger steps
   useEffect(() => {
     // if the source property exists it means we have a full SourceRange
-    if (currentSourceRange.source) {
+    if (isSourceRange(currentSourceRange)) {
       const { source, start } = currentSourceRange!;
       scrollToLine({ sourceId: source!.id, line: start!.line });
     }
@@ -94,8 +94,13 @@ function Debugger(): JSX.Element {
     });
   };
 
+  const isSourceRange = (item: any): item is SourceRange => {
+    // when source exists, that means it should be a full SourceRange
+    return item.source !== undefined;
+  };
+
   let content;
-  if (session && sources && currentSourceRange.source) {
+  if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
       <div className="truffle-debugger-sources-variables">
         <Sources
@@ -103,7 +108,6 @@ function Debugger(): JSX.Element {
           unknownAddresses={unknownAddresses}
           session={session}
           sessionUpdated={sessionUpdated}
-          // @ts-ignore - typeof currentSourceRange === SourceRange
           currentSourceRange={currentSourceRange}
           currentSourceId={currentSourceId}
           setCurrentSourceId={setCurrentSourceId}
