@@ -490,7 +490,7 @@ export type ContractType = ContractTypeNative | ContractTypeForeign;
 /**
  * Type of a contract with full Solidity info -- may be used for actual variables
  *
- * @Category User-defined elemntary types
+ * @Category User-defined elementary types
  */
 export interface ContractTypeNative {
   typeClass: "contract";
@@ -534,7 +534,9 @@ export interface ContractTypeForeign {
  *
  * @Category User-defined elementary types
  */
-export type UserDefinedValueTypeType = UserDefinedValueTypeTypeLocal | UserDefinedValueTypeTypeGlobal;
+export type UserDefinedValueTypeType =
+  | UserDefinedValueTypeTypeLocal
+  | UserDefinedValueTypeTypeGlobal;
 
 /**
  * Local UDVT (defined in a contract)
@@ -662,7 +664,12 @@ export function forgetCompilations(
 }
 
 function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
-  const userDefinedTypes = ["contract", "enum", "struct", "userDefinedValueType"];
+  const userDefinedTypes = [
+    "contract",
+    "enum",
+    "struct",
+    "userDefinedValueType"
+  ];
   return userDefinedTypes.includes(anyType.typeClass);
 }
 
@@ -802,9 +809,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
       //combining these cases for simplicity
       switch (dataType.kind) {
         case "local":
-          return `${dataType.typeClass} ${dataType.definingContractName}.${
-            dataType.typeName
-          }`;
+          return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
         case "global":
           return `${dataType.typeClass} ${dataType.typeName}`;
       }
@@ -873,6 +878,8 @@ export function isContractDefinedType(
   anyType: Type
 ): anyType is ContractDefinedType {
   const contractDefinedTypes = ["enum", "struct", "userDefinedValueType"];
-  return contractDefinedTypes.includes(anyType.typeClass)
-    && (<EnumType|StructType|UserDefinedValueTypeType>anyType).kind === "local";
+  return (
+    contractDefinedTypes.includes(anyType.typeClass) &&
+    (<EnumType | StructType | UserDefinedValueTypeType>anyType).kind === "local"
+  );
 }
