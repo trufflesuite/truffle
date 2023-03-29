@@ -98,11 +98,27 @@ export class DashboardServer {
 
     this.expressApp.get("/fetch-and-compile", async (req, res) => {
       const { address, networkId } = req.query as Record<string, string>;
-      const config = Config.default().merge({
+      let config;
+      try {
+        config = Config.detect();
+      } catch (error) {
+        const notFound = "Could not find suitable configuration file.";
+        if (!error.message.includes(notFound)) {
+          throw error;
+        }
+      }
+      const etherscanApiKey =
+        config && config.etherscan !== undefined
+          ? config.etherscan.apiKey
+          : undefined;
+      config = Config.default().merge({
         networks: {
           custom: { network_id: networkId }
         },
-        network: "custom"
+        network: "custom",
+        etherscan: {
+          apiKey: etherscanApiKey
+        }
       });
       let result;
       try {
