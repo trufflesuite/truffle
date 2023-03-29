@@ -19,8 +19,14 @@ function Debugger(): JSX.Element {
       debugger: { sources, session }
     }
   } = useDash()!;
+
   const [status, setStatus] = useState<SessionStatus>();
+
+  // keep track of addresses for which we can't obtain source material
   const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
+
+  // goToBreakpoint stores breakpoint info when a user clicks on one
+  // so we can jump to it in Sources
   const [goToBreakpoint, setGoToBreakpoint] = useState<BreakpointType | null>(
     null
   );
@@ -28,16 +34,20 @@ function Debugger(): JSX.Element {
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
     status === SessionStatus.Starting;
+
+  // currentSourceId is the "active" source displayed in Sources
+  const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
+
   const formDisabled =
     // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
     inputsDisabled;
-
-  const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
 
   let currentSourceRange: SourceRange | Partial<SourceRange> = {
     traceIndex: -1
   };
   let currentStep;
+
+  // wait until the debugger has been initialized and then get source info
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
     currentStep = session.view(session.selectors.trace.index);

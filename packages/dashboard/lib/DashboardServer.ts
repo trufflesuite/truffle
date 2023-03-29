@@ -100,6 +100,7 @@ export class DashboardServer {
     }
 
     this.expressApp.get("/fetch-and-compile", async (req, res) => {
+<<<<<<< HEAD
       const { address, networkId, etherscanApiKey } = req.query as Record<
         string,
         string
