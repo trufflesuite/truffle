@@ -7,7 +7,11 @@ import * as EthUtil from "ethereumjs-util";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
-import ProviderEngine from "web3-provider-engine";
+import {
+  JsonRpcEngine as ProviderEngine,
+  JsonRpcRequest,
+  JsonRpcResponse
+} from "json-rpc-engine";
 // @ts-ignore - web3-provider-engine doesn't have declaration files for these subproviders
 import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
 // @ts-ignore
@@ -22,10 +26,6 @@ import RpcProvider from "web3-provider-engine/subproviders/rpc";
 import WebsocketProvider from "web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
-import type {
-  JSONRPCRequestPayload,
-  JSONRPCResponsePayload
-} from "ethereum-protocol";
 import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
@@ -73,6 +73,7 @@ class HDWalletProvider {
       // what's left is either a mnemonic or a list of private keys
       ...signingAuthority
     } = getOptions(...args);
+    console.log(pollingInterval);
 
     const mnemonic = getMnemonic(signingAuthority);
     const privateKeys = getPrivateKeys(signingAuthority);
@@ -81,9 +82,7 @@ class HDWalletProvider {
     this.#wallets = {};
     this.#addresses = [];
     this.chainSettings = chainSettings;
-    this.engine = new ProviderEngine({
-      pollingInterval
-    });
+    this.engine = new ProviderEngine();
 
     let providerToUse;
     if (HDWalletProvider.isValidProvider(provider)) {
@@ -99,7 +98,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-          "ws, or wss protocol.",
+            "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -119,7 +118,7 @@ class HDWalletProvider {
     if (this.#addresses.length === 0) {
       throw new Error(
         `Could not create addresses from your mnemonic or private key(s). ` +
-        `Please check that your inputs are correct.`
+          `Please check that your inputs are correct.`
       );
     }
 
@@ -146,7 +145,7 @@ class HDWalletProvider {
 
     const self = this;
 
-    this.engine.addProvider(
+    this.engine.push(
       new HookedSubprovider({
         getAccounts(cb: any) {
           cb(null, tmpAccounts);
@@ -250,10 +249,10 @@ class HDWalletProvider {
     );
 
     !shareNonce
-      ? this.engine.addProvider(new NonceSubProvider())
-      : this.engine.addProvider(singletonNonceSubProvider);
+      ? this.engine.push(new NonceSubProvider())
+      : this.engine.push(singletonNonceSubProvider);
 
-    this.engine.addProvider(new FiltersSubprovider());
+    this.engine.push(new FiltersSubprovider());
     if (typeof providerToUse === "string") {
       const url = providerToUse;
 
@@ -264,22 +263,22 @@ class HDWalletProvider {
       switch (providerProtocol) {
         case "ws:":
         case "wss:":
-          this.engine.addProvider(new WebsocketProvider({ rpcUrl: url }));
+          this.engine.push(new WebsocketProvider({ rpcUrl: url }));
           break;
         default:
-          this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
+          this.engine.push(new RpcProvider({ rpcUrl: url }));
       }
     } else {
-      this.engine.addProvider(new ProviderSubprovider(providerToUse));
+      this.engine.push(new ProviderSubprovider(providerToUse));
     }
 
     // Required by the provider engine.
-    this.engine.start();
+    // this.engine.start();
   }
 
   private initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.engine.sendAsync(
+      this.engine.handle(
         {
           jsonrpc: "2.0",
           id: Date.now(),
@@ -288,21 +287,21 @@ class HDWalletProvider {
         },
         // @ts-ignore - the type doesn't take into account the possibility
         // that response.error could be a thing
-        (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
+        (error: any, response: JsonRpcResponse<any>) => {
           if (error) {
             reject(error);
             return;
-          } else if (response.error) {
+          } else if ("error" in response) {
             reject(response.error);
             return;
           }
-          if (isNaN(parseInt(response.result, 16))) {
+          if (isNaN(parseInt(response.result as any, 16))) {
             const message =
               "When requesting the chain id from the node, it" +
               `returned the malformed result ${response.result}.`;
             throw new Error(message);
           }
-          this.chainId = parseInt(response.result, 16);
+          this.chainId = parseInt(response.result as any, 16);
           resolve();
         }
       );
@@ -362,21 +361,21 @@ class HDWalletProvider {
   }
 
   public send(
-    payload: JSONRPCRequestPayload,
+    payload: JsonRpcRequest<any>,
     // @ts-ignore we patch this method so it doesn't conform to type
-    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+    callback: (error: unknown, response: JsonRpcResponse<any>) => void
   ): void {
     this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
+      this.engine.handle(payload, callback);
     });
   }
 
   public sendAsync(
-    payload: JSONRPCRequestPayload,
-    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+    payload: JsonRpcRequest<unknown>,
+    callback: (error: unknown, response: JsonRpcResponse<unknown>) => void
   ): void {
     this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
+      this.engine.handle(payload, callback);
     });
   }
 
