@@ -29,7 +29,7 @@ describe("HD Wallet Provider", function () {
   afterEach(() => {
     web3.setProvider(null);
     if (hdWalletProvider) {
-      hdWalletProvider.engine.stop();
+      // hdWalletProvider.engine.stop();
     }
   });
 
