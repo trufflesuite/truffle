@@ -57,6 +57,21 @@ class HDWalletProvider {
 
   public engine: ProviderEngine;
 
+  private addProvider(provider: {
+    handleRequest: (payload: any, next: any, end: any) => void;
+  }) {
+    this.engine.push((req, res, next, end) => {
+      return provider.handleRequest(req, next, (error: any, result: any) => {
+        if (error) {
+          res.error = error;
+        } else if (result) {
+          res.result = result;
+        }
+        end(error);
+      });
+    });
+  }
+
   constructor(...args: ConstructorArguments) {
     const {
       provider,
@@ -125,17 +140,6 @@ class HDWalletProvider {
     const tmpAccounts = this.#addresses;
     const tmpWallets = this.#wallets;
 
-    // if user supplied the chain id, use that - otherwise fetch it
-    if (
-      typeof chainId !== "undefined" ||
-      (chainSettings && typeof chainSettings.chainId !== "undefined")
-    ) {
-      this.chainId = chainId || chainSettings.chainId;
-      this.initialized = Promise.resolve();
-    } else {
-      this.initialized = this.initialize();
-    }
-
     // EIP155 compliant transactions are enabled for hardforks later
     // than or equal to "spurious dragon"
     this.hardfork =
@@ -145,7 +149,7 @@ class HDWalletProvider {
 
     const self = this;
 
-    this.engine.push(
+    this.addProvider(
       new HookedSubprovider({
         getAccounts(cb: any) {
           cb(null, tmpAccounts);
@@ -249,10 +253,12 @@ class HDWalletProvider {
     );
 
     !shareNonce
-      ? this.engine.push(new NonceSubProvider())
-      : this.engine.push(singletonNonceSubProvider);
+      ? this.addProvider(new NonceSubProvider())
+      : this.addProvider(singletonNonceSubProvider);
 
-    this.engine.push(new FiltersSubprovider());
+    // TODO: FiltersSubprovider relies on the old web3-provider-engine to inject
+    // stuff onto it's instance. it's weird.
+    // this.addProvider(new FiltersSubprovider());
     if (typeof providerToUse === "string") {
       const url = providerToUse;
 
@@ -263,17 +269,25 @@ class HDWalletProvider {
       switch (providerProtocol) {
         case "ws:":
         case "wss:":
-          this.engine.push(new WebsocketProvider({ rpcUrl: url }));
+          this.addProvider(new WebsocketProvider({ rpcUrl: url }));
           break;
         default:
-          this.engine.push(new RpcProvider({ rpcUrl: url }));
+          this.addProvider(new RpcProvider({ rpcUrl: url }));
       }
     } else {
-      this.engine.push(new ProviderSubprovider(providerToUse));
+      this.addProvider(new ProviderSubprovider(providerToUse));
     }
 
-    // Required by the provider engine.
-    // this.engine.start();
+    // if user supplied the chain id, use that - otherwise fetch it
+    if (
+      typeof chainId !== "undefined" ||
+      (chainSettings && typeof chainSettings.chainId !== "undefined")
+    ) {
+      this.chainId = chainId || chainSettings.chainId;
+      this.initialized = Promise.resolve();
+    } else {
+      this.initialized = this.initialize();
+    }
   }
 
   private initialize(): Promise<void> {
