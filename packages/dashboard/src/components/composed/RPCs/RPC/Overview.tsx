@@ -5,6 +5,7 @@ import { useDash } from "src/hooks";
 import { inspectDecoding } from "src/utils/dash";
 import type { Decoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const {
@@ -106,6 +107,8 @@ type OverviewProps = {
   onRejectButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
+  onSimulateButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
+  onSimulateButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 function Overview({
@@ -121,18 +124,25 @@ function Overview({
   onRejectButtonEnter,
   onRejectButtonLeave,
   onConfirmButtonEnter,
-  onConfirmButtonLeave
+  onConfirmButtonLeave,
+  onSimulateButtonEnter,
+  onSimulateButtonLeave
 }: OverviewProps): JSX.Element {
   const { method } = lifecycle.message.payload;
   const decodingInspected = inspectDecoding(decoding);
   const {
     state: { chainInfo },
-    operations: { userConfirmMessage, userRejectMessage }
+    operations: { userConfirmMessage, userRejectMessage, setTxToRun }
   } = useDash()!;
   const { classes } = useStyles();
 
+  const navigate = useNavigate();
   const onConfirmButtonClick = () => void userConfirmMessage(lifecycle);
   const onRejectButtonClick = () => void userRejectMessage(lifecycle);
+  const onSimulateButtonClick = () => {
+    setTxToRun(lifecycle);
+    navigate("/debugger");
+  };
 
   return (
     <Group
@@ -186,6 +196,15 @@ function Overview({
           classNames={{ rightIcon: classes.confirmButtonRightIcon }}
         >
           Confirm
+        </Button>
+        <Button
+          size="md"
+          onClick={onSimulateButtonClick}
+          onMouseEnter={onSimulateButtonEnter}
+          onMouseLeave={onSimulateButtonLeave}
+          className={`${classes.button} ${classes.confirmButton}`}
+        >
+          SimulateTx
         </Button>
       </Group>
     </Group>
