@@ -73,7 +73,7 @@ task("compile", "Compile with Truffle Dashboard support").setAction(
       await FromHardhat.expectHardhat();
 
       // Extract Truffle Dashboard host and port from complete Hardhat config
-      const { host, port } = new URL(
+      const { hostname: host, port } = new URL(
         env.config.truffleDashboard.networkConfig.url
       );
 
