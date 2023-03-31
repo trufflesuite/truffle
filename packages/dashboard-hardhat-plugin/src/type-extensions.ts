@@ -10,7 +10,6 @@ declare module "hardhat/types/config" {
 
   export interface HardhatUserConfig {
     truffleDashboard?: {
-      disableManagedNetwork?: boolean;
       networkName?: string;
       networkConfig?: Pick<
         HttpNetworkUserConfig,
@@ -21,7 +20,6 @@ declare module "hardhat/types/config" {
 
   export interface HardhatConfig {
     truffleDashboard: {
-      disableManagedNetwork: boolean;
       networkName: string;
       networkConfig: HttpNetworkConfig;
     };

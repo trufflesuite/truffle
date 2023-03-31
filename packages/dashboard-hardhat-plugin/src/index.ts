@@ -1,5 +1,6 @@
 import { name as pluginName } from "../package.json";
 import { URL } from "url";
+import util from "util";
 import { extendConfig, task } from "hardhat/config";
 import { HardhatPluginError } from "hardhat/plugins";
 import type {
@@ -17,7 +18,6 @@ import "./type-extensions";
 
 const defaults = {
   networkName: "truffle-dashboard",
-  disableManagedNetwork: false,
   host: "localhost",
   port: 24012,
   gas: "auto",
@@ -29,11 +29,8 @@ const defaults = {
 
 extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
   // Validate configuration and fill in defaults for missing user config fields
-  const {
-    networkName,
-    disableManagedNetwork,
-    networkConfig: networkUserConfig
-  } = getTruffleDashboardUserConfig(config, userConfig);
+  const { networkName, networkConfig: networkUserConfig } =
+    getTruffleDashboardUserConfig(config, userConfig);
 
   // Look for custom Truffle Dashboard configuration inside truffle-config.js
   // (if it exists)
@@ -41,10 +38,6 @@ extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
 
   // Generate URL and supply other plugin invariants
   // (e.g., accounts should always be "remote" for Truffle Dashboard)
-  //
-  // Note that if `disableManagedNetwork` is set to `true`, then the user's
-  // custom Truffle Dashboard network configuration will be used here instead
-  // of any plugin-supplied defaults or computed values.
   const networkConfig: HttpNetworkConfig = {
     url: `http://${host}:${port}/rpc`,
     accounts: "remote",
@@ -54,14 +47,11 @@ extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
   // Capture completed configuration
   config.truffleDashboard = {
     networkName,
-    disableManagedNetwork,
     networkConfig
   };
 
-  // Add managed network unless disabled
-  if (!disableManagedNetwork) {
-    config.networks[networkName] = networkConfig;
-  }
+  // Add managed network
+  config.networks[networkName] = networkConfig;
 });
 
 task("compile", "Compile with Truffle Dashboard support").setAction(
@@ -137,37 +127,8 @@ function getTruffleDashboardUserConfig(
 ) {
   const {
     networkName = defaults.networkName,
-    disableManagedNetwork = defaults.disableManagedNetwork,
     networkConfig: networkUserConfig = {}
   } = userConfig.truffleDashboard || {};
-
-  const networkIsDefinedExplicitly =
-    userConfig.networks && networkName in userConfig.networks;
-
-  if (!disableManagedNetwork && networkIsDefinedExplicitly) {
-    throw new HardhatPluginError(
-      pluginName,
-      `Duplicate network config.\n\n` +
-        `This plugin is configured to manage the Truffle Dashboard network\n` +
-        `inside \`config.networks["${networkName}"]\`, but a conflicting user\n` +
-        `configuration was found.\n\n` +
-        `Remove this network or set \`config.truffleDashboard.disableManagedNetwork\`\n` +
-        `to \`true\` if you'd like to configure the Truffle Dashboard network yourself.`
-    );
-  }
-
-  if (disableManagedNetwork && !networkIsDefinedExplicitly) {
-    throw new HardhatPluginError(
-      pluginName,
-      `Missing network config.\n\n` +
-        `This plugin is configured to require a Truffle Dashboard network\n` +
-        `inside \`config.networks["${networkName}"]\`, but no such network was found.\n\n` +
-        `Please define this network or set \`config.truffleDashboard.disableManagedNetwork\`\n` +
-        `to \`false\` if you'd like this plugin to manage the network for you.\n\n` +
-        `If you configured the Truffle Dashboard network with a different name,\n` +
-        `then please specify \`config.truffleDashboard.networkName\` to match.`
-    );
-  }
 
   const {
     gas = defaults.gas,
@@ -177,22 +138,52 @@ function getTruffleDashboardUserConfig(
     httpHeaders = defaults.httpHeaders
   } = networkUserConfig;
 
-  // Populate config from either config.networks[networkName] or
-  // config.truffleDashboard.networkConfig based on whether this plugin is set
-  // to manage the network itself.
-  //
-  // (The above checks guarantee the presence of config.networks[networkName]
-  // if and only if disableManagedNetwork is true)
   const networkConfig: Pick<
     HttpNetworkConfig,
     TruffleDashboardNetworkConfigurableKeys
-  > = disableManagedNetwork
-    ? (config.networks[networkName] as HttpNetworkConfig)
-    : { gas, gasPrice, gasMultiplier, timeout, httpHeaders };
+  > = {
+    gas,
+    gasPrice,
+    gasMultiplier,
+    timeout,
+    httpHeaders
+  };
+
+  const networkIsDefinedExplicitly =
+    userConfig.networks && networkName in userConfig.networks;
+
+  if (networkIsDefinedExplicitly) {
+    throw new HardhatPluginError(
+      pluginName,
+      `Manual network config disallowed.\n\n` +
+        `This plugin manages your Truffle Dashboard network config for you,\n` +
+        `but your Hardhat config contains \`config.networks["${networkName}"]\`.\n\n` +
+        `Please remove this network and use \`config.truffleDashboard.networkConfig\`\n` +
+        `to override any particular network settings.\n\n` +
+        `For example, here's how your config might look with populated default values:\n` +
+        `    module.exports = {\n` +
+        `      networks: {\n` +
+        `        // ... networks config ...\n` +
+        `        // MUST NOT INCLUDE "${networkName}"\n` +
+        `      },\n` +
+        `\n` +
+        `      truffleDashboard: {\n` +
+        `        networkName: "${networkName}",\n` +
+        `        networkConfig: {\n` +
+        Object.entries(networkConfig)
+          .map(([name, value]) => `          ${name}: ${util.inspect(value)}`)
+          .join(",\n") +
+        `\n` +
+        `        }\n` +
+        `      }\n` +
+        `    }\n\n` +
+        `Please see the README for more details about how to configure this plugin:\n` +
+        `  https://www.npmjs.com/package/@truffle/dashboard-hardhat-plugin`
+    );
+  }
 
   return {
     networkName,
-    disableManagedNetwork,
     networkConfig
   };
 }

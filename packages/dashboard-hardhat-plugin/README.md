@@ -49,34 +49,27 @@ so you don't need to anything to your `hardhat.config.ts` to get started! Just
 specify `--network truffle-dashboard` when running your usual Hardhat commands
 (e.g.
 `npx hardhat run ./scripts/deploy-contracts.ts --network truffle-dashboard`).
+This managed network will include the `url` property (default
+`"http://localhost:24012/rpc"`) and a few other sensible defaults for this
+workflow.
 
 ### Configuration
 
-This plugin's defaults to injecting `url` and other network properties into your
-project's `networks` configuration automatically.
+> ℹ️ If you want to run Truffle Dashboard on a custom host or port, please
+> configure that inside a `truffle-config.js` file in your Hardhat project
+> directory. See the
+> [truffle-config.js#dashboard](https://trufflesuite.com/docs/truffle/reference/configuration/#dashboard)
+> reference documentation to learn more about this; this section pertains only
+> to configuring @truffle/dashboard-hardhat-plugin itself.
 
-This `url` property respects any local `truffle-config.js`, so if you'd like to
-run Truffle Dashboard on a custom `host` or `port`, please make that file inside
-your Hardhat project directory and see the
-[truffle-config.js#dashboard](https://trufflesuite.com/docs/truffle/reference/configuration/#dashboard)
-reference documentation to learn how to configure this. The rest of this section
-of this README covers how to configure @truffle/dashboard-hardhat-plugin itself.
-
-#### Configure managed network
-
-This plugin defines the `truffleDashboard` namespace within the Hardhat config.
-
-Please see the following configuration settings (all of these are optional):
-
-- **`disableManagedNetwork`** _(default: `false`)_: Ignore `networkConfig` and
-  don't add anything to `config.networks`. See below to learn how to
-  [turn off automatic network management](#turn-off-automatic-network-management).
+To configure this plugin, add a `truffleDashboard` section to your Hardhat
+config. This namespace can contain the following fields (all are optional):
 
 - **`networkName`** _(default: `"truffle-dashboard"`)_: Specify the name of the
   Truffle Dashboard network, e.g. via the `--network <...>` command-line option.
 
 - **`networkConfig`**: A subset of the usual Hardhat network configuration
-  settings. This field is ignored if `disableManagedNetwork` is set to `true`.
+  settings.
 
   You can use this to override managed network behavior for any fields
   documented by Hardhat's
@@ -90,42 +83,6 @@ Please see the following configuration settings (all of these are optional):
 
   - **`timeout`** _(default: `0`; i.e., no timeout)_: Hardhat's normal default
     value for this is `40000` (40 seconds)
-
-<h4 id="turn-off-automatic-network-management">Turn off automatic network management</h4>
-
-If you'd rather this plugin not get fancy, you might want to just define the
-network yourself.
-
-To do this, make sure you specify `disableManagedNetwork: true`. This plugin
-will need to read from your configuration, so if you give your network a name
-different than the default `"truffle-dashboard"`, you'll also need to specify
-`networkName`.
-
-See this example `hardhat.config.ts`:
-
-```typescript
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import "@truffle/dashboard-hardhat-plugin";
-
-const config: HardhatUserConfig = {
-  networks: {
-    // ... other networks ...
-
-    dashboard: {
-      url: "http://localhost:24012/rpc",
-      timeout: 0 // disable timeout to have enough time for MetaMask pop-ups
-    }
-  },
-
-  // ... rest of config ...
-
-  truffleDashboard: {
-    networkName: "dashboard",
-    disableManagedNetwork: true
-  }
-};
-```
 
 ## Usage
 
