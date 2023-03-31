@@ -22,6 +22,9 @@ export interface ContextValue {
     setDebuggerSessionData: (value: SetDebuggerSessionDataArgs) => void;
     getCompilations: () => Promise<Compilation[]>;
     toggleDebuggerBreakpoint: (value: ToggleDebuggerBreakpointArgs) => void;
+    setTxToRun: (
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
+    ) => void;
   };
   dispatch?: React.Dispatch<Action>;
 }
