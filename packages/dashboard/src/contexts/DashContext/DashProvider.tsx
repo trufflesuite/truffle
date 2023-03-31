@@ -325,7 +325,18 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         }
       });
     },
-    toggleDebuggerBreakpoint({ line, sourceId }: ToggleDebuggerBreakpointArgs) {
+    setTxToRun: (
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
+    ) => {
+      dispatch({
+        type: "set-tx-to-run",
+        data: lifecycle
+      });
+    },
+    toggleDebuggerBreakpoint: ({
+      line,
+      sourceId
+    }: ToggleDebuggerBreakpointArgs) => {
       dispatch({
         type: "toggle-debugger-breakpoint",
         data: {

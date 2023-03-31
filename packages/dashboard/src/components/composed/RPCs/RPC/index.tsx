@@ -45,6 +45,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
     useDisclosure(false);
   const [confirmButtonHovered, confirmButtonHoveredHandlers] =
     useDisclosure(false);
+  const [simulateButtonHovered, simulateButtonHoveredHandlers] =
+    useDisclosure(false);
   const [collapsedDetailsHovered, collapsedDetailsHoveredHandlers] =
     useDisclosure(false);
   const { classes } = useStyles();
@@ -94,7 +96,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
           clicked ||
           overviewBackHovered ||
           rejectButtonHovered ||
-          confirmButtonHovered
+          confirmButtonHovered ||
+          simulateButtonHovered
         }
         onBackClick={clickedHandlers.toggle}
         onBackEnter={overviewBackHoveredHandlers.open}
@@ -103,6 +106,8 @@ function RPC({ lifecycle }: RPCProps): JSX.Element {
         onRejectButtonLeave={rejectButtonHoveredHandlers.close}
         onConfirmButtonEnter={confirmButtonHoveredHandlers.open}
         onConfirmButtonLeave={confirmButtonHoveredHandlers.close}
+        onSimulateButtonEnter={simulateButtonHoveredHandlers.open}
+        onSimulateButtonLeave={simulateButtonHoveredHandlers.close}
       />
       <Details
         lifecycle={lifecycle}
