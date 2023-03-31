@@ -5,7 +5,11 @@ import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
 import Variables from "src/components/composed/Debugger/Variables";
 import Breakpoints from "src/components/composed/Debugger/Breakpoints";
-import { initDebugger, SessionStatus } from "src/utils/debugger";
+import {
+  forkNetworkWithTxAndInitDebugger,
+  initDebugger,
+  SessionStatus
+} from "src/utils/debugger";
 import { useDash } from "src/hooks";
 import { getCurrentSourceRange } from "src/utils/debugger";
 import type { BreakpointType, SourceRange } from "src/utils/debugger";
@@ -16,7 +20,7 @@ function Debugger(): JSX.Element {
   const {
     operations,
     state: {
-      debugger: { sources, session }
+      debugger: { sources, session, txToRun }
     }
   } = useDash()!;
 
@@ -144,6 +148,17 @@ function Debugger(): JSX.Element {
     });
   };
 
+  useEffect(() => {
+    if (txToRun) {
+      forkNetworkWithTxAndInitDebugger({
+        tx: txToRun,
+        operations,
+        setUnknownAddresses,
+        setStatus
+      });
+    }
+  }, [txToRun]);
+
   return (
     <div className="truffle-debugger">
       <div className="truffle-debugger-input">
@@ -156,9 +171,11 @@ function Debugger(): JSX.Element {
             type="text"
             placeholder="Transaction hash"
           />
-          <Button onClick={onButtonClick} disabled={formDisabled}>
-            Debug
-          </Button>
+          {txToRun ? null : (
+            <Button onClick={onButtonClick} disabled={formDisabled}>
+              Debug
+            </Button>
+          )}
         </div>
       </div>
 

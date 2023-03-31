@@ -20,6 +20,7 @@ export interface State {
     sources: Source[] | null;
     session: Session | null;
     breakpoints: BreakpointState;
+    txToRun: ReceivedMessageLifecycle<DashboardProviderMessage> | null;
   };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
