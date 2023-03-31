@@ -94,7 +94,8 @@ function MantineGlobal(): JSX.Element {
               width: "35%"
             },
             ".truffle-debugger-variables": {
-              overflowY: "scroll"
+              overflowY: "scroll",
+              height: "50%"
             },
             ".truffle-debugger-breakpoint-group": {
               display: "flex",
