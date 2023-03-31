@@ -142,6 +142,7 @@ function Debugger(): JSX.Element {
 
   const onButtonClick = () => {
     initDebugger({
+      chainOptions: {},
       operations,
       setUnknownAddresses,
       setStatus
