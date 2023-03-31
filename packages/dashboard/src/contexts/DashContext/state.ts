@@ -39,6 +39,7 @@ export const initialState: State = {
   debugger: {
     sources: null,
     session: null,
+    txToRun: null,
     breakpoints: {}
   },
   decoder: null,
@@ -143,6 +144,14 @@ export const reducer = (state: State, action: Action): State => {
       }
 
       return newState;
+    case "set-tx-to-run":
+      return {
+        ...state,
+        debugger: {
+          ...state.debugger,
+          txToRun: data
+        }
+      };
     case "update-provider-message-sender":
       const newProviderMessages = new Map(state.providerMessages);
       const newSender = data;
