@@ -63,7 +63,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
-    "react-router-dom": "^6.3.0",
+    "react-router-dom": "^6.10.0",
     "rehype-stringify": "^9.0.3",
     "unified": "^10.1.2",
     "uuid": "^9.0.0",
