@@ -1,5 +1,8 @@
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
-import type { Message } from "@truffle/dashboard-message-bus-common";
+import type {
+  Message,
+  DashboardProviderMessage
+} from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
 import type { Source, Session } from "src/utils/debugger";
 
@@ -8,6 +11,7 @@ export type ActionType =
   | "set-chain-info"
   | "set-notice"
   | "set-analytics-config"
+  | "set-tx-to-run"
   | "handle-message"
   | "update-provider-message-sender"
   | "set-debugger-session-data"
@@ -60,6 +64,11 @@ export interface HandleMessageAction extends BaseAction {
   data: ReceivedMessageLifecycle<Message>;
 }
 
+export interface SetTxToRunAction extends BaseAction {
+  type: "set-tx-to-run";
+  data: ReceivedMessageLifecycle<DashboardProviderMessage> | null;
+}
+
 export interface UpdateProviderMessageSenderAction extends BaseAction {
   type: "update-provider-message-sender";
   data: string;
@@ -81,4 +90,5 @@ export type Action =
   | HandleMessageAction
   | UpdateProviderMessageSenderAction
   | SetDebuggerSessionDataAction
+  | SetTxToRunAction
   | ToggleDebuggerBreakpointAction;
