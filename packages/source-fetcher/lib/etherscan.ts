@@ -68,6 +68,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "goerli-arbitrum": "api-goerli.arbiscan.io",
       "polygon": "api.polygonscan.com",
       "mumbai-polygon": "api-mumbai.polygonscan.com",
+      "zkevm-polygon": "api-zkevm.polygonscan.com",
+      "testnet-zkevm-polygon": "api-testnet-zkevm.polygonscan.com",
       "binance": "api.bscscan.com",
       "testnet-binance": "api-testnet.bscscan.com",
       "fantom": "api.ftmscan.com",

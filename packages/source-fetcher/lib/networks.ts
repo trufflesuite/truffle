@@ -17,6 +17,8 @@ export const networkNamesById: { [id: number]: string } = {
   421613: "goerli-arbitrum",
   137: "polygon",
   80001: "mumbai-polygon",
+  1101: "zkevm-polygon",
+  1442: "testnet-zkevm-polygon",
   100: "gnosis", //formerly known as xdai
   10200: "chiado-gnosis",
   300: "optimism-gnosis", //optimism on gnosis, not vice versa
