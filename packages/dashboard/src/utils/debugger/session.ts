@@ -166,7 +166,7 @@ async function createSession(
     }
     throw new Error(
       `The transaction hash isn't recognized on the network you are connected` +
-        `to. Please ensure you are on the appropriate network for ` +
+        ` to. Please ensure you are on the appropriate network for ` +
         `transaction hash ${txHash}.`
     );
   }
