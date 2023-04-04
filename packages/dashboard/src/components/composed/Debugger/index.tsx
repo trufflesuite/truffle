@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Input, Button } from "@mantine/core";
+import { Input, Button, Notification } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
 import Variables from "src/components/composed/Debugger/Variables";
 import Breakpoints from "src/components/composed/Debugger/Breakpoints";
+import Stack from "src/components/composed/Debugger/Stack";
 import {
   forkNetworkWithTxAndInitDebugger,
   initDebugger,
@@ -24,6 +25,7 @@ function Debugger(): JSX.Element {
     }
   } = useDash()!;
 
+  const [error, setError] = useState<null | Error>(null);
   const [status, setStatus] = useState<SessionStatus>();
 
   // keep track of addresses for which we can't obtain source material
@@ -75,7 +77,6 @@ function Debugger(): JSX.Element {
 
   // scroll to highlighted source as debugger steps
   useEffect(() => {
-    // if the source property exists it means we have a full SourceRange
     if (isSourceRange(currentSourceRange)) {
       const { source, start } = currentSourceRange!;
       scrollToLine({ sourceId: source!.id, line: start!.line });
@@ -133,6 +134,7 @@ function Debugger(): JSX.Element {
             handleBreakpointComponentClick={handleBreakpointComponentClick}
             handleBreakpointDeleteClick={handleBreakpointDeleteClick}
           />
+          <Stack session={session} currentStep={currentStep} />
         </div>
       </div>
     );
@@ -140,15 +142,20 @@ function Debugger(): JSX.Element {
     content = status;
   }
 
-  const onButtonClick = () => {
-    initDebugger({
-      chainOptions: {},
-      operations,
-      setUnknownAddresses,
-      setStatus
-    });
+  const onButtonClick = async () => {
+    try {
+      await initDebugger({
+        chainOptions: {},
+        operations,
+        setUnknownAddresses,
+        setStatus
+      });
+    } catch (err: any) {
+      setError(err);
+    }
   };
 
+  // tx simulation - forks, runs the tx, and opens the debugger to step through
   useEffect(() => {
     if (txToRun) {
       forkNetworkWithTxAndInitDebugger({
@@ -160,29 +167,43 @@ function Debugger(): JSX.Element {
     }
   }, [txToRun]);
 
-  return (
-    <div className="truffle-debugger">
-      <div className="truffle-debugger-input">
-        <Controls session={session} stepEffect={sessionTick} />
-        <div className="truffle-debugger-input-group">
-          <Input
-            value={inputValue}
-            onChange={setInputValue}
-            disabled={inputsDisabled}
-            type="text"
-            placeholder="Transaction hash"
-          />
-          {txToRun ? null : (
-            <Button onClick={onButtonClick} disabled={formDisabled}>
-              Debug
-            </Button>
-          )}
-        </div>
+  if (error) {
+    return (
+      <div className="truffle-debugger">
+        <Notification
+          title="an error occurred"
+          className="truffle-debugger-error"
+        >
+          An error occurred while initializing the debugger.
+          {`Error: ${error.message}`}
+        </Notification>
       </div>
+    );
+  } else {
+    return (
+      <div className="truffle-debugger">
+        <div className="truffle-debugger-input">
+          <Controls session={session} stepEffect={sessionTick} />
+          <div className="truffle-debugger-input-group">
+            <Input
+              value={inputValue}
+              onChange={setInputValue}
+              disabled={inputsDisabled}
+              type="text"
+              placeholder="Transaction hash"
+            />
+            {txToRun ? null : (
+              <Button onClick={onButtonClick} disabled={formDisabled}>
+                Debug
+              </Button>
+            )}
+          </div>
+        </div>
 
-      {content}
-    </div>
-  );
+        {content}
+      </div>
+    );
+  }
 }
 
 export default Debugger;
