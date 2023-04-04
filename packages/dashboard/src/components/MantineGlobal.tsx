@@ -113,6 +113,9 @@ function MantineGlobal(): JSX.Element {
               cursor: "pointer",
               backgroundColor: "red"
             },
+            ".truffle-debugger-error": {
+              width: "50%"
+            },
             ".mantine-Alert-icon": {
               "width": 28,
               "height": "auto",
