@@ -45,7 +45,7 @@ Alternatively, you can skip the installation and fetch (and run) it remotely
 with `npx truffle dashboard`.
 
 This plugin automatically tells Hardhat about the `"truffle-dashboard"` network,
-so you don't need to anything to your `hardhat.config.ts` to get started! Just
+so you don't need to modify your `hardhat.config.ts` to get started! Just
 specify `--network truffle-dashboard` when running your usual Hardhat commands
 (e.g.
 `npx hardhat run ./scripts/deploy-contracts.ts --network truffle-dashboard`).
