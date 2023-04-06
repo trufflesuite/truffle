@@ -17,7 +17,7 @@ import TruffleConfig from "@truffle/config";
 import "./type-extensions";
 
 const defaults = {
-  networkName: "truffle-dashboard",
+  networkName: "truffleDashboard",
   host: "localhost",
   port: 24012,
   gas: "auto",
