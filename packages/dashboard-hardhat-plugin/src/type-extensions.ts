@@ -9,9 +9,9 @@ declare module "hardhat/types/config" {
   >;
 
   export interface HardhatUserConfig {
-    truffleDashboard?: {
-      networkName?: string;
-      networkConfig?: Pick<
+    truffle?: {
+      dashboardNetworkName?: string;
+      dashboardNetworkConfig?: Pick<
         HttpNetworkUserConfig,
         TruffleDashboardNetworkConfigurableKeys
       >;
@@ -19,9 +19,9 @@ declare module "hardhat/types/config" {
   }
 
   export interface HardhatConfig {
-    truffleDashboard: {
-      networkName: string;
-      networkConfig: HttpNetworkConfig;
+    truffle: {
+      dashboardNetworkName: string;
+      dashboardNetworkConfig: HttpNetworkConfig;
     };
   }
 }

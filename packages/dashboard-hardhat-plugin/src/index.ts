@@ -29,8 +29,10 @@ const defaults = {
 
 extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
   // Validate configuration and fill in defaults for missing user config fields
-  const { networkName, networkConfig: networkUserConfig } =
-    getTruffleDashboardUserConfig(config, userConfig);
+  const {
+    dashboardNetworkName,
+    dashboardNetworkConfig: dashboardNetworkUserConfig
+  } = getTruffleDashboardUserConfig(config, userConfig);
 
   // Look for custom Truffle Dashboard configuration inside truffle-config.js
   // (if it exists)
@@ -38,20 +40,20 @@ extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
 
   // Generate URL and supply other plugin invariants
   // (e.g., accounts should always be "remote" for Truffle Dashboard)
-  const networkConfig: HttpNetworkConfig = {
+  const dashboardNetworkConfig: HttpNetworkConfig = {
     url: `http://${host}:${port}/rpc`,
     accounts: "remote",
-    ...networkUserConfig
+    ...dashboardNetworkUserConfig
   };
 
   // Capture completed configuration
-  config.truffleDashboard = {
-    networkName,
-    networkConfig
+  config.truffle = {
+    dashboardNetworkName,
+    dashboardNetworkConfig
   };
 
   // Add managed network
-  config.networks[networkName] = networkConfig;
+  config.networks[dashboardNetworkName] = dashboardNetworkConfig;
 });
 
 task("compile", "Compile with Truffle Dashboard support").setAction(
@@ -64,7 +66,7 @@ task("compile", "Compile with Truffle Dashboard support").setAction(
 
       // Extract Truffle Dashboard host and port from complete Hardhat config
       const { hostname: host, port } = new URL(
-        env.config.truffleDashboard.networkConfig.url
+        env.config.truffle.dashboardNetworkConfig.url
       );
 
       console.log("Preparing Truffle compilation");
@@ -126,9 +128,9 @@ function getTruffleDashboardUserConfig(
   userConfig: HardhatUserConfig
 ) {
   const {
-    networkName = defaults.networkName,
-    networkConfig: networkUserConfig = {}
-  } = userConfig.truffleDashboard || {};
+    dashboardNetworkName = defaults.networkName,
+    dashboardNetworkConfig: dashboardNetworkUserConfig = {}
+  } = userConfig.truffle || {};
 
   const {
     gas = defaults.gas,
@@ -136,9 +138,9 @@ function getTruffleDashboardUserConfig(
     gasMultiplier = defaults.gasMultiplier,
     timeout = defaults.timeout,
     httpHeaders = defaults.httpHeaders
-  } = networkUserConfig;
+  } = dashboardNetworkUserConfig;
 
-  const networkConfig: Pick<
+  const dashboardNetworkConfig: Pick<
     HttpNetworkConfig,
     TruffleDashboardNetworkConfigurableKeys
   > = {
@@ -150,27 +152,27 @@ function getTruffleDashboardUserConfig(
   };
 
   const networkIsDefinedExplicitly =
-    userConfig.networks && networkName in userConfig.networks;
+    userConfig.networks && dashboardNetworkName in userConfig.networks;
 
   if (networkIsDefinedExplicitly) {
     throw new HardhatPluginError(
       pluginName,
       `Manual network config disallowed.\n\n` +
         `This plugin manages your Truffle Dashboard network config for you,\n` +
-        `but your Hardhat config contains \`config.networks["${networkName}"]\`.\n\n` +
-        `Please remove this network and use \`config.truffleDashboard.networkConfig\`\n` +
+        `but your Hardhat config contains \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
+        `Please remove this network and use \`config.truffle.dashboardNetworkConfig\`\n` +
         `to override any particular network settings.\n\n` +
         `For example, here's how your config might look with populated default values:\n` +
         `    module.exports = {\n` +
         `      networks: {\n` +
         `        // ... networks config ...\n` +
-        `        // MUST NOT INCLUDE "${networkName}"\n` +
+        `        // MUST NOT INCLUDE "${dashboardNetworkName}"\n` +
         `      },\n` +
         `\n` +
-        `      truffleDashboard: {\n` +
-        `        networkName: "${networkName}",\n` +
-        `        networkConfig: {\n` +
-        Object.entries(networkConfig)
+        `      truffle: {\n` +
+        `        dashboardNetworkName: "${dashboardNetworkName}",\n` +
+        `        dashboardNetworkConfig: {\n` +
+        Object.entries(dashboardNetworkConfig)
           .map(([name, value]) => `          ${name}: ${util.inspect(value)}`)
           .join(",\n") +
         `\n` +
@@ -183,7 +185,7 @@ function getTruffleDashboardUserConfig(
   }
 
   return {
-    networkName,
-    networkConfig
+    dashboardNetworkName,
+    dashboardNetworkConfig
   };
 }
