@@ -159,26 +159,8 @@ function getTruffleDashboardUserConfig(
       pluginName,
       `Manual network config disallowed.\n\n` +
         `This plugin manages your Truffle Dashboard network config for you,\n` +
-        `but your Hardhat config contains \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
-        `Please remove this network and use \`config.truffle.dashboardNetworkConfig\`\n` +
-        `to override any particular network settings.\n\n` +
-        `For example, here's how your config might look with populated default values:\n` +
-        `    module.exports = {\n` +
-        `      networks: {\n` +
-        `        // ... networks config ...\n` +
-        `        // MUST NOT INCLUDE "${dashboardNetworkName}"\n` +
-        `      },\n` +
-        `\n` +
-        `      truffle: {\n` +
-        `        dashboardNetworkName: "${dashboardNetworkName}",\n` +
-        `        dashboardNetworkConfig: {\n` +
-        Object.entries(dashboardNetworkConfig)
-          .map(([name, value]) => `          ${name}: ${util.inspect(value)}`)
-          .join(",\n") +
-        `\n` +
-        `        }\n` +
-        `      }\n` +
-        `    }\n\n` +
+        `but your Hardhat config also contains \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
+        `You can fix this error by removing \`config.networks["${dashboardNetworkName}"]\`.\n\n`  +
         `Please see the README for more details about how to configure this plugin:\n` +
         `  https://www.npmjs.com/package/@truffle/dashboard-hardhat-plugin`
     );
