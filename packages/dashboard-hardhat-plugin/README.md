@@ -14,18 +14,28 @@ This plugin automatically adds a `--network truffleDashboard` to your Hardhat
 project and tells Truffle Dashboard all the information it needs about your
 smart contracts.
 
-This plugin enables you to see decoded transaction information (both the
-function signature and the values of any arguments passed) when using
-[Truffle Dashboard](https://trufflesuite.com/docs/truffle/how-to/use-the-truffle-dashboard/)
-with your Hardhat projects.
-
-It extends `npx hardhat compile` by sending the compiled artifacts to Truffle
-Dashboard, which in turn uses
-[@truffle/decoder](https://trufflesuite.com/docs/truffle/codec/modules/_truffle_decoder.html)
-for decoding, giving you that extra degree of visibility before signing the
-transactions with your browser-based wallet.
+If you're used to Truffle Dashboard without this plugin, you'll notice that this
+plugin enables you to see decoded transactions (i.e., function name and all
+argument values). Compare before vs. after installing this plugin:
 
 ![Before and after using the Truffle Dashboard Hardhat plugin](./assets/truffle-dashboard-before-after.jpg)
+
+@truffle/dashboard-hardhat-plugin works by hooking into `npx hardhat compile`;
+every time you compile your project, this plugin takes the resulting build-info
+and sends it to Truffle Dashboard. Under the hood, Truffle Dashboard uses the
+advanced
+[@truffle/decoder](https://trufflesuite.com/docs/truffle/codec/modules/_truffle_decoder.html)
+library to decode your smart contract operations, giving you improved visibility
+before you issue a signature with your browser-based wallet.
+
+Besides just relaying project info to Truffle Dashboard, this plugin also
+eliminates the need to add a custom network to your config. Instead, it
+automatically adds the `truffleDashboard` network for you, so you don't need to
+note the JSON-RPC `url`, etc.
+
+Please see below if you're looking to customize network settings (like `timeout`
+or `httpHeaders`, if these are things you need). Otherwise, keep reading to
+learn how to get started. Enjoy!
 
 ## Installation
 
@@ -43,7 +53,7 @@ import "@truffle/dashboard-hardhat-plugin";
 
 ## Setup
 
-This extension assumes you have Truffle installed (either globally or in a local
+This plugin assumes you have Truffle installed (either globally or in a local
 project context). If not, you can install it with `npm i -g truffle`. Beyond
 this you'll be able to start Truffle Dashboard with `truffle dashboard`. For
 reference, more information on using the Truffle Dashboard can be found
@@ -53,29 +63,36 @@ Alternatively, you can skip the installation and fetch (and run) it remotely
 with `npx truffle dashboard`.
 
 This plugin automatically tells Hardhat about the `truffleDashboard` network, so
-you don't need to modify your `hardhat.config.ts` to get started. Just specify
+you don't need to add this network to your `hardhat.config.ts` yourself. This
+means you can get started quickly by just specifying
 `--network truffleDashboard` when running your usual Hardhat commands (e.g.
 `npx hardhat run ./scripts/deploy-contracts.ts --network truffleDashboard`).
-This managed network will include the `url` property (default
+This managed network includes the `url` property (default
 `"http://localhost:24012/rpc"`) and a few other sensible defaults for this
 workflow.
+
+If you don't like this plugin's default network configuration (is
+`--network truffleDashboard` too long?), then please see the next section for
+information on how to modify this.
 
 **Note on request timeouts**: Signing transactions with MetaMask is slower than
 Hardhat computing signatures automatically. For this reason,
 @truffle/dashboard-hardhat-plugin disables request timeouts for the
-`truffleDashboard` network. See below if you'd like to change this behavior.
+`truffleDashboard` network. You can override this if you want the timeout anyway
+(see below!).
 
 ### Configuration
 
-> ℹ️ If you want to run Truffle Dashboard on a custom host or port, please
-> configure that inside a `truffle-config.js` file in your Hardhat project
-> directory. See the
+> ℹ️ **This section is only about configuring this plugin.** If you want to
+> customize Truffle Dashboard itself (e.g., custom host or port), then please
+> ensure you have a `truffle-config.js` file with your preferred settings in
+> your Hardhat project directory. See the
 > [truffle-config.js#dashboard](https://trufflesuite.com/docs/truffle/reference/configuration/#dashboard)
-> reference documentation to learn more about this; this section pertains only
-> to configuring @truffle/dashboard-hardhat-plugin itself.
+> reference docs to learn more.
 
-To configure this plugin, add a `truffle` section to your Hardhat config. This
-namespace can contain the following fields (all are optional):
+To customize @truffle/dashboard-hardhat-plugin, add a `truffle` section to your
+Hardhat config. This namespace can contain the following fields (both are
+optional):
 
 - **`dashboardNetworkName`** _(default: `"truffleDashboard"`)_: Specify the name
   of the Truffle Dashboard network, e.g. via the `--network <...>` command-line
@@ -105,10 +122,10 @@ Subsequently, any deployments (or transactions via scripts) that target the
 `truffleDashboard` network will now send them to Truffle Dashboard for signing
 via your browser-based wallet.
 
-> Note you'll need to ensure your browser-based wallet is unlocked for
-> transactions to be received (otherwise you might see a
-> `Cannot read properties of null (reading 'sendTransaction')` when running the
-> command below).
+> :warning: **Please ensure your browser-based wallet is unlocked** for
+> transactions to be received. Otherwise, you might notice the error
+> `Cannot read properties of null (reading 'sendTransaction')` when running
+> Hardhat commands.
 
 ```console
 npx hardhat run scripts/deploy.ts --network truffleDashboard
