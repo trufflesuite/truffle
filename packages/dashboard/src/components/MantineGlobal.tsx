@@ -52,6 +52,7 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger": {
               height: "100vh",
+              width: "calc(100vh-964px)",
               overflowY: "hidden"
             },
             ".truffle-debugger-input": {
@@ -65,41 +66,20 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
-            ".trfl-Tabs-root": {
-              overflow: "hidden",
-              height: "calc(100vh - 72px)",
-              paddingTop: 36,
-              zIndex: 1,
-              width: "65%"
-            },
-            ".trfl-Tabs-list": {
-              position: "fixed",
-              top: 36,
-              backgroundColor: "#1A1B1E",
-              width: "100%"
-            },
-            ".truffle-debugger-sources-variables": {
-              display: "flex"
-            },
-            ".truffle-debugger-sources": {
-              height: "100%",
-              overflow: "scroll"
-            },
             ".truffle-debugger-source:hover": {
               cursor: "pointer"
             },
-            ".truffle-debugger-variables-breakpoints": {
-              display: "flex",
-              flexDirection: "column",
-              width: "35%"
-            },
             ".truffle-debugger-variables": {
-              overflowY: "scroll",
-              height: "50%"
+              overflow: "scroll",
+              height: "40%"
             },
-            ".truffle-debugger-breakpoint-group": {
-              display: "flex",
-              justifyContent: "space-between"
+            ".truffle-debugger-breakpoints": {
+              overflow: "scroll",
+              height: "30%"
+            },
+            ".truffle-debugger-stack": {
+              overflow: "scroll",
+              height: "30%"
             },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
