@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Notification } from "@mantine/core";
+import { Input, Button, Notification, Header, Grid } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
@@ -117,17 +117,19 @@ function Debugger(): JSX.Element {
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
-      <div className="truffle-debugger-sources-variables">
-        <Sources
-          sources={sources}
-          unknownAddresses={unknownAddresses}
-          session={session}
-          sessionUpdated={sessionUpdated}
-          currentSourceRange={currentSourceRange}
-          currentSourceId={currentSourceId}
-          setCurrentSourceId={setCurrentSourceId}
-        />
-        <div className="truffle-debugger-variables-breakpoints">
+      <Grid style={{ height: "100%" }} columns={6} gutter="sm">
+        <Grid.Col style={{ height: "100%" }} span={4}>
+          <Sources
+            sources={sources}
+            unknownAddresses={unknownAddresses}
+            session={session}
+            sessionUpdated={sessionUpdated}
+            currentSourceRange={currentSourceRange}
+            currentSourceId={currentSourceId}
+            setCurrentSourceId={setCurrentSourceId}
+          />
+        </Grid.Col>
+        <Grid.Col style={{ height: "100%" }} span={2}>
           <Variables currentStep={currentStep} session={session} />
           <Breakpoints
             sources={sources}
@@ -135,8 +137,8 @@ function Debugger(): JSX.Element {
             handleBreakpointDeleteClick={handleBreakpointDeleteClick}
           />
           <Stack session={session} currentStep={currentStep} />
-        </div>
-      </div>
+        </Grid.Col>
+      </Grid>
     );
   } else {
     content = status;
@@ -182,7 +184,7 @@ function Debugger(): JSX.Element {
   } else {
     return (
       <div className="truffle-debugger">
-        <div className="truffle-debugger-input">
+        <Header height={36} className="truffle-debugger-input">
           <Controls session={session} stepEffect={sessionTick} />
           <div className="truffle-debugger-input-group">
             <Input
@@ -198,8 +200,7 @@ function Debugger(): JSX.Element {
               </Button>
             )}
           </div>
-        </div>
-
+        </Header>
         {content}
       </div>
     );
