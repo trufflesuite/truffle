@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { basename } from "path";
-import { Tabs } from "@mantine/core";
+import { createStyles, Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
 import UnknownSource from "src/components/composed/Debugger/Sources/UnknownSource";
 import type {
@@ -8,6 +8,16 @@ import type {
   Session,
   Source as SourceType
 } from "src/utils/debugger";
+
+const useStyles = createStyles((_theme, _params, _getRef) => ({
+  maxHeight: {
+    height: "100%"
+  },
+  sourceContent: {
+    height: "100%",
+    overflow: "scroll"
+  }
+}));
 
 interface SourcesProps {
   session: Session;
@@ -28,6 +38,7 @@ function Sources({
   currentSourceId,
   setCurrentSourceId
 }: SourcesProps): JSX.Element {
+  const { classes } = useStyles();
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
 
@@ -57,7 +68,7 @@ function Sources({
       <Tabs.Panel
         key={source.id}
         value={source.id}
-        className="truffle-debugger-sources"
+        className={classes.sourceContent}
       >
         <Source
           source={source}
@@ -67,7 +78,11 @@ function Sources({
       </Tabs.Panel>
     ));
     unknownSourcesContent = unknownAddresses.map((address: string) => (
-      <Tabs.Panel key={address} value={address}>
+      <Tabs.Panel
+        key={address}
+        value={address}
+        className={classes.sourceContent}
+      >
         <UnknownSource address={address} />
       </Tabs.Panel>
     ));
@@ -75,7 +90,11 @@ function Sources({
 
   return (
     // @ts-ignore
-    <Tabs value={currentSourceId} onTabChange={setCurrentSourceId}>
+    <Tabs
+      value={currentSourceId}
+      onTabChange={setCurrentSourceId}
+      className={classes.maxHeight}
+    >
       <Tabs.List>
         {sources.map((source: SourceType) => (
           <Tabs.Tab key={source.id} value={source.id}>
