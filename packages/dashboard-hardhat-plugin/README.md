@@ -76,7 +76,7 @@ If you don't like this plugin's default network configuration (is
 information on how to modify this.
 
 **Note on request timeouts**: Signing transactions with MetaMask is slower than
-Hardhat computing signatures automatically. For this reason,
+Hardhat at computing signatures automatically. For this reason,
 @truffle/dashboard-hardhat-plugin disables request timeouts for the
 `truffleDashboard` network. You can override this if you want the timeout anyway
 (see below!).
