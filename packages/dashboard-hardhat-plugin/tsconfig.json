@@ -8,6 +8,7 @@
     "outDir": "./dist",
     "strict": true,
     "rootDirs": ["./src", "./test"],
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },

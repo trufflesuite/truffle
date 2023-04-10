@@ -1,61 +1,173 @@
-import { task } from "hardhat/config";
-import { ActionType } from "hardhat/types";
+import { name as pluginName } from "../package.json";
+import { URL } from "url";
+import util from "util";
+import { extendConfig, task } from "hardhat/config";
+import { HardhatPluginError } from "hardhat/plugins";
+import type {
+  HardhatConfig,
+  HardhatUserConfig,
+  HttpNetworkConfig,
+  TruffleDashboardNetworkConfigurableKeys
+} from "hardhat/types";
 
-const FromHardhat = require("@truffle/from-hardhat");
+import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
+import * as FromHardhat from "@truffle/from-hardhat";
+import TruffleConfig from "@truffle/config";
 
-const {
-  DashboardMessageBusClient
-} = require("@truffle/dashboard-message-bus-client");
+import "./type-extensions";
 
-interface CompilationArgs {}
+const defaults = {
+  networkName: "truffleDashboard",
+  host: "localhost",
+  port: 24012,
+  gas: "auto",
+  gasPrice: "auto",
+  gasMultiplier: 1,
+  timeout: 0,
+  httpHeaders: {}
+} as const;
 
-const processCompilation: ActionType<CompilationArgs> = async (
-  taskArgs,
-  env,
-  runSuper
-) => {
-  // Run Hardhat compilation
-  const result = await runSuper();
+extendConfig((config: HardhatConfig, userConfig: HardhatUserConfig) => {
+  // Validate configuration and fill in defaults for missing user config fields
+  const {
+    dashboardNetworkName,
+    dashboardNetworkConfig: dashboardNetworkUserConfig
+  } = getTruffleDashboardUserConfig(config, userConfig);
 
+  // Look for custom Truffle Dashboard configuration inside truffle-config.js
+  // (if it exists)
+  const { host, port } = detectDashboardSettings();
+
+  // Generate URL and supply other plugin invariants
+  // (e.g., accounts should always be "remote" for Truffle Dashboard)
+  const dashboardNetworkConfig: HttpNetworkConfig = {
+    url: `http://${host}:${port}/rpc`,
+    accounts: "remote",
+    ...dashboardNetworkUserConfig
+  };
+
+  // Capture completed configuration
+  config.truffle = {
+    dashboardNetworkName,
+    dashboardNetworkConfig
+  };
+
+  // Add managed network
+  config.networks[dashboardNetworkName] = dashboardNetworkConfig;
+});
+
+task("compile", "Compile with Truffle Dashboard support").setAction(
+  async (taskArgs, env, runSuper) => {
+    // Run Hardhat compilation
+    const result = await runSuper();
+
+    try {
+      await FromHardhat.expectHardhat();
+
+      // Extract Truffle Dashboard host and port from complete Hardhat config
+      const { hostname: host, port } = new URL(
+        env.config.truffle.dashboardNetworkConfig.url
+      );
+
+      console.log("Preparing Truffle compilation");
+
+      // Prepare Truffle compilations
+      let compilations = await FromHardhat.prepareCompilations();
+
+      // Create Message Bus client
+      let messageBusClient = new DashboardMessageBusClient({
+        host,
+        port: parseInt(port)
+      });
+
+      console.log("Sending Truffle compilation to dashboard");
+
+      // Send Truffle compilations to dashboard
+      const publishLifecycle = await messageBusClient.publish({
+        type: "cli-event",
+        payload: {
+          label: "workflow-compile-result",
+          data: { compilations }
+        }
+      });
+      publishLifecycle.abandon();
+
+      console.log("Compilation successfully sent!");
+    } catch (hardhatError) {
+      console.warn(
+        "The Truffle Dashboard plugin failed to compile: ",
+        hardhatError
+      );
+    }
+
+    return result;
+  }
+);
+
+function detectDashboardSettings() {
+  let truffleConfig;
   try {
-    await FromHardhat.expectHardhat();
-
-    const dashboardConfig = {
-      host: "localhost",
-      port: 24012
+    truffleConfig = TruffleConfig.detect();
+  } catch {
+    truffleConfig = {
+      dashboard: {}
     };
+  }
 
-    console.log("Preparing Truffle compilation");
+  const { host = defaults.host, port = defaults.port } =
+    truffleConfig.dashboard;
 
-    // Prepare Truffle compilations
-    let compilations = await FromHardhat.prepareCompilations();
+  return {
+    host,
+    port
+  };
+}
 
-    // Create Message Bus client
-    let messageBusClient = new DashboardMessageBusClient(dashboardConfig);
+function getTruffleDashboardUserConfig(
+  config: HardhatConfig,
+  userConfig: HardhatUserConfig
+) {
+  const {
+    dashboardNetworkName = defaults.networkName,
+    dashboardNetworkConfig: dashboardNetworkUserConfig = {}
+  } = userConfig.truffle || {};
 
-    console.log("Sending Truffle compilation to dashboard");
+  const {
+    gas = defaults.gas,
+    gasPrice = defaults.gasPrice,
+    gasMultiplier = defaults.gasMultiplier,
+    timeout = defaults.timeout,
+    httpHeaders = defaults.httpHeaders
+  } = dashboardNetworkUserConfig;
 
-    // Send Truffle compilations to dashboard
-    const publishLifecycle = await messageBusClient.publish({
-      type: "cli-event",
-      payload: {
-        label: "workflow-compile-result",
-        data: { compilations }
-      }
-    });
-    publishLifecycle.abandon();
+  const dashboardNetworkConfig: Pick<
+    HttpNetworkConfig,
+    TruffleDashboardNetworkConfigurableKeys
+  > = {
+    gas,
+    gasPrice,
+    gasMultiplier,
+    timeout,
+    httpHeaders
+  };
 
-    console.log("Compilation successfully sent!");
-  } catch (hardhatError) {
-    console.warn(
-      "The Truffle Dashboard plugin failed to compile: ",
-      hardhatError
+  const networkIsDefinedExplicitly =
+    userConfig.networks && dashboardNetworkName in userConfig.networks;
+
+  if (networkIsDefinedExplicitly) {
+    throw new HardhatPluginError(
+      pluginName,
+      `Manual network config disallowed.\n\n` +
+        `This plugin manages your Truffle Dashboard network config for you,\n` +
+        `but your Hardhat config also contains \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
+        `You can fix this error by removing \`config.networks["${dashboardNetworkName}"]\`.\n\n`  +
+        `Please see the README for more details about how to configure this plugin:\n` +
+        `  https://www.npmjs.com/package/@truffle/dashboard-hardhat-plugin`
     );
   }
 
-  return result;
-};
-
-task("compile", "Compile with Truffle Dashboard support").setAction(
-  processCompilation
-);
+  return {
+    dashboardNetworkName,
+    dashboardNetworkConfig
+  };
+}
