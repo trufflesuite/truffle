@@ -17,21 +17,25 @@ var SourceMapUtils = {
     var column = 0;
 
     source.forEach(function (character) {
+      let loc;
       if (character === "\n") {
         line += 1;
         column = -1;
 
-        mapping.push({
+        loc = {
           line: line,
           column: 0
-        });
+        };
       } else {
-        mapping.push({
+        loc = {
           line: line,
           column: column
-        });
+        };
       }
 
+      for (let i = 0; i < Buffer.from(character).length; i++) {
+        mapping.push(loc);
+      }
       column += 1;
     });
 
