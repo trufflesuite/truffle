@@ -17,7 +17,7 @@ var SourceMapUtils = {
     var column = 0;
 
     source.forEach(function (character) {
-      let loc;
+      let loc = { line, column };
       if (character === "\n") {
         line += 1;
         column = -1;
@@ -25,11 +25,6 @@ var SourceMapUtils = {
         loc = {
           line: line,
           column: 0
-        };
-      } else {
-        loc = {
-          line: line,
-          column: column
         };
       }
 
