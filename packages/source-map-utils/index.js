@@ -29,6 +29,9 @@ var SourceMapUtils = {
       }
 
       for (let i = 0; i < Buffer.from(character).length; i++) {
+        //because our character offsets here are in bytes, we need to
+        //pad out the line/column map as per the UTF-8 length of the
+        //characters so we're mapping *bytes* to line/columns
         mapping.push(loc);
       }
       column += 1;
