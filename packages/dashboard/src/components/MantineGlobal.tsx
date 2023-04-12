@@ -66,6 +66,13 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
+            ".truffle-debugger-source-line": {
+              height: 25
+            },
+            ".truffle-debugger-source-container": {
+              overflow: "scroll",
+              height: "100%"
+            },
             ".truffle-debugger-source:hover": {
               cursor: "pointer"
             },
