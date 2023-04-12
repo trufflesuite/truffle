@@ -56,13 +56,16 @@ function SourceLine({
     toggleDebuggerBreakpoint({ line: lineNumber, sourceId });
   };
 
-  const lineClassName = `${sourceId.slice(-10)}-${lineNumber}`;
+  const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
+
   return (
-    <div
-      className={lineClassName}
-      onClick={handleClick}
-      dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
-    />
+    <div className="truffle-debugger-source-line">
+      <div
+        id={lineId}
+        onClick={handleClick}
+        dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
+      />
+    </div>
   );
 }
 

@@ -67,21 +67,25 @@ function Debugger(): JSX.Element {
     line: number;
   }) => {
     const lineNumber = line + 1;
-    const scrollTarget = document.getElementsByClassName(
-      `${sourceId.slice(-10)}-${lineNumber}`
-    );
-    if (scrollTarget[0]) {
-      scrollTarget[0].scrollIntoView({ block: "center" });
+    const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
+    const targetLine: any = document.getElementById(lineId);
+    if (targetLine) {
+      const offsetTop = targetLine.offsetTop;
+      // @ts-ignore
+      const scroller = document.getElementById(`source-${sourceId.slice(-10)}`);
+      const browserViewHeight = window.innerHeight;
+      // @ts-ignore
+      scroller.scrollTop = offsetTop - browserViewHeight / 2;
     }
   };
 
   // scroll to highlighted source as debugger steps
   useEffect(() => {
-    if (isSourceRange(currentSourceRange)) {
+    if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
       const { source, start } = currentSourceRange!;
-      scrollToLine({ sourceId: source!.id, line: start!.line });
+      scrollToLine({ sourceId: source.id, line: start.line });
     }
-  }, [currentSourceRange.traceIndex]);
+  });
 
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
