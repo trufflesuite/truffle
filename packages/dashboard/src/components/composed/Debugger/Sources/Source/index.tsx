@@ -5,41 +5,44 @@ import { convertSourceToHtml } from "src/utils/debugger";
 interface SourceProps {
   source: SourceType;
   sourceRange: SourceRange;
-  sourceId: string;
 }
 
-function Source({ source, sourceRange, sourceId }: SourceProps): JSX.Element {
+function Source({ source, sourceRange }: SourceProps): JSX.Element {
   const sourceLines = convertSourceToHtml({ source, sourceRange });
 
   const { start, end } = sourceRange;
   const lineNumberGutterWidth = sourceLines.length.toString().length;
-
   return (
-    <pre className="truffle-debugger-source">
-      {sourceLines.map((line: string, index: number) => {
-        const key = `${source.id}-line-${index}`;
-        const selected =
-          source.id === sourceRange.source.id &&
-          index >= start.line &&
-          (end.line === null ||
-            end.column === null ||
-            (end.column === 0 && index < end.line) ||
-            (end.column > 0 && index <= end.line));
-        const firstHighlightedLine = selected && index === start.line;
+    <div
+      className="truffle-debugger-source-container"
+      id={`source-${source.id.slice(-10)}`}
+    >
+      <pre className="truffle-debugger-source">
+        {sourceLines.map((line: string, index: number) => {
+          const key = `${source.id}-line-${index}`;
+          const selected =
+            source.id === sourceRange.source.id &&
+            index >= start.line &&
+            (end.line === null ||
+              end.column === null ||
+              (end.column === 0 && index < end.line) ||
+              (end.column > 0 && index <= end.line));
+          const firstHighlightedLine = selected && index === start.line;
 
-        const props = {
-          key,
-          line,
-          lineNumber: index + 1,
-          lineNumberGutterWidth,
-          lastLine: index === sourceLines.length - 1,
-          firstHighlightedLine,
-          sourceId
-        };
+          const props = {
+            key,
+            line,
+            lineNumber: index + 1,
+            lineNumberGutterWidth,
+            lastLine: index === sourceLines.length - 1,
+            firstHighlightedLine,
+            sourceId: source.id
+          };
 
-        return <SourceLine {...props} />;
-      })}
-    </pre>
+          return <SourceLine {...props} />;
+        })}
+      </pre>
+    </div>
   );
 }
 
