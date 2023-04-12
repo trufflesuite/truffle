@@ -1,5 +1,5 @@
-import { Navbar, Badge, Indicator } from "@mantine/core";
-import { Zap, Crosshair, Archive, Aperture } from "react-feather";
+import { Navbar, Indicator } from "@mantine/core";
+import { Zap, Crosshair, Aperture } from "react-feather";
 import NavButton from "src/components/composed/Sidebar/Middle/NavButton";
 import { useDash } from "src/hooks";
 
@@ -9,16 +9,6 @@ function Middle(): JSX.Element {
   } = useDash()!;
   const numRequests = providerMessages.size;
   const featherIconProps = { size: 18 };
-
-  const comingSoonBadge = (
-    <Badge
-      variant="gradient"
-      gradient={{ from: "truffle-teal", to: "pink" }}
-      sx={{ opacity: 0.4 }}
-    >
-      coming soon
-    </Badge>
-  );
 
   return (
     <Navbar.Section grow py="sm">
@@ -44,13 +34,6 @@ function Middle(): JSX.Element {
         label="Debugger"
         to="/debugger"
         icon={<Crosshair {...featherIconProps} />}
-      />
-      <NavButton
-        label="Contracts"
-        to="/contracts"
-        icon={<Archive {...featherIconProps} />}
-        badge={comingSoonBadge}
-        disabled={true}
       />
       {process.env.NODE_ENV === "development" && (
         <NavButton
