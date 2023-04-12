@@ -19,7 +19,9 @@ interface ControlsProps {
 
 function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   const [stepping, setStepping] = useState(false);
-  const atStart = session?.view($.trace.index) === 0;
+  const atStart =
+    session?.view($.trace.index) === 0 ||
+    session?.view($.trace.index) === undefined;
   const atEnd = session?.view($.trace.finished);
   const disabled = atEnd || !session;
 
