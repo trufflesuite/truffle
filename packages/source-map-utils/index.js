@@ -17,21 +17,23 @@ var SourceMapUtils = {
     var column = 0;
 
     source.forEach(function (character) {
+      let loc = { line, column };
       if (character === "\n") {
         line += 1;
         column = -1;
 
-        mapping.push({
+        loc = {
           line: line,
           column: 0
-        });
-      } else {
-        mapping.push({
-          line: line,
-          column: column
-        });
+        };
       }
 
+      for (let i = 0; i < Buffer.from(character).length; i++) {
+        //because our character offsets here are in bytes, we need to
+        //pad out the line/column map as per the UTF-8 length of the
+        //characters so we're mapping *bytes* to line/columns
+        mapping.push(loc);
+      }
       column += 1;
     });
 
