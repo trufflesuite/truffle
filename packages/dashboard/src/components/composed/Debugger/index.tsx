@@ -83,7 +83,7 @@ function Debugger(): JSX.Element {
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
       const { source, start } = currentSourceRange!;
-      scrollToLine({ sourceId: source!.id, line: start!.line });
+      scrollToLine({ sourceId: source.id, line: start.line });
     }
   });
 
@@ -137,28 +137,30 @@ function Debugger(): JSX.Element {
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
-      <Grid style={{ height: "100%" }} columns={6} gutter="sm">
-        <Grid.Col style={{ height: "100%" }} span={4}>
-          <Sources
-            sources={sources}
-            unknownAddresses={unknownAddresses}
-            session={session}
-            sessionUpdated={sessionUpdated}
-            currentSourceRange={currentSourceRange}
-            currentSourceId={currentSourceId}
-            setCurrentSourceId={setCurrentSourceId}
-          />
-        </Grid.Col>
-        <Grid.Col style={{ height: "100%" }} span={2}>
-          <Variables currentStep={currentStep} session={session} />
-          <Breakpoints
-            sources={sources}
-            handleBreakpointComponentClick={handleBreakpointComponentClick}
-            handleBreakpointDeleteClick={handleBreakpointDeleteClick}
-          />
-          <Stack session={session} currentStep={currentStep} />
-        </Grid.Col>
-      </Grid>
+      <div className="truffle-debugger-content-group">
+        <Grid style={{ height: "100%" }} columns={6} gutter="sm">
+          <Grid.Col style={{ height: "100%" }} span={4}>
+            <Sources
+              sources={sources}
+              unknownAddresses={unknownAddresses}
+              session={session}
+              sessionUpdated={sessionUpdated}
+              currentSourceRange={currentSourceRange}
+              currentSourceId={currentSourceId}
+              setCurrentSourceId={setCurrentSourceId}
+            />
+          </Grid.Col>
+          <Grid.Col style={{ height: "100%" }} span={2}>
+            <Variables currentStep={currentStep} session={session} />
+            <Breakpoints
+              sources={sources}
+              handleBreakpointComponentClick={handleBreakpointComponentClick}
+              handleBreakpointDeleteClick={handleBreakpointDeleteClick}
+            />
+            <Stack session={session} currentStep={currentStep} />
+          </Grid.Col>
+        </Grid>
+      </div>
     );
   } else {
     content = status;
