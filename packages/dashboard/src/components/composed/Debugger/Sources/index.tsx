@@ -14,8 +14,8 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
     height: "100%"
   },
   sourceContent: {
-    height: "100%",
-    overflow: "scroll"
+    height: "100%"
+    // overflow: "scroll"
   }
 }));
 
@@ -70,11 +70,7 @@ function Sources({
         value={source.id}
         className={classes.sourceContent}
       >
-        <Source
-          source={source}
-          sourceRange={currentSourceRange}
-          sourceId={currentSourceId}
-        />
+        <Source source={source} sourceRange={currentSourceRange} />
       </Tabs.Panel>
     ));
     unknownSourcesContent = unknownAddresses.map((address: string) => (
