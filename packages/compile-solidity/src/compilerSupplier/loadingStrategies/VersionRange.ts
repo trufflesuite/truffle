@@ -180,7 +180,18 @@ export class VersionRange {
       throw error;
     }
     events.emit("downloadCompiler:succeed");
-    await this.cache.add(response.data, fileName);
+    try {
+      await this.cache.add(response.data, fileName);
+    } catch (error) {
+      if (error.message.includes("EACCES: permission denied")) {
+        const warningMessage =
+          "There was an error attempting to save the compiler to disk. " +
+          "The current user likely does not have sufficient permissions to " +
+          "write to disk in Truffle's compiler cache directory. See the error" +
+          `printed below for more information about this directory.\n${error}`;
+        console.warn(warningMessage);
+      }
+    }
     return this.compilerFromString(response.data);
   }
 

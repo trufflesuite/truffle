@@ -1,0 +1,5 @@
+{
+  "require": ["ts-node/register/files", "mocha-suppress-logs"],
+  "ignore": ["test/fixture-projects/**/*"],
+  "timeout": 10000
+}

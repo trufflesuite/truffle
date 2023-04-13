@@ -1,0 +1,69 @@
+{
+  "name": "@truffle/dashboard-hardhat-plugin",
+  "version": "0.2.0",
+  "description": "Truffle Dashboard for Hardhat plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard-hardhat-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "ConsenSys Software Inc",
+  "license": "MIT",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "keywords": [
+    "ethereum",
+    "smart-contracts",
+    "hardhat",
+    "hardhat-plugin",
+    "truffle",
+    "truffle-dashboard"
+  ],
+  "scripts": {
+    "test": "yarn setup-fixtures && mocha test/**/*.test.ts",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepare": "yarn build",
+    "setup-fixtures": "cd test/fixture-projects/hardhat-project-incorrect-version && yarn"
+  },
+  "files": [
+    "dist/src/",
+    "dist/package.json",
+    "src/",
+    "assets/",
+    "LICENSE",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "2.0.0",
+    "@types/chai": "^4.1.7",
+    "@types/fs-extra": "^5.0.4",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^18.14.1",
+    "chai": "^4.2.0",
+    "hardhat": "^2.0.0",
+    "mocha": "10.1.0",
+    "mocha-suppress-logs": "^0.3.1",
+    "prettier": "2.0.5",
+    "ts-node": "^8.1.0",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^4.0.3"
+  },
+  "peerDependencies": {
+    "hardhat": "^2.0.0"
+  },
+  "dependencies": {
+    "@truffle/config": "^1.3.54",
+    "@truffle/dashboard-message-bus-client": "^0.1.10",
+    "@truffle/from-hardhat": "^0.2.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "a75816b8744eb4bb390866b45b4b7843c630abe3"
+}

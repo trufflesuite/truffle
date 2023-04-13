@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.7.7",
+  "version": "5.8.2",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -31,23 +31,23 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "optionalDependencies": {
-    "@truffle/db": "^2.0.16"
+    "@truffle/db": "^2.0.21"
   },
   "dependencies": {
-    "@truffle/db-loader": "^0.2.16",
-    "@truffle/debugger": "^11.0.27",
+    "@truffle/db-loader": "^0.2.21",
+    "@truffle/debugger": "^11.0.32",
     "app-module-path": "^2.2.0",
-    "ganache": "7.7.5",
+    "ganache": "7.7.7",
     "mocha": "10.1.0",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
     "@ganache/console.log": "0.3.0",
-    "@truffle/box": "^2.1.72",
-    "@truffle/config": "^1.3.52",
-    "@truffle/contract": "^4.6.15",
-    "@truffle/core": "^5.7.7",
-    "@truffle/interface-adapter": "^0.5.29",
+    "@truffle/box": "^2.1.74",
+    "@truffle/config": "^1.3.54",
+    "@truffle/contract": "^4.6.19",
+    "@truffle/core": "^5.8.2",
+    "@truffle/interface-adapter": "^0.5.31",
     "chai": "^4.2.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",

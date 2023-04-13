@@ -92,13 +92,33 @@ export class IncompatibleHardhatVersionError extends Error {
  * @return Promise<TruffleConfig>
  *
  * @dev This function shells out to `npx hardhat console` to ask the Hardhat
- *      runtime environment for a fully populated config object.
+ *      runtime environment for the Hardhat config info that Truffle needs.
  */
 export const prepareConfig = async (
   options?: EnvironmentOptions
 ): Promise<TruffleConfig> => {
+  // define a function to grab only the networks and fields we need.
+  //
+  // this duplicates the transformation behavior in src/config.ts for safe
+  // measure, since these two components may differ in requirements in the
+  // future.
+  const extractNetworks = (hre: Hardhat.HardhatRuntimeEnvironment) => ({
+    networks: Object.entries(hre.config.networks)
+      .filter(
+        (
+          pair
+        ): pair is [string, Hardhat.HardhatNetworkConfig & { url: string }] =>
+          pair[0] !== "hardhat" && "url" in pair[1]
+      )
+      .map(([networkName, { url }]) => ({
+        [networkName]: { url }
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {})
+  });
+
   const hardhatConfig = (await askHardhatConsole(
-    `hre.config`,
+    // stringify the function hooray
+    `(${extractNetworks.toString()})(hre)`,
     options
   )) as Hardhat.HardhatConfig;
 
