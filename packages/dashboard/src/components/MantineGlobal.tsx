@@ -48,16 +48,23 @@ function MantineGlobal(): JSX.Element {
             // class for highlighting source material in debugger
             ".truffle-debugger-text-highlighted": {
               backgroundColor:
-                theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
+                colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
             },
             ".truffle-debugger": {
               height: "100vh",
               width: "calc(100vh-964px)",
-              overflowY: "hidden"
+              overflowY: "hidden",
+              backgroundColor:
+                colorScheme === "dark"
+                  ? colors["truffle-brown"][8]
+                  : colors["truffle-beige"][3]
             },
             ".truffle-debugger-input": {
               display: "flex",
-              backgroundColor: "#1A1B1E"
+              backgroundColor:
+                colorScheme === "dark"
+                  ? colors["truffle-brown"][8]
+                  : colors["truffle-beige"][3]
             },
             ".truffle-debugger-input-group": {
               display: "flex",

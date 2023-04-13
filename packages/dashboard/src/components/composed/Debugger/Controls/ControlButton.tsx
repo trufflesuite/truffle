@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import type { Icon } from "react-feather";
-import { ActionIcon } from "@mantine/core";
+import { ActionIcon, createStyles } from "@mantine/core";
 import type { ActionIconProps } from "@mantine/core";
 
 interface ControlButtonProps extends ActionIconProps {
@@ -20,9 +20,20 @@ function ControlButton({
   setStepping,
   ...props
 }: ControlButtonProps): JSX.Element {
+  const useStyles = createStyles(theme => ({
+    button: {
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? theme.colors["truffle-brown"][5]
+          : theme.colors["truffle-beige"][5]
+    }
+  }));
+  const { classes } = useStyles();
+
   return (
     <ActionIcon
       {...props}
+      className={classes.button}
       disabled={stepping || disabled}
       onClick={async () => {
         setStepping(true);

@@ -45,7 +45,8 @@ export async function initDebugger({
   const compilations = await operations.getCompilations();
   const testTxHash = txHash
     ? txHash
-    : "0xf5ad7387297428dd152997aab72c190954bcce692daf022bb63ab9aa5f199c33"; // cross contract goerli text tx hash (link verified)
+    : // : "0xf5ad7387297428dd152997aab72c190954bcce692daf022bb63ab9aa5f199c33"; // cross contract goerli text tx hash (link verified)
+      "0x888e35de86e3a6484eb56136f32230fd53d0ce83c81278e7b589a828f182afb7"; // local MetaCoin deployment
   // "0xfb09532437064597ac2a07f62440dd45e3806d6299e4fc86da6231ab2856f021"; // cross contract goerli test tx hash (dai unverified)
   // "0x8d093f67b6501ff576f259a683ac3ac0a0adb3280b66e272ebbaf691242d99b1";
   // "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389"; //goerli tx
