@@ -70,6 +70,9 @@ function MantineGlobal(): JSX.Element {
               display: "flex",
               flexGrow: 1
             },
+            ".truffle-debugger-content-group": {
+              margin: 32
+            },
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
@@ -90,6 +93,10 @@ function MantineGlobal(): JSX.Element {
             ".truffle-debugger-breakpoints": {
               overflow: "scroll",
               height: "30%"
+            },
+            ".truffle-debugger-section-header": {
+              height: 42,
+              fontSize: 16
             },
             ".truffle-debugger-stack": {
               overflow: "scroll",
