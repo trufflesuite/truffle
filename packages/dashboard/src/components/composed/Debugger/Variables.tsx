@@ -56,7 +56,7 @@ function Variables({
 
   return (
     <div className="truffle-debugger-variables">
-      <h2>variables</h2>
+      <div className="truffle-debugger-section-header">variables</div>
       <pre>{output ? output : ""}</pre>
     </div>
   );
