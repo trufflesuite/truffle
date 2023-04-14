@@ -24,6 +24,11 @@ function cleanStylize(options: InspectOptions): InspectOptions {
 }
 
 export interface ResultInspectorOptions {
+  /**
+   * This option causes the [[ResultInspector]] to display, for
+   * addresses with a reverse ENS record, both the ENS name and
+   * the address.  (By default it displays only the ENS name.)
+   */
   noHideAddress?: boolean;
 }
 
