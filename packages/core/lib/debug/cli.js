@@ -141,7 +141,7 @@ class CLIDebugger {
       bugger = await Debugger.forProject({
         provider: this.config.provider,
         compilations,
-        ensRegistryAddress: registry
+        ens: { registryAddress: registry }
       });
       if (this.txHash !== undefined) {
         try {
@@ -164,7 +164,7 @@ class CLIDebugger {
       bugger = await Debugger.forTx(this.txHash, {
         provider: this.config.provider,
         compilations,
-        ensRegistryAddress: registry,
+        ens: { registryAddress: registry },
         lightMode: true
       }); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
