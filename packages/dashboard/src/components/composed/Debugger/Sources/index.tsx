@@ -112,7 +112,7 @@ function Sources({
     <Tabs
       value={currentSourceId}
       onTabChange={setCurrentSourceId}
-      className={classes.maxHeight}
+      style={{ height: "100%" }}
     >
       <Tabs.List>
         {sources.map((source: SourceType) => (
