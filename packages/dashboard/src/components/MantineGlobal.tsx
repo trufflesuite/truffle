@@ -96,7 +96,11 @@ function MantineGlobal(): JSX.Element {
               borderStyle: "solid",
               borderRadius: 4,
               padding: 16,
-              marginBottom: 20
+              marginBottom: 20,
+              borderColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-brown"][5]
+                  : `${theme.colors["truffle-beige"][5]}73`
             },
             ".truffle-debugger-variables-types": {
               fontSize: 12,
@@ -109,7 +113,11 @@ function MantineGlobal(): JSX.Element {
               borderStyle: "solid",
               borderRadius: 4,
               padding: 16,
-              marginBottom: 20
+              marginBottom: 20,
+              borderColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-brown"][5]
+                  : `${theme.colors["truffle-beige"][5]}73`
             },
             ".truffle-debugger-section-header": {
               height: 42,
@@ -121,7 +129,11 @@ function MantineGlobal(): JSX.Element {
               borderWidth: 1,
               borderStyle: "solid",
               borderRadius: 4,
-              padding: 16
+              padding: 16,
+              borderColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-brown"][5]
+                  : `${theme.colors["truffle-beige"][5]}73`
             },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
