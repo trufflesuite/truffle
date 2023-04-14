@@ -38,7 +38,7 @@
  *
  * This format targets types and values understood by the
  * [Solidity programming language](https://docs.soliditylang.org/) and
- * the [Contract ABI specification](https://docs.soliditylang.org/en/v0.8.17/abi-spec.html),
+ * the [Contract ABI specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html),
  * within the context of the [Ethereum Virtual Machine](https://ethereum.github.io/yellowpaper/paper.pdf)
  * (EVM) and in raw data for transactions and logs according to the
  * [Ethereum JSON RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC).
