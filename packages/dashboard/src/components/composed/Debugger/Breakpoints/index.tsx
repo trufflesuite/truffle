@@ -47,9 +47,11 @@ function Breakpoints({
     }
   }
   return (
-    <div className="truffle-debugger-breakpoints">
-      <div className="truffle-debugger-section-header">Breakpoints</div>
-      <pre>{breakpointsList}</pre>
+    <div className="truffle-debugger-breakpoints-container">
+      <div className="truffle-debugger-breakpoints">
+        <div className="truffle-debugger-section-header">Breakpoints</div>
+        <pre>{breakpointsList}</pre>
+      </div>
     </div>
   );
 }

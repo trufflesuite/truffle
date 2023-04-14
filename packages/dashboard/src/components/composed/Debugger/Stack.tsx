@@ -16,9 +16,13 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
       );
       if (!stack) return;
       const entries = stack.map((stackItem: any, index: number) => {
+        const functionNameDisplay =
+          stackItem.functionName === undefined
+            ? "unknown function"
+            : stackItem.functionName;
         return (
           <div className="truffle-debugger-stack-item" key={index}>
-            {stackItem.contractName} at {stackItem.functionName} (address{" "}
+            {stackItem.contractName} at {functionNameDisplay} (address{" "}
             {stackItem.address})
           </div>
         );
@@ -29,9 +33,11 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   }, [currentStep, session]);
 
   return (
-    <div className="truffle-debugger-stack">
-      <div className="truffle-debugger-section-header">Stack</div>
-      <pre>{output ? output : ""}</pre>
+    <div className="truffle-debugger-stack-container">
+      <div className="truffle-debugger-stack">
+        <div className="truffle-debugger-section-header">Stack</div>
+        <pre>{output ? output : ""}</pre>
+      </div>
     </div>
   );
 }
