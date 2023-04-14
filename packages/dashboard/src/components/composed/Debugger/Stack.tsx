@@ -29,9 +29,11 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   }, [currentStep, session]);
 
   return (
-    <div className="truffle-debugger-stack">
-      <div className="truffle-debugger-section-header">Stack</div>
-      <pre>{output ? output : ""}</pre>
+    <div className="truffle-debugger-stack-container">
+      <div className="truffle-debugger-stack">
+        <div className="truffle-debugger-section-header">Stack</div>
+        <pre>{output ? output : ""}</pre>
+      </div>
     </div>
   );
 }
