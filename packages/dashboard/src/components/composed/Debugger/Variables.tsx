@@ -55,9 +55,11 @@ function Variables({
   }, [currentStep, session]);
 
   return (
-    <div className="truffle-debugger-variables">
-      <div className="truffle-debugger-section-header">Variables</div>
-      <pre>{output ? output : ""}</pre>
+    <div className="truffle-debugger-variables-container">
+      <div className="truffle-debugger-variables">
+        <div className="truffle-debugger-section-header">Variables</div>
+        <pre>{output ? output : ""}</pre>
+      </div>
     </div>
   );
 }
