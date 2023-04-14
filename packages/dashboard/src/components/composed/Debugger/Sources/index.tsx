@@ -19,8 +19,8 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     borderWidth: 1,
     borderColor:
       theme.colorScheme === "dark"
-        ? theme.colors["truffle-beige"][3]
-        : theme.colors["truffle-brown"][3]
+        ? theme.colors["truffle-brown"][3]
+        : `${theme.colors["truffle-beige"][5]}73`
   },
   tabs: {
     fontSize: 16,
@@ -36,7 +36,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     borderColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][5]
-        : theme.colors["truffle-beige"][3]
+        : `${theme.colors["truffle-beige"][5]}73`
   }
 }));
 
@@ -112,7 +112,7 @@ function Sources({
     <Tabs
       value={currentSourceId}
       onTabChange={setCurrentSourceId}
-      className={classes.maxHeight}
+      style={{ height: "100%" }}
     >
       <Tabs.List>
         {sources.map((source: SourceType) => (
