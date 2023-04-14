@@ -16,6 +16,13 @@ describe("truffle help [ @standalone ]", function () {
       const output = logger.contents();
       assert(output.includes("Usage: truffle <command> [options]"));
     });
+
+    it("includes link to https://ganache.dev", async function () {
+      this.timeout(10000);
+      await CommandRunner.run("help", config);
+      const output = logger.contents();
+      assert(output.includes("For Ethereum JSON-RPC documentation see https://ganache.dev"));
+    });
   });
 
   describe("when run with an argument", function () {

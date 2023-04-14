@@ -59,4 +59,4 @@ A project by Consensys and [@tcoulter](https://github.com/tcoulter), and many co
 
 ### License
 
-MIT
+[MIT](./LICENSE)

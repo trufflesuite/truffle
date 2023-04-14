@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.4.12",
+  "version": "3.4.13",
   "main": "index.js",
   "directories": {
     "spec": "./spec"
@@ -30,7 +30,7 @@
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "10.1.0",
-    "solc": "0.8.18"
+    "solc": "0.8.19"
   },
   "keywords": [
     "artifacts",

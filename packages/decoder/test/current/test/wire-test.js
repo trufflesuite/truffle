@@ -50,6 +50,7 @@ describe("Over-the-wire decoding", function () {
   });
 
   it("should correctly decode transactions and events", async function () {
+    this.timeout(4000);
     let deployedContract = await abstractions.WireTest.new(
       true,
       "0xdeadbeef",

@@ -23,3 +23,12 @@ packages/debugger/.tmp
 
 # @truffle/contract
 packages/contract/browser-dist
+
+# python virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

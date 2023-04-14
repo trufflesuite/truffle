@@ -17,6 +17,8 @@ export const networkNamesById: { [id: number]: string } = {
   421613: "goerli-arbitrum",
   137: "polygon",
   80001: "mumbai-polygon",
+  1101: "zkevm-polygon",
+  1442: "testnet-zkevm-polygon",
   100: "gnosis", //formerly known as xdai
   10200: "chiado-gnosis",
   300: "optimism-gnosis", //optimism on gnosis, not vice versa
@@ -64,7 +66,7 @@ export const networkNamesById: { [id: number]: string } = {
   338: "testnet-cronos",
   199: "bttc",
   1029: "donau-bttc",
-  1024: "clover",
+  1024: "clover", //not presently supported by either fetcher, but formerly by etherscan
   44: "crab-darwinia",
   43: "pangolin-darwinia",
   9001: "evmos",
@@ -94,7 +96,10 @@ export const networkNamesById: { [id: number]: string } = {
   14: "flare",
   19: "songbird-flare",
   2048: "stratos", //not presently supported by either fetcher, but...
-  2047: "testnet-stratos"
+  2047: "testnet-stratos",
+  8453: "base", //not presently supported by either fetcher, but...
+  84531: "goerli-base",
+  641230: "bear"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
