@@ -42,7 +42,7 @@ function Variables({
         if (variableValues.length > 0) {
           entries.push(
             <dl key={section}>
-              <h2>{section}</h2>
+              <div className="truffle-debugger-variables-types">{section}</div>
               {...variableValues}
             </dl>
           );
@@ -56,7 +56,7 @@ function Variables({
 
   return (
     <div className="truffle-debugger-variables">
-      <div className="truffle-debugger-section-header">variables</div>
+      <div className="truffle-debugger-section-header">Variables</div>
       <pre>{output ? output : ""}</pre>
     </div>
   );
