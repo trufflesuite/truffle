@@ -95,7 +95,7 @@ describe("ENS", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      ensRegistryAddress: registryAddress
+      ens: { registryAddress }
     });
 
     await bugger.runToEnd();
@@ -120,7 +120,7 @@ describe("ENS", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      ensRegistryAddress: null
+      ens: { registryAddress: null }
     });
 
     await bugger.runToEnd();
