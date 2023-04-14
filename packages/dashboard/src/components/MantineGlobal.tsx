@@ -52,7 +52,6 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger": {
               height: "100vh",
-              width: "calc(100vh-964px)",
               overflowY: "hidden",
               backgroundColor:
                 colorScheme === "dark"
@@ -71,7 +70,10 @@ function MantineGlobal(): JSX.Element {
               flexGrow: 1
             },
             ".truffle-debugger-content-group": {
-              margin: 32
+              height: "calc(100vh - 36px)",
+              paddingBottom: 36,
+              margin: 32,
+              fontSize: 12
             },
             ".trfl-Input-wrapper": {
               flexGrow: 1
@@ -81,18 +83,33 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-source-container": {
               overflow: "scroll",
-              height: "100%"
+              height: "100%",
+              padding: 15
             },
             ".truffle-debugger-source:hover": {
               cursor: "pointer"
             },
             ".truffle-debugger-variables": {
               overflow: "scroll",
-              height: "40%"
+              height: "40%",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderRadius: 4,
+              padding: 16,
+              marginBottom: 20
+            },
+            ".truffle-debugger-variables-types": {
+              fontSize: 12,
+              fontWeight: 800
             },
             ".truffle-debugger-breakpoints": {
               overflow: "scroll",
-              height: "30%"
+              height: "30%",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderRadius: 4,
+              padding: 16,
+              marginBottom: 20
             },
             ".truffle-debugger-section-header": {
               height: 42,
@@ -100,7 +117,11 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-stack": {
               overflow: "scroll",
-              height: "30%"
+              height: "30%",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderRadius: 4,
+              padding: 16
             },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
