@@ -36,7 +36,7 @@ const Debugger = {
       compilations,
       lightMode,
       storageLookup,
-      ensRegistryAddress
+      ens //currently supported options: registryAddress
     } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -44,7 +44,7 @@ const Debugger = {
     let session = new Session(
       compilations,
       provider,
-      { lightMode, storageLookup, ensRegistryAddress },
+      { lightMode, storageLookup, ens },
       txHash
     );
 
@@ -66,14 +66,14 @@ const Debugger = {
       provider,
       compilations,
       lightMode,
-      ensRegistryAddress
+      ens //currently supported options: registryAddress
     } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
     let session = new Session(compilations, provider, {
       lightMode,
-      ensRegistryAddress
+      ens
     });
 
     await session.ready();

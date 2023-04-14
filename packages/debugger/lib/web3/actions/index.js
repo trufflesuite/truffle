@@ -1,9 +1,9 @@
 export const INIT_WEB3 = "INIT_WEB3";
-export function init(provider, ensRegistryAddress) {
+export function init(provider, ensOptions) {
   return {
     type: INIT_WEB3,
     provider,
-    ensRegistryAddress
+    ensOptions
   };
 }
 

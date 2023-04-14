@@ -7,9 +7,9 @@ import ENS, { getEnsAddress } from "@ensdomains/ensjs";
 import { promisify } from "util";
 
 export default class Web3Adapter {
-  constructor(provider, ensRegistryAddress) {
+  constructor(provider, ensOptions) {
     this.web3 = new Web3(provider);
-    this.ensRegistryAddress = ensRegistryAddress; //note: may be null to turn off resolution
+    this.ensRegistryAddress = ensOptions.registryAddress; //note: may be null to turn off resolution
   }
 
   async init() {

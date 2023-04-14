@@ -308,15 +308,15 @@ function* receiveStorageErrorHandler() {
   //rather than throw to prevent redux-saga from giving up
 }
 
-export function* init(provider, ensRegistryAddress) {
-  yield put(actions.init(provider, ensRegistryAddress));
+export function* init(provider, ensOptions) {
+  yield put(actions.init(provider, ensOptions));
   yield take(actions.WEB3_READY);
 }
 
 export function* saga() {
   // wait for web3 init signal
-  const { provider, ensRegistryAddress } = yield take(actions.INIT_WEB3);
-  let adapter = new Web3Adapter(provider, ensRegistryAddress);
+  const { provider, ensOptions } = yield take(actions.INIT_WEB3);
+  let adapter = new Web3Adapter(provider, ensOptions);
   yield apply(adapter, adapter.init); //set up ens
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
