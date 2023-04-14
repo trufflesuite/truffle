@@ -122,8 +122,15 @@ function Debugger(): JSX.Element {
   if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
       <div className="truffle-debugger-content-group">
-        <Grid style={{ height: "100%" }} columns={6} gutter="sm">
-          <Grid.Col style={{ height: "100%" }} span={4}>
+        <Grid
+          style={{ height: "100%" }}
+          columns={6}
+          gutter={5}
+          gutterXs="md"
+          gutterMd="xl"
+          gutterXl={50}
+        >
+          <Grid.Col span={4} style={{ height: "100%" }}>
             <Sources
               sources={sources}
               unknownAddresses={unknownAddresses}
@@ -134,7 +141,7 @@ function Debugger(): JSX.Element {
               setCurrentSourceId={setCurrentSourceId}
             />
           </Grid.Col>
-          <Grid.Col style={{ height: "100%" }} span={2}>
+          <Grid.Col span={2}>
             <Variables currentStep={currentStep} session={session} />
             <Breakpoints
               sources={sources}
