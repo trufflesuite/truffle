@@ -1083,7 +1083,7 @@ export function* decode(definition, ref, compilationId) {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
-      case "ens":
+      case "ens-primary-name":
         response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
@@ -1137,7 +1137,7 @@ export function* decodeReturnValue() {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
-      case "ens":
+      case "ens-primary-name":
         response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
@@ -1204,7 +1204,7 @@ export function* decodeCall(decodeCurrent = false) {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
-      case "ens":
+      case "ens-primary-name":
         response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
@@ -1254,7 +1254,7 @@ export function* decodeLog() {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
-      case "ens":
+      case "ens-primary-name":
         response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");

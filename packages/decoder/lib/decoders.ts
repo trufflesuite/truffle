@@ -484,7 +484,7 @@ export class ProjectDecoder {
         case "code":
           response = await this.getCode(request.address, blockNumber);
           break;
-        case "ens":
+        case "ens-primary-name":
           response = await this.reverseEnsResolve(request.address);
           break;
         //not writing a storage case as it shouldn't occur here!
@@ -581,7 +581,7 @@ export class ProjectDecoder {
         case "code":
           response = await this.getCode(request.address, blockNumber);
           break;
-        case "ens":
+        case "ens-primary-name":
           response = await this.reverseEnsResolve(request.address);
           break;
         //not writing a storage case as it shouldn't occur here!
@@ -1434,7 +1434,7 @@ export class ContractDecoder {
         case "code":
           response = await this.getCode(request.address, blockNumber);
           break;
-        case "ens":
+        case "ens-primary-name":
           response = await this.reverseEnsResolve(request.address);
           break;
         //not writing a storage case as it shouldn't occur here!
@@ -1835,7 +1835,7 @@ export class ContractInstanceDecoder {
         case "code":
           response = await this.getCode(request.address, block);
           break;
-        case "ens":
+        case "ens-primary-name":
           debug("ens request for: %s", request.address);
           response = await this.reverseEnsResolve(request.address);
           debug("response: %o", response);

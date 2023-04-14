@@ -9,7 +9,7 @@ import type * as Pointer from "@truffle/codec/pointer";
 import type {
   DecoderRequest,
   DecoderOptions,
-  EnsRequest
+  EnsPrimaryNameRequest
 } from "@truffle/codec/types";
 import type { PaddingMode, PaddingType } from "@truffle/codec/common";
 import * as Evm from "@truffle/codec/evm";
@@ -896,11 +896,11 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
 function* reverseEnsResolve(
   address: string
 ): Generator<
-  EnsRequest,
+  EnsPrimaryNameRequest,
   Format.Values.StringValueInfo | null,
   Uint8Array | null
 > {
-  const nameAsBytes = yield { type: "ens" as const, address };
+  const nameAsBytes = yield { type: "ens-primary-name" as const, address };
   return nameAsBytes !== null ? decodeString(nameAsBytes) : null;
 }
 
