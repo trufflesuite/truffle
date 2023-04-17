@@ -86,6 +86,14 @@ function MantineGlobal(): JSX.Element {
               height: "100%",
               padding: 15
             },
+            ".truffle-debugger-unknown-source-container": {
+              height: "100%",
+              padding: 15,
+              backgroundColor: "#FFF3BF"
+            },
+            ".truffle-debugger-unknown-title": {
+              fontSize: 18
+            },
             ".truffle-debugger-source:hover": {
               cursor: "pointer"
             },

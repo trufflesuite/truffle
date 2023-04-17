@@ -37,9 +37,9 @@ function SourceLine({
   if (!lastLine) line += "\n";
   let lineNumberDisplay =
     `<span class="${classes.lineNumber}">` +
-    " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
     lineNumber +
-    "  " +
+    " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
+    "| " +
     `</span>`;
 
   if (
