@@ -89,7 +89,10 @@ function MantineGlobal(): JSX.Element {
             ".truffle-debugger-unknown-source-container": {
               height: "100%",
               padding: 15,
-              backgroundColor: "#FFF3BF"
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-beige"][9]
+                  : "#FFF3BF"
             },
             ".truffle-debugger-unknown-title": {
               fontSize: 18
@@ -154,10 +157,14 @@ function MantineGlobal(): JSX.Element {
               padding: 16,
               height: "100%"
             },
+            ".truffle-debugger-breakpoint-group": {
+              display: "flex"
+            },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
-              textAlign: "center",
-              width: 25
+              backgroundColor: "#FA5252",
+              width: 18,
+              marginRight: 16
             },
             ".truffle-debugger-breakpoint:hover": {
               cursor: "pointer"
