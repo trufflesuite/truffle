@@ -73,9 +73,8 @@ function Debugger(): JSX.Element {
       const offsetTop = targetLine.offsetTop;
       // @ts-ignore
       const scroller = document.getElementById(`source-${sourceId.slice(-10)}`);
-      const browserViewHeight = window.innerHeight;
       // @ts-ignore
-      scroller.scrollTop = offsetTop - browserViewHeight / 2;
+      scroller.scrollTop = offsetTop - 300;
     }
   };
 
