@@ -17,6 +17,15 @@ function Breakpoint({
   return (
     <div className="truffle-debugger-breakpoint-group">
       <div
+        className="truffle-debugger-breakpoint-delete"
+        onClick={() =>
+          handleBreakpointDeleteClick({
+            sourceId,
+            line: line.toString()
+          })
+        }
+      ></div>
+      <div
         className="truffle-debugger-breakpoint"
         onClick={() =>
           handleBreakpointComponentClick({
@@ -26,17 +35,6 @@ function Breakpoint({
         }
       >
         {sourceName} - line {line}
-      </div>
-      <div
-        className="truffle-debugger-breakpoint-delete"
-        onClick={() =>
-          handleBreakpointDeleteClick({
-            sourceId,
-            line: line.toString()
-          })
-        }
-      >
-        X
       </div>
     </div>
   );
