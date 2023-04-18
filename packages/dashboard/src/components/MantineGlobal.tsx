@@ -78,13 +78,33 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
-            ".truffle-debugger-source-line": {
-              height: 25
+            ".source-line": {
+              height: 20,
+              marginBottom: 2,
+              display: "flex"
+            },
+            ".source-line-spacer-breakpoint": {
+              // these max's and min's are so the spacer doesn't get crushed
+              // when you resize the window
+              minHeight: 16,
+              minWidth: 16,
+              height: 16,
+              width: 16,
+              backgroundColor: "#FA5252",
+              borderRadius: 25,
+              marginRight: 5
+            },
+            ".source-line-spacer": {
+              minHeight: 16,
+              minWidth: 16,
+              height: 16,
+              width: 16,
+              marginRight: 5
             },
             ".truffle-debugger-source-container": {
               overflow: "scroll",
               height: "100%",
-              padding: 15
+              paddingLeft: 10
             },
             ".truffle-debugger-unknown-source-container": {
               height: "100%",
@@ -158,12 +178,14 @@ function MantineGlobal(): JSX.Element {
               height: "100%"
             },
             ".truffle-debugger-breakpoint-group": {
-              display: "flex"
+              display: "flex",
+              marginBottom: 5
             },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
               backgroundColor: "#FA5252",
-              width: 18,
+              width: 16,
+              height: 16,
               marginRight: 16
             },
             ".truffle-debugger-breakpoint:hover": {
