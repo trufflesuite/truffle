@@ -70,7 +70,7 @@ function MantineGlobal(): JSX.Element {
               flexGrow: 1
             },
             ".truffle-debugger-content-group": {
-              height: "calc(100vh - 36px)",
+              height: "calc(100vh - 72px)",
               paddingBottom: 36,
               margin: 32,
               fontSize: 12
@@ -78,13 +78,32 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
-            ".truffle-debugger-source-line": {
-              height: 25
+            ".source-line": {
+              height: 20,
+              marginBottom: 2,
+              display: "flex"
+            },
+            ".source-line-spacer-breakpoint": {
+              // these max's and min's are so the spacer doesn't get crushed
+              // when you resize the window
+              minHeight: 16,
+              minWidth: 16,
+              height: 16,
+              width: 16,
+              backgroundColor: "#FA5252",
+              borderRadius: 25,
+              marginRight: 5
+            },
+            ".source-line-spacer": {
+              minHeight: 16,
+              minWidth: 16,
+              height: 16,
+              width: 16,
+              marginRight: 5
             },
             ".truffle-debugger-source-container": {
               overflow: "scroll",
-              height: "100%",
-              padding: 15
+              height: "100%"
             },
             ".truffle-debugger-unknown-source-container": {
               height: "100%",
@@ -96,6 +115,10 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-unknown-title": {
               fontSize: 18
+            },
+            ".truffle-debugger-source": {
+              paddingTop: 15,
+              paddingLeft: 15
             },
             ".truffle-debugger-source:hover": {
               cursor: "pointer"
@@ -114,12 +137,17 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-variables": {
               overflow: "scroll",
-              padding: 16,
               height: "100%"
+            },
+            ".truffle-debugger-variables-content": {
+              paddingLeft: 10
             },
             ".truffle-debugger-variables-types": {
               fontSize: 12,
               fontWeight: 800
+            },
+            ".truffle-debugger-stack-content": {
+              paddingLeft: 10
             },
             ".truffle-debugger-breakpoints-container": {
               overflow: "hidden",
@@ -135,14 +163,25 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-breakpoints": {
               overflow: "scroll",
-              padding: 16,
               height: "100%"
             },
             ".truffle-debugger-section-header": {
               height: 42,
-              fontSize: 16
+              fontSize: 16,
+              paddingTop: 10,
+              paddingLeft: 16,
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? `${theme.colors["truffle-beige"][8]}33`
+                  : theme.colors["truffle-beige"][2],
+              borderBottom: "1px solid",
+              borderColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-brown"][5]
+                  : `${theme.colors["truffle-beige"][5]}73`
             },
             ".truffle-debugger-stack-container": {
+              overflow: "hidden",
               height: "30%",
               borderWidth: 1,
               borderStyle: "solid",
@@ -154,16 +193,17 @@ function MantineGlobal(): JSX.Element {
             },
             ".truffle-debugger-stack": {
               overflow: "scroll",
-              padding: 16,
               height: "100%"
             },
             ".truffle-debugger-breakpoint-group": {
-              display: "flex"
+              display: "flex",
+              marginBottom: 5
             },
             ".truffle-debugger-breakpoint-delete": {
               borderRadius: 25,
               backgroundColor: "#FA5252",
-              width: 18,
+              width: 16,
+              height: 16,
               marginRight: 16
             },
             ".truffle-debugger-breakpoint:hover": {
