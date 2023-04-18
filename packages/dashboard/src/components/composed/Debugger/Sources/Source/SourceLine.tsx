@@ -42,16 +42,13 @@ function SourceLine({
     "  " +
     `</span>`;
 
-  if (
+  const spacerClass =
     breakpoints &&
     breakpoints[sourceId] &&
     breakpoints[sourceId].has(lineNumber)
-  ) {
-    lineNumberDisplay = lineNumberDisplay.replace(
-      `${lineNumber.toString()} `,
-      `${lineNumber}*`
-    );
-  }
+      ? "source-line-spacer-breakpoint"
+      : "source-line-spacer";
+
   const handleClick = () => {
     toggleDebuggerBreakpoint({ line: lineNumber, sourceId });
   };
@@ -59,10 +56,10 @@ function SourceLine({
   const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
 
   return (
-    <div className="truffle-debugger-source-line">
+    <div className="source-line" onClick={handleClick}>
+      <div className={spacerClass} />
       <div
         id={lineId}
-        onClick={handleClick}
         dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
       />
     </div>

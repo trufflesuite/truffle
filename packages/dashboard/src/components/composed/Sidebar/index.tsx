@@ -12,7 +12,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][8]
-        : theme.colors["truffle-beige"][3]
+        : theme.colors["truffle-beige"][4]
   }
 }));
 
