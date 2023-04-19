@@ -7,6 +7,27 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
   },
   selected: {
     backgroundColor: theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
+  },
+  sourceLine: {
+    height: 20,
+    marginBottom: 2,
+    display: "flex"
+  },
+  spacer: {
+    minHeight: 16,
+    minWidth: 16,
+    height: 16,
+    width: 16,
+    marginRight: 5
+  },
+  breakpointSpacer: {
+    minHeight: 16,
+    minWidth: 16,
+    height: 16,
+    width: 16,
+    backgroundColor: "#FA5252",
+    borderRadius: 25,
+    marginRight: 5
   }
 }));
 
@@ -42,12 +63,14 @@ function SourceLine({
     "  " +
     `</span>`;
 
-  const spacerClass =
+  const spacer =
     breakpoints &&
     breakpoints[sourceId] &&
-    breakpoints[sourceId].has(lineNumber)
-      ? "source-line-spacer-breakpoint"
-      : "source-line-spacer";
+    breakpoints[sourceId].has(lineNumber) ? (
+      <div className={classes.breakpointSpacer} />
+    ) : (
+      <div className={classes.spacer} />
+    );
 
   const handleClick = () => {
     toggleDebuggerBreakpoint({ line: lineNumber, sourceId });
@@ -56,8 +79,8 @@ function SourceLine({
   const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
 
   return (
-    <div className="source-line" onClick={handleClick}>
-      <div className={spacerClass} />
+    <div className={classes.sourceLine} onClick={handleClick}>
+      {spacer}
       <div
         id={lineId}
         dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
