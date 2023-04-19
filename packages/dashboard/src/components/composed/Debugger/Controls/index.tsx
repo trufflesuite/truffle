@@ -32,7 +32,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   };
 
   return (
-    <Group className="truffle-debugger-controls">
+    <Group>
       <ControlButton
         {...controlButtonProps}
         icon={Play}
