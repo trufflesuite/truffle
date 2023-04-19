@@ -1,6 +1,18 @@
 import SourceLine from "src/components/composed/Debugger/Sources/Source/SourceLine";
 import type { Source as SourceType, SourceRange } from "src/utils/debugger";
 import { convertSourceToHtml } from "src/utils/debugger";
+import { createStyles } from "@mantine/core";
+
+const useStyles = createStyles(() => ({
+  sourceContainer: {
+    overflow: "scroll",
+    height: "100%"
+  },
+  source: {
+    paddingTop: 15,
+    paddingLeft: 15
+  }
+}));
 
 interface SourceProps {
   source: SourceType;
@@ -8,16 +20,17 @@ interface SourceProps {
 }
 
 function Source({ source, sourceRange }: SourceProps): JSX.Element {
+  const { classes } = useStyles();
   const sourceLines = convertSourceToHtml({ source, sourceRange });
 
   const { start, end } = sourceRange;
   const lineNumberGutterWidth = sourceLines.length.toString().length;
   return (
     <div
-      className="truffle-debugger-source-container"
+      className={classes.sourceContainer}
       id={`source-${source.id.slice(-10)}`}
     >
-      <pre className="truffle-debugger-source">
+      <pre className={classes.source}>
         {sourceLines.map((line: string, index: number) => {
           const key = `${source.id}-line-${index}`;
           const selected =
