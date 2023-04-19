@@ -1,5 +1,42 @@
 import { useEffect, useState } from "react";
 import type { Session } from "src/utils/debugger";
+import { createStyles } from "@mantine/core";
+
+const useStyles = createStyles(theme => ({
+  sectionHeader: {
+    height: 42,
+    fontSize: 16,
+    paddingTop: 10,
+    paddingLeft: 16,
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? `${theme.colors["truffle-beige"][8]}33`
+        : theme.colors["truffle-beige"][2],
+    borderBottom: "1px solid",
+    borderColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][5]
+        : `${theme.colors["truffle-beige"][5]}73`
+  },
+  stackContainer: {
+    overflow: "hidden",
+    height: "30%",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderRadius: 4,
+    borderColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][5]
+        : `${theme.colors["truffle-beige"][5]}73`
+  },
+  stack: {
+    overflow: "scroll",
+    height: "100%"
+  },
+  stackContent: {
+    paddingLeft: 10
+  }
+}));
 
 type StackArgs = {
   session: Session;
@@ -7,6 +44,7 @@ type StackArgs = {
 };
 
 function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
+  const { classes } = useStyles();
   const [output, setOutput] = useState<JSX.Element[] | null>(null);
   // when the debugger step changes, update variables
   useEffect(() => {
@@ -33,12 +71,10 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   }, [currentStep, session]);
 
   return (
-    <div className="truffle-debugger-stack-container">
-      <div className="truffle-debugger-section-header">Stack</div>
-      <div className="truffle-debugger-stack">
-        <pre className="truffle-debugger-stack-content">
-          {output ? output : ""}
-        </pre>
+    <div className={classes.stackContainer}>
+      <div className={classes.sectionHeader}>Stack</div>
+      <div className={classes.stack}>
+        <pre className={classes.stackContent}>{output ? output : ""}</pre>
       </div>
     </div>
   );
