@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Notification, Header, Grid } from "@mantine/core";
+import { Input, Button, Header, Grid } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
@@ -25,7 +25,6 @@ function Debugger(): JSX.Element {
     }
   } = useDash()!;
 
-  const [error, setError] = useState<null | Error>(null);
   const [status, setStatus] = useState<SessionStatus>();
 
   // keep track of addresses for which we can't obtain source material
@@ -173,16 +172,12 @@ function Debugger(): JSX.Element {
   }
 
   const onButtonClick = async () => {
-    try {
-      await initDebugger({
-        chainOptions: {},
-        operations,
-        setUnknownAddresses,
-        setStatus
-      });
-    } catch (err: any) {
-      setError(err);
-    }
+    await initDebugger({
+      chainOptions: {},
+      operations,
+      setUnknownAddresses,
+      setStatus
+    });
   };
 
   // tx simulation - forks, runs the tx, and opens the debugger to step through
@@ -197,42 +192,28 @@ function Debugger(): JSX.Element {
     }
   }, [txToRun]);
 
-  if (error) {
-    return (
-      <div className="truffle-debugger">
-        <Notification
-          title="an error occurred"
-          className="truffle-debugger-error"
-        >
-          An error occurred while initializing the debugger.
-          {`Error: ${error.message}`}
-        </Notification>
-      </div>
-    );
-  } else {
-    return (
-      <div className="truffle-debugger">
-        <Header height={36} className="truffle-debugger-input">
-          <Controls session={session} stepEffect={sessionTick} />
-          <div className="truffle-debugger-input-group">
-            <Input
-              value={inputValue}
-              onChange={setInputValue}
-              disabled={inputsDisabled}
-              type="text"
-              placeholder="Transaction hash"
-            />
-            {txToRun ? null : (
-              <Button onClick={onButtonClick} disabled={formDisabled}>
-                Debug
-              </Button>
-            )}
-          </div>
-        </Header>
-        {content}
-      </div>
-    );
-  }
+  return (
+    <div className="truffle-debugger">
+      <Header height={36} className="truffle-debugger-input">
+        <Controls session={session} stepEffect={sessionTick} />
+        <div className="truffle-debugger-input-group">
+          <Input
+            value={inputValue}
+            onChange={setInputValue}
+            disabled={inputsDisabled}
+            type="text"
+            placeholder="Transaction hash"
+          />
+          {txToRun ? null : (
+            <Button onClick={onButtonClick} disabled={formDisabled}>
+              Debug
+            </Button>
+          )}
+        </div>
+      </Header>
+      {content}
+    </div>
+  );
 }
 
 export default Debugger;
