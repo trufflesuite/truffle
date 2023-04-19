@@ -1,4 +1,28 @@
 import type { BreakpointType } from "src/utils/debugger";
+import { createStyles } from "@mantine/core";
+
+const useStyles = createStyles(() => ({
+  breakpointGroup: {
+    display: "flex",
+    marginBottom: 5
+  },
+  breakpointDelete: {
+    "&:hover": {
+      cursor: "pointer"
+    },
+    "borderRadius": 25,
+    "backgroundColor": "#FA5252",
+    "width": 16,
+    "height": 16,
+    "marginRight": 16
+  },
+  breakpoint: {
+    "&:hover": {
+      cursor: "pointer"
+    }
+  }
+}));
+
 type BreakpointProps = {
   sourceName: string;
   line: number;
@@ -14,10 +38,11 @@ function Breakpoint({
   handleBreakpointComponentClick,
   handleBreakpointDeleteClick
 }: BreakpointProps): JSX.Element | null {
+  const { classes } = useStyles();
   return (
-    <div className="truffle-debugger-breakpoint-group">
+    <div className={classes.breakpointGroup}>
       <div
-        className="truffle-debugger-breakpoint-delete"
+        className={classes.breakpointDelete}
         onClick={() =>
           handleBreakpointDeleteClick({
             sourceId,
@@ -26,7 +51,7 @@ function Breakpoint({
         }
       ></div>
       <div
-        className="truffle-debugger-breakpoint"
+        className={classes.breakpoint}
         onClick={() =>
           handleBreakpointComponentClick({
             sourceId,
