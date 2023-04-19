@@ -15,27 +15,34 @@ import { useDash } from "src/hooks";
 import { getCurrentSourceRange } from "src/utils/debugger";
 import type { BreakpointType, SourceRange } from "src/utils/debugger";
 
+const useStyles = createStyles(theme => ({
+  debugger: {
+    height: "100vh",
+    overflowY: "hidden",
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][8]
+        : theme.colors["truffle-beige"][3]
+  },
+  inputGroup: {
+    paddingTop: 26,
+    paddingLeft: 32,
+    paddingRight: 32,
+    display: "flex",
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][8]
+        : theme.colors["truffle-beige"][3]
+  },
+  mainContent: {
+    height: "calc(100vh - 108px)",
+    paddingBottom: 36,
+    margin: 32,
+    fontSize: 12
+  }
+}));
+
 function Debugger(): JSX.Element {
-  const useStyles = createStyles(theme => ({
-    debugger: {
-      height: "100vh",
-      overflowY: "hidden",
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors["truffle-brown"][8]
-          : theme.colors["truffle-beige"][3]
-    },
-    inputGroup: {
-      paddingTop: 26,
-      paddingLeft: 32,
-      paddingRight: 32,
-      display: "flex",
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors["truffle-brown"][8]
-          : theme.colors["truffle-beige"][3]
-    }
-  }));
   const { classes } = useStyles();
   const [inputValue, setInputValue] = useInputState("");
   const [sessionUpdated, { increment: sessionTick }] = useCounter();
@@ -156,7 +163,7 @@ function Debugger(): JSX.Element {
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
     content = (
-      <div className="truffle-debugger-content-group">
+      <div className={classes.mainContent}>
         <Grid
           style={{ height: "100%" }}
           columns={6}
