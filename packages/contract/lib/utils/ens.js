@@ -1,3 +1,4 @@
+const debug = require("debug")("contract:utils:ens");
 const { default: ENSJS, getEnsAddress } = require("@ensdomains/ensjs");
 const { isAddress } = require("web3-utils");
 
@@ -10,6 +11,8 @@ module.exports = {
     web3,
     networkId
   }) {
+    //note that registryAddress here is for a user-supplied registry address
+    //if none is supplied this will be undefined, and we'll apply a default later
     const { registryAddress } = ens;
     let args;
     if (inputArgs.length && methodABI) {
@@ -38,7 +41,7 @@ module.exports = {
   getNewENSJS: function ({ provider, registryAddress, networkId }) {
     return new ENSJS({
       provider,
-      ensAddress: registryAddress || getEnsAddress(networkId)
+      ensAddress: registryAddress ?? getEnsAddress(networkId)
     });
   },
 
@@ -115,7 +118,7 @@ module.exports = {
     }
     if (inputParams.accessList && Array.isArray(inputParams.accessList)) {
       const newAccessList = await Promise.all(
-        inputParams.accessList.map(async (entry) => {
+        inputParams.accessList.map(async entry => {
           if (entry && entry.address && !isAddress(entry.address)) {
             const newAddress = await this.resolveNameToAddress({
               name: entry.address,
