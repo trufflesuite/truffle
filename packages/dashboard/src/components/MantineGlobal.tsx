@@ -59,6 +59,9 @@ function MantineGlobal(): JSX.Element {
                   : colors["truffle-beige"][3]
             },
             ".truffle-debugger-input": {
+              paddingTop: 26,
+              paddingLeft: 32,
+              paddingRight: 32,
               display: "flex",
               backgroundColor:
                 colorScheme === "dark"
