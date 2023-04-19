@@ -50,27 +50,16 @@ function MantineGlobal(): JSX.Element {
               backgroundColor:
                 colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
             },
-            ".truffle-debugger": {
-              height: "100vh",
-              overflowY: "hidden",
-              backgroundColor:
-                colorScheme === "dark"
-                  ? colors["truffle-brown"][8]
-                  : colors["truffle-beige"][3]
-            },
-            ".truffle-debugger-input": {
-              paddingTop: 26,
-              paddingLeft: 32,
-              paddingRight: 32,
-              display: "flex",
-              backgroundColor:
-                colorScheme === "dark"
-                  ? colors["truffle-brown"][8]
-                  : colors["truffle-beige"][3]
-            },
-            ".truffle-debugger-input-group": {
+
+            ".truffle-debugger-input-and-button": {
               display: "flex",
               flexGrow: 1
+            },
+            ".truffle-debugger-input-and-button > div > input": {
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
+              border: 0,
+              height: 42
             },
             ".truffle-debugger-content-group": {
               height: "calc(100vh - 72px)",

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Header, Grid } from "@mantine/core";
+import { Input, Button, Header, Grid, createStyles } from "@mantine/core";
 import { useInputState, useCounter } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
@@ -16,6 +16,27 @@ import { getCurrentSourceRange } from "src/utils/debugger";
 import type { BreakpointType, SourceRange } from "src/utils/debugger";
 
 function Debugger(): JSX.Element {
+  const useStyles = createStyles(theme => ({
+    debugger: {
+      height: "100vh",
+      overflowY: "hidden",
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? theme.colors["truffle-brown"][8]
+          : theme.colors["truffle-beige"][3]
+    },
+    inputGroup: {
+      paddingTop: 26,
+      paddingLeft: 32,
+      paddingRight: 32,
+      display: "flex",
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? theme.colors["truffle-brown"][8]
+          : theme.colors["truffle-beige"][3]
+    }
+  }));
+  const { classes } = useStyles();
   const [inputValue, setInputValue] = useInputState("");
   const [sessionUpdated, { increment: sessionTick }] = useCounter();
   const {
@@ -176,12 +197,19 @@ function Debugger(): JSX.Element {
     }
   }, [txToRun]);
 
+  const buttonStyles = {
+    height: "42px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px"
+  };
+
   return (
-    <div className="truffle-debugger">
-      <Header height={36} className="truffle-debugger-input">
+    <div className={classes.debugger}>
+      <Header height={66} className={classes.inputGroup}>
         <Controls session={session} stepEffect={sessionTick} />
-        <div className="truffle-debugger-input-group">
+        <div className="truffle-debugger-input-and-button">
           <Input
+            style={{ height: "42px", marginLeft: "34px" }}
             value={inputValue}
             onChange={setInputValue}
             disabled={inputsDisabled}
@@ -189,7 +217,11 @@ function Debugger(): JSX.Element {
             placeholder="Transaction hash"
           />
           {txToRun ? null : (
-            <Button onClick={onButtonClick} disabled={formDisabled}>
+            <Button
+              onClick={onButtonClick}
+              disabled={formDisabled}
+              style={buttonStyles}
+            >
               Debug
             </Button>
           )}
