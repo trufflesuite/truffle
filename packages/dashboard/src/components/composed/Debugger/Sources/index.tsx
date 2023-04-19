@@ -31,6 +31,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
         ? theme.colors["truffle-brown"][5]
         : theme.colors["truffle-beige"][3],
     borderStyle: "solid",
+    height: 42,
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
