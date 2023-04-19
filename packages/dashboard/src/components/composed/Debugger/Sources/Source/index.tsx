@@ -9,8 +9,11 @@ const useStyles = createStyles(() => ({
     height: "100%"
   },
   source: {
-    paddingTop: 15,
-    paddingLeft: 15
+    "&:hover": {
+      cursor: "pointer"
+    },
+    "paddingTop": 15,
+    "paddingLeft": 15
   }
 }));
 
