@@ -25,14 +25,6 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   const atEnd = session?.view($.trace.finished);
   const disabled = atEnd || !session;
 
-  const status = stepping
-    ? "stepping..."
-    : atStart
-    ? "transaction start"
-    : atEnd
-    ? "transaction end"
-    : "transaction in progress";
-
   const controlButtonProps = {
     stepEffect,
     stepping,
@@ -83,7 +75,6 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         step={() => session.reset()}
         disabled={atStart}
       />
-      {status}
     </Group>
   );
 }
