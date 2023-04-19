@@ -22,6 +22,8 @@ function ControlButton({
 }: ControlButtonProps): JSX.Element {
   const useStyles = createStyles(theme => ({
     button: {
+      height: 42,
+      width: 42,
       backgroundColor:
         theme.colorScheme === "dark"
           ? theme.colors["truffle-brown"][5]
