@@ -1,7 +1,7 @@
-import { Source } from "src/utils/debugger";
+import { Source } from "src/components/composed/Debugger/utils";
 import { useDash } from "src/hooks";
 import * as path from "path";
-import { BreakpointType } from "src/utils/debugger";
+import { BreakpointType } from "src/components/composed/Debugger/utils";
 import Breakpoint from "src/components/composed/Debugger/Breakpoints/Breakpoint";
 import { createStyles } from "@mantine/core";
 
