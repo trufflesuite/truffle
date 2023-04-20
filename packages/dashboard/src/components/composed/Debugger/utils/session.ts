@@ -1,8 +1,8 @@
 import { forTx } from "@truffle/debugger";
 import { provider as ganacheProvider } from "ganache";
 import * as Codec from "@truffle/codec";
-import type { Session, Source } from "src/utils/debugger";
-import { SessionStatus } from "src/utils/debugger";
+import type { Session, Source } from "src/components/composed/Debugger/utils";
+import { SessionStatus } from "src/components/composed/Debugger/utils";
 import type { Compilation } from "@truffle/compile-common";
 import { getTransactionSourcesBeforeStarting } from "@truffle/debug-utils";
 

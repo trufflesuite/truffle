@@ -3,7 +3,11 @@ import rehypeStringify from "rehype-stringify";
 import { lowlight } from "lowlight/lib/core";
 import { solidity } from "highlightjs-solidity";
 import { selectors as $ } from "@truffle/debugger";
-import type { Session, Source, SourceRange } from "src/utils/debugger";
+import type {
+  Session,
+  Source,
+  SourceRange
+} from "src/components/composed/Debugger/utils";
 
 export function convertSourceToHtml({
   source,
