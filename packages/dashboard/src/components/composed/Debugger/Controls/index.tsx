@@ -10,7 +10,7 @@ import {
 import { Group } from "@mantine/core";
 import { selectors as $ } from "@truffle/debugger";
 import ControlButton from "src/components/composed/Debugger/Controls/ControlButton";
-import type { Session } from "src/utils/debugger";
+import type { Session } from "src/components/composed/Debugger/utils";
 
 interface ControlsProps {
   session: Session | null;

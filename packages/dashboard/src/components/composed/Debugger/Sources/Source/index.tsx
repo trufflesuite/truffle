@@ -1,6 +1,9 @@
 import SourceLine from "src/components/composed/Debugger/Sources/Source/SourceLine";
-import type { Source as SourceType, SourceRange } from "src/utils/debugger";
-import { convertSourceToHtml } from "src/utils/debugger";
+import type {
+  Source as SourceType,
+  SourceRange
+} from "src/components/composed/Debugger/utils";
+import { convertSourceToHtml } from "src/components/composed/Debugger/utils";
 import { createStyles } from "@mantine/core";
 
 const useStyles = createStyles(() => ({
