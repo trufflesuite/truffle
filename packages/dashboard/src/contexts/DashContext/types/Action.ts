@@ -4,7 +4,7 @@ import type {
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
-import type { Source, Session } from "src/utils/debugger";
+import type { Source, Session } from "src/components/composed/Debugger/utils";
 
 export type ActionType =
   | "set-decoder"

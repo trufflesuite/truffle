@@ -7,7 +7,7 @@ import type {
   SourceRange,
   Session,
   Source as SourceType
-} from "src/utils/debugger";
+} from "src/components/composed/Debugger/utils";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   maxHeight: {
