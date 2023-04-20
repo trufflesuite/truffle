@@ -10,10 +10,13 @@ import {
   forkNetworkWithTxAndInitDebugger,
   initDebugger,
   SessionStatus
-} from "src/utils/debugger";
+} from "src/components/composed/Debugger/utils";
 import { useDash } from "src/hooks";
-import { getCurrentSourceRange } from "src/utils/debugger";
-import type { BreakpointType, SourceRange } from "src/utils/debugger";
+import { getCurrentSourceRange } from "src/components/composed/Debugger/utils";
+import type {
+  BreakpointType,
+  SourceRange
+} from "src/components/composed/Debugger/utils";
 
 const useStyles = createStyles(theme => ({
   debugger: {
