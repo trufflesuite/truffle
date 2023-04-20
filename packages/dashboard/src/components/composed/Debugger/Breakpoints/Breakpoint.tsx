@@ -1,4 +1,4 @@
-import type { BreakpointType } from "src/utils/debugger";
+import type { BreakpointType } from "src/components/composed/Debugger/utils";
 import { createStyles } from "@mantine/core";
 
 const useStyles = createStyles(() => ({

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Session } from "src/utils/debugger";
+import type { Session } from "src/components/composed/Debugger/utils";
 import { createStyles } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
