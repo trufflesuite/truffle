@@ -6,6 +6,7 @@ import Sources from "src/components/composed/Debugger/Sources";
 import Variables from "src/components/composed/Debugger/Variables";
 import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import Stack from "src/components/composed/Debugger/Stack";
+import PreparingSession from "src/components/composed/Debugger/PreparingSession";
 import {
   forkNetworkWithTxAndInitDebugger,
   initDebugger,
@@ -237,7 +238,13 @@ function Debugger(): JSX.Element {
           )}
         </div>
       </Header>
-      {content}
+      {status === SessionStatus.Initializing ||
+      status === SessionStatus.Fetching ||
+      status === SessionStatus.Starting ? (
+        <PreparingSession />
+      ) : (
+        content
+      )}
     </div>
   );
 }
