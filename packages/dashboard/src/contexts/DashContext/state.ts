@@ -38,6 +38,7 @@ export const initialState: State = {
   }),
   debugger: {
     sources: null,
+    unknownAddresses: null,
     session: null,
     txToRun: null,
     breakpoints: {}
@@ -99,8 +100,10 @@ export const reducer = (state: State, action: Action): State => {
       };
     case "set-debugger-session-data":
       const breakpointsInitialState: { [sourceId: string]: Set<number> } = {};
-      for (const source of data.sources) {
-        breakpointsInitialState[source.id] = new Set();
+      if (data.sources !== null) {
+        for (const source of data.sources) {
+          breakpointsInitialState[source.id] = new Set();
+        }
       }
       return {
         ...state,
