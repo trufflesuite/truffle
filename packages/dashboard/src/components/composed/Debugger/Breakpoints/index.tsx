@@ -36,6 +36,9 @@ const useStyles = createStyles(theme => ({
   breakpoints: {
     overflow: "scroll",
     height: "100%"
+  },
+  breakpointsContent: {
+    paddingLeft: 10
   }
 }));
 
@@ -86,7 +89,7 @@ function Breakpoints({
     <div className={classes.breakpointsContainer}>
       <div className={classes.sectionHeader}>Breakpoints</div>
       <div className={classes.breakpoints}>
-        <pre>{breakpointsList}</pre>
+        <pre className={classes.breakpointsContent}>{breakpointsList}</pre>
       </div>
     </div>
   );
