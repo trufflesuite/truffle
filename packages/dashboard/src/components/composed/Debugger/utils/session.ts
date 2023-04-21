@@ -38,7 +38,6 @@ export async function forkNetworkWithTxAndInitDebugger({
 export async function initDebugger({
   chainOptions: { unlockedAccounts, provider },
   operations,
-  setUnknownAddresses,
   setStatus,
   txHash
 }: any) {
@@ -73,10 +72,7 @@ export async function initDebugger({
       onReady: () => setStatus(SessionStatus.Ready)
     }
   });
-  if (unknownAddresses.length > 0) {
-    setUnknownAddresses(unknownAddresses);
-  }
-  operations.setDebuggerSessionData({ sources, session });
+  operations.setDebuggerSessionData({ sources, unknownAddresses, session });
 }
 
 type SetupSessionArgs = {
@@ -124,6 +120,7 @@ export async function setupSession({
   // @ts-ignore
   window.bugger = session;
   callbacks?.onReady?.();
+
   return { session, sources, unknownAddresses };
 }
 

@@ -6,7 +6,8 @@ import UnknownSource from "src/components/composed/Debugger/Sources/UnknownSourc
 import type {
   SourceRange,
   Session,
-  Source as SourceType
+  Source as SourceType,
+  UnknownAddress
 } from "src/components/composed/Debugger/utils";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
@@ -48,7 +49,7 @@ interface SourcesProps {
   sessionUpdated: any;
   sources: SourceType[];
   currentSourceRange: SourceRange;
-  unknownAddresses: string[];
+  unknownAddresses: UnknownAddress[] | null;
   currentSourceId: string | null;
   setCurrentSourceId: (sourceId: string) => void;
 }
@@ -93,6 +94,8 @@ function Sources({
     setCurrentSourceId
   ]);
 
+  const unknownSourcesExist = unknownAddresses && unknownAddresses.length > 0;
+
   let sourcesContent, unknownSourcesContent;
   if (currentSourceId !== null) {
     sourcesContent = sources.map((source: SourceType) => (
@@ -104,11 +107,17 @@ function Sources({
         <Source source={source} sourceRange={currentSourceRange} />
       </Tabs.Panel>
     ));
-    unknownSourcesContent = unknownAddresses.map((address: string) => (
-      <Tabs.Panel key={address} value={address} className={classes.maxHeight}>
-        <UnknownSource address={address} />
-      </Tabs.Panel>
-    ));
+    unknownSourcesContent = !unknownSourcesExist
+      ? []
+      : unknownAddresses!.map((address: string) => (
+          <Tabs.Panel
+            key={address}
+            value={address}
+            className={classes.maxHeight}
+          >
+            <UnknownSource address={address} />
+          </Tabs.Panel>
+        ));
   }
 
   return (
@@ -123,11 +132,13 @@ function Sources({
             {basename(source.sourcePath)}
           </Tabs.Tab>
         ))}
-        {unknownAddresses.map((address: string) => (
-          <Tabs.Tab key={address} value={address} className={classes.tabs}>
-            Unknown Contract
-          </Tabs.Tab>
-        ))}
+        {!unknownSourcesExist
+          ? null
+          : unknownAddresses!.map((address: string) => (
+              <Tabs.Tab key={address} value={address} className={classes.tabs}>
+                Unknown Contract
+              </Tabs.Tab>
+            ))}
       </Tabs.List>
       <div className={classes.sourceContent}>
         {sourcesContent}
