@@ -7,6 +7,8 @@ export type BreakpointType = {
   line: string;
 };
 
+export type UnknownAddress = string;
+
 export interface Source {
   id: string;
   sourcePath: string;

@@ -16,7 +16,7 @@ function PreparingSession(): JSX.Element {
       style={{ height: "calc(100vh - 108px)" }}
     >
       <div>
-        <div className={classes.title}>Preparing debugger session...</div>
+        <div className={classes.title}>Preparing your debugger session...</div>
         <div>some other content</div>
       </div>
     </Flex>
