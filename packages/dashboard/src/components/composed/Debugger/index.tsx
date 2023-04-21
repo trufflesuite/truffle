@@ -53,14 +53,12 @@ function Debugger(): JSX.Element {
   const {
     operations,
     state: {
-      debugger: { sources, session, txToRun }
+      debugger: { sources, unknownAddresses, session, txToRun }
     }
   } = useDash()!;
 
+  const [loggingOutput, setLoggingOutput] = useState<string>("");
   const [status, setStatus] = useState<SessionStatus>();
-
-  // keep track of addresses for which we can't obtain source material
-  const [unknownAddresses, setUnknownAddresses] = useState<string[]>([]);
 
   // goToBreakpoint stores breakpoint info when a user clicks on one
   // so we can jump to it in Sources
@@ -191,7 +189,6 @@ function Debugger(): JSX.Element {
     await initDebugger({
       chainOptions: {},
       operations,
-      setUnknownAddresses,
       setStatus
     });
   };
@@ -202,7 +199,6 @@ function Debugger(): JSX.Element {
       forkNetworkWithTxAndInitDebugger({
         tx: txToRun,
         operations,
-        setUnknownAddresses,
         setStatus
       });
     }
