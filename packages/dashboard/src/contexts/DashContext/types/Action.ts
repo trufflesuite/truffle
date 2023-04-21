@@ -4,7 +4,11 @@ import type {
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
 import type { State } from "src/contexts/DashContext/types";
-import type { Source, Session } from "src/components/composed/Debugger/utils";
+import type {
+  Source,
+  Session,
+  UnknownAddress
+} from "src/components/composed/Debugger/utils";
 
 export type ActionType =
   | "set-decoder"
@@ -18,7 +22,8 @@ export type ActionType =
   | "toggle-debugger-breakpoint";
 
 export type SetDebuggerSessionDataArgs = {
-  sources: Source[];
+  sources: Source[] | null;
+  unknownAddresses: UnknownAddress[] | null;
   session: Session;
 };
 
