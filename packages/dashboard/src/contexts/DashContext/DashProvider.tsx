@@ -314,6 +314,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       return await dbHelper.getAllCompilations();
     },
     setDebuggerSessionData: ({
+      unknownAddresses,
       sources,
       session
     }: SetDebuggerSessionDataArgs) => {
@@ -321,6 +322,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         type: "set-debugger-session-data",
         data: {
           sources,
+          unknownAddresses,
           session
         }
       });
