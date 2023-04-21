@@ -33,7 +33,7 @@
     "@truffle/source-fetcher": "^1.0.33",
     "debug": "^4.3.2",
     "semver": "7.3.7",
-    "web3-utils": "1.8.2"
+    "web3-utils": "4.0.1-rc.1"
   },
   "devDependencies": {
     "@truffle/compile-common": "^0.9.4",
