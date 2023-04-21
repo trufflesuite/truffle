@@ -17,8 +17,8 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     height: "100%",
     overflow: "hidden",
     borderStyle: "solid",
+    borderRadius: "0px 0px 4px 4px",
     borderWidth: 1,
-    borderRadius: 4,
     borderColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][3]
