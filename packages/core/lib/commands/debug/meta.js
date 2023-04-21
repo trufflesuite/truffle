@@ -31,6 +31,12 @@ module.exports = {
       describe: "Force debugger to skip compilation (dangerous!)",
       type: "boolean",
       default: false
+    },
+    "vscode": {
+      describe:
+        "Starts the debug session in VS Code using the Truffle for VS Code extension",
+      type: "boolean",
+      default: false
     }
   },
   help: {
@@ -75,6 +81,11 @@ module.exports = {
         option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
+      },
+      {
+        option: "--vscode",
+        description:
+          "Starts the debug session in VS Code using the Truffle for VS Code extension."
       }
     ],
     allowedGlobalOptions: ["config"]

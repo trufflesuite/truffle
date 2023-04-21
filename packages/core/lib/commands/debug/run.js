@@ -6,7 +6,7 @@ module.exports = async function (options) {
   const FromHardhat = require("@truffle/from-hardhat");
   const Codec = require("@truffle/codec");
   const TruffleError = require("@truffle/error");
-  const { CLIDebugger } = require("../../debug");
+  const { CLIDebugger, VSCodeDebugger } = require("../../debug");
 
   if (options.url && options.network) {
     const message =
@@ -60,6 +60,15 @@ module.exports = async function (options) {
   if (config.compileAll && config.compileNone) {
     throw new Error("Incompatible options passed regarding what to compile");
   }
+
+  // Checks if the user wants to open the debugger in vscode
+  if (config.vscode) {
+    // await new VSCodeDebugger(config, txHash).run();
+    const vsDebugger = new VSCodeDebugger(config, txHash);
+    await vsDebugger.run();
+    return;
+  }
+
   const interpreter = await new CLIDebugger(config, {
     txHash,
     compilations
