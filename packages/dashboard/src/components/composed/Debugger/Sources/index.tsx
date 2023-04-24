@@ -137,7 +137,6 @@ function Sources({
         ));
   }
 
-  console.log("the current source id -- %o", currentSourceId);
   return (
     <Tabs
       value={currentSourceId}
