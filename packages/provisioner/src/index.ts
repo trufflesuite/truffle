@@ -26,8 +26,8 @@ const provision = (contractAbstraction: any, truffleConfig: TruffleConfig) => {
   contractAbstraction.ens = truffleConfig.ens;
   //HACK
   contractAbstraction.ens.registryAddress =
-    truffleConfig.network_config.registryAddress ??
-    truffleConfig.network_config.registry?.address ??
+    truffleConfig.networks[truffleConfig.network]?.registryAddress ??
+    truffleConfig.networks[truffleConfig.network]?.registry?.address ??
     truffleConfig.ens.registryAddress ??
     truffleConfig.ens.registry?.address;
 
