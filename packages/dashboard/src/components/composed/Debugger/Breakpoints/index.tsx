@@ -35,12 +35,12 @@ const useStyles = createStyles(theme => ({
   },
   breakpoints: {
     overflow: "scroll",
-    height: "100%"
-  },
-  breakpointsContent: {
-    paddingLeft: 10,
+    height: "100%",
     backgroundColor:
       theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
+  },
+  breakpointsContent: {
+    paddingLeft: 10
   }
 }));
 
