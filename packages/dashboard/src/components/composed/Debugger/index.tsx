@@ -42,7 +42,8 @@ const useStyles = createStyles(theme => ({
     height: "calc(100vh - 108px)",
     paddingBottom: 36,
     margin: 32,
-    fontSize: 12
+    fontSize: 12,
+    fontWeight: 700
   }
 }));
 
@@ -189,7 +190,8 @@ function Debugger(): JSX.Element {
     await initDebugger({
       chainOptions: {},
       operations,
-      setStatus
+      setStatus,
+      setLoggingOutput
     });
   };
 
@@ -237,7 +239,7 @@ function Debugger(): JSX.Element {
       {status === SessionStatus.Initializing ||
       status === SessionStatus.Fetching ||
       status === SessionStatus.Starting ? (
-        <PreparingSession />
+        <PreparingSession ganacheLoggingOutput={loggingOutput} />
       ) : (
         content
       )}

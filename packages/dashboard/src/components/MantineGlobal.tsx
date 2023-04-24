@@ -98,7 +98,7 @@ function MantineGlobal(): JSX.Element {
               fontStyle: "italic"
             },
             ".hljs-keyword, .hljs-selector-tag": {
-              color: colors.pink[7],
+              color: colors.pink[8],
               fontWeight: "bold"
             },
             ".hljs-subst": {
@@ -110,7 +110,7 @@ function MantineGlobal(): JSX.Element {
                 color: colors.violet[7]
               },
             ".hljs-string, .hljs-doctag": {
-              color: colors.yellow[6]
+              color: colors.orange[4]
             },
             ".hljs-title, .hljs-section, .hljs-selector-id": {
               color: colors["truffle-teal"][8],
