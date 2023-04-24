@@ -56,7 +56,7 @@ function SourceLine({
   } = useDash()!;
 
   if (!lastLine) line += "\n";
-  let lineNumberDisplay =
+  const lineNumberDisplay =
     `<span class="${classes.lineNumber}">` +
     " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
     lineNumber +

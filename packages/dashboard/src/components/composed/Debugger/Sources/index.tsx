@@ -130,7 +130,6 @@ function Sources({
         ));
   }
 
-  console.log("the current source id -- %o", currentSourceId);
   return (
     // @ts-ignore
     <Tabs

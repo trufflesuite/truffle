@@ -208,8 +208,6 @@ function Debugger(): JSX.Element {
         </Grid>
       </div>
     );
-  } else {
-    content = status;
   }
 
   return (
