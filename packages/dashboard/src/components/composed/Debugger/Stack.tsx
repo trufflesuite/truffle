@@ -31,7 +31,9 @@ const useStyles = createStyles(theme => ({
   },
   stack: {
     overflow: "scroll",
-    height: "100%"
+    height: "100%",
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   },
   stackContent: {
     paddingLeft: 10,
