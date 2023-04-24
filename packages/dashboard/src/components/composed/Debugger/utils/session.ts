@@ -39,7 +39,8 @@ export async function initDebugger({
   chainOptions: { unlockedAccounts, provider },
   operations,
   setStatus,
-  txHash
+  txHash,
+  setLoggingOutput
 }: any) {
   const compilations = await operations.getCompilations();
   const testTxHash = txHash
@@ -63,6 +64,7 @@ export async function initDebugger({
       unlockedAccounts,
       provider: pro
     },
+    setLoggingOutput,
     txHash: testTxHash,
     compilations,
     callbacks: {
@@ -82,6 +84,7 @@ type SetupSessionArgs = {
     unlockedAccounts: string[];
   };
   compilations: Compilation[];
+  setLoggingOutput: any;
   callbacks?: {
     onInit?: () => void;
     onFetch?: () => void;
@@ -94,6 +97,7 @@ export async function setupSession({
   txHash,
   chainOptions: { provider, unlockedAccounts },
   compilations,
+  setLoggingOutput,
   callbacks
 }: SetupSessionArgs): Promise<{
   session: Session;
@@ -102,7 +106,13 @@ export async function setupSession({
 }> {
   callbacks?.onInit?.();
   const { session, sources, networkId, unrecognizedAddresses } =
-    await createSession(txHash, provider, compilations, unlockedAccounts);
+    await createSession(
+      txHash,
+      provider,
+      compilations,
+      unlockedAccounts,
+      setLoggingOutput
+    );
 
   callbacks?.onFetch?.();
   const { unknownAddresses } = await fetchCompilationsAndAddToSession(
@@ -128,6 +138,7 @@ type ProviderOptions = {
   fork: {
     provider: any;
   };
+  logging: any;
   wallet?: {
     unlockedAccounts: string[];
   };
@@ -137,7 +148,8 @@ async function createSession(
   txHash: string,
   provider: any,
   compilations: Compilation[],
-  unlockedAccounts: string[]
+  unlockedAccounts: string[],
+  setLoggingOutput: (input: string) => void
 ): Promise<{
   session: Session;
   sources: Source[];
@@ -146,7 +158,14 @@ async function createSession(
 }> {
   let bugger;
   const providerOptions: ProviderOptions = {
-    fork: { provider }
+    fork: { provider },
+    logging: {
+      logger: {
+        log: (message: string) => {
+          setLoggingOutput(message);
+        }
+      }
+    }
   };
   if (unlockedAccounts && unlockedAccounts.length > 0) {
     providerOptions.wallet = { unlockedAccounts };
