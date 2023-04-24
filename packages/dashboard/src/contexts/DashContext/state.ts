@@ -75,17 +75,23 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, analyticsConfig: data };
     case "toggle-debugger-breakpoint":
       const { line, sourceId } = data;
+      // the front-end starts line numbering at 1 while the debugger
+      // starts them at 0
+      const debuggerLine = line - 1;
       const breakpointExists = state.debugger.breakpoints![sourceId].has(line);
       const newBreakpointStateForSource = new Set(
         state.debugger.breakpoints![sourceId]
       );
       if (breakpointExists) {
         // @ts-ignore
-        state.debugger.session!.removeBreakpoint({ line, sourceId });
+        state.debugger.session!.removeBreakpoint({
+          line: debuggerLine,
+          sourceId
+        });
         newBreakpointStateForSource.delete(line);
       } else {
         // @ts-ignore
-        state.debugger.session!.addBreakpoint({ line, sourceId });
+        state.debugger.session!.addBreakpoint({ line: debuggerLine, sourceId });
         newBreakpointStateForSource.add(line);
       }
       return {
