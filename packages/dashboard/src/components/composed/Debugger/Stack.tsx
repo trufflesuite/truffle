@@ -34,7 +34,9 @@ const useStyles = createStyles(theme => ({
     height: "100%"
   },
   stackContent: {
-    paddingLeft: 10
+    paddingLeft: 10,
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   }
 }));
 

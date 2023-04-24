@@ -6,7 +6,7 @@ import type {
 import { convertSourceToHtml } from "src/components/composed/Debugger/utils";
 import { createStyles } from "@mantine/core";
 
-const useStyles = createStyles(() => ({
+const useStyles = createStyles(theme => ({
   sourceContainer: {
     overflow: "scroll",
     height: "100%"
@@ -16,7 +16,9 @@ const useStyles = createStyles(() => ({
       cursor: "pointer"
     },
     "paddingTop": 15,
-    "paddingLeft": 15
+    "paddingLeft": 15,
+    "backgroundColor":
+      theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   }
 }));
 
