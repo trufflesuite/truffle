@@ -108,6 +108,41 @@ function Debugger(): JSX.Element {
     }
   };
 
+  const onButtonClick = async () => {
+    await initDebugger({
+      chainOptions: {},
+      operations,
+      setStatus,
+      setLoggingOutput
+    });
+  };
+
+  const buttonStyles = {
+    height: "42px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px"
+  };
+
+  const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
+    operations.toggleDebuggerBreakpoint({
+      sourceId,
+      line: parseInt(line)
+    });
+  };
+
+  const isSourceRange = (item: any): item is SourceRange => {
+    // when source exists, that means it should be a full SourceRange
+    return item.source !== undefined;
+  };
+
+  const handleBreakpointComponentClick = ({
+    sourceId,
+    line
+  }: BreakpointType) => {
+    setCurrentSourceId(sourceId);
+    setGoToBreakpoint({ sourceId, line });
+  };
+
   // scroll to highlighted source as debugger steps
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
@@ -127,25 +162,16 @@ function Debugger(): JSX.Element {
     }
   }, [goToBreakpoint]);
 
-  const handleBreakpointComponentClick = ({
-    sourceId,
-    line
-  }: BreakpointType) => {
-    setCurrentSourceId(sourceId);
-    setGoToBreakpoint({ sourceId, line });
-  };
-
-  const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
-    operations.toggleDebuggerBreakpoint({
-      sourceId,
-      line: parseInt(line)
-    });
-  };
-
-  const isSourceRange = (item: any): item is SourceRange => {
-    // when source exists, that means it should be a full SourceRange
-    return item.source !== undefined;
-  };
+  // tx simulation - forks, runs the tx, and opens the debugger to step through
+  useEffect(() => {
+    if (txToRun) {
+      forkNetworkWithTxAndInitDebugger({
+        tx: txToRun,
+        operations,
+        setStatus
+      });
+    }
+  }, [txToRun]);
 
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
@@ -185,32 +211,6 @@ function Debugger(): JSX.Element {
   } else {
     content = status;
   }
-
-  const onButtonClick = async () => {
-    await initDebugger({
-      chainOptions: {},
-      operations,
-      setStatus,
-      setLoggingOutput
-    });
-  };
-
-  // tx simulation - forks, runs the tx, and opens the debugger to step through
-  useEffect(() => {
-    if (txToRun) {
-      forkNetworkWithTxAndInitDebugger({
-        tx: txToRun,
-        operations,
-        setStatus
-      });
-    }
-  }, [txToRun]);
-
-  const buttonStyles = {
-    height: "42px",
-    borderTopLeftRadius: "0px",
-    borderBottomLeftRadius: "0px"
-  };
 
   return (
     <div className={classes.debugger}>
