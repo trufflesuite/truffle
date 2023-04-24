@@ -8,7 +8,6 @@ import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import Stack from "src/components/composed/Debugger/Stack";
 import PreparingSession from "src/components/composed/Debugger/PreparingSession";
 import {
-  forkNetworkWithTxAndInitDebugger,
   initDebugger,
   SessionStatus
 } from "src/components/composed/Debugger/utils";
@@ -108,6 +107,21 @@ function Debugger(): JSX.Element {
     }
   };
 
+  const onButtonClick = async () => {
+    await initDebugger({
+      chainOptions: {},
+      operations,
+      setStatus,
+      setLoggingOutput
+    });
+  };
+
+  const buttonStyles = {
+    height: "42px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px"
+  };
+
   // scroll to highlighted source as debugger steps
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
@@ -201,32 +215,6 @@ function Debugger(): JSX.Element {
   } else {
     content = status;
   }
-
-  const onButtonClick = async () => {
-    await initDebugger({
-      chainOptions: {},
-      operations,
-      setStatus,
-      setLoggingOutput
-    });
-  };
-
-  // tx simulation - forks, runs the tx, and opens the debugger to step through
-  useEffect(() => {
-    if (txToRun) {
-      forkNetworkWithTxAndInitDebugger({
-        tx: txToRun,
-        operations,
-        setStatus
-      });
-    }
-  }, [txToRun]);
-
-  const buttonStyles = {
-    height: "42px",
-    borderTopLeftRadius: "0px",
-    borderBottomLeftRadius: "0px"
-  };
 
   return (
     <div className={classes.debugger}>
