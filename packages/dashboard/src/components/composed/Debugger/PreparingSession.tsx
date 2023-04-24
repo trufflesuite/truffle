@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { createStyles, Flex } from "@mantine/core";
 
 const useStyles = createStyles(() => ({
@@ -6,8 +7,20 @@ const useStyles = createStyles(() => ({
   }
 }));
 
-function PreparingSession(): JSX.Element {
+function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
   const { classes } = useStyles();
+  const [ganacheOutput, setGanacheOutput] = useState<string>("");
+
+  useEffect(() => {
+    if (ganacheLoggingOutput.length > 0) {
+      if (ganacheOutput.length === 0) {
+        setGanacheOutput(ganacheLoggingOutput);
+      } else {
+        setGanacheOutput(ganacheOutput + "<br>" + ganacheLoggingOutput);
+      }
+    }
+  }, [ganacheLoggingOutput]);
+
   return (
     <Flex
       direction="column"
@@ -17,7 +30,9 @@ function PreparingSession(): JSX.Element {
     >
       <div>
         <div className={classes.title}>Preparing your debugger session...</div>
-        <div>some other content</div>
+        {ganacheOutput ? (
+          <div dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
+        ) : null}
       </div>
     </Flex>
   );
