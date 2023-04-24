@@ -25,12 +25,29 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
         ? theme.colors["truffle-brown"][3]
         : `${theme.colors["truffle-beige"][5]}73`
   },
-  tabs: {
+  tab: {
     fontSize: 16,
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][5]
         : theme.colors["truffle-beige"][3],
+    borderStyle: "solid",
+    height: 42,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 0,
+    borderColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][5]
+        : `${theme.colors["truffle-beige"][5]}73`
+  },
+  activeTab: {
+    fontSize: 16,
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][8]
+        : theme.colors["truffle-beige"][4],
     borderStyle: "solid",
     height: 42,
     borderTopWidth: 1,
@@ -120,6 +137,7 @@ function Sources({
         ));
   }
 
+  console.log("the current source id -- %o", currentSourceId);
   return (
     <Tabs
       value={currentSourceId}
@@ -127,18 +145,26 @@ function Sources({
       style={{ height: "100%" }}
     >
       <Tabs.List>
-        {sources.map((source: SourceType) => (
-          <Tabs.Tab key={source.id} value={source.id} className={classes.tabs}>
-            {basename(source.sourcePath)}
-          </Tabs.Tab>
-        ))}
+        {sources.map((source: SourceType) => {
+          const tabClass =
+            currentSourceId === source.id ? classes.activeTab : classes.tab;
+          return (
+            <Tabs.Tab key={source.id} value={source.id} className={tabClass}>
+              {basename(source.sourcePath)}
+            </Tabs.Tab>
+          );
+        })}
         {!unknownSourcesExist
           ? null
-          : unknownAddresses!.map((address: string) => (
-              <Tabs.Tab key={address} value={address} className={classes.tabs}>
-                Unknown Contract
-              </Tabs.Tab>
-            ))}
+          : unknownAddresses!.map((address: string) => {
+              const tabClass = (currentSourceId =
+                currentSourceId === address ? classes.activeTab : classes.tab);
+              return (
+                <Tabs.Tab key={address} value={address} className={tabClass}>
+                  Unknown Contract
+                </Tabs.Tab>
+              );
+            })}
       </Tabs.List>
       <div className={classes.sourceContent}>
         {sourcesContent}
