@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import type { Icon } from "react-feather";
-import { ActionIcon, createStyles } from "@mantine/core";
+import { ActionIcon, createStyles, Tooltip } from "@mantine/core";
 import type { ActionIconProps } from "@mantine/core";
 
 interface ControlButtonProps extends ActionIconProps {
@@ -9,6 +9,7 @@ interface ControlButtonProps extends ActionIconProps {
   stepEffect: () => void;
   stepping: boolean;
   setStepping: React.Dispatch<React.SetStateAction<boolean>>;
+  tooltipLabel: string;
 }
 
 function ControlButton({
@@ -18,6 +19,7 @@ function ControlButton({
   disabled,
   stepping,
   setStepping,
+  tooltipLabel,
   ...props
 }: ControlButtonProps): JSX.Element {
   const useStyles = createStyles(theme => ({
@@ -33,19 +35,21 @@ function ControlButton({
   const { classes } = useStyles();
 
   return (
-    <ActionIcon
-      {...props}
-      className={classes.button}
-      disabled={stepping || disabled}
-      onClick={async () => {
-        setStepping(true);
-        await step();
-        setStepping(false);
-        stepEffect();
-      }}
-    >
-      {createElement(icon)}
-    </ActionIcon>
+    <Tooltip label={tooltipLabel}>
+      <ActionIcon
+        {...props}
+        className={classes.button}
+        disabled={stepping || disabled}
+        onClick={async () => {
+          setStepping(true);
+          await step();
+          setStepping(false);
+          stepEffect();
+        }}
+      >
+        {createElement(icon)}
+      </ActionIcon>
+    </Tooltip>
   );
 }
 
