@@ -40,7 +40,8 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     borderColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][5]
-        : `${theme.colors["truffle-beige"][5]}73`
+        : `${theme.colors["truffle-beige"][5]}73`,
+    color: theme.colors["truffle-beige"][7]
   },
   activeTab: {
     fontSize: 16,
@@ -48,6 +49,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][8]
         : theme.colors["truffle-beige"][4],
+    color: theme.colorScheme === "dark" ? "white" : "black",
     borderStyle: "solid",
     height: 42,
     borderTopWidth: 1,
