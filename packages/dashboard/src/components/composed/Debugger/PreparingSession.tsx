@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { createStyles, Flex } from "@mantine/core";
+import { createStyles, Flex, Loader } from "@mantine/core";
 
 const useStyles = createStyles(() => ({
   title: {
-    fontSize: 18
+    fontSize: 18,
+    marginLeft: 20
   }
 }));
 
@@ -28,12 +29,13 @@ function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
       align="center"
       style={{ height: "calc(100vh - 108px)" }}
     >
-      <div>
+      <Flex align="center">
+        <Loader />
         <div className={classes.title}>Preparing your debugger session...</div>
-        {ganacheOutput ? (
-          <div dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
-        ) : null}
-      </div>
+      </Flex>
+      {ganacheOutput ? (
+        <div dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
+      ) : null}
     </Flex>
   );
 }
