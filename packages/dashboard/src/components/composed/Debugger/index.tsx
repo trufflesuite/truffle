@@ -59,7 +59,7 @@ function Debugger(): JSX.Element {
   } = useDash()!;
 
   const [loggingOutput, setLoggingOutput] = useState<string>("");
-  const [status, setStatus] = useState<SessionStatus>();
+  const [status, setStatus] = useState<SessionStatus>(SessionStatus.Inactive);
 
   // goToBreakpoint stores breakpoint info when a user clicks on one
   // so we can jump to it in Sources
@@ -210,6 +210,23 @@ function Debugger(): JSX.Element {
     );
   }
 
+  const preparingSession =
+    status === SessionStatus.Initializing ||
+    status === SessionStatus.Fetching ||
+    status === SessionStatus.Starting;
+  let mainBody;
+  if (status === SessionStatus.Inactive) {
+    mainBody = "Welcome";
+  } else if (preparingSession) {
+    mainBody = (
+      <>
+        <PreparingSession ganacheLoggingOutput={loggingOutput} />
+      </>
+    );
+  } else {
+    mainBody = content;
+  }
+
   return (
     <div className={classes.debugger}>
       <Header height={66} className={classes.inputGroup}>
@@ -234,13 +251,7 @@ function Debugger(): JSX.Element {
           )}
         </div>
       </Header>
-      {status === SessionStatus.Initializing ||
-      status === SessionStatus.Fetching ||
-      status === SessionStatus.Starting ? (
-        <PreparingSession ganacheLoggingOutput={loggingOutput} />
-      ) : (
-        content
-      )}
+      {mainBody}
     </div>
   );
 }
