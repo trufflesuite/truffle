@@ -39,6 +39,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.continueUntilBreakpoint()}
         disabled={disabled}
+        tooltipLabel="continue until breakpoint"
       />
       <ControlButton
         {...controlButtonProps}
@@ -46,6 +47,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.stepNext()}
         disabled={disabled}
+        tooltipLabel="step next"
       />
       <ControlButton
         {...controlButtonProps}
@@ -53,6 +55,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.stepOver()}
         disabled={disabled}
+        tooltipLabel="step over"
       />
       <ControlButton
         {...controlButtonProps}
@@ -60,6 +63,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.stepInto()}
         disabled={disabled}
+        tooltipLabel="step into"
       />
       <ControlButton
         {...controlButtonProps}
@@ -67,6 +71,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.stepOut()}
         disabled={disabled}
+        tooltipLabel="step out"
       />
       <ControlButton
         {...controlButtonProps}
@@ -74,6 +79,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         // @ts-ignore
         step={() => session.reset()}
         disabled={atStart}
+        tooltipLabel="reset"
       />
     </Group>
   );
