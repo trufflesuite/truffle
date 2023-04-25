@@ -59,7 +59,11 @@ function MantineGlobal(): JSX.Element {
               borderTopRightRadius: 0,
               borderBottomRightRadius: 0,
               border: 0,
-              height: 42
+              height: 42,
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors["truffle-brown"][5]
+                  : "#FFFFFF"
             },
 
             ".trfl-Input-wrapper": {
