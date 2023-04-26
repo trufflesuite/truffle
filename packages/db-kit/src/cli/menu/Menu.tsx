@@ -1,7 +1,7 @@
 import React, { ReactNode, useState, useEffect } from "react";
 import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Project } from "@truffle/db";
 
@@ -37,7 +37,7 @@ export type MenuModes = {
     };
     inputPropName: "address";
   };
-  quit: {
+  "quit": {
     rendersComponent: false;
     producesEffect: true;
     props: Props;

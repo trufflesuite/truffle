@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
-import type { Transaction, TransactionReceipt } from "web3-core";
-import type { ProjectDecoder, Log, Transaction as DecoderTransaction } from "@truffle/decoder";
+import type { Transaction, TransactionReceipt } from "web3-types";
+import type {
+  ProjectDecoder,
+  Log,
+  Transaction as DecoderTransaction
+} from "@truffle/decoder";
 import type { LogDecoding, CalldataDecoding } from "@truffle/codec";
 
 export interface UseDecodedTransactionOptions {
@@ -38,8 +42,10 @@ export function useDecodedTransaction({
     setState: (state: EventState) => void;
   }[] = [];
   for (const log of receipt.logs) {
+    //todo web3js-migration check if lint complain is valid
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [state, setState] = useState<EventState>({
-      log,
+      log: log as Log,
       decoding: undefined,
       complete: false
     });
@@ -48,18 +54,20 @@ export function useDecodedTransaction({
 
   useEffect(() => {
     //Using unknown below for type casting as web3-core's Transaction type is currently incorrect
-    decoder.decodeTransaction(transaction as unknown as DecoderTransaction).then(decoding => {
-      setSummaryState({
-        decoding,
-        complete: true
+    decoder
+      .decodeTransaction(transaction as unknown as DecoderTransaction)
+      .then(decoding => {
+        setSummaryState({
+          decoding,
+          complete: true
+        });
       });
-    });
 
     for (const [index, log] of receipt.logs.entries()) {
-      decoder.decodeLog(log).then(([decoding]) => {
+      decoder.decodeLog(log as Log).then(([decoding]) => {
         const { setState } = eventStates[index];
         setState({
-          log,
+          log: log as Log,
           complete: true,
           decoding
         });
