@@ -27,7 +27,6 @@
     "web3-utils": "1.8.2"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.55",
     "@truffle/environment": "^0.2.146",
     "@truffle/workflow-compile": "^4.0.57",
     "ganache": "7.8.0",
