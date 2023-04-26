@@ -26,7 +26,6 @@ export interface State {
     session: Session | null;
     breakpoints: BreakpointState;
     txToRun: ReceivedMessageLifecycle<DashboardProviderMessage> | null;
-    etherscanApiKey: string;
   };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;

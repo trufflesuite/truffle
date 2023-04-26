@@ -16,7 +16,6 @@ export type ActionType =
   | "set-notice"
   | "set-analytics-config"
   | "set-tx-to-run"
-  | "set-etherscan-api-key"
   | "handle-message"
   | "update-provider-message-sender"
   | "set-debugger-session-data"
@@ -48,11 +47,6 @@ export interface SetDecoderAction extends BaseAction {
 export interface SetDebuggerSessionDataAction extends BaseAction {
   type: "set-debugger-session-data";
   data: SetDebuggerSessionDataArgs;
-}
-
-export interface SetEtherscanApiKeyAction extends BaseAction {
-  type: "set-etherscan-api-key";
-  data: string;
 }
 
 export interface SetChainInfoAction extends BaseAction {
@@ -102,5 +96,4 @@ export type Action =
   | UpdateProviderMessageSenderAction
   | SetDebuggerSessionDataAction
   | SetTxToRunAction
-  | SetEtherscanApiKeyAction
   | ToggleDebuggerBreakpointAction;
