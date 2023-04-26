@@ -7,6 +7,7 @@ import Variables from "src/components/composed/Debugger/Variables";
 import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import Stack from "src/components/composed/Debugger/Stack";
 import PreparingSession from "src/components/composed/Debugger/PreparingSession";
+import Home from "src/components/composed/Debugger/Home";
 import {
   forkNetworkWithTxAndInitDebugger,
   initDebugger,
@@ -216,7 +217,7 @@ function Debugger(): JSX.Element {
     status === SessionStatus.Starting;
   let mainBody;
   if (status === SessionStatus.Inactive) {
-    mainBody = "Welcome";
+    mainBody = <Home />;
   } else if (preparingSession) {
     mainBody = (
       <>

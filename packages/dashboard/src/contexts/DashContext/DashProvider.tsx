@@ -327,6 +327,12 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         }
       });
     },
+    setEtherscanApiKey: (key: string) => {
+      dispatch({
+        type: "set-etherscan-api-key",
+        data: key
+      });
+    },
     setTxToRun: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
     ) => {
