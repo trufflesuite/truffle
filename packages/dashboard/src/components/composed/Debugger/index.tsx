@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input, Button, Header, Grid, createStyles } from "@mantine/core";
-import { useInputState, useCounter } from "@mantine/hooks";
+import { useInputState, useCounter, useLocalStorage } from "@mantine/hooks";
 import Controls from "src/components/composed/Debugger/Controls";
 import Sources from "src/components/composed/Debugger/Sources";
 import Variables from "src/components/composed/Debugger/Variables";
@@ -59,6 +59,7 @@ function Debugger(): JSX.Element {
     }
   } = useDash()!;
 
+  const [etherscanApiKey] = useLocalStorage({ key: "etherscan-api-key" });
   const [loggingOutput, setLoggingOutput] = useState<string>("");
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.Inactive);
 
@@ -114,7 +115,8 @@ function Debugger(): JSX.Element {
       chainOptions: {},
       operations,
       setStatus,
-      setLoggingOutput
+      setLoggingOutput,
+      etherscanApiKey
     });
   };
 
@@ -169,7 +171,8 @@ function Debugger(): JSX.Element {
       forkNetworkWithTxAndInitDebugger({
         tx: txToRun,
         operations,
-        setStatus
+        setStatus,
+        etherscanApiKey
       });
     }
   }, [txToRun]);

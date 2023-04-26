@@ -97,7 +97,10 @@ export class DashboardServer {
     }
 
     this.expressApp.get("/fetch-and-compile", async (req, res) => {
-      const { address, networkId } = req.query as Record<string, string>;
+      const { address, networkId, etherscanApiKey } = req.query as Record<
+        string,
+        string
+      >;
       let config;
       try {
         config = Config.detect();
@@ -107,19 +110,25 @@ export class DashboardServer {
           throw error;
         }
       }
-      const etherscanApiKey =
-        config && config.etherscan !== undefined
-          ? config.etherscan.apiKey
-          : undefined;
+
+      // a key provided in the browser takes precedence over on in the config
+      let etherscanKey: undefined | string;
+      if (etherscanApiKey) {
+        etherscanKey = etherscanApiKey;
+      } else if (config && config.etherscan !== undefined) {
+        etherscanKey = config.etherscan.apiKey;
+      }
+
       config = Config.default().merge({
         networks: {
           custom: { network_id: networkId }
         },
         network: "custom",
         etherscan: {
-          apiKey: etherscanApiKey
+          apiKey: etherscanKey
         }
       });
+
       let result;
       try {
         result = (await fetchAndCompile(address, config)).compileResult;

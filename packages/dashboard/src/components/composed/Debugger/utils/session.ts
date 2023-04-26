@@ -10,7 +10,8 @@ export async function forkNetworkWithTxAndInitDebugger({
   tx,
   operations,
   setUnknownAddresses,
-  setStatus
+  setStatus,
+  etherscanApiKey
 }: any) {
   const { method, params } = tx.message.payload;
   const forkedProvider = ganacheProvider({
@@ -31,7 +32,8 @@ export async function forkNetworkWithTxAndInitDebugger({
     operations,
     setUnknownAddresses,
     setStatus,
-    txHash: result
+    txHash: result,
+    etherscanApiKey
   });
 }
 
@@ -40,7 +42,8 @@ export async function initDebugger({
   operations,
   setStatus,
   txHash,
-  setLoggingOutput
+  setLoggingOutput,
+  etherscanApiKey
 }: any) {
   const compilations = await operations.getCompilations();
   const testTxHash = txHash
@@ -72,7 +75,8 @@ export async function initDebugger({
       onFetch: () => setStatus(SessionStatus.Fetching),
       onStart: () => setStatus(SessionStatus.Starting),
       onReady: () => setStatus(SessionStatus.Ready)
-    }
+    },
+    etherscanApiKey
   });
   operations.setDebuggerSessionData({ sources, unknownAddresses, session });
 }
@@ -91,6 +95,7 @@ type SetupSessionArgs = {
     onStart?: () => void;
     onReady?: () => void;
   };
+  etherscanApiKey: string;
 };
 
 export async function setupSession({
@@ -98,29 +103,24 @@ export async function setupSession({
   chainOptions: { provider, unlockedAccounts },
   compilations,
   setLoggingOutput,
-  callbacks
+  callbacks,
+  etherscanApiKey
 }: SetupSessionArgs): Promise<{
   session: Session;
   sources: Source[];
   unknownAddresses: string[];
 }> {
   callbacks?.onInit?.();
-  const { session, sources, networkId, unrecognizedAddresses } =
-    await createSession(
-      txHash,
-      provider,
-      compilations,
-      unlockedAccounts,
-      setLoggingOutput
-    );
+  const { session, sources, unrecognizedAddresses } = await createSession({
+    txHash,
+    provider,
+    compilations,
+    unlockedAccounts,
+    setLoggingOutput,
+    etherscanApiKey
+  });
 
   callbacks?.onFetch?.();
-  const { unknownAddresses } = await fetchCompilationsAndAddToSession(
-    session,
-    networkId,
-    unrecognizedAddresses
-  );
-
   callbacks?.onStart?.();
   await session.startFullMode();
 
@@ -131,7 +131,7 @@ export async function setupSession({
   window.bugger = session;
   callbacks?.onReady?.();
 
-  return { session, sources, unknownAddresses };
+  return { session, sources, unknownAddresses: unrecognizedAddresses };
 }
 
 type ProviderOptions = {
@@ -144,19 +144,29 @@ type ProviderOptions = {
   };
 };
 
-async function createSession(
-  txHash: string,
-  provider: any,
-  compilations: Compilation[],
-  unlockedAccounts: string[],
-  setLoggingOutput: (input: string) => void
-): Promise<{
+type CreateSessionArgs = {
+  txHash: string;
+  provider: any;
+  compilations: Compilation[];
+  unlockedAccounts: string[];
+  setLoggingOutput: (input: string) => void;
+  etherscanApiKey?: string;
+};
+
+async function createSession({
+  txHash,
+  provider,
+  compilations,
+  unlockedAccounts,
+  setLoggingOutput,
+  etherscanApiKey
+}: CreateSessionArgs): Promise<{
   session: Session;
   sources: Source[];
   networkId: string;
   unrecognizedAddresses: string[];
 }> {
-  let bugger;
+  let session;
   const providerOptions: ProviderOptions = {
     fork: { provider },
     logging: {
@@ -171,7 +181,7 @@ async function createSession(
     providerOptions.wallet = { unlockedAccounts };
   }
   try {
-    bugger = await forTx(txHash, {
+    session = await forTx(txHash, {
       provider: ganacheProvider(providerOptions),
       compilations: Codec.Compilations.Utils.shimCompilations(compilations),
       lightMode: true
@@ -188,8 +198,8 @@ async function createSession(
     );
   }
 
-  const $ = bugger.selectors;
-  const affectedInstances: { [address: string]: any } = bugger.view(
+  const $ = session.selectors;
+  const affectedInstances: { [address: string]: any } = session.view(
     $.session.info.affectedInstances
   );
   const networkId = await provider.request({
@@ -204,13 +214,14 @@ async function createSession(
     }
   }
   if (unrecognizedAddresses.length > 0 && networkId) {
-    await fetchCompilationsAndAddToSession(
-      bugger,
+    await fetchCompilationsAndAddToSession({
+      session,
       networkId,
-      unrecognizedAddresses
-    );
+      addresses: unrecognizedAddresses,
+      etherscanApiKey
+    });
   }
-  const sources = await getTransactionSourcesBeforeStarting(bugger);
+  const sources = await getTransactionSourcesBeforeStarting(session);
   // we need to transform these into the format dashboard uses
   const transformedSources = Object.values(sources).flatMap(
     ({ id, sourcePath, source: contents, language }: any) =>
@@ -218,17 +229,27 @@ async function createSession(
   );
   return {
     sources: transformedSources,
-    session: bugger,
+    session,
     networkId,
     unrecognizedAddresses
   };
 }
 
-async function fetchCompilationsAndAddToSession(
-  session: Session,
-  networkId: string,
-  addresses: string[]
-): Promise<{ unknownAddresses: string[] }> {
+type FetchCompilationsAndAddToSessionArgs = {
+  session: Session;
+  networkId: string;
+  addresses: string[];
+  etherscanApiKey?: string;
+};
+
+async function fetchCompilationsAndAddToSession({
+  session,
+  networkId,
+  addresses,
+  etherscanApiKey
+}: FetchCompilationsAndAddToSessionArgs): Promise<{
+  unknownAddresses: string[];
+}> {
   const host = window.location.hostname;
   const port =
     process.env.NODE_ENV === "development" ? 24012 : window.location.port;
@@ -236,9 +257,11 @@ async function fetchCompilationsAndAddToSession(
 
   let unknownAddresses = [];
   for (const address of addresses) {
-    const fetchResult = await fetch(
-      `${fetchAndCompileEndpoint}?address=${address}&networkId=${networkId}`
-    );
+    let url = `${fetchAndCompileEndpoint}?address=${address}&networkId=${networkId}`;
+    if (etherscanApiKey) {
+      url = url + `&etherscanApiKey=${etherscanApiKey}`;
+    }
+    const fetchResult = await fetch(url);
     const { compilations } = await fetchResult.json();
     if (compilations.length === 0) {
       unknownAddresses.push(address);
