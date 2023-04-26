@@ -16,7 +16,11 @@ const useStyles = createStyles(() => ({
   reset: {
     "&:hover": {
       cursor: "pointer"
-    }
+    },
+    "width": "50%",
+    "color": "blue",
+    "textAlign": "right",
+    "fontSize": 14
   }
 }));
 
@@ -46,6 +50,9 @@ function EtherScanApiKeyPrompt() {
           Would you like a faster experience? Truffle will sometimes download
           source material from Etherscan when it is missing. Enter your
           Etherscan API key in the box below to speed up your downloads.
+          Alternatively you may set an API key in your Truffle config file in
+          the directory where you are running `truffle dashboard`. To do this,
+          set `etherscan.apiKey` in your `truffle-config.js`.
         </Text>
         <Flex className={classes.inputGroup}>
           <Input
@@ -61,13 +68,17 @@ function EtherScanApiKeyPrompt() {
       </>
     );
   } else {
-    const onElementClick = () => {
-      removeEtherscanApiKey();
-    };
+    const onElementClick = () => removeEtherscanApiKey();
     return (
-      <div className={classes.reset} onClick={onElementClick}>
-        "reset your api key"
-      </div>
+      <>
+        <Text size="sm" className={classes.halfWidth}>
+          We have found an Etherscan API key that you previously entered in your
+          browser. To delete this from browser storage, click the link below.
+        </Text>
+        <Text size="sm" className={classes.reset} onClick={onElementClick}>
+          delete your api key
+        </Text>
+      </>
     );
   }
 }
