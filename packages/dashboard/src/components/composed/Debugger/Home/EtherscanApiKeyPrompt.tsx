@@ -10,7 +10,8 @@ const useStyles = createStyles(() => ({
     input: {
       height: 42,
       borderTopRightRadius: 0,
-      borderBottomRightRadius: 0
+      borderBottomRightRadius: 0,
+      border: 0
     }
   },
   reset: {
