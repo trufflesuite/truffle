@@ -1,12 +1,16 @@
-import { Flex, Text, Button, Input, createStyles } from "@mantine/core";
+import {
+  Container,
+  Flex,
+  Text,
+  Button,
+  Input,
+  createStyles
+} from "@mantine/core";
 import { useInputState, useLocalStorage } from "@mantine/hooks";
 
-const useStyles = createStyles(() => ({
-  halfWidth: {
-    width: "50%"
-  },
+const useStyles = createStyles(theme => ({
   inputGroup: {
-    width: "50%",
+    marginTop: 10,
     input: {
       height: 42,
       borderTopRightRadius: 0,
@@ -18,10 +22,16 @@ const useStyles = createStyles(() => ({
     "&:hover": {
       cursor: "pointer"
     },
-    "width": "50%",
     "color": "blue",
     "textAlign": "right",
     "fontSize": 14
+  },
+  promptContainer: {
+    width: "50%",
+    borderRadius: 4,
+    backgroundColor: theme.colors["truffle-teal"][0],
+    border: `solid ${theme.colors["truffle-teal"][7]}`,
+    padding: 15
   }
 }));
 
@@ -46,8 +56,8 @@ function EtherScanApiKeyPrompt() {
     };
 
     return (
-      <>
-        <Text size="sm" className={classes.halfWidth}>
+      <Container className={classes.promptContainer}>
+        <Text size="sm">
           Would you like a faster experience? Truffle will sometimes download
           source material from Etherscan when it is missing. Enter your
           Etherscan API key in the box below to speed up your downloads.
@@ -66,13 +76,13 @@ function EtherScanApiKeyPrompt() {
             Submit
           </Button>
         </Flex>
-      </>
+      </Container>
     );
   } else {
     const onElementClick = () => removeEtherscanApiKey();
     return (
       <>
-        <Text size="sm" className={classes.halfWidth}>
+        <Text size="sm">
           We have found an Etherscan API key that you previously entered in your
           browser. To delete this from browser storage, click the link below.
         </Text>
