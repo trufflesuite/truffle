@@ -1,6 +1,5 @@
 import { Flex, Text, Button, Input, createStyles } from "@mantine/core";
-import { useInputState } from "@mantine/hooks";
-import { useDash } from "src/hooks";
+import { useInputState, useLocalStorage } from "@mantine/hooks";
 
 const useStyles = createStyles(() => ({
   halfWidth: {
@@ -23,13 +22,11 @@ const useStyles = createStyles(() => ({
 
 function EtherScanApiKeyPrompt() {
   const { classes } = useStyles();
-  const {
-    operations: { setEtherscanApiKey },
-    state: {
-      debugger: { etherscanApiKey }
-    }
-  } = useDash()!;
 
+  const [etherscanApiKey, setEtherscanApiKey, removeEtherscanApiKey] =
+    useLocalStorage({
+      key: "etherscan-api-key"
+    });
   const [inputValue, setInputValue] = useInputState<string>("");
 
   const buttonStyles = {
@@ -38,10 +35,9 @@ function EtherScanApiKeyPrompt() {
     borderBottomLeftRadius: "0px"
   };
 
-  if (etherscanApiKey === "" || etherscanApiKey === undefined) {
+  if (etherscanApiKey === undefined) {
     const onButtonClick = () => {
-      localStorage.etherscanApiKey = inputValue;
-      setEtherscanApiKey(localStorage.etherscanApiKey);
+      setEtherscanApiKey(inputValue);
     };
 
     return (
@@ -56,7 +52,7 @@ function EtherScanApiKeyPrompt() {
             value={inputValue}
             onChange={setInputValue}
             type="text"
-            placeholder="Etherscan API Key"
+            placeholder="Etherscan api key"
           />
           <Button onClick={onButtonClick} style={buttonStyles}>
             Submit
@@ -66,8 +62,7 @@ function EtherScanApiKeyPrompt() {
     );
   } else {
     const onElementClick = () => {
-      localStorage.etherscanApiKey = "";
-      setEtherscanApiKey(localStorage.etherscanApiKey);
+      removeEtherscanApiKey();
     };
     return (
       <div className={classes.reset} onClick={onElementClick}>
