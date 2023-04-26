@@ -22,7 +22,6 @@ export interface ContextValue {
     setDebuggerSessionData: (value: SetDebuggerSessionDataArgs) => void;
     getCompilations: () => Promise<Compilation[]>;
     toggleDebuggerBreakpoint: (value: ToggleDebuggerBreakpointArgs) => void;
-    setEtherscanApiKey: (key: string) => void;
     setTxToRun: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
     ) => void;
