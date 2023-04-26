@@ -9,7 +9,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "lib": ["es2019","dom"],
     "rootDir": "lib",
     "types": ["node", "mocha"]
   },

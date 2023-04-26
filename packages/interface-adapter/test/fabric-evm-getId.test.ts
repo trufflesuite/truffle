@@ -1,13 +1,13 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import Ganache, { EthereumProvider } from "ganache";
+import Ganache from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
-import { InterfaceAdapter, Provider } from "../lib/adapter/types";
+import { InterfaceAdapter, Web3BaseProvider } from "../lib/adapter/types";
 
 function prepareGanache(fabricEvmEnabled: boolean): {
-  provider: EthereumProvider;
+  provider: Web3BaseProvider;
   interfaceAdapter: InterfaceAdapter;
 } {
   const provider = Ganache.provider({
@@ -15,11 +15,11 @@ function prepareGanache(fabricEvmEnabled: boolean): {
       instamine: "strict"
     },
     logging: {
-      quiet: true
+      quiet: false
     }
-  });
+  }) as unknown as Web3BaseProvider;
   const interfaceAdapter = createInterfaceAdapter({
-    provider: provider as Provider,
+    provider,
     networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"
   });
   return {

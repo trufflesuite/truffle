@@ -1,6 +1,6 @@
 import BN from "bn.js";
 import type { Web3Shim } from "..";
-import type { EvmTransaction } from "../../adapter/types";
+import type { EvmTransaction, Mutable } from "../../adapter/types";
 import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
 
 export const QuorumDefinition = {
@@ -60,7 +60,9 @@ const overrides = {
       web3.eth.getTransaction.method.outputFormatter;
 
     // @ts-ignore
-    web3.eth.getTransaction.method.outputFormatter = (tx: EvmTransaction) => {
+    web3.eth.getTransaction.method.outputFormatter = (
+      tx: Mutable<EvmTransaction>
+    ) => {
       const _oldGas = tx.gas;
 
       tx.gas = "0x0";

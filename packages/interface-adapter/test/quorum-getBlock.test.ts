@@ -2,28 +2,28 @@ import { describe, it } from "mocha";
 import { assert } from "chai";
 
 const BN = require("bn.js");
-import Ganache, { EthereumProvider } from "ganache";
+import Ganache from "ganache";
+import { Web3BaseProvider, InterfaceAdapter } from "../lib/adapter/types";
 
 import { createInterfaceAdapter } from "../lib";
-import { InterfaceAdapter, Provider } from "../lib/adapter/types";
 
 const genesisBlockTime = new Date();
 
 function prepareGanache(quorumEnabled: boolean): {
-  provider: EthereumProvider;
+  provider: Web3BaseProvider;
   interfaceAdapter: InterfaceAdapter;
 } {
   const provider = Ganache.provider({
     time: genesisBlockTime,
     logging: {
-      quiet: true
+      quiet: false
     },
     miner: {
       instamine: "strict"
     }
-  });
+  }) as unknown as Web3BaseProvider;
   const interfaceAdapter = createInterfaceAdapter({
-    provider: provider as Provider,
+    provider,
     networkType: quorumEnabled ? "quorum" : "ethereum"
   });
   return {
