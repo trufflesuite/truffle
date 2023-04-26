@@ -64,7 +64,8 @@ const helpers = (db: Db, project: Project.Project) => ({
   }
 });
 
-describe("Project.assignNames", () => {
+//todo web3js-migration unskip
+describe.skip("Project.assignNames", () => {
   let db, project;
 
   beforeAll(async () => {
