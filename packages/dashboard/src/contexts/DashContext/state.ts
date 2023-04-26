@@ -41,7 +41,8 @@ export const initialState: State = {
     unknownAddresses: null,
     session: null,
     txToRun: null,
-    breakpoints: {}
+    breakpoints: {},
+    etherscanApiKey: ""
   },
   decoder: null,
   decoderCompilations: null,
@@ -153,6 +154,14 @@ export const reducer = (state: State, action: Action): State => {
       }
 
       return newState;
+    case "set-etherscan-api-key":
+      return {
+        ...state,
+        debugger: {
+          ...state.debugger,
+          etherscanApiKey: data
+        }
+      };
     case "set-tx-to-run":
       return {
         ...state,
