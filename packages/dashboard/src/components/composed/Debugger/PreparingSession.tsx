@@ -27,7 +27,7 @@ function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
       direction="column"
       justify="center"
       align="center"
-      style={{ height: "calc(100vh - 108px)" }}
+      style={{ height: "calc(100vh - 108px)", width: "50%" }}
     >
       <Flex align="center">
         <Loader />

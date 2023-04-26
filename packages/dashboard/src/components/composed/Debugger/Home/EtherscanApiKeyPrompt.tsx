@@ -29,7 +29,10 @@ const useStyles = createStyles(theme => ({
   promptContainer: {
     width: "50%",
     borderRadius: 4,
-    backgroundColor: theme.colors["truffle-teal"][0],
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? "#082720"
+        : theme.colors["truffle-teal"][0],
     border: `solid ${theme.colors["truffle-teal"][7]}`,
     padding: 15
   }
