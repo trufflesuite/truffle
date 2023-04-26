@@ -2,8 +2,7 @@ import type TruffleConfig from "@truffle/config";
 import type Resolver from "@truffle/resolver";
 import TruffleError from "@truffle/error";
 
-import type { provider as Provider } from "web3-core/types";
-export type { provider as Provider } from "web3-core/types";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 export interface RequireOptions {
   /**
