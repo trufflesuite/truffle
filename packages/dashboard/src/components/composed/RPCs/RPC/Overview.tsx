@@ -86,6 +86,12 @@ const useStyles = createStyles((theme, _params, getRef) => {
     },
     rejectButton: { ref: getRef("rejectButton") },
     confirmButton: { ref: getRef("confirmButton") },
+    simulateTxButton: {
+      backgroundColor:
+        colorScheme === "dark"
+          ? colors["truffle-teal"][6]
+          : colors["truffle-teal"][4]
+    },
     confirmButtonRightIcon: {
       marginLeft: 4,
       marginRight: 6
@@ -202,7 +208,7 @@ function Overview({
           onClick={onSimulateButtonClick}
           onMouseEnter={onSimulateButtonEnter}
           onMouseLeave={onSimulateButtonLeave}
-          className={`${classes.button} ${classes.confirmButton}`}
+          className={`${classes.button} ${classes.simulateTxButton}`}
         >
           SimulateTx
         </Button>

@@ -111,11 +111,28 @@ function Debugger(): JSX.Element {
   };
 
   const onButtonClick = async () => {
+    const provider = window.ethereum;
+    if (!provider) {
+      throw new Error(
+        "There was no provider found in the browser. Ensure you have " +
+          "MetaMask connected to the current page."
+      );
+    }
+    const ganacheOptions = {
+      fork: { provider },
+      logging: {
+        logger: {
+          log: (message: string) => {
+            setLoggingOutput(message);
+          }
+        }
+      }
+    };
     await initDebugger({
-      chainOptions: {},
+      ganacheOptions,
       operations,
       setStatus,
-      setLoggingOutput,
+      provider,
       etherscanApiKey
     });
   };
@@ -172,7 +189,8 @@ function Debugger(): JSX.Element {
         tx: txToRun,
         operations,
         setStatus,
-        etherscanApiKey
+        etherscanApiKey,
+        setLoggingOutput
       });
     }
   }, [txToRun]);
