@@ -27,15 +27,19 @@ function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
       direction="column"
       justify="center"
       align="center"
-      style={{ height: "calc(100vh - 108px)", width: "50%" }}
+      style={{ height: "calc(100vh - 108px)" }}
     >
-      <Flex align="center">
-        <Loader />
-        <div className={classes.title}>Preparing your debugger session...</div>
-      </Flex>
-      {ganacheOutput ? (
-        <div dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
-      ) : null}
+      <div>
+        <Flex>
+          <Loader />
+          <div className={classes.title}>
+            Preparing your debugger session...
+          </div>
+        </Flex>
+        {ganacheOutput ? (
+          <pre dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
+        ) : null}
+      </div>
     </Flex>
   );
 }
