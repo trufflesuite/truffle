@@ -2,7 +2,7 @@ const debug = require("debug")("test:util");
 const fs = require("fs");
 const ganache = require("ganache");
 const Web3 = require("web3");
-const Web3PromiEvent = require("web3-core-promievent");
+const Web3PromiEvent = require("web3-core");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const contract = require("@truffle/contract");
@@ -76,7 +76,7 @@ const util = {
     Object.assign(options, { logger: log, ws: true });
 
     let provider;
-    const web3 = new Web3();
+    const web3 = new Web3.Web3();
 
     process.env.GETH
       ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {
@@ -123,7 +123,7 @@ const util = {
 
     real.on("transactionHash", hash => {
       util.realHash = hash;
-      util.fakePromiEvent.eventEmitter.emit("transactionHash", hash);
+      util.fakePromiEvent.emit("transactionHash", hash);
     });
 
     real.on("receipt", function (receipt) {
@@ -131,7 +131,7 @@ const util = {
       this.removeAllListeners();
     });
 
-    return util.fakePromiEvent.eventEmitter;
+    return util.fakePromiEvent;
   },
 
   fakeReject: function (msg) {

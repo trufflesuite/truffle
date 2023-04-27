@@ -136,7 +136,7 @@ documentation for these individual functions.
  * @module @truffle/decoder
  * @packageDocumentation
  */
-
+import { Web3BaseProvider } from "web3-types";
 import {
   ContractDecoder,
   ContractInstanceDecoder,
@@ -238,7 +238,7 @@ export async function forContract(
   settings: DecoderSettings = {}
 ): Promise<ContractDecoder> {
   return await forArtifact(contract, {
-    provider: contract.web3.currentProvider,
+    provider: contract.web3.currentProvider as Web3BaseProvider,
     ...settings
   });
 }
