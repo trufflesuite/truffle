@@ -14,12 +14,6 @@
     "baseUrl": ".",
     "lib": ["es2019"],
     "rootDir": "lib",
-    "paths": {
-      "web3": [
-        "node_modules/web3/index",
-        "../../node_modules/@types/web3/index"
-      ]
-    }
   },
   "include": [
     "./lib/**/*.ts",
