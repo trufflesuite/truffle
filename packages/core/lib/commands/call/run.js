@@ -70,7 +70,12 @@ module.exports = async function (options) {
   // Get the first defined "from" address
   const fromAddress =
     options.from ?? config.networks[config.network]?.from ?? config.from;
-  checkValidAddress(fromAddress);
+  if (!web3Utils.isAddress(fromAddress)) {
+    throw new TruffleError(
+      `Address ${fromAddress} is not a valid Ethereum address.\n` +
+        "Please check the address and try again."
+    );
+  }
 
   try {
     const result = await provider.call(
@@ -168,7 +173,12 @@ module.exports = async function (options) {
   }
 
   async function sourceFromExternal(contractAddress, config) {
-    checkValidAddress(contractAddress);
+    if (!web3Utils.isAddress(contractAddress)) {
+      throw new TruffleError(
+        `Address ${contractAddress} is not a valid Ethereum address.\n` +
+          "Please check the address and try again."
+      );
+    }
 
     const { compileResult } = await fetchAndCompile(contractAddress, config);
 
@@ -205,14 +215,5 @@ module.exports = async function (options) {
     );
 
     return { encoder, decoder };
-  }
-
-  function checkValidAddress(address) {
-    if (!web3Utils.isAddress(address)) {
-      throw new TruffleError(
-        `The address ${address} is not a valid Ethereum address!\n` +
-          "Please check the address and run the command again!"
-      );
-    }
   }
 };
