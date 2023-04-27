@@ -6,7 +6,7 @@ export class Native {
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = `${process.env.TRUFFLE_NATIVE_SOLC_PATH || "solc"} --standard-json`;
-    const maxBuffer = 1024 * 1024 * 10;
+    const maxBuffer = 1024 * 1024 * 50;
 
     try {
       return {
