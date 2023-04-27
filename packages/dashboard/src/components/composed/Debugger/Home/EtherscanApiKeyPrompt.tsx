@@ -63,10 +63,11 @@ function EtherScanApiKeyPrompt() {
         <Text size="sm">
           Would you like a faster experience? Truffle will sometimes download
           source material from Etherscan when it is missing. Enter your
-          Etherscan API key in the box below to speed up your downloads.
-          Alternatively you may set an API key in your Truffle config file in
-          the directory where you are running `truffle dashboard`. To do this,
-          set `etherscan.apiKey` in your `truffle-config.js`.
+          Etherscan API key in the box below to save it in the browser and speed
+          up your downloads. Alternatively you may set an API key in your
+          Truffle config file in the directory where you are running `truffle
+          dashboard`. To do this, set `etherscan.apiKey` in your
+          `truffle-config.js`.
         </Text>
         <Flex className={classes.inputGroup}>
           <Input
