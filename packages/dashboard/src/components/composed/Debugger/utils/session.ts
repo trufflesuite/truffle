@@ -24,6 +24,11 @@ export async function forkNetworkWithTxAndInitDebugger({
   };
   // @ts-ignore
   const forkedProvider = ganacheProvider(ganacheOptions);
+  const networkId = await forkedProvider.request({
+    method: "net_version",
+    params: []
+  });
+
   const result = await forkedProvider.request({ method, params });
   return initDebugger({
     ganacheOptions: {
@@ -36,7 +41,7 @@ export async function forkNetworkWithTxAndInitDebugger({
     setStatus,
     txHash: result,
     etherscanApiKey,
-    provider: forkedProvider
+    networkId
   });
 }
 
@@ -46,7 +51,7 @@ export async function initDebugger({
   setStatus,
   txHash,
   etherscanApiKey,
-  provider
+  networkId
 }: any) {
   const compilations = await operations.getCompilations();
   const testTxHash = txHash
@@ -70,7 +75,7 @@ export async function initDebugger({
       onReady: () => setStatus(SessionStatus.Ready)
     },
     etherscanApiKey,
-    provider
+    networkId
   });
   operations.setDebuggerSessionData({ sources, unknownAddresses, session });
 }
@@ -86,7 +91,7 @@ type SetupSessionArgs = {
     onReady?: () => void;
   };
   etherscanApiKey: string;
-  provider: any;
+  networkId: string;
 };
 
 export async function setupSession({
@@ -95,7 +100,7 @@ export async function setupSession({
   compilations,
   callbacks,
   etherscanApiKey,
-  provider
+  networkId
 }: SetupSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -107,7 +112,7 @@ export async function setupSession({
     ganacheOptions,
     compilations,
     etherscanApiKey,
-    provider
+    networkId
   });
 
   callbacks?.onFetch?.();
@@ -124,7 +129,7 @@ type CreateSessionArgs = {
   compilations: Compilation[];
   ganacheOptions: any;
   etherscanApiKey?: string;
-  provider: any;
+  networkId: string;
 };
 
 async function createSession({
@@ -132,7 +137,7 @@ async function createSession({
   compilations,
   ganacheOptions,
   etherscanApiKey,
-  provider
+  networkId
 }: CreateSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -162,10 +167,6 @@ async function createSession({
   const affectedInstances: { [address: string]: any } = session.view(
     $.session.info.affectedInstances
   );
-  const networkId = await provider.request({
-    method: "net_version",
-    params: []
-  });
 
   let unrecognizedAddresses: string[] = [];
   for (const [address, value] of Object.entries(affectedInstances)) {
