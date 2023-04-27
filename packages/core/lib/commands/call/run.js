@@ -11,7 +11,6 @@ module.exports = async function (options) {
   const loadConfig = require("../../loadConfig");
   const DebugUtils = require("@truffle/debug-utils");
   const web3Utils = require("web3-utils");
-  const { getFirstDefinedValue } = require("../../configAdapter");
   const { formatBlockSpecifier } = require("../../../../encoder/dist/adapter");
 
   if (options.url && options.network) {
@@ -69,11 +68,8 @@ module.exports = async function (options) {
   let decoding;
 
   // Get the first defined "from" address
-  const fromAddress = getFirstDefinedValue(
-    options.from,
-    config.networks[config.network].from,
-    config.from
-  );
+  const fromAddress =
+    options.from ?? config.networks[config.network]?.from ?? config.from;
   checkValidAddress(fromAddress);
 
   try {
