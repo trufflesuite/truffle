@@ -54,7 +54,8 @@ module.exports = async function (options) {
 
   if (!["pure", "view"].includes(functionEntry.stateMutability)) {
     console.log(
-      "WARNING: Making read-only call to non-view function.\n" +
+      "WARNING: Making read-only call to non-view function." +
+        OS.EOL +
         "Any changes this function attempts to make will not be saved to the blockchain."
     );
   }
@@ -67,7 +68,8 @@ module.exports = async function (options) {
     options.from ?? config.networks[config.network]?.from ?? config.from;
   if (!web3Utils.isAddress(fromAddress)) {
     throw new TruffleError(
-      `Address ${fromAddress} is not a valid Ethereum address.\n` +
+      `Address ${fromAddress} is not a valid Ethereum address.` +
+        OS.EOL +
         "Please check the address and try again."
     );
   }
@@ -156,7 +158,8 @@ module.exports = async function (options) {
         instance = await contract.deployed();
       } catch (error) {
         throw new TruffleError(
-          "This contract has not been deployed to the detected network.\n" +
+          "This contract has not been deployed to the detected network." +
+            OS.EOL +
             "Please run `truffle migrate` to deploy the contract."
         );
       }
@@ -169,7 +172,8 @@ module.exports = async function (options) {
   async function sourceFromExternal(contractAddress, config) {
     if (!web3Utils.isAddress(contractAddress)) {
       throw new TruffleError(
-        `Address ${contractAddress} is not a valid Ethereum address.\n` +
+        `Address ${contractAddress} is not a valid Ethereum address.` +
+          OS.EOL +
           "Please check the address and try again."
       );
     }
