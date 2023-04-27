@@ -137,7 +137,7 @@ export class ProviderAdapter {
     this.provider = provider;
   }
 
-  public async request({
+  private async request({
     method,
     params,
     formatOutput
