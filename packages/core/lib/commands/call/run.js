@@ -52,7 +52,7 @@ module.exports = async function (options) {
     );
   }
 
-  if (functionEntry.stateMutability !== "view") {
+  if (!["pure", "view"].includes(functionEntry.stateMutability)) {
     console.log(
       "WARNING: Making read-only call to non-view function.\n" +
         "Any changes this function attempts to make will not be saved to the blockchain."
