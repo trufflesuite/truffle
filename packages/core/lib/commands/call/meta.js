@@ -6,6 +6,17 @@ module.exports = {
       describe: "Connect to a specified provider given via URL",
       type: "string"
     },
+    "network": {
+      describe: "The network name to connect to as specified in the config",
+      type: "string"
+    },
+    "from": {
+      describe: "The address to perform the call from",
+      type: "string"
+    },
+    "_": {
+      type: "string"
+    },
     "fetch-external": {
       describe: "Fetch referenced verified contracts as needed",
       alias: "x",
@@ -17,23 +28,6 @@ module.exports = {
       alias: "b",
       type: "string",
       default: "latest"
-    },
-    "contract-address": {
-      describe: "The contract address to be called",
-      type: "string"
-    },
-    "contract-name": {
-      describe: "The contract name to be called",
-      type: "string"
-    },
-    "function-name": {
-      describe: "The function name in the specified contract to be called",
-      type: "string"
-    },
-    "function-signature": {
-      describe:
-        "The full function ABI signature (not selector) in the specified contract to be called",
-      type: "string"
     }
   },
   help: {
@@ -46,31 +40,30 @@ module.exports = {
     options: [
       {
         option: "<contract-name>",
-        description: "The contract name to be called."
+        description: "The name of the contract to be called."
       },
       {
         option: "<contract-address>",
-        description: "The contract address to be called."
+        description: "The address of the contract to be called."
       },
       {
         option: "<function-name>",
-        description: "The function name in the specified contract to be called."
+        description: "The name of the function to be called."
       },
       {
         option: "<function-signature>",
         description:
-          "The full function ABI signature (not selector) in the specified contract to be called."
+          "The full function ABI signature (not selector) to be called."
       },
       {
         option: "<arg1> ... <argN>",
-        description:
-          "List of arguments to be passed to the function to be called."
+        description: "List of arguments to be passed to the function."
       },
       {
         option: "--fetch-external|-x",
         description:
-          "Fetches referenced verified contracts as needed.\n" +
-          "                    Works only with an external contract address."
+          "Allows Truffle to fetch verified source for the contract being called;\n" +
+          "                    note this is useful only when the contract is supplied by address."
       },
       {
         option: "--url",
