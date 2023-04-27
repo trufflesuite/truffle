@@ -122,10 +122,9 @@ module.exports = async function (options) {
       }))
       .reduce((a, b) => ({ ...a, ...b }), {});
 
-    const isEmpty = Object.keys(contracts).length === 0;
-    if (isEmpty) {
+    if (Object.keys(contracts).length === 0) {
       throw new TruffleError(
-        "No artifacts found! Please run `truffle compile` first to compile your contracts!"
+        "No artifacts found; please run `truffle compile` first to compile your contracts."
       );
     }
 
@@ -158,7 +157,7 @@ module.exports = async function (options) {
       } catch (error) {
         throw new TruffleError(
           "This contract has not been deployed to the detected network.\n" +
-            "Please run `truffle migrate` to deploy the contract!"
+            "Please run `truffle migrate` to deploy the contract."
         );
       }
       const encoder = await Encoder.forContractInstance(instance, settings);
