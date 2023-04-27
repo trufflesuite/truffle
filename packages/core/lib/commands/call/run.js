@@ -59,7 +59,7 @@ module.exports = async function (options) {
     );
   }
 
-  const provider = new Encoder.ProviderAdapter(config.provider);
+  const adapter = new Encoder.ProviderAdapter(config.provider);
   let decoding;
 
   // Get the first defined "from" address
@@ -73,7 +73,7 @@ module.exports = async function (options) {
   }
 
   try {
-    const result = await provider.call(
+    const result = await adapter.call(
       fromAddress,
       transaction.to,
       transaction.data,
