@@ -9,12 +9,11 @@ import { getTransactionSourcesBeforeStarting } from "@truffle/debug-utils";
 export async function forkNetworkWithTxAndInitDebugger({
   tx,
   operations,
-  setUnknownAddresses,
   setStatus,
   etherscanApiKey
 }: any) {
   const { method, params } = tx.message.payload;
-  const forkedProvider = ganacheProvider({
+  const ganacheOptions = {
     fork: {
       // @ts-ignore
       provider: window.ethereum
@@ -22,28 +21,32 @@ export async function forkNetworkWithTxAndInitDebugger({
     wallet: {
       unlockedAccounts: [params[0].from]
     }
-  });
+  };
+  // @ts-ignore
+  const forkedProvider = ganacheProvider(ganacheOptions);
   const result = await forkedProvider.request({ method, params });
   return initDebugger({
-    chainOptions: {
-      unlockedAccounts: [params[0].from],
-      provider: forkedProvider
+    ganacheOptions: {
+      ...ganacheOptions,
+      fork: {
+        provider: forkedProvider
+      }
     },
     operations,
-    setUnknownAddresses,
     setStatus,
     txHash: result,
-    etherscanApiKey
+    etherscanApiKey,
+    provider: forkedProvider
   });
 }
 
 export async function initDebugger({
-  chainOptions: { unlockedAccounts, provider },
+  ganacheOptions,
   operations,
   setStatus,
   txHash,
-  setLoggingOutput,
-  etherscanApiKey
+  etherscanApiKey,
+  provider
 }: any) {
   const compilations = await operations.getCompilations();
   const testTxHash = txHash
@@ -55,19 +58,9 @@ export async function initDebugger({
   // "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389"; //goerli tx
   // "0x2650974eb6390dc787df16ab86308822855f907e7463107248cfd5e424923176"
   // "0xab2cba8e3e57a173a125d3f77a9a0a485809b8a7098b540a13593631909ccf00"; //dai tx
-  const pro = provider ? provider : window.ethereum;
-  if (!pro) {
-    throw new Error(
-      "There was no provider found in the browser. Ensure you have " +
-        "MetaMask connected to the current page."
-    );
-  }
+
   const { session, sources, unknownAddresses } = await setupSession({
-    chainOptions: {
-      unlockedAccounts,
-      provider: pro
-    },
-    setLoggingOutput,
+    ganacheOptions,
     txHash: testTxHash,
     compilations,
     callbacks: {
@@ -76,19 +69,16 @@ export async function initDebugger({
       onStart: () => setStatus(SessionStatus.Starting),
       onReady: () => setStatus(SessionStatus.Ready)
     },
-    etherscanApiKey
+    etherscanApiKey,
+    provider
   });
   operations.setDebuggerSessionData({ sources, unknownAddresses, session });
 }
 
 type SetupSessionArgs = {
   txHash: string;
-  chainOptions: {
-    provider: any;
-    unlockedAccounts: string[];
-  };
   compilations: Compilation[];
-  setLoggingOutput: any;
+  ganacheOptions: any;
   callbacks?: {
     onInit?: () => void;
     onFetch?: () => void;
@@ -96,15 +86,16 @@ type SetupSessionArgs = {
     onReady?: () => void;
   };
   etherscanApiKey: string;
+  provider: any;
 };
 
 export async function setupSession({
   txHash,
-  chainOptions: { provider, unlockedAccounts },
+  ganacheOptions,
   compilations,
-  setLoggingOutput,
   callbacks,
-  etherscanApiKey
+  etherscanApiKey,
+  provider
 }: SetupSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -113,53 +104,35 @@ export async function setupSession({
   callbacks?.onInit?.();
   const { session, sources, unrecognizedAddresses } = await createSession({
     txHash,
-    provider,
+    ganacheOptions,
     compilations,
-    unlockedAccounts,
-    setLoggingOutput,
-    etherscanApiKey
+    etherscanApiKey,
+    provider
   });
 
   callbacks?.onFetch?.();
   callbacks?.onStart?.();
   await session.startFullMode();
 
-  const $ = session.selectors;
-  // @ts-ignore
-  window.dollar = $;
-  // @ts-ignore
-  window.bugger = session;
   callbacks?.onReady?.();
 
   return { session, sources, unknownAddresses: unrecognizedAddresses };
 }
 
-type ProviderOptions = {
-  fork: {
-    provider: any;
-  };
-  logging: any;
-  wallet?: {
-    unlockedAccounts: string[];
-  };
-};
-
 type CreateSessionArgs = {
   txHash: string;
-  provider: any;
   compilations: Compilation[];
-  unlockedAccounts: string[];
-  setLoggingOutput: (input: string) => void;
+  ganacheOptions: any;
   etherscanApiKey?: string;
+  provider: any;
 };
 
 async function createSession({
   txHash,
-  provider,
   compilations,
-  unlockedAccounts,
-  setLoggingOutput,
-  etherscanApiKey
+  ganacheOptions,
+  etherscanApiKey,
+  provider
 }: CreateSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -167,22 +140,9 @@ async function createSession({
   unrecognizedAddresses: string[];
 }> {
   let session;
-  const providerOptions: ProviderOptions = {
-    fork: { provider },
-    logging: {
-      logger: {
-        log: (message: string) => {
-          setLoggingOutput(message);
-        }
-      }
-    }
-  };
-  if (unlockedAccounts && unlockedAccounts.length > 0) {
-    providerOptions.wallet = { unlockedAccounts };
-  }
   try {
     session = await forTx(txHash, {
-      provider: ganacheProvider(providerOptions),
+      provider: ganacheProvider(ganacheOptions),
       compilations: Codec.Compilations.Utils.shimCompilations(compilations),
       lightMode: true
     });
