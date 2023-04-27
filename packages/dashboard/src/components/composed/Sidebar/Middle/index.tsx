@@ -18,6 +18,7 @@ function Middle(): JSX.Element {
         icon={
           <Indicator
             label={numRequests > 99 ? "99+" : numRequests}
+            disabled={numRequests === 0}
             radius="sm"
             size={16}
             offset={-5}
