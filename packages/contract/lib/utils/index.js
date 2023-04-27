@@ -1,10 +1,11 @@
 const debug = require("debug")("contract:utils");
-const web3Utils = require("web3-utils");
 const { bigNumberify } = require("ethers/utils/bignumber");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("../reformat");
 const ens = require("./ens");
+
+const BN = require("bn.js");
 
 const allowedTxParams = new Set([
   "from",
@@ -34,7 +35,9 @@ const Utils = {
     //web3Utils.isBigNumber returns true not only for
     //bignumber.js BigNumbers, but also for ethers BigNumbers,
     //even though these are totally different things.
-    return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
+    //todo web3js-migration check if this is sufficient
+    return BN.isBN(val);
+    // || web3Utils.isBigNumber(val);
   },
 
   isTxParams(val) {
@@ -208,9 +211,12 @@ const Utils = {
           : item.toString();
         const ethersBN = bigNumberify(stringValue);
         converted.push(ethersBN);
-      } else if (BigInt.isBigInt(item)) {
-        converted.push(bigNumberify(item.toString()));
-      } else {
+      }
+      //todo web3js-migraiton check if this is still needed
+      // else if (BigInt.isBigInt(item)) {
+      //   converted.push(bigNumberify(item.toString()));
+      // }
+      else {
         converted.push(item);
       }
     });

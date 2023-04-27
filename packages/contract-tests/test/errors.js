@@ -23,7 +23,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("intrinsic gas too low"), "Should OOG");
+        assert(error.message.includes("out of gas"), "Should OOG");
       }
     });
 
@@ -122,7 +122,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: intrinsic gas too low"),
+          e.stack.includes("out of gas"),
           "Should keep hijacked error description"
         );
         assert(

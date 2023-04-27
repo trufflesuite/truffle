@@ -118,7 +118,7 @@ const util = {
 
   // Mocks for delayed tx resolution to simulate real clients
   fakeSendTransaction: function (params) {
-    util.fakePromiEvent = new Web3PromiEvent();
+    util.fakePromiEvent = new Web3PromiEvent.Web3PromiEvent();
     var real = util.web3.eth.sendTransaction(params);
 
     real.on("transactionHash", hash => {
