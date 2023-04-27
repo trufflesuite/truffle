@@ -10,16 +10,10 @@ const useStyles = createStyles(() => ({
 
 function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
   const { classes } = useStyles();
-  const [ganacheOutput, setGanacheOutput] = useState<string>("");
+  const [ganacheOutput, setGanacheOutput] = useState<string[]>([]);
 
   useEffect(() => {
-    if (ganacheLoggingOutput.length > 0) {
-      if (ganacheOutput.length === 0) {
-        setGanacheOutput(ganacheLoggingOutput);
-      } else {
-        setGanacheOutput(ganacheOutput + "<br>" + ganacheLoggingOutput);
-      }
-    }
+    setGanacheOutput(ganacheOutput.concat(ganacheLoggingOutput));
   }, [ganacheLoggingOutput]);
 
   return (
@@ -36,8 +30,10 @@ function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
             Preparing your debugger session...
           </div>
         </Flex>
-        {ganacheOutput ? (
-          <pre dangerouslySetInnerHTML={{ __html: ganacheOutput }} />
+        {ganacheLoggingOutput.length > 0 ? (
+          <pre
+            dangerouslySetInnerHTML={{ __html: ganacheOutput.join("<br>") }}
+          />
         ) : null}
       </div>
     </Flex>
