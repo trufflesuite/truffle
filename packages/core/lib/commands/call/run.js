@@ -11,7 +11,6 @@ module.exports = async function (options) {
   const loadConfig = require("../../loadConfig");
   const DebugUtils = require("@truffle/debug-utils");
   const web3Utils = require("web3-utils");
-  const { formatBlockSpecifier } = require("../../../../encoder/dist/adapter");
 
   if (options.url && options.network) {
     const message =
@@ -31,10 +30,7 @@ module.exports = async function (options) {
   const [contractNameOrAddress, functionNameOrSignature, ...args] = config._;
   let functionEntry, transaction;
 
-  // Validates the block number and returns the hex string representation of a number or
-  // an error if the string is other than "latest", "pending" and "earliest" or
-  // a hex string representation of a number
-  const blockToFetch = formatBlockSpecifier(config.blockNumber);
+  const { blockNumber } = config;
 
   const { encoder, decoder } = config.fetchExternal
     ? await sourceFromExternal(contractNameOrAddress, config)
@@ -82,7 +78,7 @@ module.exports = async function (options) {
       fromAddress,
       transaction.to,
       transaction.data,
-      blockToFetch
+      blockNumber
     );
 
     [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
@@ -202,7 +198,7 @@ module.exports = async function (options) {
     });
     const encoder = await projectEncoder.forAddress(
       contractAddress,
-      blockToFetch
+      blockNumber
     );
 
     const projectDecoder = await Decoder.forProject({
@@ -211,7 +207,7 @@ module.exports = async function (options) {
     });
     const decoder = await projectDecoder.forAddress(
       contractAddress,
-      blockToFetch
+      blockNumber
     );
 
     return { encoder, decoder };
