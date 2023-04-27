@@ -134,13 +134,16 @@ function Debugger(): JSX.Element {
         }
       }
     };
-    await initDebugger({
+    const fetchingOptions = {
       networkId,
+      etherscanApiKey
+    };
+    await initDebugger({
       ganacheOptions,
       operations,
       setStatus,
       provider,
-      etherscanApiKey
+      fetchingOptions
     });
   };
 
