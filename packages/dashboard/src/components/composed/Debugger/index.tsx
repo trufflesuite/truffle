@@ -117,6 +117,12 @@ function Debugger(): JSX.Element {
           "MetaMask connected to the current page."
       );
     }
+    const networkId = await provider.request({
+      // @ts-ignore
+      method: "net_version",
+      // @ts-ignore
+      params: []
+    });
     const ganacheOptions = {
       fork: { provider },
       logging: {
@@ -128,6 +134,7 @@ function Debugger(): JSX.Element {
       }
     };
     await initDebugger({
+      networkId,
       ganacheOptions,
       operations,
       setStatus,
