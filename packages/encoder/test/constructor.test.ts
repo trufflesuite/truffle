@@ -10,7 +10,7 @@ import * as Codec from "@truffle/codec";
 import { Shims } from "@truffle/compile-common";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import Ganache from "ganache";
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { prepareContracts } from "./helpers";
 

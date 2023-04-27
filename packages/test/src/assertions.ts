@@ -1,5 +1,4 @@
-import web3Utils from "web3-utils";
-
+import BN from "bn.js";
 export default function (chai: any, _utils: any) {
   const assert = chai.assert;
   chai.Assertion.addProperty("address", function () {
@@ -13,7 +12,7 @@ export default function (chai: any, _utils: any) {
     // Controversial: Technically there is that edge case where
     // all zeroes could be a valid address. But: This catches all
     // those cases where Ethereum returns 0x0000... if something fails.
-    const number = web3Utils.toBN(this._obj);
+    const number = new BN(this._obj);
     this.assert(
       !number.isZero(),
       "expected address #{this} to not be zero",

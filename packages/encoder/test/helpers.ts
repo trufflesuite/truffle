@@ -7,7 +7,7 @@ import BN from "bn.js";
 import fs from "fs-extra";
 import tmp from "tmp";
 import Web3 from "web3";
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider, EthExecutionAPI } from "web3-types";
 import * as Codec from "@truffle/codec";
 import TruffleConfig from "@truffle/config";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
@@ -45,9 +45,11 @@ interface Prepared {
 export async function prepareContracts(
   sources: StringMap,
   addresses: StringMap,
-  provider: Provider
+  provider: Provider<EthExecutionAPI>
 ): Promise<Prepared> {
-  const from = (await new Web3(provider).eth.getAccounts())[0];
+  const web3 = new Web3();
+  web3.setProvider(provider);
+  const from = (await web3.eth.getAccounts())[0];
 
   const config = createSandbox();
   config.compilers.solc.version = "0.8.9";

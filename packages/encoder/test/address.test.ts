@@ -11,13 +11,13 @@ import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type TruffleConfig from "@truffle/config";
 import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
-import type { Provider } from "web3/providers";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { prepareContracts } from "./helpers";
 
 let artifacts: { [name: string]: Artifact };
 let compilations: Codec.Compilations.Compilation[];
-let config: TruffleConfig;
+let config: typeof TruffleConfig;
 let registryAddress: string;
 const addresses: { [name: string]: string } = {
   "locate.gold": "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"

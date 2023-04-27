@@ -9,7 +9,7 @@ import type { Case, WrapOptions } from "./types";
 import * as Messages from "./messages";
 import * as Utils from "./utils";
 import * as EvmUtils from "@truffle/codec/evm/utils";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 
 import { addressCases } from "./address";
 import { bytesCases } from "./bytes";
