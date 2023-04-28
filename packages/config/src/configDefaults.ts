@@ -345,15 +345,64 @@ export const configProps = ({
         } catch {
           //if this throws, then there's no network config, whatever
         }
-        //NOTE: in what follows I'm not just using || or ?? because I want
-        //null to be respected but undefined not to be
-        const address = [
-          //note that network-specific locations go first
-          networkConfig?.registry?.address,
-          networkConfig?.registryAddress,
-          configObject.ens?.registry?.address,
-          configObject.ens?.registryAddress
-        ].find(x => x !== undefined);
+        //prefer specific over generic.  if there are two specific and they conflict,
+        //or two generic and they conflict (w/o specific to shadow), throw error.
+        //note: we treat null as a legitimate value here.
+        let address;
+        if (
+          networkConfig?.registry?.address !== undefined ||
+          networkConfig?.registryAddress !== undefined
+        ) {
+          if (
+            networkConfig?.registry?.address !== undefined &&
+            networkConfig?.registryAddress !== undefined
+          ) {
+            if (
+              networkConfig?.registry?.address ===
+              networkConfig?.registryAddress
+            ) {
+              //if both are defined and they're equal, use either one
+              address = networkConfig?.registry?.address;
+            } else {
+              //if both are defined but they're unequal, throw an error
+              throw new Error(
+                "Error: Conflicting values for registry address found in network config"
+              );
+            }
+          } else {
+            //if only one is defined, use that one
+            address =
+              networkConfig?.registry?.address ||
+              networkConfig?.registryAddress;
+          }
+        } else if (
+          configObject.ens?.registry?.address !== undefined ||
+          configObject.ens?.registryAddress !== undefined
+        ) {
+          if (
+            configObject.ens?.registry?.address !== undefined &&
+            configObject.ens?.registryAddress !== undefined
+          ) {
+            if (
+              configObject.ens?.registry?.address ===
+              configObject.ens?.registryAddress
+            ) {
+              //if both are defined and they're equal, use either one
+              address = configObject.ens?.registry?.address;
+            } else {
+              //if both are defined but they're unequal, throw an error
+              throw new Error(
+                "Error: Conflicting values for registry address found in project ens config"
+              );
+            }
+          } else {
+            //if only one is defined, use that one
+            address =
+              configObject.ens?.registry?.address ||
+              configObject.ens?.registryAddress;
+          }
+        }
+        //otherwise, address is just undefined
         return { address };
       },
       set() {
