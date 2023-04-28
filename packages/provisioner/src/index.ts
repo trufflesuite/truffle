@@ -24,12 +24,8 @@ const provision = (contractAbstraction: any, truffleConfig: TruffleConfig) => {
   }
 
   contractAbstraction.ens = truffleConfig.ens;
-  //HACK
-  contractAbstraction.ens.registryAddress =
-    truffleConfig.networks[truffleConfig.network]?.registryAddress ??
-    truffleConfig.networks[truffleConfig.network]?.registry?.address ??
-    truffleConfig.ens.registryAddress ??
-    truffleConfig.ens.registry?.address;
+  //HACK: use getter to get what we want and put it where we want
+  contractAbstraction.ens.registryAddress = truffleConfig.ensRegistry.address;
 
   [
     "from",

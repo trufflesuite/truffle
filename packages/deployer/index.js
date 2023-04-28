@@ -18,11 +18,8 @@ class Deployer extends Deployment {
     this.provider = options.provider;
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
-      options.ens.registryAddress =
-        this.networks[this.network].registryAddress ??
-        this.networks[this.network].registry?.address ??
-        options.ens.registryAddress ??
-        options.ens.registry?.address;
+      //HACK: use getter to get what we want and put it where we want
+      options.ens.registryAddress = options.ensRegistry.address;
       this.ens = new ENS({
         provider: options.provider,
         networkId: options.network_id,

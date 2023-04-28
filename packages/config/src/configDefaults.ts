@@ -336,6 +336,31 @@ export const configProps = ({
           "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
         );
       }
+    },
+    ensRegistry: {
+      get() {
+        let networkConfig;
+        try {
+          networkConfig = configObject.network_config;
+        } catch {
+          //if this throws, then there's no network config, whatever
+        }
+        //NOTE: in what follows I'm not just using || or ?? because I want
+        //null to be respected but undefined not to be
+        const address = [
+          //note that network-specific locations go first
+          networkConfig?.registry?.address,
+          networkConfig?.registryAddress,
+          configObject.ens?.registry?.address,
+          configObject.ens?.registryAddress
+        ].find(x => x !== undefined);
+        return { address };
+      },
+      set() {
+        throw new Error(
+          "Don't set config.ensRegistry directly. Instead, set config.ens.registry, or config.ens.registryAddress, or config.networks[<network name>].registry, or config.networks[<network name>].registryAddress."
+        );
+      }
     }
   };
 };
