@@ -358,7 +358,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.ensRegistry directly. Instead, set config.ens.registry, or config.ens.registryAddress, or config.networks[<network name>].registry, or config.networks[<network name>].registryAddress."
+          "Don't set config.ensRegistry directly. Instead, set config.networks[<network name>].registry, or config.networks[<network name>].registryAddress, or config.ens.registry, or config.ens.registryAddress."
         );
       }
     }
