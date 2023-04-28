@@ -108,6 +108,7 @@ module.exports = async function (options) {
     })
   );
 
+  return;
   //Note: This is the end of the function.  After this point is just inner
   //function declarations.  These declarations are made as inner functions
   //so they can use the imports above.
