@@ -75,7 +75,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
           ? colors["truffle-beige"][3]
           : colors["truffle-beige"][8]
     },
-    buttons: {
+    buttonsContainer: {
       minWidth: buttonsWidth
     },
     button: {
@@ -151,11 +151,10 @@ function Overview({
   };
 
   return (
-    <Group
+    <Stack
       onClick={onBackClick}
       onMouseEnter={onBackEnter}
       onMouseLeave={onBackLeave}
-      position="apart"
       pl={42}
       pr={35}
       py="lg"
@@ -182,27 +181,29 @@ function Overview({
           </Text>
         )}
       </Stack>
-      <Group className={classes.buttons}>
-        <Button
-          size="md"
-          onClick={onRejectButtonClick}
-          onMouseEnter={onRejectButtonEnter}
-          onMouseLeave={onRejectButtonLeave}
-          className={`${classes.button} ${classes.rejectButton}`}
-        >
-          Reject
-        </Button>
-        <Button
-          size="md"
-          onClick={onConfirmButtonClick}
-          onMouseEnter={onConfirmButtonEnter}
-          onMouseLeave={onConfirmButtonLeave}
-          rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
-          className={`${classes.button} ${classes.confirmButton}`}
-          classNames={{ rightIcon: classes.confirmButtonRightIcon }}
-        >
-          Confirm
-        </Button>
+      <Group className={classes.buttonsContainer} position="apart">
+        <Group>
+          <Button
+            size="md"
+            onClick={onRejectButtonClick}
+            onMouseEnter={onRejectButtonEnter}
+            onMouseLeave={onRejectButtonLeave}
+            className={`${classes.button} ${classes.rejectButton}`}
+          >
+            Reject
+          </Button>
+          <Button
+            size="md"
+            onClick={onConfirmButtonClick}
+            onMouseEnter={onConfirmButtonEnter}
+            onMouseLeave={onConfirmButtonLeave}
+            rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
+            className={`${classes.button} ${classes.confirmButton}`}
+            classNames={{ rightIcon: classes.confirmButtonRightIcon }}
+          >
+            Confirm
+          </Button>
+        </Group>
         <Button
           size="md"
           onClick={onSimulateButtonClick}
@@ -213,7 +214,7 @@ function Overview({
           SimulateTx
         </Button>
       </Group>
-    </Group>
+    </Stack>
   );
 }
 
