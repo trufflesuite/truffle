@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+function dev_deps() {
+  # jq -e '.devDependencies | has("@truffle/config")'  "packages/$1/package.json" >/dev/null 2>&1
+  for pkg in packages/*; do
+    pkg="$(basename "$pkg")"
+    if jq -e '.devDependencies | has("@truffle/config")'  "packages/$pkg/package.json" >/dev/null 2>&1 ; then 
+       echo "$pkg"
+    fi
+  done
+}
+
+function deps() {
+  for pkg in packages/*; do
+    pkg="$(basename "$pkg")"
+    if jq -e '.dependencies | has("@truffle/config")'  "packages/$pkg/package.json" >/dev/null 2>&1 ; then 
+       echo "$pkg"
+    fi
+  done
+}
+
+deps
