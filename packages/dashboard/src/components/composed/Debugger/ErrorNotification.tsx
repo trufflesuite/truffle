@@ -27,8 +27,10 @@ function ErrorNotification({ error }: { error: Error }): JSX.Element {
       justify="center"
     >
       <Text className={classes.notification} size="sm">
-        An error occurred while initializing the debugger. See the error below
-        for more information.
+        An error occurred while initializing the debugger. Often errors can be
+        caused by being connected to the incorrect network for a specific
+        transaction. Ensure you have MetaMask connected to the appropriate
+        network for your transaction. See the error below for more information.
         {error.message}
       </Text>
     </Flex>
