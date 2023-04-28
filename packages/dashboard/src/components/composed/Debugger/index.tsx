@@ -8,6 +8,7 @@ import Breakpoints from "src/components/composed/Debugger/Breakpoints";
 import Stack from "src/components/composed/Debugger/Stack";
 import PreparingSession from "src/components/composed/Debugger/PreparingSession";
 import Home from "src/components/composed/Debugger/Home";
+import ErrorNotification from "src/components/composed/Debugger/ErrorNotification";
 import {
   forkNetworkWithTxAndInitDebugger,
   initDebugger,
@@ -60,6 +61,7 @@ function Debugger(): JSX.Element {
   } = useDash()!;
 
   const [etherscanApiKey] = useLocalStorage({ key: "etherscan-api-key" });
+  const [error, setError] = useState<Error>();
   const [loggingOutput, setLoggingOutput] = useState<string>("");
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.Inactive);
 
@@ -138,13 +140,17 @@ function Debugger(): JSX.Element {
       networkId,
       etherscanApiKey
     };
-    await initDebugger({
-      ganacheOptions,
-      operations,
-      setStatus,
-      provider,
-      fetchingOptions
-    });
+    try {
+      await initDebugger({
+        ganacheOptions,
+        operations,
+        setStatus,
+        provider,
+        fetchingOptions
+      });
+    } catch (error) {
+      setError(error as Error);
+    }
   };
 
   const buttonStyles = {
@@ -195,13 +201,19 @@ function Debugger(): JSX.Element {
   // tx simulation - forks, runs the tx, and opens the debugger to step through
   useEffect(() => {
     if (txToRun) {
-      forkNetworkWithTxAndInitDebugger({
-        tx: txToRun,
-        operations,
-        setStatus,
-        etherscanApiKey,
-        setLoggingOutput
-      });
+      (async () => {
+        try {
+          await forkNetworkWithTxAndInitDebugger({
+            tx: txToRun,
+            operations,
+            setStatus,
+            etherscanApiKey,
+            setLoggingOutput
+          });
+        } catch (error) {
+          setError(error as Error);
+        }
+      })();
     }
   }, [txToRun]);
 
@@ -250,42 +262,42 @@ function Debugger(): JSX.Element {
   if (status === SessionStatus.Inactive) {
     mainBody = <Home />;
   } else if (preparingSession) {
-    mainBody = (
-      <>
-        <PreparingSession ganacheLoggingOutput={loggingOutput} />
-      </>
-    );
+    mainBody = <PreparingSession ganacheLoggingOutput={loggingOutput} />;
   } else {
     mainBody = content;
   }
 
-  return (
-    <div className={classes.debugger}>
-      <Header height={66} className={classes.inputGroup}>
-        <Controls session={session} stepEffect={sessionTick} />
-        <div className="truffle-debugger-input-and-button">
-          <Input
-            style={{ height: "42px", marginLeft: "34px" }}
-            value={inputValue}
-            onChange={setInputValue}
-            disabled={inputsDisabled}
-            type="text"
-            placeholder="Transaction hash"
-          />
-          {txToRun ? null : (
-            <Button
-              onClick={onButtonClick}
-              disabled={formDisabled}
-              style={buttonStyles}
-            >
-              Debug
-            </Button>
-          )}
-        </div>
-      </Header>
-      {mainBody}
-    </div>
-  );
+  if (error) {
+    return <ErrorNotification error={error} />;
+  } else {
+    return (
+      <div className={classes.debugger}>
+        <Header height={66} className={classes.inputGroup}>
+          <Controls session={session} stepEffect={sessionTick} />
+          <div className="truffle-debugger-input-and-button">
+            <Input
+              style={{ height: "42px", marginLeft: "34px" }}
+              value={inputValue}
+              onChange={setInputValue}
+              disabled={inputsDisabled}
+              type="text"
+              placeholder="Transaction hash"
+            />
+            {txToRun ? null : (
+              <Button
+                onClick={onButtonClick}
+                disabled={formDisabled}
+                style={buttonStyles}
+              >
+                Debug
+              </Button>
+            )}
+          </div>
+        </Header>
+        {mainBody}
+      </div>
+    );
+  }
 }
 
 export default Debugger;
