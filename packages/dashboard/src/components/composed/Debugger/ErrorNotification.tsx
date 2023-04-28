@@ -1,11 +1,11 @@
-import { Flex, Text, createStyles } from "@mantine/core";
+import { Flex, Text, Container, createStyles } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
   notificationContainer: {
     width: "100%",
     height: "100%"
   },
-  notification: {
+  notificationAndError: {
     maxWidth: "75%",
     backgroundColor:
       theme.colorScheme === "dark"
@@ -26,13 +26,16 @@ function ErrorNotification({ error }: { error: Error }): JSX.Element {
       align="center"
       justify="center"
     >
-      <Text className={classes.notification} size="sm">
-        An error occurred while initializing the debugger. Often errors can be
-        caused by being connected to the incorrect network for a specific
-        transaction. Ensure you have MetaMask connected to the appropriate
-        network for your transaction. See the error below for more information.
-        {error.message}
-      </Text>
+      <Container className={classes.notificationAndError}>
+        <Text>
+          An error occurred while initializing the debugger. Often errors can be
+          caused by being connected to the incorrect network for a specific
+          transaction. Ensure you have MetaMask connected to the appropriate
+          network for your transaction. See the error below for more
+          information.
+        </Text>
+        <Text>{error.message}</Text>
+      </Container>
     </Flex>
   );
 }
