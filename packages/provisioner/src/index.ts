@@ -16,12 +16,16 @@ const provision = (contractAbstraction: any, truffleConfig: TruffleConfig) => {
     // this is a workaround to allow users to opt out of the block polling that
     // web3 performs when we listen for confirmations which causes problems in testing
     if (truffleConfig.networks[truffleConfig.network]) {
-      const {disableConfirmationListener} = truffleConfig.networks[truffleConfig.network];
-      contractAbstraction.disableConfirmationListener = disableConfirmationListener;
+      const { disableConfirmationListener } =
+        truffleConfig.networks[truffleConfig.network];
+      contractAbstraction.disableConfirmationListener =
+        disableConfirmationListener;
     }
   }
 
   contractAbstraction.ens = truffleConfig.ens;
+  //HACK: use getter to get what we want and put it where we want
+  contractAbstraction.ens.registryAddress = truffleConfig.ensRegistry.address;
 
   [
     "from",

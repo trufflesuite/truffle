@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.21",
+  "version": "0.2.23",
   "main": "dist/index.js",
   "keywords": [
     "ethereum",
@@ -31,7 +31,7 @@
     "prepare": "yarn build"
   },
   "optionalDependencies": {
-    "@truffle/db": "^2.0.21"
+    "@truffle/db": "^2.0.23"
   },
   "devDependencies": {
     "typescript": "^4.7.4"

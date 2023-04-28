@@ -336,6 +336,80 @@ export const configProps = ({
           "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
         );
       }
+    },
+    ensRegistry: {
+      get() {
+        let networkConfig;
+        try {
+          networkConfig = configObject.network_config;
+        } catch {
+          //if this throws, then there's no network config, whatever
+        }
+        //prefer specific over generic.  if there are two specific and they conflict,
+        //or two generic and they conflict (w/o specific to shadow), throw error.
+        //note: we treat null as a legitimate value here.
+        let address;
+        if (
+          networkConfig?.registry?.address !== undefined ||
+          networkConfig?.registryAddress !== undefined
+        ) {
+          if (
+            networkConfig?.registry?.address !== undefined &&
+            networkConfig?.registryAddress !== undefined
+          ) {
+            if (
+              networkConfig?.registry?.address ===
+              networkConfig?.registryAddress
+            ) {
+              //if both are defined and they're equal, use either one
+              address = networkConfig?.registry?.address;
+            } else {
+              //if both are defined but they're unequal, throw an error
+              throw new Error(
+                "Error: Conflicting values for registry address found in network config"
+              );
+            }
+          } else {
+            //if only one is defined, use that one
+            address =
+              networkConfig?.registry?.address ||
+              networkConfig?.registryAddress;
+          }
+        } else if (
+          configObject.ens?.registry?.address !== undefined ||
+          configObject.ens?.registryAddress !== undefined
+        ) {
+          if (
+            configObject.ens?.registry?.address !== undefined &&
+            configObject.ens?.registryAddress !== undefined
+          ) {
+            if (
+              configObject.ens?.registry?.address ===
+              configObject.ens?.registryAddress
+            ) {
+              //if both are defined and they're equal, use either one
+              address = configObject.ens?.registry?.address;
+            } else {
+              //if both are defined but they're unequal, throw an error
+              throw new Error(
+                "Error: Conflicting values for registry address found in project ens config"
+              );
+            }
+          } else {
+            //if only one is defined, use that one
+            address =
+              configObject.ens?.registry?.address ||
+              configObject.ens?.registryAddress;
+          }
+        }
+        //otherwise, address is just undefined
+        return { address };
+      },
+      set() {
+        throw new Error(
+          "Don't set config.ensRegistry directly. Instead, set config.networks[<network name>].registry, or config.networks[<network name>].registryAddress, or config.ens.registry, or config.ens.registryAddress."
+        );
+      }
     }
   };
 };
