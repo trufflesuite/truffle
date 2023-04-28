@@ -1,40 +1,19 @@
-import {
-  Container,
-  Flex,
-  Text,
-  Button,
-  Input,
-  createStyles
-} from "@mantine/core";
-import { useInputState, useLocalStorage } from "@mantine/hooks";
+import { Flex, Text, createStyles } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
-  inputGroup: {
-    marginTop: 10,
-    input: {
-      height: 42,
-      borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-      border: 0
-    }
+  notificationContainer: {
+    width: "100%",
+    height: "100%"
   },
-  reset: {
-    "&:hover": {
-      cursor: "pointer"
-    },
-    "color": "blue",
-    "textAlign": "right",
-    "fontSize": 14
-  },
-  promptContainer: {
-    width: "50%",
-    borderRadius: 4,
+  notification: {
+    maxWidth: "75%",
     backgroundColor:
       theme.colorScheme === "dark"
         ? "#082720"
         : theme.colors["truffle-teal"][0],
-    border: `solid ${theme.colors["red"]}`,
-    padding: 15
+    padding: 15,
+    border: `solid red`,
+    borderRadius: 4
   }
 }));
 
@@ -42,9 +21,17 @@ function ErrorNotification({ error }: { error: Error }): JSX.Element {
   const { classes } = useStyles();
 
   return (
-    <Container className={classes.promptContainer}>
-      <Text size="sm">An error occurred while initializing the debugger.</Text>
-    </Container>
+    <Flex
+      className={classes.notificationContainer}
+      align="center"
+      justify="center"
+    >
+      <Text className={classes.notification} size="sm">
+        An error occurred while initializing the debugger. See the error below
+        for more information.
+        {error.message}
+      </Text>
+    </Flex>
   );
 }
 
