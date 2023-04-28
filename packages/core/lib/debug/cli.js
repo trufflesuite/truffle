@@ -133,7 +133,11 @@ class CLIDebugger {
     const startMessage = DebugUtils.formatStartMessage(
       this.txHash !== undefined
     );
-    const registry = this.config.noEns ? null : this.config.registry;
+    const specifiedRegistry = this.config.noEns ? null : this.config.registry; //specified at the command line
+    const registry =
+      specifiedRegistry !== undefined
+        ? specifiedRegistry
+        : this.config.ensRegistry?.address;
     let bugger;
     if (!this.config.fetchExternal) {
       //ordinary case, not doing fetch-external
