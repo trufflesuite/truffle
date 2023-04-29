@@ -1,16 +1,41 @@
 const contract = require("@truffle/contract");
-const expect = require("@truffle/expect");
-const provision = require("@truffle/provisioner");
+import expect from "@truffle/expect";
+import { provision } from "@truffle/provisioner";
+import type { ProvisionerOptions } from "@truffle/provisioner";
 
 import type { ResolverSource, ResolvedSource } from "./source";
 import { NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
+import cloneDeep from "lodash.clonedeep";
 
 export interface ResolverOptions {
   includeTruffleSources?: boolean;
 }
 
+function fromOptions(options: any): ProvisionerOptions {
+  const keys = [
+    "provider",
+    "network_id",
+    "network",
+    "networks",
+    "ens",
+    "from",
+    "gas",
+    "gasPrice",
+    "maxFeePerGas",
+    "maxPriorityFeePerGas",
+    "type"
+  ];
+
+  const config: any = {};
+  keys.forEach(key => {
+    config[key] = cloneDeep<any>(options[key]);
+  });
+  return config;
+}
+
 export class Resolver {
   options: any;
+  provisionerOptions: ProvisionerOptions;
   sources: ResolverSource[];
 
   constructor(
@@ -24,8 +49,9 @@ export class Resolver {
     ]);
 
     const { includeTruffleSources } = resolverOptions;
-
-    this.options = options;
+    // deep copy the portions of options needed to make
+    // provisionOptions
+    this.provisionerOptions = fromOptions(options);
 
     let basicSources: ResolverSource[] = [
       new NPM(options.working_directory),
@@ -57,7 +83,7 @@ export class Resolver {
       const result = source.require(import_path, search_path);
       if (result) {
         const abstraction = contract(result);
-        provision(abstraction, this.options);
+        provision(abstraction, this.provisionerOptions);
         return abstraction;
       }
     }
