@@ -17,11 +17,14 @@ export class CompilerSupplier {
   private version: string;
   private docker: boolean;
   private strategyOptions: StrategyOptions;
+  private nativePath: string;
 
   constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, dockerTagsUrl, spawn } = solcConfig;
+    const { version, docker, compilerRoots, dockerTagsUrl, spawn, nativePath } =
+      solcConfig;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
+    this.nativePath = nativePath;
     this.strategyOptions = {};
     if (version) this.strategyOptions.version = this.version;
     if (dockerTagsUrl) this.strategyOptions.dockerTagsUrl = dockerTagsUrl;
@@ -44,7 +47,7 @@ export class CompilerSupplier {
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
     } else if (useNative) {
-      strategy = new Native();
+      strategy = new Native(this.nativePath);
     } else if (useSpecifiedLocal) {
       strategy = new Local();
     } else if (isValidVersionRange) {
@@ -83,7 +86,7 @@ export class CompilerSupplier {
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
     } else if (useNative) {
-      strategy = new Native();
+      strategy = new Native(this.nativePath);
     } else if (useSpecifiedLocal) {
       strategy = new Local();
     } else if (isValidVersionRange) {
