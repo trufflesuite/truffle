@@ -61,7 +61,7 @@ function EtherScanApiKeyPrompt() {
     return (
       <Container className={classes.promptContainer}>
         <Text size="sm">
-          Would you like a faster experience? Truffle will sometimes download
+          Would you like a faster experience? Truffle will attempt download
           source material from Etherscan when it is missing. Enter your
           Etherscan API key in the box below to save it in the browser and speed
           up your downloads. Alternatively you may set an API key in your
