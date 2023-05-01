@@ -1,5 +1,6 @@
 import {
   Container,
+  Stack,
   Flex,
   Text,
   Button,
@@ -26,6 +27,9 @@ const useStyles = createStyles(theme => ({
     "textAlign": "right",
     "fontSize": 14
   },
+  halfWidth: {
+    width: "50%"
+  },
   promptContainer: {
     width: "50%",
     borderRadius: 4,
@@ -35,6 +39,9 @@ const useStyles = createStyles(theme => ({
         : theme.colors["truffle-teal"][0],
     border: `solid ${theme.colors["truffle-teal"][7]}`,
     padding: 15
+  },
+  etherscanMessageContainer: {
+    width: "100%"
   }
 }));
 
@@ -85,15 +92,19 @@ function EtherScanApiKeyPrompt() {
   } else {
     const onElementClick = () => removeEtherscanApiKey();
     return (
-      <>
-        <Text size="sm">
+      <Stack align="center" className={classes.etherscanMessageContainer}>
+        <Text size="sm" className={classes.halfWidth}>
           We have found an Etherscan API key that you previously entered in your
           browser. To delete this from browser storage, click the link below.
         </Text>
-        <Text size="sm" className={classes.reset} onClick={onElementClick}>
+        <Text
+          size="sm"
+          className={`${classes.reset} ${classes.halfWidth}`}
+          onClick={onElementClick}
+        >
           delete your api key
         </Text>
-      </>
+      </Stack>
     );
   }
 }
