@@ -107,7 +107,9 @@ function Debugger(): JSX.Element {
       // @ts-ignore
       const scroller = document.getElementById(`source-${sourceId.slice(-10)}`);
       // @ts-ignore
-      scroller.scrollTop = offsetTop - 300;
+      const scrollerHeight = scroller.offsetHeight;
+      // @ts-ignore - approx. 60% gets the line to the middle of the container
+      scroller.scrollTop = offsetTop - scrollerHeight * 0.6;
     }
   };
 
