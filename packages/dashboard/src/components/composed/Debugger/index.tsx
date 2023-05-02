@@ -77,9 +77,8 @@ function Debugger(): JSX.Element {
   // currentSourceId is the "active" source displayed in Sources
   const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
 
-  const formDisabled =
-    // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
-    inputsDisabled;
+  const formDisabled = inputsDisabled;
+  // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
 
   let currentSourceRange: SourceRange | Partial<SourceRange> = {
     traceIndex: -1
@@ -141,13 +140,15 @@ function Debugger(): JSX.Element {
       networkId,
       etherscanApiKey
     };
+    const txHash = inputValue === "" ? undefined : inputValue;
     try {
       await initDebugger({
         ganacheOptions,
         operations,
         setStatus,
         provider,
-        fetchingOptions
+        fetchingOptions,
+        txHash
       });
     } catch (error) {
       setError(error as Error);
