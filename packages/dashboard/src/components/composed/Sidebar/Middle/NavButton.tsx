@@ -21,7 +21,7 @@ const useStyles = createStyles((theme, _params, _getRef) => {
       backgroundColor:
         colorScheme === "dark"
           ? colors["truffle-brown"][6]
-          : colors["truffle-beige"][3]
+          : colors["truffle-beige"][2]
     }
   };
 });
