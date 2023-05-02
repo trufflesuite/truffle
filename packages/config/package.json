@@ -34,7 +34,7 @@
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
     "@types/lodash": "^4.14.179",
-    "@types/node": "~12.12.0",
+    "@types/node": "18.11.17",
     "@types/sinon": "^9.0.10",
     "mocha": "10.1.0",
     "sinon": "^9.0.2",

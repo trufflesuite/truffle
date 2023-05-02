@@ -61,8 +61,8 @@ const handlers = {
    */
   error: function (context, error) {
     if (!handlers.ignoreTimeoutError(context, error)) {
-      context.promiEvent.emit("error", error);
-      this.removeListener("error", handlers.error);
+      context.promiEvent.eventEmitter.emit("error", error);
+      this.off("error", handlers.error);
     }
   },
 
@@ -75,7 +75,7 @@ const handlers = {
   hash: function (context, hash) {
     context.transactionHash = hash;
     context.promiEvent.eventEmitter.emit("transactionHash", hash);
-    this.removeListener("transactionHash", handlers.hash);
+    this.off("transactionHash", handlers.hash);
   },
 
   confirmation: function (context, number, receipt) {
@@ -83,7 +83,7 @@ const handlers = {
 
     // Per web3: initial confirmation index is 0
     if (number === handlers.maxConfirmations + 1) {
-      this.removeListener("confirmation", handlers.confirmation);
+      this.off("confirmation", handlers.confirmation);
     }
   },
 
@@ -145,7 +145,7 @@ const handlers = {
     //HACK: adding this conditional for when the handler is invoked
     //manually during stacktracing
     if (this.removeListener) {
-      this.removeListener("receipt", handlers.receipt);
+      this.off("receipt", handlers.receipt);
     }
   }
 };
