@@ -55,7 +55,7 @@ export async function initDebugger({
   fetchingOptions
 }: any) {
   const compilations = await operations.getCompilations();
-  const testTxHash = txHash
+  const txHashToDebug = txHash
     ? txHash
     : // : "0xf5ad7387297428dd152997aab72c190954bcce692daf022bb63ab9aa5f199c33"; // cross contract goerli text tx hash (link verified)
       "0x667c69bc27c0e26cf1133b954bdccd2648afcae34dbebfbf5c45e4b62a32e422"; // local MetaCoin deployment
@@ -68,7 +68,7 @@ export async function initDebugger({
   const { session, sources, unknownAddresses } = await setupSession({
     ganacheOptions,
     fetchingOptions,
-    txHash: testTxHash,
+    txHash: txHashToDebug,
     compilations,
     callbacks: {
       onInit: () => setStatus(SessionStatus.Initializing),
