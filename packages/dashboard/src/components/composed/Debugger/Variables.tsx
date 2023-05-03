@@ -60,6 +60,7 @@ function Variables({
 }: VariablesArgs): JSX.Element | null {
   const { classes } = useStyles();
   const [output, setOutput] = useState<JSX.Element[] | null>(null);
+
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getVariables() {
@@ -67,16 +68,17 @@ function Variables({
         session.selectors.data.current.identifiers.sections
       );
       const variables = await session!.variables();
+
       const entries = [];
       // section here is a variable category such as a Solidity built-in
       // or contract variable
       for (const section in sections) {
         const variableValues: Array<JSX.Element> = sections[section].map(
           (variableName: keyof typeof variables) => {
-            if (variables)
+            if (variables) {
               return (
                 <>
-                  <dt>{variableName}</dt>
+                  <dt> {variableName}</dt>
                   <dd>
                     {inspect(
                       new Codec.Export.ResultInspector(variables[variableName])
@@ -84,6 +86,7 @@ function Variables({
                   </dd>
                 </>
               );
+            }
           }
         );
         if (variableValues.length > 0) {
@@ -98,6 +101,7 @@ function Variables({
 
       setOutput(entries);
     }
+
     getVariables();
   }, [currentStep, session]);
 
