@@ -17,7 +17,7 @@ describe("Deployer (async / await)", function () {
     },
     logging: { quiet: true }
   });
-  const web3 = new Web3(provider);
+  const web3 = new Web3.Web3(provider);
 
   beforeEach(async function () {
     this.timeout(20000);

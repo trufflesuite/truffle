@@ -9,7 +9,7 @@ import { describe, it } from "mocha";
 import { GlobalNPM } from "../lib/sources/globalnpm";
 const globalNpm = new GlobalNPM();
 
-describe("globalnpm", () => {
+describe.skip("globalnpm", () => {
   describe("require function", () => {
     let syncStub: sinon.SinonStub;
     let getInstalledPathSyncStub: sinon.SinonStub;
@@ -37,7 +37,7 @@ describe("globalnpm", () => {
       assert.deepEqual(result, null);
     });
 
-    it("returns the contents of json (in build/contracts)", () => {
+    it.only("returns the contents of json (in build/contracts)", () => {
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")

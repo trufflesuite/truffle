@@ -60,10 +60,10 @@ const util = {
     const { contracts } = compilations[0];
 
     if (process.listeners("uncaughtException").length) {
-      process.removeListener(
-        "uncaughtException",
-        process.listeners("uncaughtException")[0]
-      );
+      // process.removeListener(
+      //   "uncaughtException",
+      //   process.listeners("uncaughtException")[0]
+      // );
     }
 
     return contract(Shims.NewToLegacy.forContract(contracts[0]));
@@ -124,11 +124,12 @@ const util = {
     real.on("transactionHash", hash => {
       util.realHash = hash;
       util.fakePromiEvent.emit("transactionHash", hash);
+      util.fakePromiEvent.eventEmitter;
     });
 
     real.on("receipt", function (receipt) {
       util.realReceipt = receipt;
-      this.removeAllListeners();
+      // this.removeAllListeners();
     });
 
     return util.fakePromiEvent;

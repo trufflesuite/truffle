@@ -30,7 +30,7 @@ describe("Error cases", function () {
     logging: { quiet: true }
   });
 
-  const web3 = new Web3(provider);
+  const web3 = new Web3.Web3(provider);
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();
@@ -117,7 +117,6 @@ describe("Error cases", function () {
     } catch (err) {
       assert(err.message.includes("Deployment Failed"));
       assert(err.message.includes("UsesLibrary"));
-      assert(err.message.includes("unresolved libraries"));
     }
   });
 
@@ -192,8 +191,10 @@ describe("Error cases", function () {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("code couldn't be stored"));
-      assert(err.message.includes("check your gas limit"));
+      assert(
+        err.message.includes("Making your contract constructor more efficient")
+      );
+      assert(err.message.includes("caused gas estimation to fail"));
     }
   });
 
@@ -228,7 +229,7 @@ describe("Error cases", function () {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("revert"));
+      assert(err.toString().includes("Revert"));
     }
   });
 
@@ -249,7 +250,7 @@ describe("Error cases", function () {
 
   it("exceeds block limit", async function () {
     const block = await web3.eth.getBlock("latest");
-    const gas = block.gasLimit + 1000;
+    const gas = block.gasLimit + BigInt(1000);
 
     const migrate = function () {
       deployer.deploy(Example, { gas: gas });

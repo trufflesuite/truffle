@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("encoder:test");
 
 import { assert } from "chai";
-import path from "path";
-import fs from "fs-extra";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 import * as Encoder from "..";
 import * as Codec from "@truffle/codec";
@@ -12,7 +12,7 @@ import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
 import type { Web3BaseProvider as Provider } from "web3-types";
 
-import BN from "bn.js";
+import * as BN from "bn.js";
 
 import { prepareContracts } from "./helpers";
 
@@ -569,7 +569,7 @@ describe("Encoding", () => {
         }
       });
 
-      it("Rejects wrapped value for wrong type", async () => {
+      it.only("Rejects wrapped value for wrong type", async () => {
         const wrapped = await encoder.wrap(
           {
             typeClass: "tuple",
@@ -584,6 +584,7 @@ describe("Encoding", () => {
           await encoder.encodeTxNoResolution(abi, [wrapped]);
           assert.fail("Value wrapped as tuple got encoded as array");
         } catch (error) {
+          console.log(error);
           if (error.name !== "TypeMismatchError") {
             throw error;
           }

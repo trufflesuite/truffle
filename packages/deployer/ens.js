@@ -53,6 +53,7 @@ class ENS {
     //but I figure using the resolver for "addr.reverse" ought to suffice,
     //right?  So let's set up a resolver for it.
     //but in order to set its resolver, we first have to set its owner.
+    console.warn(from, "setting name owner for addr.reverse");
     await this.setNameOwner({ from, name: "addr.reverse" });
     //now we can actually set the resolver
     const { resolverAddress } = await this.ensureResolverExists({
@@ -151,7 +152,9 @@ class ENS {
 
     // Set top-level name
     let builtName = nameLabels[0];
-    await this.devRegistry.setSubnodeOwner("0x0", sha3(builtName), from, {
+    const ZERO_NODE =
+      "0x0000000000000000000000000000000000000000000000000000000000000000";
+    await this.devRegistry.setSubnodeOwner(ZERO_NODE, sha3(builtName), from, {
       from
     });
 

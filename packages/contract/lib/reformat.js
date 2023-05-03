@@ -2,22 +2,21 @@
  * Utilities for reformatting web3 outputs
  */
 const BigNumber = require("bignumber.js/bignumber");
-const web3Utils = require("web3-utils");
-
+const BN = require("bn.js");
 /**
  * Converts from string to other number format
  * @param  {String} val    number string returned by web3
  * @param  {String} format name of format to convert to
  * @return {Object|String} converted value
  */
-const _convertNumber = function(val, format) {
+const _convertNumber = function (val, format) {
   const badFormatMsg = `Attempting to convert to unknown number format: ${format}`;
 
   switch (format) {
     case "BigNumber":
       return new BigNumber(val);
     case "BN":
-      return web3Utils.toBN(val);
+      return new BN(val);
     case "String":
       return val;
     case "BigInt":
@@ -33,7 +32,7 @@ const _convertNumber = function(val, format) {
  * @param  {String}   format    name of format to convert to
  * @return {Object[]|String[]}  array of converted values
  */
-const _convertNumberArray = function(arr, format, depth = 0) {
+const _convertNumberArray = function (arr, format, depth = 0) {
   if (depth == 0) return arr.map(item => _convertNumber(item, format));
   // arr is nested
   return arr.map(item => _convertNumberArray(item, format, depth - 1));
@@ -49,7 +48,7 @@ const _convertNumberArray = function(arr, format, depth = 0) {
  * @param  {Array}               abiSegment  event params OR .call outputs
  * @return {String|Object|Array} reformatted result
  */
-const numbers = function(result, abiSegment) {
+const numbers = function (result, abiSegment) {
   const format = this.numberFormat;
 
   abiSegment.forEach((output, i) => {

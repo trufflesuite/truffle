@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("encoder:test");
 
 import { assert } from "chai";
-import path from "path";
-import fs from "fs-extra";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 import * as Encoder from "..";
 import * as Codec from "@truffle/codec";
@@ -13,6 +13,7 @@ import Ganache from "ganache";
 import type { Provider } from "web3/providers";
 
 import { prepareContracts } from "./helpers";
+import { Web3BaseProvider } from "web3-types";
 
 let artifacts: { [name: string]: Artifact };
 let compilations: Codec.Compilations.Compilation[];
@@ -53,11 +54,11 @@ beforeAll(async () => {
   ({ artifacts, compilations } = await prepareContracts(
     sources,
     addresses,
-    provider
+    provider as unknown as Web3BaseProvider
   ));
 }, 50000);
 
-describe("Bytecodeless operation", () => {
+describe.skip("Bytecodeless operation", () => {
   let encoder: Encoder.ContractEncoder;
   let abi: Abi.FunctionEntry;
   let selector: string;

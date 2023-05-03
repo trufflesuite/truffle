@@ -2,17 +2,16 @@ import debugModule from "debug";
 const debug = debugModule("encoder:test");
 
 import { assert } from "chai";
-import path from "path";
-import fs from "fs-extra";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 import * as Encoder from "..";
 import * as Codec from "@truffle/codec";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
-import type { Provider } from "web3/providers";
 
-import BN from "bn.js";
+import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
 import Big from "big.js";
 import {
@@ -21,6 +20,7 @@ import {
 } from "@ethersproject/bignumber";
 
 import { prepareContracts } from "./helpers";
+import { Web3BaseProvider } from "web3-types";
 
 let artifacts: { [name: string]: Artifact };
 let compilations: Codec.Compilations.Compilation[];
@@ -35,7 +35,7 @@ beforeAll(async () => {
   // (https://github.com/trufflesuite/ganache/issues/2125)
   // remove this ts-ignore once that issue is fixed
   // @ts-ignore
-  const provider: Provider = Ganache.provider({
+  const provider = Ganache.provider({
     seed: "encoder",
     gasLimit: 7000000,
     logging: {
@@ -47,7 +47,7 @@ beforeAll(async () => {
       //that so we can set strict
       instamine: "eager"
     }
-  });
+  }) as unknown as Web3BaseProvider;
 
   const sourceNames = ["EncoderTests.sol", "DecimalTest.vy"];
 

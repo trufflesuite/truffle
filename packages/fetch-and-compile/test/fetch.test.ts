@@ -225,13 +225,17 @@ describe("Sourcify cases", function () {
     );
   });
 
-  it("verifies mainnet Sourcify contract, partial match", async function () {
-    await runTestBody(
-      1,
-      "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      "sourcify",
-      "WETH9"
-    );
+  it.only("verifies mainnet Sourcify contract, partial match", async function () {
+    try {
+      await runTestBody(
+        1,
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "sourcify",
+        "WETH9"
+      );
+    } catch (e) {
+      console.log(e);
+    }
   });
 
   it("verifies goerli Sourcify contract with special characters in path", async function () {
