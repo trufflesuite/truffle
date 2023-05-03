@@ -46,6 +46,9 @@ const useStyles = createStyles(theme => ({
     margin: 32,
     fontSize: 12,
     fontWeight: 700
+  },
+  fullHeight: {
+    height: "100%"
   }
 }));
 
@@ -225,14 +228,14 @@ function Debugger(): JSX.Element {
     content = (
       <div className={classes.mainContent}>
         <Grid
-          style={{ height: "100%" }}
+          className={classes.fullHeight}
           columns={6}
           gutter={5}
           gutterXs="md"
           gutterMd="xl"
           gutterXl={50}
         >
-          <Grid.Col span={4} style={{ height: "100%" }}>
+          <Grid.Col span={4} className={classes.fullHeight}>
             <Sources
               sources={sources}
               unknownAddresses={unknownAddresses}
@@ -243,7 +246,7 @@ function Debugger(): JSX.Element {
               setCurrentSourceId={setCurrentSourceId}
             />
           </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={2} className={classes.fullHeight}>
             <Variables currentStep={currentStep} session={session} />
             <Breakpoints
               sources={sources}
