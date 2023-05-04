@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "src/components/composed/Debugger/utils";
 import inspect from "browser-util-inspect";
 import * as Codec from "@truffle/codec";
-import { createStyles } from "@mantine/core";
+import { createStyles, Flex } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
   sectionHeader: {
@@ -39,9 +39,7 @@ const useStyles = createStyles(theme => ({
       theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   },
   variablesContent: {
-    paddingLeft: 10,
-    backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
+    paddingLeft: 10
   },
   variablesTypes: {
     fontSize: 12,
@@ -106,12 +104,12 @@ function Variables({
   }, [currentStep, session]);
 
   return (
-    <div className={classes.variablesContainer}>
+    <Flex direction="column" className={classes.variablesContainer}>
       <div className={classes.sectionHeader}>Variables</div>
       <div className={classes.variables}>
         <pre className={classes.variablesContent}>{output ? output : ""}</pre>
       </div>
-    </div>
+    </Flex>
   );
 }
 

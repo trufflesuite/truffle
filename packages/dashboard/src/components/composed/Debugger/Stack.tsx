@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session } from "src/components/composed/Debugger/utils";
-import { createStyles } from "@mantine/core";
+import { createStyles, Flex } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
   sectionHeader: {
@@ -75,12 +75,12 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   }, [currentStep, session]);
 
   return (
-    <div className={classes.stackContainer}>
+    <Flex direction="column" className={classes.stackContainer}>
       <div className={classes.sectionHeader}>Stack</div>
       <div className={classes.stack}>
         <pre className={classes.stackContent}>{output ? output : ""}</pre>
       </div>
-    </div>
+    </Flex>
   );
 }
 
