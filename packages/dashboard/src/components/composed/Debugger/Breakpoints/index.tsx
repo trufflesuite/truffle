@@ -3,7 +3,7 @@ import { useDash } from "src/hooks";
 import * as path from "path";
 import { BreakpointType } from "src/components/composed/Debugger/utils";
 import Breakpoint from "src/components/composed/Debugger/Breakpoints/Breakpoint";
-import { createStyles } from "@mantine/core";
+import { Flex, createStyles } from "@mantine/core";
 
 const useStyles = createStyles(theme => ({
   breakpointsContainer: {
@@ -88,12 +88,12 @@ function Breakpoints({
     }
   }
   return (
-    <div className={classes.breakpointsContainer}>
+    <Flex direction="column" className={classes.breakpointsContainer}>
       <div className={classes.sectionHeader}>Breakpoints</div>
       <div className={classes.breakpoints}>
         <pre className={classes.breakpointsContent}>{breakpointsList}</pre>
       </div>
-    </div>
+    </Flex>
   );
 }
 
