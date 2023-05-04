@@ -79,7 +79,10 @@ function Variables({
                   <dt>{"  " + variableName}</dt>
                   <dd>
                     {inspect(
-                      new Codec.Export.ResultInspector(variables[variableName])
+                      new Codec.Export.ResultInspector(
+                        variables[variableName],
+                        { renderMappingsViaObjects: true }
+                      )
                     )}
                   </dd>
                 </>
