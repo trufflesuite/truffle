@@ -23,6 +23,15 @@ function cleanStylize(options: InspectOptions): InspectOptions {
   return clonedOptions;
 }
 
+export interface ResultInspectorOptions {
+  /**
+   * This flag, if set, causes mappings to be rendered via objects
+   * rather than Maps.  This is intended for compatibility and not
+   * recommended for normal use.
+   */
+  renderMappingsViaObjects?: boolean;
+}
+
 /**
  * This class is meant to be used with Node's
  * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
@@ -54,8 +63,10 @@ function cleanStylize(options: InspectOptions): InspectOptions {
  */
 export class ResultInspector {
   result: Format.Values.Result;
-  constructor(result: Format.Values.Result) {
+  options: ResultInspectorOptions;
+  constructor(result: Format.Values.Result, options?: ResultInspectorOptions) {
     this.result = result;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -126,22 +137,44 @@ export class ResultInspector {
               return formatCircular(coercedResult.reference, options);
             }
             return util.inspect(
-              coercedResult.value.map(element => new ResultInspector(element)),
+              coercedResult.value.map(
+                element => new ResultInspector(element, this.options)
+              ),
               options
             );
           }
           case "mapping":
-            return util.inspect(
-              new Map(
-                (<Format.Values.MappingValue>this.result).value.map(
-                  ({ key, value }) => [
-                    new ResultInspector(key),
-                    new ResultInspector(value)
-                  ]
-                )
-              ),
-              options
-            );
+            if (!this.options.renderMappingsViaObjects) {
+              //normal case
+              return util.inspect(
+                new Map(
+                  (<Format.Values.MappingValue>this.result).value.map(
+                    ({ key, value }) => [
+                      new ResultInspector(key, this.options),
+                      new ResultInspector(value, this.options)
+                    ]
+                  )
+                ),
+                options
+              );
+            } else {
+              //compatibility case
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...(<Format.Values.MappingValue>this.result).value.map(
+                    ({ key, value }) => ({
+                      //need to stringify key
+                      [util.inspect(
+                        new ResultInspector(key, this.options),
+                        options
+                      )]: new ResultInspector(value, this.options)
+                    })
+                  )
+                ),
+                options
+              );
+            }
           case "struct": {
             let coercedResult = <Format.Values.StructValue>this.result;
             if (coercedResult.reference !== undefined) {
@@ -151,7 +184,7 @@ export class ResultInspector {
               Object.assign(
                 {},
                 ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
+                  [name]: new ResultInspector(value, this.options)
                 }))
               ),
               options
@@ -165,7 +198,7 @@ export class ResultInspector {
               this.result
             );
             const inspectOfUnderlying = util.inspect(
-              new ResultInspector(coercedResult.value),
+              new ResultInspector(coercedResult.value, this.options),
               options
             );
             return `${typeName}.wrap(${inspectOfUnderlying})`; //note only the underlying part is stylized
@@ -180,7 +213,7 @@ export class ResultInspector {
                 Object.assign(
                   {},
                   ...coercedResult.value.map(({ name, value }) => ({
-                    [name]: new ResultInspector(value)
+                    [name]: new ResultInspector(value, this.options)
                   }))
                 ),
                 options
@@ -188,7 +221,7 @@ export class ResultInspector {
             } else {
               return util.inspect(
                 coercedResult.value.map(
-                  ({ value }) => new ResultInspector(value)
+                  ({ value }) => new ResultInspector(value, this.options)
                 ),
                 options
               );
@@ -203,7 +236,7 @@ export class ResultInspector {
                     {},
                     ...(<Format.Values.TypeValueContract>this.result).value.map(
                       ({ name, value }) => ({
-                        [name]: new ResultInspector(value)
+                        [name]: new ResultInspector(value, this.options)
                       })
                     )
                   ),
@@ -220,7 +253,9 @@ export class ResultInspector {
                 {},
                 ...Object.entries(
                   (<Format.Values.MagicValue>this.result).value
-                ).map(([key, value]) => ({ [key]: new ResultInspector(value) }))
+                ).map(([key, value]) => ({
+                  [key]: new ResultInspector(value, this.options)
+                }))
               ),
               options
             );
@@ -313,7 +348,7 @@ export class ResultInspector {
         switch (errorResult.error.kind) {
           case "WrappedError":
             return util.inspect(
-              new ResultInspector(errorResult.error.error),
+              new ResultInspector(errorResult.error.error, this.options),
               options
             );
           case "UintPaddingError":

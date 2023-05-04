@@ -18,10 +18,12 @@ import {
   unsafeNativize,
   unsafeNativizeVariables,
   InspectOptions,
+  ResultInspectorOptions,
   nativizeAccessList
 } from "@truffle/codec/format/utils/inspect";
 export {
   ResultInspector,
+  ResultInspectorOptions,
   unsafeNativize,
   unsafeNativizeVariables,
   nativizeAccessList
@@ -297,9 +299,11 @@ function ethersCompatibleNativizeEventArgs(
  */
 export class CalldataDecodingInspector {
   decoding: CalldataDecoding;
+  options: ResultInspectorOptions;
 
-  constructor(decoding: CalldataDecoding) {
+  constructor(decoding: CalldataDecoding, options?: ResultInspectorOptions) {
     this.decoding = decoding;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -385,7 +389,10 @@ export class CalldataDecodingInspector {
         } else {
           return `Sent raw data to ${
             this.decoding.class.typeName
-          }: ${util.inspect(new ResultInspector(codecValue), options)}`;
+          }: ${util.inspect(
+            new ResultInspector(codecValue, this.options),
+            options
+          )}`;
         }
       case "unknown":
         return "Receiving contract could not be identified.";
@@ -435,8 +442,10 @@ export function containsDeliberateReadError(
  */
 export class LogDecodingInspector {
   decoding: LogDecoding;
-  constructor(decoding: LogDecoding) {
+  options: ResultInspectorOptions;
+  constructor(decoding: LogDecoding, options?: ResultInspectorOptions) {
     this.decoding = decoding;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -470,8 +479,10 @@ export class LogDecodingInspector {
  */
 export class ReturndataDecodingInspector {
   decoding: ReturndataDecoding;
-  constructor(decoding: ReturndataDecoding) {
+  options: ResultInspectorOptions;
+  constructor(decoding: ReturndataDecoding, options?: ResultInspectorOptions) {
     this.decoding = decoding;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -502,7 +513,7 @@ export class ReturndataDecodingInspector {
           }
         };
         const dataString = util.inspect(
-          new ResultInspector(codecValue),
+          new ResultInspector(codecValue, this.options),
           options
         );
         return `Returned raw data: ${dataString}`;
@@ -538,7 +549,10 @@ export class ReturndataDecodingInspector {
             (value, index) => {
               const prefix = paddedPrefixes[index];
               const formatted = indentExcludingFirstLine(
-                util.inspect(new ResultInspector(value.value), options),
+                util.inspect(
+                  new ResultInspector(value.value, this.options),
+                  options
+                ),
                 maxLength
               );
               return prefix + formatted;
@@ -588,7 +602,8 @@ export function formatFunctionLike(
   values: AbiArgument[],
   options: InspectOptions,
   suppressType: boolean = false,
-  indent: number = 2 //for use by debug-utils
+  indent: number = 2, //for use by debug-utils
+  inspectorOptions?: ResultInspectorOptions
 ): string {
   if (values.length === 0) {
     return `${header}()`;
@@ -597,7 +612,10 @@ export function formatFunctionLike(
     const namePrefix = name ? `${name}: ` : "";
     const indexedPrefix = indexed ? "<indexed> " : "";
     const prefix = namePrefix + indexedPrefix;
-    const displayValue = util.inspect(new ResultInspector(value), options);
+    const displayValue = util.inspect(
+      new ResultInspector(value, inspectorOptions),
+      options
+    );
     const typeString = suppressType
       ? ""
       : ` (type: ${Format.Types.typeStringWithoutLocation(value.type)})`;
@@ -620,7 +638,8 @@ function formatMulticall(
   decodings: (CalldataDecoding | null)[],
   options: InspectOptions,
   additionalParameterName?: string,
-  additionalParameterValue?: string
+  additionalParameterValue?: string,
+  inspectorOptions?: ResultInspectorOptions
 ): string {
   if (decodings.length === 0) {
     return `${fullName}()`;
@@ -630,7 +649,10 @@ function formatMulticall(
     const formattedDecoding =
       decoding === null
         ? "<decoding error>"
-        : util.inspect(new CalldataDecodingInspector(decoding), options);
+        : util.inspect(
+            new CalldataDecodingInspector(decoding, inspectorOptions),
+            options
+          );
     return formattedDecoding + (index < decodings.length - 1 ? "," : "");
   });
   if (additionalParameterName) {
@@ -649,7 +671,8 @@ function formatAggregate(
   calls: CallInterpretationInfo[],
   options: InspectOptions,
   additionalParameterName?: string,
-  additionalParameterValue?: string
+  additionalParameterValue?: string,
+  inspectorOptions?: ResultInspectorOptions
 ): string {
   if (calls.length === 0) {
     return `${fullName}()`;
@@ -660,7 +683,10 @@ function formatAggregate(
       decoding === null
         ? "<decoding error>"
         : util
-            .inspect(new CalldataDecodingInspector(decoding), options)
+            .inspect(
+              new CalldataDecodingInspector(decoding, inspectorOptions),
+              options
+            )
             .replace(".", `(${options.stylize(address, "number")}).`); //HACK: splice in the address
     return formattedCall + (index < calls.length - 1 ? "," : "");
   });
