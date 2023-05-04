@@ -171,15 +171,16 @@ export class ResultInspector {
             } else {
               //compatibility case
               return util.inspect(
-                Object.fromEntries(
-                  (<Format.Values.MappingValue>this.result).value.map(
-                    ({ key, value }) => [
-                      util.inspect(
+                Object.assign(
+                  {},
+                  ...(<Format.Values.MappingValue>this.result).value.map(
+                    ({ key, value }) => ({
+                      //need to stringify key
+                      [util.inspect(
                         new ResultInspector(key, this.options),
                         options
-                      ), //need to stringify key
-                      new ResultInspector(value, this.options)
-                    ]
+                      )]: new ResultInspector(value, this.options)
+                    })
                   )
                 ),
                 options
