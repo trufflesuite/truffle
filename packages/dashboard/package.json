@@ -66,7 +66,6 @@
     "isomorphic-ws": "^4.0.1",
     "lowlight": "^2.8.1",
     "object-hash": "^3.0.0",
-    "object-inspect": "^1.12.2",
     "open": "^8.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
