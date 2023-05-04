@@ -51,19 +51,32 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getStack() {
-      const stack = session.view(
-        session.selectors.stacktrace.current.callstack
-      );
-      if (!stack) return;
-      const entries = stack.map((stackItem: any, index: number) => {
-        const functionNameDisplay =
-          stackItem.functionName === undefined
-            ? "unknown function"
-            : stackItem.functionName;
+      const report = session.view(session.selectors.stacktrace.current.report);
+      if (!report) return;
+      // we need to display this information in the reverse order
+      report.reverse();
+      const entries = report.map((reportItem: any, index: number) => {
+        const { address, contractName, functionName, isConstructor, type } =
+          reportItem;
+        let name: string;
+        if (contractName && functionName) {
+          name = `${contractName}.${functionName}`;
+        } else if (contractName) {
+          name =
+            type === "external" && isConstructor
+              ? `new ${contractName}`
+              : contractName;
+        } else if (functionName) {
+          name = functionName;
+        } else {
+          name = "unknown function";
+        }
+        const displayAddress =
+          address === undefined ? "unknown address" : address;
+        const stackDisplay = `at ${name} [address ${displayAddress}]`;
         return (
           <div className="truffle-debugger-stack-item" key={index}>
-            {stackItem.contractName} at {functionNameDisplay} (address{" "}
-            {stackItem.address})
+            {stackDisplay}
           </div>
         );
       });
