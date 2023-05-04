@@ -36,9 +36,7 @@ const useStyles = createStyles(theme => ({
       theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   },
   stackContent: {
-    paddingLeft: 10,
-    backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
+    paddingLeft: 10
   }
 }));
 
