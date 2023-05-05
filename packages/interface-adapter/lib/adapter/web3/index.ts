@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { FMT_NUMBER, FMT_BYTES } from "web3-utils";
+import { FMT_NUMBER, FMT_BYTES } from "web3-types";
 import { Web3Shim } from "../../shim";
 import type {
   InterfaceAdapter,
@@ -117,6 +117,8 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     const gas = new BN(receipt.gasUsed);
     const value = new BN(String(tx.value));
     const cost = gasPrice.mul(gas).add(value);
+    //todo web3, why this is not used?
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const timestamp =
       typeof block.timestamp === "string"
         ? parseInt(block.timestamp)
