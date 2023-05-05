@@ -30,7 +30,25 @@ module.exports = async function (options) {
   const [contractNameOrAddress, functionNameOrSignature, ...args] = config._;
   let functionEntry, transaction;
 
-  const { blockNumber } = config;
+  const fromAddress = config.from ?? config.networks[config.network]?.from;
+  if (!web3Utils.isAddress(fromAddress)) {
+    throw new TruffleError(
+      `Address ${fromAddress} is not a valid Ethereum address.` +
+        OS.EOL +
+        "Please check the address and try again."
+    );
+  }
+
+  const rawBlockNumber = config.blockNumber;
+  const blockNumber = Number(rawBlockNumber);
+  if (
+    !(Number.isSafeInteger(blockNumber) && blockNumber >= 0) &&
+    !["latest", "pending", "genesis", "earliest"].includes(rawBlockNumber)
+  ) {
+    throw new TruffleError(
+      "Invalid block number.  Block number must be nonnegative integer or one of 'latest', 'pending', 'genesis', or 'earliest'."
+    );
+  }
 
   const { encoder, decoder } = config.fetchExternal
     ? await sourceFromExternal(contractNameOrAddress, config)
@@ -62,17 +80,6 @@ module.exports = async function (options) {
 
   const adapter = new Encoder.ProviderAdapter(config.provider);
   let decoding;
-
-  // Get the first defined "from" address
-  const fromAddress =
-    options.from ?? config.networks[config.network]?.from ?? config.from;
-  if (!web3Utils.isAddress(fromAddress)) {
-    throw new TruffleError(
-      `Address ${fromAddress} is not a valid Ethereum address.` +
-        OS.EOL +
-        "Please check the address and try again."
-    );
-  }
 
   try {
     const result = await adapter.call(
@@ -114,6 +121,17 @@ module.exports = async function (options) {
   //so they can use the imports above.
 
   async function sourceFromLocal(contractNameOrAddress, config) {
+    if (
+      contractNameOrAddress.startsWith("0x") &&
+      !web3Utils.isAddress(contractNameOrAddress)
+    ) {
+      throw new TruffleError(
+        `Address ${contractNameOrAddress} is not a valid Ethereum address.` +
+          OS.EOL +
+          "Please check the address and try again."
+      );
+    }
+
     const contractNames = fs
       .readdirSync(config.contracts_build_directory)
       .filter(filename => filename.endsWith(".json"))
@@ -132,7 +150,7 @@ module.exports = async function (options) {
     }
 
     if (contractNameOrAddress.startsWith("0x")) {
-      // contract address case
+      //note in this case we already performed validation above
       const contractAddress = contractNameOrAddress;
       const projectInfo = {
         artifacts: Object.values(contracts)
@@ -153,7 +171,11 @@ module.exports = async function (options) {
       };
 
       const contract = contracts[contractName];
-      // Error handling to remind users to run truffle migrate first
+      if (!contract) {
+        throw new TruffleError(
+          `No artitfacts found for contract named ${contractName} found.  Check the name and make sure you have compiled your contracts.`
+        );
+      }
       let instance;
       try {
         instance = await contract.deployed();
@@ -175,7 +197,7 @@ module.exports = async function (options) {
       throw new TruffleError(
         `Address ${contractAddress} is not a valid Ethereum address.` +
           OS.EOL +
-          "Please check the address and try again."
+          "Please check the address and try again, or remove `-x` if you are supplying a contract name."
       );
     }
 
