@@ -242,6 +242,27 @@ describe("ENS class", () => {
       });
       deployer = new Deployer(config);
       assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      config = Config.default().merge({
+        ens: {
+          enabled: true
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*",
+            ens: {
+              registry: {
+                address: registryAddress
+              }
+            }
+          }
+        },
+        network: "myNetwork"
+      });
+      deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
     });
 
     it("Prefers network-specific registries", function () {
