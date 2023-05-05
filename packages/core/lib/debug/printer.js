@@ -420,7 +420,7 @@ class DebugPrinter {
                     break;
                 }
                 break;
-              case "Panic(uint)":
+              case "Panic(uint256)":
                 const panicCode = revertDecoding.arguments[0].value.value.asBN;
                 const panicString = DebugUtils.panicString(panicCode, true); //get verbose panic string :)
                 this.config.logger.log(
