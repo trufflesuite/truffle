@@ -110,20 +110,38 @@ module.exports = async function (options) {
     status
   });
 
-  config.logger.log(
-    util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
-      colors: true,
-      depth: null,
-      maxArrayLength: null,
-      breakLength: 79
-    })
-  );
-
-  // Gives a readable interpretation of the panic code returned from the call
-  if (decoding.abi.name === "Panic") {
-    const panicCode = decoding.arguments[0].value.value.asBN;
+  if (decoding.status) {
+    //successful return
+    config.logger.log(
+      util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
+        colors: true,
+        depth: null,
+        maxArrayLength: null,
+        breakLength: 79
+      })
+    );
+  } else {
+    //revert case
+    if (
+      decoding.kind === "revert" &&
+      Codec.AbiData.Utils.abiSignature(decoding.abi) === "Panic(uint256)"
+    ) {
+      // for panics specifically, we'll want a bit more interpretation
+      // (shouldn't this be a proper interpretation? yes, but there's no
+      // time to refactor that right now)
+      const panicCode = decoding.arguments[0].value.value.asBN;
+      throw new TruffleError(
+        `The call resulted in a panic: ${DebugUtils.panicString(panicCode)}`
+      );
+    }
+    //usual revert case
     throw new TruffleError(
-      `Error thrown: Panic: ${DebugUtils.panicString(panicCode)}`
+      util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
+        colors: false, //don't want colors in an error message
+        depth: null,
+        maxArrayLength: null,
+        breakLength: 79
+      })
     );
   }
 
