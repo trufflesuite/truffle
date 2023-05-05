@@ -95,10 +95,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     []
   );
 
-  const handleWorkflowCompileResult = useCallback(
-    async (data: WorkflowCompileResult) => {
-      const { compilations } = data;
-
+  const handleCompilations = useCallback(
+    async (compilations: Compilation[], hashes?: string[]) => {
       if (compilations.length === 0 || !stateRef.current.decoder) return;
 
       let decoderNeedsUpdate = false;
@@ -113,7 +111,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       // - Batch inserting.
       // - Mirroring some kind of db state.
       for (const compilation of compilations) {
-        const hash = sha1(compilation);
+        let hash = hashes
+          ? hashes[compilations.indexOf(compilation)]
+          : sha1(compilation);
 
         // If the in-memory decoder doesn't have this compilation,
         // save it for decoder re-init after this for-loop ends.
@@ -182,8 +182,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
             // Handle compilations separately because:
             // a) Db operations are async
             // b) Avoid duplicate work (e.g. loop, hash)
-            handleWorkflowCompileResult(
+            handleCompilations(
               (message as CliEventMessage<WorkflowCompileResult>).payload.data
+                .compilations
             );
           }
         } else if (isLogMessage(message)) {
@@ -249,7 +250,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     };
 
     init();
-  }, [state, handleWorkflowCompileResult]);
+  }, [state, handleCompilations]);
 
   useEffect(() => {
     const updateChainInfo = () => {
@@ -310,6 +311,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       });
       // No need to update state afterwards
     },
+    handleCompilations,
     getCompilations: async (): Promise<Compilation[]> => {
       return await dbHelper.getAllCompilations();
     },
@@ -350,6 +352,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   };
 
   return (
+    // @ts-ignore
     <DashContext.Provider value={{ state, operations }}>
       {children}
     </DashContext.Provider>

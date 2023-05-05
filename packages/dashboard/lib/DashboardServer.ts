@@ -4,12 +4,14 @@ import getPort from "get-port";
 import open from "open";
 import { v4 as uuid } from "uuid";
 import { fetchAndCompile } from "@truffle/fetch-and-compile";
+import { sha1 } from "object-hash";
 import Config from "@truffle/config";
 import {
   dashboardProviderMessageType,
   LogMessage,
   logMessageType
 } from "@truffle/dashboard-message-bus-common";
+import type { Compilation } from "@truffle/compile-common";
 import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import cors from "cors";
@@ -138,7 +140,15 @@ export class DashboardServer {
         }
       }
       if (result) {
-        res.json({ compilations: result.compilations });
+        // we calculate hashes on the server because it is at times too
+        // resource intensive for the browser and causes it to crash
+        const hashes = result.compilations.map((compilation: Compilation) => {
+          return sha1(compilation);
+        });
+        res.json({
+          hashes,
+          compilations: result.compilations
+        });
       } else {
         res.json({ compilations: [] });
       }
