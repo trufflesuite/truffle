@@ -5,13 +5,103 @@ const { extractFlags } = require("./utils/utils"); // contains utility methods
 const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
-const commands = require("./commands/commands");
+const {
+  validTruffleCommands,
+  validTruffleConsoleCommands
+} = require("./commands/commands");
 const Web3 = require("web3");
+const TruffleError = require("@truffle/error");
 
 const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
 const managedGanacheDefaultNetworkId = 5777;
 const managedDashboardDefaultPort = 24012;
+
+//takes a string and splits it into arguments, shell-style, while
+//taking account of quotes and escapes; the escape character can be
+//customized (you can also pass in more than one valid escape character)
+function parseQuotesAndEscapes(args, escapeCharacters = "\\") {
+  const quoteCharacters = "\"'"; //note we will handle the two quote types differently
+  let argArray = [];
+  let currentArg = "";
+  let currentQuote = undefined;
+  let currentEscape = undefined;
+  let whitespace = true; //are we currently on whitespace? start this as true to allow whitespace at beginning
+  for (const char of args) {
+    if (currentEscape !== undefined) {
+      //escaped character
+      //note that inside quotes, we don't allow escaping everything;
+      //outside quotes, we allow escaping anything
+      if (currentQuote === '"') {
+        //inside a double-quote case
+        if (char === currentQuote) {
+          currentArg += char; //an escaped quote
+        } else {
+          //attempted to escape something not the current quote;
+          //don't treat it as an escape, include the escape char as well
+          currentArg += currentEscape + char;
+        }
+      } else {
+        //outside a quote case
+        //(note there's no single-quote case because we can't reach here
+        //in that case; currentEscape can't get set inside single quotes)
+        currentArg += char; //just the escaped character
+      }
+      currentEscape = undefined;
+      whitespace = false; //(this is not strictly necessary, but for clarity)
+    } else if (escapeCharacters.includes(char) && currentQuote !== "'") {
+      //(unescaped) escape character
+      //(again, inside single quotes, there is no escaping, so we just treat
+      //as ordinary character in that case)
+      currentEscape = char;
+      whitespace = false;
+    } else if (currentQuote !== undefined) {
+      //quoted character (excluding escape/escaped chars)
+      if (currentQuote === char) {
+        //closing quote
+        currentQuote = undefined;
+      } else {
+        //ordinary quoted character, including quote of non-matching type
+        currentArg += char;
+      }
+      whitespace = false; //again not necessary, included for clarity
+    } else if (quoteCharacters.includes(char)) {
+      //(unescaped) opening quote (closing quotes & quoted quotes handled above)
+      currentQuote = char;
+      whitespace = false;
+    } else if (char.match(/\s/)) {
+      //(unescaped) whitespace
+      if (!whitespace) {
+        //if we're already on whitespace, we don't need
+        //to do anything, this is just more whitespace.
+        //if however we're transitioning to whitespace, that means we need
+        //to split arguments here.
+        argArray.push(currentArg);
+        currentArg = "";
+        whitespace = true;
+      }
+    } else {
+      //default case -- ordinary character
+      currentArg += char;
+      whitespace = false;
+    }
+  }
+  //having reached the end of the string, let's check for unterminated quotes & such
+  if (currentQuote !== undefined) {
+    throw new TruffleError(`Error: quote with ${currentQuote} not terminated`);
+  }
+  if (currentEscape !== undefined) {
+    throw new TruffleError(
+      `Error: line ended with escape character ${currentEscape}`
+    );
+  }
+  //now, we push our final argument,
+  //assuming of course that it's nonempty
+  if (currentArg !== "") {
+    argArray.push(currentArg);
+  }
+  return argArray;
+}
 
 // this function takes an object with an array of input strings, an options
 // object, and a boolean determining whether we allow inexact matches for
@@ -29,11 +119,11 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
   // for inferring the command.
   if (firstInputString === "-v" || firstInputString === "--version") {
     chosenCommand = "version";
-  } else if (commands.includes(firstInputString)) {
+  } else if (validTruffleCommands.includes(firstInputString)) {
     chosenCommand = firstInputString;
   } else if (noAliases !== true) {
     let currentLength = 1;
-    const availableCommandNames = commands;
+    const availableCommandNames = validTruffleCommands;
 
     // Loop through each letter of the input until we find a command
     // that uniquely matches.
@@ -49,6 +139,10 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
       // Did we find only one command that matches? If so, use that one.
       if (possibleCommands.length === 1) {
         chosenCommand = possibleCommands[0];
+        // if they miskey a command we need to make sure it is correct so that
+        // yargs can parse it correctly later
+        inputStrings.shift();
+        inputStrings.unshift(chosenCommand);
         break;
       }
       currentLength += 1;
@@ -93,8 +187,10 @@ const prepareOptions = ({ command, inputStrings, options }) => {
   const yargs = require("yargs/yargs")();
   yargs
     .command(require(`./commands/${command.name}/meta`))
-    //Turn off yargs' default behavior when handling "truffle --version"
-    .version(false);
+    //Turn off yargs' default behavior when handling `truffle --version` & `truffle <cmd> --help`
+    .version(false)
+    .help(false);
+
   const commandOptions = yargs.parse(inputStrings);
 
   // remove the task name itself put there by yargs
@@ -201,8 +297,16 @@ const runCommand = async function (command, options) {
   return await command.run(options);
 };
 
-const displayGeneralHelp = () => {
+/**
+ * Display general help for Truffle commands
+ * @param {Object} options - options object
+ * @param {Boolean} options.isREPL - whether or not the help is being displayed in a REPL
+ * @returns {void}
+ */
+const displayGeneralHelp = options => {
   const yargs = require("yargs/yargs")();
+  const isREPL = options?.isREPL ?? false; //default to not displaying REPL commands
+  const commands = isREPL ? validTruffleConsoleCommands : validTruffleCommands;
   commands.forEach(command => {
     // Exclude "install" and "publish" commands from the generated help list
     // because they have been deprecated/removed.
@@ -211,6 +315,7 @@ const displayGeneralHelp = () => {
     }
   });
   yargs
+    .scriptName("truffle")
     .usage(
       "Truffle v" +
         (bundled || core) +
@@ -219,8 +324,14 @@ const displayGeneralHelp = () => {
         OS.EOL +
         "Usage: truffle <command> [options]"
     )
-    .epilog("See more at http://trufflesuite.com/docs")
-    .showHelp();
+    .epilog(
+      "See more at https://trufflesuite.com/docs/" +
+        OS.EOL +
+        "For Ethereum JSON-RPC documentation see https://ganache.dev"
+    )
+    // showHelp prints using console.error, this won't log in a
+    // child process - "log" forces it to use console.log instead
+    .showHelp("log");
 };
 
 /**
@@ -306,6 +417,7 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
 
 module.exports = {
   displayGeneralHelp,
+  parseQuotesAndEscapes,
   getCommand,
   prepareOptions,
   runCommand,

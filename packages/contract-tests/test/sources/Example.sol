@@ -15,6 +15,8 @@ contract Example {
 
   enum ExampleEnum { ExampleZero, ExampleOne, ExampleTwo }
 
+  error ExampleError(uint, uint);
+
   constructor(uint val) {
     // Constructor revert
     require(val != 13);
@@ -108,6 +110,10 @@ contract Example {
 
   function triggerAssertError() public {
     assert(false);
+  }
+
+  function triggerCustomError() public {
+    revert ExampleError(2, 3);
   }
 
   function triggerInvalidOpcode() public {

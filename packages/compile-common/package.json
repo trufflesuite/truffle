@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.9.1",
+  "version": "0.9.4",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,11 +21,11 @@
   },
   "types": "dist/src/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.1.1",
+    "@truffle/error": "^0.2.0",
     "colors": "1.4.0"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.4.11",
+    "@truffle/contract-schema": "^3.4.13",
     "@types/mocha": "^5.2.7",
     "@types/node": "~12.12.0",
     "mocha": "10.1.0",

@@ -1,5 +1,4 @@
-// The list of commands that Truffle supports
-module.exports = [
+const validTruffleCommands = [
   "build",
   "compile",
   "config",
@@ -26,3 +25,23 @@ module.exports = [
   "version",
   "watch"
 ];
+
+//List of truffle commands that are excluded from the console REPLS.
+const excludedTruffleConsoleCommands = [
+  "console",
+  "dashboard",
+  "db",
+  "develop",
+  "init",
+  "watch"
+];
+
+const validTruffleConsoleCommands = validTruffleCommands.filter(
+  command => !excludedTruffleConsoleCommands.includes(command)
+);
+
+module.exports = {
+  excludedTruffleConsoleCommands,
+  validTruffleCommands,
+  validTruffleConsoleCommands
+};

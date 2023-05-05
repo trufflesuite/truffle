@@ -15,14 +15,17 @@ const EventEmitter = require("events");
 const { spawn } = require("child_process");
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
-const { getCommand } = require("./command-utils");
-const validTruffleCommands = require("./commands/commands");
+const { parseQuotesAndEscapes } = require("./command-utils");
+const {
+  excludedTruffleConsoleCommands,
+  validTruffleConsoleCommands
+} = require("./commands/commands");
 
 // Create an expression that returns a string when evaluated
 // by the REPL
 const makeIIFE = str => `(() => "${str}")()`;
 
-const processInput = (input, allowedCommands) => {
+const processInput = input => {
   const words = input.trim().split(/\s+/);
 
   // empty input
@@ -39,12 +42,22 @@ const processInput = (input, allowedCommands) => {
     }
 
     const normalizedCommand = cmd.toLowerCase();
-    if (validTruffleCommands.includes(normalizedCommand)) {
-      return allowedCommands.includes(normalizedCommand)
-        ? words.slice(1).join(" ")
-        : makeIIFE(`ℹ️ : '${cmd}' is not allowed within Truffle REPL`);
+    const isExcludedInREPL =
+      excludedTruffleConsoleCommands.includes(normalizedCommand);
+
+    if (isExcludedInREPL) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not allowed in Console environment.`
+      );
     }
-    return makeIIFE(`ℹ️ : '${cmd}' is not a valid Truffle command`);
+
+    if (!validTruffleConsoleCommands.includes(normalizedCommand)) {
+      return makeIIFE(
+        `ℹ️ : '${words[0]} ${cmd}' is not a valid truffle command.`
+      );
+    }
+
+    return words.slice(1).join(" ");
   }
 
   // an expression
@@ -52,7 +65,7 @@ const processInput = (input, allowedCommands) => {
 };
 
 class Console extends EventEmitter {
-  constructor(allowedCommands, options) {
+  constructor(options) {
     super();
     EventEmitter.call(this);
 
@@ -69,7 +82,6 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
-    this.allowedCommands = allowedCommands;
     this.options = options;
 
     this.repl = null;
@@ -263,21 +275,27 @@ class Console extends EventEmitter {
           "utf8"
         );
         const json = JSON.parse(body);
-        const metadata = JSON.parse(json.metadata);
-        const sources = Object.keys(metadata.sources);
-        // filter out Truffle's console.log. We don't want users to interact with in the REPL.
-        // user contracts named console.log will be imported, and a warning will be issued.
-        if (
-          sources.length > 1 ||
-          (sources.length === 1 &&
-            !sources.some(source => {
-              return (
-                source === "truffle/console.sol" ||
-                source === "truffle/Console.sol"
-              );
-            }))
-        ) {
+        // Artifacts may not contain metadata. For example, early Solidity versions as well as
+        // Vyper contracts do not include metadata. Just push them to json blobs.
+        if (json.metadata === undefined) {
           jsonBlobs.push(json);
+        } else {
+          // filter out Truffle's console.log. We don't want users to interact with in the REPL.
+          // user contracts named console.log will be imported, and a warning will be issued.
+          const metadata = JSON.parse(json.metadata);
+          const sources = Object.keys(metadata.sources);
+          if (
+            sources.length > 1 ||
+            (sources.length === 1 &&
+              !sources.some(source => {
+                return (
+                  source === "truffle/console.sol" ||
+                  source === "truffle/Console.sol"
+                );
+              }))
+          ) {
+            jsonBlobs.push(json);
+          }
         }
       } catch (error) {
         throw new Error(`Error parsing or reading ${file}: ${error.message}`);
@@ -392,16 +410,12 @@ class Console extends EventEmitter {
   }
 
   async interpret(input, context, filename, callback) {
-    const processedInput = processInput(input, this.allowedCommands);
-    if (
-      this.allowedCommands.includes(processedInput.split(" ")[0]) &&
-      getCommand({
-        inputStrings: processedInput.split(" "),
-        options: {},
-        noAliases: this.options.noAliases
-      }) !== null
-    ) {
+    const processedInput = processInput(input);
+    if (validTruffleConsoleCommands.includes(processedInput.split(/\s+/)[0])) {
       try {
+        parseQuotesAndEscapes(processedInput); //we're just doing this to see
+        //if it errors. unfortunately we need to throw out the result and recompute
+        //it afterward (but the input string is probably short so it's OK).
         await this.runSpawn(processedInput, this.options);
       } catch (error) {
         // Perform error handling ourselves.
@@ -482,7 +496,7 @@ class Console extends EventEmitter {
 
     const runScript = script => {
       const options = {
-        displayErrors: true,
+        displayErrors: false,
         breakOnSigint: true,
         filename: filename
       };
@@ -493,7 +507,7 @@ class Console extends EventEmitter {
 
     let script;
     try {
-      const options = { displayErrors: true, lineOffset: -1 };
+      const options = { lineOffset: -1 };
       script = vm.createScript(source, options);
     } catch (error) {
       // If syntax error, or similar, bail.
@@ -517,9 +531,6 @@ class Console extends EventEmitter {
   }
 }
 
-const excludedCommands = new Set(["console", "db", "init", "watch", "develop"]);
-
 module.exports = {
-  excludedCommands,
   Console
 };

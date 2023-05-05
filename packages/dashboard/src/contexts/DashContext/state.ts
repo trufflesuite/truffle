@@ -12,6 +12,7 @@ import {
   rejectMessage,
   confirmMessage
 } from "src/utils/dash";
+import type { InteractiveRpcMethod } from "src/utils/constants";
 import type { State, Action, Schema } from "src/contexts/DashContext";
 
 const DB_NAME = "TruffleDashboard";
@@ -46,6 +47,11 @@ export const initialState: State = {
   notice: {
     show: false,
     type: "LOADING"
+  },
+  analyticsConfig: {
+    enableAnalytics: null,
+    analyticsSet: null,
+    analyticsMessageDateTime: null
   }
 };
 
@@ -58,6 +64,8 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, chainInfo: data };
     case "set-notice":
       return { ...state, notice: { ...state.notice, ...data } };
+    case "set-analytics-config":
+      return { ...state, analyticsConfig: data };
     case "handle-message":
       // Copy state,
       // modify it depending on message type,
@@ -92,6 +100,32 @@ export const reducer = (state: State, action: Action): State => {
       }
 
       return newState;
+    case "update-provider-message-sender":
+      const newProviderMessages = new Map(state.providerMessages);
+      const newSender = data;
+
+      for (const [id, lifecycle] of newProviderMessages) {
+        const { message } = lifecycle;
+        const newParams = message.payload.params;
+
+        switch (message.payload.method as InteractiveRpcMethod) {
+          case "eth_sendTransaction":
+            newParams[0].from = newSender;
+            break;
+          case "personal_sign":
+            newParams[1] = newSender;
+            break;
+          case "eth_signTypedData_v3":
+          case "eth_signTypedData_v4":
+            newParams[0] = newSender;
+            break;
+        }
+
+        lifecycle.message.payload.params = newParams;
+        newProviderMessages.set(id, lifecycle);
+      }
+
+      return { ...state, providerMessages: newProviderMessages };
     default:
       throw new Error("Undefined reducer action type");
   }

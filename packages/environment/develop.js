@@ -41,7 +41,17 @@ const Develop = {
     });
   },
 
-  connect: function (ipcOptions, truffleConfig) {
+  /**
+   * Connect to an existing Ganache server or start a new one.
+   * @param {object} options
+   * @param {object} options.ipcOptions - options for IPC connection
+   * @param {boolean} options.ipcOptions.log - whether to log IPC messages. Defaults to false.
+   * @param {string} options.ipcOptions.network - network name. Defaults to "develop".
+   * @param {boolean} options.ipcOptions.retry - whether to retry connection. Defaults to false.
+   * @param {string} options.solidityLogDisplayPrefix - prefix to display before solidity log messages. Defaults to "".
+   * @returns {Promise<(): void>} - IPC disconnection function.
+   */
+  connect: function ({ ipcOptions, solidityLogDisplayPrefix }) {
     const debugServer = debug("develop:ipc:server");
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
@@ -54,6 +64,7 @@ const Develop = {
     ipcOptions.retry = ipcOptions.retry || false;
     ipcOptions.log = ipcOptions.log || false;
     ipcOptions.network = ipcOptions.network || "develop";
+    solidityLogDisplayPrefix = solidityLogDisplayPrefix || "";
     var ipcNetwork = ipcOptions.network;
 
     var ipc = new IPC();
@@ -88,10 +99,6 @@ const Develop = {
 
     // create a logger to present Ganache's console log messages
     const createSolidityLogger = prefix => {
-      if (prefix == null || typeof prefix !== "string") {
-        prefix = "";
-      }
-
       return maybeMultipleLines =>
         maybeMultipleLines.split("\n").forEach(
           // decorate each line's prefix.
@@ -101,9 +108,7 @@ const Develop = {
 
     // enable output/logger for solidity console.log
     loggers.solidity = sanitizeAndCallFn(
-      createSolidityLogger(
-        truffleConfig.solidityLog && truffleConfig.solidityLog.displayPrefix
-      )
+      createSolidityLogger(solidityLogDisplayPrefix)
     );
 
     if (ipcOptions.log) {
@@ -144,14 +149,20 @@ const Develop = {
    * Connect to a managed Ganache service. This will connect to an existing
    * Ganache service if one exists, or, create a new one to connect to.
    *
-   * @param {Object} ipcOptions
-   * @param {string} ipcOptions.network the network name.
-   * @param {Object} ganacheOptions to be used if starting a Ganache service is
-   *        necessary.
-   * @param {TruffleConfig} truffleConfig the truffle config.
-   * @returns void
+   * @param {Object} ipcOptions - IPC connection options.
+   * @param {string} ipcOptions.network - the network name.
+   * @param {Object} ganacheOptions - Ganache options if service is necessary.
+   * @param {string} solidityLogDisplayPrefix - solidity log messages prefix.
+   * @returns {Promise<Object>} - object with `disconnect` function and
+   *     `started` boolean. The `disconnect` function is used to disconnect
+   *     from the Ganache service. The `started` boolean is true if a new
+   *     Ganache service was started, false otherwise.
    */
-  connectOrStart: async function (ipcOptions, ganacheOptions, truffleConfig) {
+  connectOrStart: async function (
+    ipcOptions,
+    ganacheOptions,
+    solidityLogDisplayPrefix = ""
+  ) {
     ipcOptions.retry = false;
 
     const ipcNetwork = ipcOptions.network || "develop";
@@ -160,11 +171,11 @@ const Develop = {
     let disconnect;
 
     try {
-      disconnect = await this.connect(ipcOptions, truffleConfig);
+      disconnect = await this.connect({ ipcOptions, solidityLogDisplayPrefix });
     } catch (_error) {
       await this.start(ipcNetwork, ganacheOptions);
       ipcOptions.retry = true;
-      disconnect = await this.connect(ipcOptions, truffleConfig);
+      disconnect = await this.connect({ ipcOptions, solidityLogDisplayPrefix });
       started = true;
     } finally {
       return {

@@ -35,7 +35,8 @@ export const askHardhatVersion = async (
 
     const hardhat = spawn(`npx`, ["hardhat", "--version"], {
       stdio: ["pipe", "pipe", "inherit"],
-      cwd: workingDirectory
+      cwd: workingDirectory,
+      shell: true
     });
 
     let output = "";
@@ -73,9 +74,11 @@ export const askHardhatConsole = async (
     const prefix = `${sos}truffle-start${st}`;
     const suffix = `${sos}truffle-end${st}`;
 
-    const hardhat = spawn(`npx`, ["hardhat", "console"], {
+    // note the hardhat console instance is spawned with --no-compile which causes it to skip the initial (default) compilation step
+    const hardhat = spawn(`npx`, ["hardhat", "console", "--no-compile"], {
       stdio: ["pipe", "pipe", "inherit"],
-      cwd: workingDirectory
+      cwd: workingDirectory,
+      shell: true
     });
 
     // we'll capture the stdout

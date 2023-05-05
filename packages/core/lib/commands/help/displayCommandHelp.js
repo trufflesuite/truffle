@@ -1,12 +1,20 @@
 module.exports = async function (selectedCommand, subCommand, options) {
   const commands = require("../index");
   const globalCommandOptions = require("../../global-command-options");
+  const TruffleError = require("@truffle/error");
 
   let commandHelp, commandDescription;
 
+  const inputStrings = process.argv.slice(2);
+
   const chosenCommand = commands[selectedCommand].meta;
 
-  if (subCommand && chosenCommand.subCommands[subCommand]) {
+  if (subCommand) {
+    if (!chosenCommand.subCommands || !chosenCommand.subCommands[subCommand]) {
+      throw new TruffleError(
+        `"truffle ${inputStrings.join(" ")}" is an invalid command`
+      );
+    }
     commandHelp = chosenCommand.subCommands[subCommand].help;
     commandDescription = chosenCommand.subCommands[subCommand].description;
   } else {

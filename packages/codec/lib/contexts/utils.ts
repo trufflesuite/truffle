@@ -141,9 +141,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //now we must handle the delegatecall guard -- libraries' deployedBytecode will include
   //0s in place of their own address instead of a link reference at the
   //beginning, so we need to account for that too
-  const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
-    16
-  ); //"73"
+  const pushAddressInstruction = (0x5f + Evm.Utils.ADDRESS_SIZE).toString(16); //"73"
   for (let context of Object.values(newContexts)) {
     if (context.contractKind === "library" && !context.isConstructor) {
       context.binary = context.binary.replace(
@@ -401,9 +399,7 @@ function contractKind(
     const deployedBytecode = Shims.NewToLegacy.forBytecode(
       contract.deployedBytecode
     );
-    const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
-      16
-    ); //"73"
+    const pushAddressInstruction = (0x5f + Evm.Utils.ADDRESS_SIZE).toString(16); //"73"
     const libraryString =
       "0x" + pushAddressInstruction + "00".repeat(Evm.Utils.ADDRESS_SIZE);
     return deployedBytecode.startsWith(libraryString) ? "library" : "contract";

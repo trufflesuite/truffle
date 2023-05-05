@@ -3,6 +3,8 @@ const { sha3 } = Web3.utils;
 const assert = require("assert");
 const Ganache = require("ganache");
 const ENS = require("../ens");
+const Deployer = require("..");
+const Config = require("@truffle/config");
 const sinon = require("sinon");
 const ENSJS = require("@ensdomains/ensjs").default;
 
@@ -166,6 +168,123 @@ describe("ENS class", () => {
       const owner1 = await ensjs.name("name").getOwner();
       const owner2 = await ensjs.name("test.name").getOwner();
       assert(owner1 === fromAddress && owner1 === owner2);
+    });
+  });
+
+  describe("User-specified registries", function () {
+    it("Allows user-set registry address in any of the valid places", function () {
+      const registryAddress = "0x0123456789012345678901234567890123456789";
+      let config = Config.default().merge({
+        ens: {
+          enabled: true,
+          registryAddress
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*"
+          }
+        },
+        network: "myNetwork"
+      });
+      let deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      config = Config.default().merge({
+        ens: {
+          enabled: true,
+          registry: {
+            address: registryAddress
+          }
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*"
+          }
+        },
+        network: "myNetwork"
+      });
+      deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      config = Config.default().merge({
+        ens: {
+          enabled: true
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*",
+            registryAddress
+          }
+        },
+        network: "myNetwork"
+      });
+      deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      config = Config.default().merge({
+        ens: {
+          enabled: true
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*",
+            registry: {
+              address: registryAddress
+            }
+          }
+        },
+        network: "myNetwork"
+      });
+      deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+      config = Config.default().merge({
+        ens: {
+          enabled: true
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*",
+            ens: {
+              registry: {
+                address: registryAddress
+              }
+            }
+          }
+        },
+        network: "myNetwork"
+      });
+      deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
+    });
+
+    it("Prefers network-specific registries", function () {
+      const registryAddress = "0x0123456789012345678901234567890123456789";
+      const fakeRegistryAddress = "0x9876543210987654321098765432109876543210";
+      const config = Config.default().merge({
+        ens: {
+          enabled: true,
+          registryAddress: fakeRegistryAddress
+        },
+        networks: {
+          myNetwork: {
+            host: "127.0.0.1",
+            port: 7545,
+            network_id: "*",
+            registryAddress
+          }
+        },
+        network: "myNetwork"
+      });
+      const deployer = new Deployer(config);
+      assert.equal(deployer.ens.ens.registryAddress, registryAddress);
     });
   });
 });

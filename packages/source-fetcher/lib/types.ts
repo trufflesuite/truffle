@@ -128,6 +128,7 @@ export interface Libraries {
 export interface MetadataSettings {
   useLiteralContent?: boolean;
   bytecodeHash?: "none" | "ipfs" | "bzzr1";
+  appendCBOR?: boolean;
 }
 
 export interface DebugSettings {

@@ -6,7 +6,9 @@ export type ActionType =
   | "set-decoder"
   | "set-chain-info"
   | "set-notice"
-  | "handle-message";
+  | "set-analytics-config"
+  | "handle-message"
+  | "update-provider-message-sender";
 
 export interface BaseAction {
   type: ActionType;
@@ -30,13 +32,25 @@ export interface SetNoticeAction extends BaseAction {
   data: Partial<State["notice"]>;
 }
 
+export interface SetAnalyticsConfigAction extends BaseAction {
+  type: "set-analytics-config";
+  data: State["analyticsConfig"];
+}
+
 export interface HandleMessageAction extends BaseAction {
   type: "handle-message";
   data: ReceivedMessageLifecycle<Message>;
+}
+
+export interface UpdateProviderMessageSenderAction extends BaseAction {
+  type: "update-provider-message-sender";
+  data: string;
 }
 
 export type Action =
   | SetDecoderAction
   | SetChainInfoAction
   | SetNoticeAction
-  | HandleMessageAction;
+  | SetAnalyticsConfigAction
+  | HandleMessageAction
+  | UpdateProviderMessageSenderAction;

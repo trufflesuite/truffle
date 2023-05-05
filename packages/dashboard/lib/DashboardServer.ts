@@ -2,12 +2,13 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import path from "path";
 import getPort from "get-port";
 import open from "open";
+import { v4 as uuid } from "uuid";
+import Config from "@truffle/config";
 import {
   dashboardProviderMessageType,
   LogMessage,
   logMessageType
 } from "@truffle/dashboard-message-bus-common";
-
 import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import cors from "cors";
@@ -93,6 +94,30 @@ export class DashboardServer {
       await this.connectToMessageBus();
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
+
+    this.expressApp.get("/analytics", (_req, res) => {
+      const userConfig = Config.getUserConfig();
+      res.json({
+        enableAnalytics: userConfig.get("enableAnalytics"),
+        analyticsSet: userConfig.get("analyticsSet"),
+        analyticsMessageDateTime: userConfig.get("analyticsMessageDateTime")
+      });
+    });
+
+    this.expressApp.put("/analytics", (req, _res) => {
+      const { value } = req.body as { value: boolean };
+
+      const userConfig = Config.getUserConfig();
+
+      const uid = userConfig.get("uniqueId");
+      if (!uid) userConfig.set("uniqueId", uuid());
+
+      userConfig.set({
+        enableAnalytics: !!value,
+        analyticsSet: true,
+        analyticsMessageDateTime: Date.now()
+      });
+    });
 
     this.expressApp.use(express.static(this.frontendPath));
     this.expressApp.get("*", (_req, res) => {

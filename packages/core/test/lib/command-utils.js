@@ -3,7 +3,10 @@ const fs = require("fs-extra");
 const path = require("path");
 const tmp = require("tmp");
 const TruffleConfig = require("@truffle/config");
-const { deriveConfigEnvironment } = require("../../lib/command-utils");
+const {
+  deriveConfigEnvironment,
+  parseQuotesAndEscapes
+} = require("../../lib/command-utils");
 
 let config;
 
@@ -94,6 +97,60 @@ describe("command-utils", function () {
     it("returns a config with a develop network object having default managed Ganache properties", function () {
       const cfg = deriveConfigEnvironment(config, "develop", undefined);
       assert.equal(cfg.networks.develop.network_id, 5777);
+    });
+  });
+
+  describe("parseQuotesAndEscapes", function () {
+    it("splits on whitespace", function () {
+      const parsed = parseQuotesAndEscapes("  abc  def  ghi  ");
+      assert.deepEqual(parsed, ["abc", "def", "ghi"]);
+    });
+    it("respects quotes and escapes", function () {
+      const parsed = parseQuotesAndEscapes("abc'd \"e'\"f 'g\"\\ hi");
+      assert.deepEqual(parsed, ["abcd \"ef 'g hi"]);
+    });
+    it("escapes correctly outside of a quote", function () {
+      const parsed = parseQuotesAndEscapes("ab\\c\\'\\\"\\\\ ");
+      assert.deepEqual(parsed, ["abc'\"\\"]);
+    });
+    it("escapes correctly inside a double-quote", function () {
+      const parsed = parseQuotesAndEscapes('"ab\\"c\\d"');
+      assert.deepEqual(parsed, ['ab"c\\d']);
+    });
+    it("does not escape inside a single quote", function () {
+      const parsed = parseQuotesAndEscapes("'abc\\'");
+      assert.deepEqual(parsed, ["abc\\"]);
+    });
+    it("allows custom escapes", function () {
+      const parsed = parseQuotesAndEscapes("abc\\ de` f^ g `^^`", "^`");
+      assert.deepEqual(parsed, ["abc\\", "de f g", "^`"]);
+    });
+    it("errors on mismatched double quote", function () {
+      try {
+        parseQuotesAndEscapes('"abc\\"');
+      } catch (error) {
+        if (error.message !== 'Error: quote with " not terminated') {
+          throw error;
+        }
+      }
+    });
+    it("errors on mismatched single quote", function () {
+      try {
+        parseQuotesAndEscapes("'abc");
+      } catch (error) {
+        if (error.message !== "Error: quote with ' not terminated") {
+          throw error;
+        }
+      }
+    });
+    it("errors on escaped end-of-line", function () {
+      try {
+        parseQuotesAndEscapes("abc\\");
+      } catch (error) {
+        if (error.message !== "Error: line ended with escape character \\") {
+          throw error;
+        }
+      }
     });
   });
 });

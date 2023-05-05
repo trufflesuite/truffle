@@ -369,7 +369,11 @@ var DebugUtils = {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
-    var suffix = [""];
+    var suffix = [
+      "",
+      "Docs: https://trufflesuite.com/docs/truffle/how-to/debug-test/use-the-truffle-debugger/",
+      ""
+    ];
 
     var lines = prefix.concat(commandSections).concat(suffix);
 
@@ -547,7 +551,11 @@ var DebugUtils = {
 
   formatInstruction: function (instruction) {
     return truffleColors.mint(
-      instruction.name + " " + (instruction.pushData || "")
+      instruction.name +
+        " " +
+        (instruction.pushData !== undefined && instruction.pushData !== "0x"
+          ? instruction.pushData
+          : "") //display just "PUSH0", not "PUSH0 0x"
     );
   },
 

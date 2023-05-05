@@ -75,6 +75,7 @@ const codes = {
   0x5b: "JUMPDEST",
 
   // 0x60 & 0x70 range - pushes
+  0x5f: "PUSH0",
   0x60: "PUSH1",
   0x61: "PUSH2",
   0x62: "PUSH3",

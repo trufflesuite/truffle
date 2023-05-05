@@ -53,7 +53,9 @@ module.exports = async function (options) {
     console.log(
       Conversion.toHexString(opcode.pc, lastPCByteLength) + ":",
       opcode.name,
-      opcode.pushData || ""
+      opcode.pushData !== undefined && opcode.pushData !== "0x"
+        ? opcode.pushData
+        : "" //display just "PUSH0", not "PUSH0 0x"
     );
   });
 };

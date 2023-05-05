@@ -3,7 +3,6 @@ require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
 const TruffleError = require("@truffle/error");
-const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
@@ -17,7 +16,7 @@ global.crypto = {
 };
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "12.0.0";
+const minimumNodeVersion = "14.0.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
@@ -40,23 +39,21 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-const inputStrings = process.argv.slice(2);
-
-const userWantsGeneralHelp =
-  inputStrings.length === 0 ||
-  (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
-
-if (userWantsGeneralHelp) {
-  const { displayGeneralHelp } = require("./lib/command-utils");
-  displayGeneralHelp();
-  process.exit(0);
-}
-
+const { handleHelpInput } = require("./lib/cliHelp");
 const {
   getCommand,
   prepareOptions,
-  runCommand
+  runCommand,
+  displayGeneralHelp
 } = require("./lib/command-utils");
+
+const inputArguments = process.argv.slice(2);
+// handle cases where input indicates the user wants to access Truffle's help
+const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
+if (displayHelp) {
+  displayGeneralHelp();
+  process.exit();
+}
 
 const command = getCommand({
   inputStrings,
@@ -67,7 +64,9 @@ const command = getCommand({
 //getCommand() will return null if a command not recognized by truffle is used.
 if (command === null) {
   console.log(
-    `\`truffle ${inputStrings}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
+    `\`truffle ${inputStrings.join(
+      " "
+    )}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
   );
   process.exit(1);
 }
@@ -87,15 +86,7 @@ runCommand(command, options)
     process.exit();
   })
   .catch(error => {
-    if (error instanceof TaskError) {
-      analytics.send({
-        exception: "TaskError - display general help message",
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
-      command.displayGeneralHelp();
-    } else if (error instanceof TruffleError) {
+    if (error instanceof TruffleError) {
       analytics.send({
         exception: "TruffleError - missing configuration file",
         version: versionInfo.bundle

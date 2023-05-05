@@ -33,7 +33,7 @@ type DashProviderProps = {
 };
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
   const initCalled = useRef(false);
@@ -150,10 +150,11 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     if (initCalled.current) return;
     initCalled.current = true;
 
+    const { busClient } = state;
+    const { host, port } = busClient.options;
+
     const initBusClient = async () => {
-      const { busClient } = state;
       await busClient.ready();
-      const { host, port } = busClient.options;
       console.debug(`Connected to message bus at ws://${host}:${port}`);
 
       // Message bus client subscribes to and handles messages
@@ -221,9 +222,17 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       });
     };
 
+    const initAnalytics = async () => {
+      const res = await fetch(`http://${host}:${port}/analytics`);
+      const data = await res.json();
+
+      dispatch({ type: "set-analytics-config", data });
+    };
+
     const init = async () => {
       await initDecoder();
       await initBusClient();
+      await initAnalytics();
     };
 
     init();
@@ -254,6 +263,16 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   }, [chain]);
 
   useEffect(() => {
+    const updateProviderMessages = () => {
+      if (address) {
+        dispatch({ type: "update-provider-message-sender", data: address });
+      }
+    };
+
+    updateProviderMessages();
+  }, [address]);
+
+  useEffect(() => {
     dispatch({
       type: "set-notice",
       data: { show: !isConnected, type: "CONNECT" }
@@ -268,7 +287,16 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void rejectMessage(lifecycle, "USER"),
     toggleNotice: () =>
-      void dispatch({ type: "set-notice", data: { show: !state.notice.show } })
+      void dispatch({ type: "set-notice", data: { show: !state.notice.show } }),
+    updateAnalyticsConfig: async (value: boolean) => {
+      const { host, port } = state.busClient.options;
+      await fetch(`http://${host}:${port}/analytics`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value })
+      });
+      // No need to update state afterwards
+    }
   };
 
   return (

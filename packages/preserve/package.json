@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "Library for functionality for `truffle preserve` command",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -37,7 +37,7 @@
     "typescript": "4.7.4"
   },
   "dependencies": {
-    "@truffle/error": "^0.1.1",
+    "@truffle/error": "^0.2.0",
     "@truffle/spinners": "^0.2.3",
     "chalk": "^2.4.2"
   }

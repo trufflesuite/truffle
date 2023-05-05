@@ -8,16 +8,10 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": "..",
-    "lib": [
-      "es2017"
-    ],
+    "lib": ["es2017", "dom"],
     "paths": {
-      "@truffle/codec": [
-        "../codec/lib"
-      ],
-      "@truffle/codec/*": [
-        "../codec/lib/*"
-      ],
+      "@truffle/codec": ["../codec/lib"],
+      "@truffle/codec/*": ["../codec/lib/*"],
       "web3/eth/types": [
         "../../node_modules/@types/web3/eth/types",
         "node_modules/web3/eth/types"

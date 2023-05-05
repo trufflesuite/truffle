@@ -1,11 +1,26 @@
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const yargs = require("yargs");
-const { deriveConfigEnvironment } = require("./command-utils");
+const path = require("path");
+const {
+  deriveConfigEnvironment,
+  parseQuotesAndEscapes,
+  displayGeneralHelp
+} = require("./command-utils");
+const { handleHelpInput } = require("./cliHelp");
 
 // we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
-const inputStrings = input[1].split(" ");
+const escapeCharacters = path.sep === "\\" ? "^`" : "\\"; //set escape character
+//based on current OS; backslash for Unix, caret or grave for Windows
+const inputArguments = parseQuotesAndEscapes(input[1], escapeCharacters); //note this shouldn't error since it's a recomputation
+
+// handle cases where input indicates the user wants to access Truffle's help
+const { displayHelp, inputStrings } = handleHelpInput({ inputArguments });
+if (displayHelp) {
+  displayGeneralHelp({ isREPL: true });
+  process.exit();
+}
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib

@@ -70,7 +70,7 @@ export class Resolver {
 
   async resolve(
     importPath: string,
-    importedFrom: string,
+    importedFrom?: string,
     options: {
       compiler?: {
         name: string;
