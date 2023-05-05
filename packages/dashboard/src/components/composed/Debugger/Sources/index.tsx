@@ -15,7 +15,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     height: "100%"
   },
   sourceContent: {
-    height: "100%",
+    height: "98%",
     overflow: "hidden",
     borderStyle: "solid",
     borderRadius: "0px 0px 4px 4px",
@@ -139,7 +139,9 @@ function Sources({
       onTabChange={setCurrentSourceId}
       style={{ height: "100%" }}
     >
-      <Tabs.List>
+      <Tabs.List
+        style={{ flexWrap: "nowrap", overflowX: "scroll", overflowY: "hidden" }}
+      >
         {sources.map((source: SourceType) => {
           const tabClass =
             currentSourceId === source.id ? classes.activeTab : classes.tab;
