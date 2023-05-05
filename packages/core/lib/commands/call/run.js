@@ -79,7 +79,8 @@ module.exports = async function (options) {
   }
 
   const adapter = new Encoder.ProviderAdapter(config.provider);
-  let decoding;
+  let result;
+  let status = undefined;
 
   try {
     const result = await adapter.call(
@@ -88,23 +89,26 @@ module.exports = async function (options) {
       transaction.data,
       blockNumber
     );
-
-    [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
-      status: true
-    });
+    //note we don't set status to true... a revert need not cause an
+    //error, depending on client
+    if (typeof result !== "string") {
+      //if we couldn't extract a return value, something's gone badly wrong;
+      //let's just throw
+      throw new Error("Malformed response from call");
+    }
   } catch (error) {
-    [decoding] = await decoder.decodeReturnValue(functionEntry, error.data, {
-      status: false
-    });
-
-    // Gives a readable interpretation of the panic code returned from the call
-    if (decoding.abi.name === "Panic") {
-      const panicCode = decoding.arguments[0].value.value.asBN;
-      throw new TruffleError(
-        `Error thrown: Panic: ${DebugUtils.panicString(panicCode)}`
-      );
+    status = false;
+    result = extractResult(error);
+    if (result === undefined) {
+      //if we couldn't extract a return value, something's gone badly wrong;
+      //let's just rethrow the error in that case
+      throw error;
     }
   }
+
+  const [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
+    status
+  });
 
   config.logger.log(
     util.inspect(new Codec.Export.ReturndataDecodingInspector(decoding), {
@@ -114,6 +118,14 @@ module.exports = async function (options) {
       breakLength: 79
     })
   );
+
+  // Gives a readable interpretation of the panic code returned from the call
+  if (decoding.abi.name === "Panic") {
+    const panicCode = decoding.arguments[0].value.value.asBN;
+    throw new TruffleError(
+      `Error thrown: Panic: ${DebugUtils.panicString(panicCode)}`
+    );
+  }
 
   return;
   //Note: This is the end of the function.  After this point is just inner
@@ -238,3 +250,29 @@ module.exports = async function (options) {
     return { encoder, decoder };
   }
 };
+
+function extractResult(error) {
+  //CODE DUPLICATION WARNING!!
+  //the following code is copied (w/slight adaptations) from contract/lib/reason.js
+  //it should really be factored!!  but there may not be time to do that right now
+  if (!error || !error.data) {
+    return undefined;
+  }
+
+  // NOTE that Ganache >=2 returns the reason string when
+  // vmErrorsOnRPCResponse === true, which this code could
+  // be updated to respect (instead of computing here)
+  const { data } = error;
+  if (typeof data === "string") {
+    return data; // geth, Ganache >7.0.0
+  } else if ("result" in data) {
+    // there is a single result (Ganache 7.0.0)
+    return data.result;
+  } else {
+    // handle `evm_mine`, `miner_start`, batch payloads, and ganache 2.0
+    // NOTE this only works for a single failed transaction at a time.
+    const hash = Object.keys(data)[0];
+    const errorDetails = data[hash];
+    return errorDetails.return /* ganache 2.0 */;
+  }
+}

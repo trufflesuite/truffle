@@ -178,8 +178,7 @@ export class ProviderAdapter {
             if (response.error) {
               return reject(response.error);
             }
-            const { result: res } = response;
-            accept(res);
+            return accept(response.result);
           }) as Callback<JsonRPCResponse>
         )
       );
