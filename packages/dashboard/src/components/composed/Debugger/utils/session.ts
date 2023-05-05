@@ -66,6 +66,7 @@ export async function initDebugger({
   // "0xab2cba8e3e57a173a125d3f77a9a0a485809b8a7098b540a13593631909ccf00"; //dai tx
 
   const { session, sources, unknownAddresses } = await setupSession({
+    handleCompilations: operations.handleCompilations,
     ganacheOptions,
     fetchingOptions,
     txHash: txHashToDebug,
@@ -95,6 +96,10 @@ type SetupSessionArgs = {
     onStart?: () => void;
     onReady?: () => void;
   };
+  handleCompilations: (
+    compilations: Compilation[],
+    hashes?: string[]
+  ) => Promise<void>;
   fetchingOptions: FetchingOptions;
 };
 
@@ -103,7 +108,8 @@ export async function setupSession({
   ganacheOptions,
   compilations,
   callbacks,
-  fetchingOptions
+  fetchingOptions,
+  handleCompilations
 }: SetupSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -114,7 +120,8 @@ export async function setupSession({
     txHash,
     ganacheOptions,
     compilations,
-    fetchingOptions
+    fetchingOptions,
+    handleCompilations
   });
 
   callbacks?.onFetch?.();
@@ -131,13 +138,18 @@ type CreateSessionArgs = {
   compilations: Compilation[];
   ganacheOptions: any;
   fetchingOptions: FetchingOptions;
+  handleCompilations: (
+    compilations: Compilation[],
+    hashes?: string[]
+  ) => Promise<void>;
 };
 
 async function createSession({
   txHash,
   compilations,
   ganacheOptions,
-  fetchingOptions
+  fetchingOptions,
+  handleCompilations
 }: CreateSessionArgs): Promise<{
   session: Session;
   sources: Source[];
@@ -179,7 +191,8 @@ async function createSession({
       session,
       networkId,
       addresses: unrecognizedAddresses,
-      etherscanApiKey
+      etherscanApiKey,
+      handleCompilations
     });
   }
   const sources = await getTransactionSourcesBeforeStarting(session);
@@ -200,13 +213,18 @@ type FetchCompilationsAndAddToSessionArgs = {
   networkId: string;
   addresses: string[];
   etherscanApiKey?: string;
+  handleCompilations: (
+    compilations: Compilation[],
+    hashes?: string[]
+  ) => Promise<void>;
 };
 
 async function fetchCompilationsAndAddToSession({
   session,
   networkId,
   addresses,
-  etherscanApiKey
+  etherscanApiKey,
+  handleCompilations
 }: FetchCompilationsAndAddToSessionArgs): Promise<{
   unknownAddresses: string[];
 }> {
@@ -222,11 +240,13 @@ async function fetchCompilationsAndAddToSession({
       url = url + `&etherscanApiKey=${etherscanApiKey}`;
     }
     const fetchResult = await fetch(url);
-    const { compilations } = await fetchResult.json();
+    const { compilations, hashes } = await fetchResult.json();
     if (compilations.length === 0) {
       unknownAddresses.push(address);
       continue;
     }
+
+    await handleCompilations(compilations, hashes);
     const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
       compilations,
       `externalFor(${address})Via(Etherscan)`
