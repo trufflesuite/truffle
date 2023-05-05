@@ -350,30 +350,42 @@ export const configProps = ({
         //note: we treat null as a legitimate value here.
         let address;
         if (
-          networkConfig?.registry?.address !== undefined ||
+          networkConfig?.registry !== undefined &&
+          networkConfig?.ens?.registry !== undefined
+        ) {
+          throw new Error(
+            "<network_config>.registry and <network_config>.ens.registry both defined"
+          );
+        }
+        let specificAddressInsideRegistry =
+          networkConfig?.ens?.registry?.address !== undefined
+            ? networkConfig?.ens?.registry?.address
+            : networkConfig?.registry?.address;
+        if (
+          specificAddressInsideRegistry !== undefined ||
           networkConfig?.registryAddress !== undefined
         ) {
           if (
-            networkConfig?.registry?.address !== undefined &&
+            specificAddressInsideRegistry !== undefined &&
             networkConfig?.registryAddress !== undefined
           ) {
             if (
-              networkConfig?.registry?.address ===
-              networkConfig?.registryAddress
+              specificAddressInsideRegistry === networkConfig?.registryAddress
             ) {
               //if both are defined and they're equal, use either one
-              address = networkConfig?.registry?.address;
+              address = specificAddressInsideRegistry;
             } else {
               //if both are defined but they're unequal, throw an error
               throw new Error(
-                "Error: Conflicting values for registry address found in network config"
+                "Conflicting values for registry address found in network config"
               );
             }
           } else {
             //if only one is defined, use that one
             address =
-              networkConfig?.registry?.address ||
-              networkConfig?.registryAddress;
+              specificAddressInsideRegistry !== undefined
+                ? specificAddressInsideRegistry
+                : networkConfig?.registryAddress;
           }
         } else if (
           configObject.ens?.registry?.address !== undefined ||
@@ -392,7 +404,7 @@ export const configProps = ({
             } else {
               //if both are defined but they're unequal, throw an error
               throw new Error(
-                "Error: Conflicting values for registry address found in project ens config"
+                "Conflicting values for registry address found in project ens config"
               );
             }
           } else {
