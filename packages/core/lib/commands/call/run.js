@@ -64,10 +64,20 @@ module.exports = async function (options) {
       }
     ));
   } catch (error) {
-    throw new TruffleError(
-      "The function name, function signature or function arguments you entered are invalid!\n" +
-        "Please run the command again with valid function name, function signature and function arguments (if any)!"
-    );
+    const expectedErrors = [
+      Encoder.NoFunctionByThatNameError,
+      Codec.Wrap.NoOverloadsMatchedError,
+      Codec.Wrap.NoUniqueBestOverloadError,
+      Codec.Wrap.TypeMismatchError
+    ];
+    if (expectedErrors.some(errorClass => error instanceof errorClass)) {
+      //if it was an expected error, turn it into a TruffleError so that it
+      //displays nicely
+      throw new TruffleError(error.message);
+    } else {
+      //unexpected error, rethrow
+      throw error;
+    }
   }
 
   if (!["pure", "view"].includes(functionEntry.stateMutability)) {
