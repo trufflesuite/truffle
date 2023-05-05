@@ -169,7 +169,7 @@ async function createSession({
 
   let unrecognizedAddresses: string[] = [];
   for (const [address, value] of Object.entries(affectedInstances)) {
-    if (value.contractName === undefined) {
+    if (value.contractName === undefined && value.binary !== "0x") {
       unrecognizedAddresses.push(address);
     }
   }
