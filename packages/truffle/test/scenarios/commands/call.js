@@ -83,6 +83,53 @@ describe("truffle call", function () {
     });
   });
 
+  describe("Overload resolution", function () {
+    it("Resolves overload by argument count", async function () {
+      this.timeout(90000);
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample overloaded 11 22"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      assert.include(output, "got multiple!");
+    });
+
+    it("Resolves overload by type (uint)", async function () {
+      this.timeout(90000);
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample overloaded 1234"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      assert.include(output, "got uint!");
+    });
+
+    it("Resolves overload by type (address)", async function () {
+      this.timeout(90000);
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: [
+          "migrate",
+          "call Sample overloaded 0x0000000000000000000000000000000000000000"
+        ],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      assert.include(output, "got address!");
+    });
+  });
+
   describe("Revert cases", function () {
     it("Handles reverts", async function () {
       this.timeout(90000);
@@ -205,6 +252,38 @@ describe("truffle call", function () {
       const output = logger.contents();
       assert.include(output, "Error");
       assert.include(output, "Reason:");
+      assert.notInclude(output, ".js"); //user should not get a stacktrace!
+      assert.notInclude(output, ".ts");
+    });
+
+    it("No matching overload", async function () {
+      this.timeout(90000);
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample overloaded foggabogga"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      assert.include(output, "Error");
+      assert.notInclude(output, ".js"); //user should not get a stacktrace!
+      assert.notInclude(output, ".ts");
+    });
+
+    it("No unique best overload", async function () {
+      this.timeout(90000);
+      const networkName = config.network;
+      await CommandRunner.runInREPL({
+        inputCommands: ["migrate", "call Sample confusing 1"],
+        config,
+        executableCommand: "console",
+        executableArgs: `--network ${networkName}`,
+        displayHost: networkName
+      });
+      const output = logger.contents();
+      assert.include(output, "Error");
       assert.notInclude(output, ".js"); //user should not get a stacktrace!
       assert.notInclude(output, ".ts");
     });

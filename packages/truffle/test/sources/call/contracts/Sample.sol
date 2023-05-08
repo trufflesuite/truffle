@@ -29,4 +29,24 @@ contract Sample {
   function throws() public pure {
     revert MyError(107, "goodbye");
   }
+
+  function overloaded(uint x) public pure returns (string) {
+    return "got uint!";
+  }
+
+  function overloaded(address x) public pure returns (string) {
+    return "got address!";
+  }
+
+  function overloaded(uint x, uint y) public pure returns (string) {
+    return "got multiple!";
+  }
+
+  function confusing(uint16 x) public pure returns (string) {
+    return "uint16!";
+  }
+
+  function confusing(int8 x) public pure returns (string) {
+    return "int8!";
+  }
 }
