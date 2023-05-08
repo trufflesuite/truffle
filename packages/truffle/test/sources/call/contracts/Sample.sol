@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 contract Sample {
 
-  error MyError(uint, string memory);
+  error MyError(uint, string);
 
   function increment(uint x) public pure returns (uint y) {
     return x + 1;
@@ -14,7 +14,7 @@ contract Sample {
   }
 
   function sillySum(uint x, string memory y) public pure returns (uint) {
-    return x + y.length;
+    return x + bytes(y).length;
   }
 
   function reverts() public pure {
