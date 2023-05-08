@@ -159,7 +159,7 @@ describe("truffle call", function () {
         displayHost: networkName
       });
       const output = logger.contents();
-      assert.match(output, /[Pp]anic]/);
+      assert.match(output, /[Pp]anic/);
       assert.match(output, "by zero");
       assert.notInclude(output, "run.js"); //user should not get a stacktrace!
       assert.notInclude(output, "run.ts");
