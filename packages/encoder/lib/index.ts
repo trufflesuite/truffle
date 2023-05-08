@@ -1,11 +1,11 @@
 /**
  * # Truffle Encoder
- * 
+ *
  * This module provides an interface for recognizing JavaScript user input of
  * Solidity values, encoding those values for use in a transaction, and performing
  * overload resolution based on those values to determine which Solidity method to
  * encode for.
- * 
+ *
  * The interface is split into three classes: The project encoder, the contract
  * encoder, and the contract instance encoder.  The project encoder is associated
  * to the project as a whole; it can recognize user input, encode transactions,
@@ -17,75 +17,75 @@
  * associated to a specific contract instance; it is like the contract encoder,
  * but is associated to a specific address, allowing the `to` option in
  * transactions to be populated automatically.
- * 
+ *
  * ## Usage
- * 
+ *
  * ### Initialization
- * 
+ *
  * Create a encoder with one of the various constructor functions.
- * 
+ *
  * For a project encoder, use the [[forProject|`forProject`]] function.
- * 
+ *
  * For a contract encoder, use the [[forArtifact|`forArtifact`]] or
  * [[forContract|`forContract`]] function.
- * 
+ *
  * For a contract instance encoder, use one of the following:
  * * [[forDeployedArtifact|`forDeployedArtifact`]]
  * * [[forDeployedContract|`forDeployedContract`]]
  * * [[forArtifactAt|`forArtifactAt`]]
  * * [[forContractAt|`forContractAt`]]
  * * [[forContractInstance|`forContractInstance`]]
- * 
+ *
  * See the documentation of these functions for details, or below for usage
  * examples.
- * 
+ *
  * All of these functions take a final argument in which information about the
  * project is specified; currently only a few methods for specifying project
  * information are allowed, but more are planned.
- * 
+ *
  * One can also spawn encoders from other encoders by supplying additional
  * information.  See the documentation for the individual encoder classes for a
  * method listing.
- * 
+ *
  * ### Encoder methods
- * 
+ *
  * See the documentation for the individual encoder classes for a method listing.
- * 
+ *
  * ### Wrapped format information
- * 
+ *
  * When using the various "wrap" functions, values will be wrapped in
  * machine-readable [[Format.Values.Value]] objects containing individual wrapped
  * values.  (This is the same format that `@truffle/decoder` produces output in.)
  * See the [[Format|format documentation]] for an overview and complete module
  * listing.
- * 
+ *
  * ### Use of project information and encoding of enums
- * 
+ *
  * The encoder can do purely ABI-based encoding, like other encoders; however it
  * has the capability to use project information to do more.
- * 
+ *
  * The most significant use of this is that if further project information is
  * present, this allows for enums to be entered as strings with the name of
  * the option, rather than having to be entered via the underlying number.
  * See the documentation of [[ProjectEncoder.wrap]] for more.
- * 
+ *
  * Similarly, if project information is present, the encoder will also throw an
  * error if you attempt to put an out-of-range value into an enum type, and
  * refuse to consider overloads that would result in this during overload
  * resolution.  If project information is absent, the encoder will be unable to
  * recognize any error in these situations.
- * 
+ *
  * ### ENS resolution
- * 
+ *
  * The encoder supports ENS resolution for address and contract types if
  * initialized to support such.  See the documentation of the [[EncoderSettings]]
  * and [[EnsSettings]] types for more.
- * 
+ *
  * ### Basic usage examples
- * 
+ *
  * These usage examples are for a project with two contracts, `Contract1` and
  * `Contract2`.  Let's suppose these look like the following:
- * 
+ *
  * ```solidity
  *pragma solidity ^0.8.0;
  *
@@ -104,9 +104,9 @@
  *  enum Ternary { No, Yes, Maybe }
  *}
  * ```
- * 
+ *
  * #### Encoding a transaction
- * 
+ *
  * ```typescript
  *import { forContract } from "@truffle/encoder";
  *const contract1 = artifacts.require("Contract1");
@@ -119,9 +119,9 @@
  *  { allowOptions: true }
  *);
  * ```
- * 
+ *
  * ### Performing overload resolution
- * 
+ *
  * ```typescript
  *import { forContract } from "@truffle/encoder";
  *const contract1 = artifacts.require("Contract1");
@@ -165,7 +165,8 @@ export {
   NoInternalInfoError,
   UnlinkedContractError,
   ContractNotFoundError,
-  ContractNotDeployedError
+  ContractNotDeployedError,
+  NoFunctionByThatNameError
 } from "./errors";
 
 import { ProviderAdapter } from "./adapter";
