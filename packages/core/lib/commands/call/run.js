@@ -1,4 +1,5 @@
 module.exports = async function (options) {
+  const debug = require("debug")("core:commands:call");
   const fs = require("fs");
   const util = require("util");
   const { Environment } = require("@truffle/environment");
@@ -95,7 +96,7 @@ module.exports = async function (options) {
   let status = undefined;
 
   try {
-    const result = await adapter.call(
+    result = await adapter.call(
       fromAddress,
       transaction.to,
       transaction.data,
@@ -117,6 +118,8 @@ module.exports = async function (options) {
       throw error;
     }
   }
+
+  debug("result: %O", result);
 
   const [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
     status
