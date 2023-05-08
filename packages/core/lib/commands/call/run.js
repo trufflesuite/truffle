@@ -123,9 +123,13 @@ module.exports = async function (options) {
 
   debug("result: %O", result);
 
-  const [decoding] = await decoder.decodeReturnValue(functionEntry, result, {
+  const decodings = await decoder.decodeReturnValue(functionEntry, result, {
     status
   });
+  if (decodings.length === 0) {
+    throw new TruffleError("Error: Could not decode result.");
+  }
+  const decoding = decodings[0];
 
   if (decoding.status) {
     //successful return
