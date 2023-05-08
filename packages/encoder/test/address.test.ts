@@ -11,7 +11,7 @@ import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type TruffleConfig from "@truffle/config";
 import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
-import type { Web3BaseProvider as Provider } from "web3-common";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { prepareContracts } from "./helpers";
 

@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:contract");
 let Web3 = require("web3");
-const webUtils = require("web3-utils");
+const webEthAbi = require("web3-eth-abi");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 const constructorMethods = require("./constructorMethods");
@@ -44,7 +44,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           var isConstant =
             ["pure", "view"].includes(item.stateMutability) || item.constant; // new form // deprecated case
 
-          var signature = webUtils.jsonInterfaceMethodToString(item);
+          var signature = webEthAbi.jsonInterfaceMethodToString(item);
 
           var method = function (constant, web3Method) {
             var fn;

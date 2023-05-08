@@ -73,7 +73,7 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
-      const snippet = `Couldn't connect to node`;
+      const snippet = `reason: connect ECONNREFUSED`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -110,7 +110,7 @@ describe("Provider", function () {
 
   it.skip("fails when given a bogus provider url", async () => {
     const provider = Provider.create({
-      provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
+      provider: new Web3.Web3.providers.HttpProvider("http://127.0.0.1:9999")
     });
 
     try {
@@ -119,7 +119,7 @@ describe("Provider", function () {
         "The provider was instantiated correctly. That shouldn't have happened"
       );
     } catch (error) {
-      const snippet = `Couldn't connect to node`;
+      const snippet = `reason: connect ECONNREFUSED`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {

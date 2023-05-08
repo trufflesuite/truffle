@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 // Override artifactor
 const Config = require("@truffle/config");
 const { assert } = require("chai");
@@ -28,7 +30,7 @@ const provider = Ganache.provider({
     instamine: "strict"
   }
 });
-const web3 = new Web3();
+const web3 = new Web3.Web3();
 web3.setProvider(provider);
 
 describe("Library linking", () => {
@@ -110,7 +112,7 @@ describe("Library linking with contract objects", () => {
       instamine: "strict"
     }
   });
-  const web3 = new Web3();
+  const web3 = new Web3.Web3();
   web3.setProvider(provider);
 
   before(async function () {
@@ -215,7 +217,7 @@ describe(".link(name, address)", () => {
     networkId = await web3.eth.net.getId();
     ExampleContract = contract({
       contractName: "ExampleContract",
-      abi: [],
+      abi: []
     });
     LibraryExample = contract({
       contractName: "A",
@@ -251,8 +253,8 @@ describe(".link(name, address)", () => {
   });
 
   it("will error with improper input", () => {
-    const expectedMessageSnippet = "Input to the link method is in the " +
-      "incorrect format.";
+    const expectedMessageSnippet =
+      "Input to the link method is in the " + "incorrect format.";
     try {
       ExampleContract.link(1);
     } catch (error) {
