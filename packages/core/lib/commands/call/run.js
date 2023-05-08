@@ -34,7 +34,7 @@ module.exports = async function (options) {
   const fromAddress = config.from ?? config.networks[config.network]?.from;
   if (!web3Utils.isAddress(fromAddress)) {
     throw new TruffleError(
-      `Address ${fromAddress} is not a valid Ethereum address.` +
+      `Error: Address ${fromAddress} is not a valid Ethereum address.` +
         OS.EOL +
         "Please check the address and try again."
     );
@@ -49,7 +49,7 @@ module.exports = async function (options) {
     !["latest", "pending", "genesis", "earliest"].includes(blockNumber)
   ) {
     throw new TruffleError(
-      "Invalid block number.  Block number must be nonnegative integer or one of 'latest', 'pending', 'genesis', or 'earliest'."
+      "Error: Invalid block number.  Block number must be nonnegative integer or one of 'latest', 'pending', 'genesis', or 'earliest'."
     );
   }
 
@@ -73,10 +73,11 @@ module.exports = async function (options) {
       Codec.Wrap.NoUniqueBestOverloadError,
       Codec.Wrap.TypeMismatchError
     ];
+    debug("expectedErrors: %O", expectedErrors);
     if (expectedErrors.some(errorClass => error instanceof errorClass)) {
       //if it was an expected error, turn it into a TruffleError so that it
       //displays nicely
-      throw new TruffleError(error.message);
+      throw new TruffleError("Error: " + error.message);
     } else {
       //unexpected error, rethrow
       throw error;
@@ -171,7 +172,7 @@ module.exports = async function (options) {
       !web3Utils.isAddress(contractNameOrAddress)
     ) {
       throw new TruffleError(
-        `Address ${contractNameOrAddress} is not a valid Ethereum address.` +
+        `Error: Address ${contractNameOrAddress} is not a valid Ethereum address.` +
           OS.EOL +
           "Please check the address and try again."
       );
@@ -190,7 +191,7 @@ module.exports = async function (options) {
 
     if (Object.keys(contracts).length === 0) {
       throw new TruffleError(
-        "No artifacts found; please run `truffle compile` first to compile your contracts."
+        "Error: No artifacts found; please run `truffle compile` first to compile your contracts."
       );
     }
 
@@ -218,7 +219,7 @@ module.exports = async function (options) {
       const contract = contracts[contractName];
       if (!contract) {
         throw new TruffleError(
-          `No artitfacts found for contract named ${contractName} found.  Check the name and make sure you have compiled your contracts.`
+          `Error: No artitfacts found for contract named ${contractName} found.  Check the name and make sure you have compiled your contracts.`
         );
       }
       let instance;
@@ -226,7 +227,7 @@ module.exports = async function (options) {
         instance = await contract.deployed();
       } catch (error) {
         throw new TruffleError(
-          "This contract has not been deployed to the detected network." +
+          "Error: This contract has not been deployed to the detected network." +
             OS.EOL +
             "Please run `truffle migrate` to deploy the contract."
         );
@@ -240,7 +241,7 @@ module.exports = async function (options) {
   async function sourceFromExternal(contractAddress, config) {
     if (!web3Utils.isAddress(contractAddress)) {
       throw new TruffleError(
-        `Address ${contractAddress} is not a valid Ethereum address.` +
+        `Error: Address ${contractAddress} is not a valid Ethereum address.` +
           OS.EOL +
           "Please check the address and try again, or remove `-x` if you are supplying a contract name."
       );
