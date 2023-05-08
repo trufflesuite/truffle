@@ -30,7 +30,7 @@ const provider = Ganache.provider({
     instamine: "strict"
   }
 });
-const web3 = new Web3();
+const web3 = new Web3.Web3();
 web3.setProvider(provider);
 
 describe("Library linking", () => {
@@ -112,7 +112,7 @@ describe("Library linking with contract objects", () => {
       instamine: "strict"
     }
   });
-  const web3 = new Web3();
+  const web3 = new Web3.Web3();
   web3.setProvider(provider);
 
   before(async function () {

@@ -30,7 +30,7 @@ describe("Error cases", function () {
     logging: { quiet: true }
   });
 
-  const web3 = new Web3(provider);
+  const web3 = new Web3.Web3(provider);
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();

@@ -76,7 +76,7 @@ const util = {
     Object.assign(options, { logger: log, ws: true });
 
     let provider;
-    const web3 = new Web3();
+    const web3 = new Web3.Web3();
 
     process.env.GETH
       ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {
