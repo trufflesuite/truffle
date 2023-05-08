@@ -160,7 +160,7 @@ describe("truffle call", function () {
       });
       const output = logger.contents();
       assert.match(output, /[Pp]anic/);
-      assert.match(output, "by zero");
+      assert.include(output, "by zero");
       assert.notInclude(output, "run.js"); //user should not get a stacktrace!
       assert.notInclude(output, "run.ts");
     });
