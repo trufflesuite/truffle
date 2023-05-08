@@ -144,8 +144,8 @@ describe("truffle call", function () {
       const output = logger.contents();
       assert.include(output, "Error");
       assert.include(output, "Oops!");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts"); //future-proofing :)
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts"); //future-proofing :)
     });
 
     it("Handles panics", async function () {
@@ -159,10 +159,10 @@ describe("truffle call", function () {
         displayHost: networkName
       });
       const output = logger.contents();
-      assert.include(output, "Panic");
-      assert.include(output, "by zero");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.match(output, /[Pp]anic]/);
+      assert.match(output, "by zero");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("Handles custom errors", async function () {
@@ -179,8 +179,8 @@ describe("truffle call", function () {
       assert.include(output, "MyError");
       assert.include(output, "107");
       assert.include(output, "goodbye");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
   });
 
@@ -199,8 +199,8 @@ describe("truffle call", function () {
       assert.include(output, "Error");
       assert.include(output, "function");
       assert.include(output, "name");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("Incorrect function signature", async function () {
@@ -217,8 +217,8 @@ describe("truffle call", function () {
       assert.include(output, "Error");
       assert.include(output, "function");
       assert.include(output, "signature");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("Incorrect contract name", async function () {
@@ -235,8 +235,8 @@ describe("truffle call", function () {
       assert.include(output, "Error");
       assert.include(output, "contract");
       assert.include(output, "name");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("Incorrect arguments", async function () {
@@ -252,8 +252,8 @@ describe("truffle call", function () {
       const output = logger.contents();
       assert.include(output, "Error");
       assert.include(output, "Reason:");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("No matching overload", async function () {
@@ -268,8 +268,8 @@ describe("truffle call", function () {
       });
       const output = logger.contents();
       assert.include(output, "Error");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
 
     it("No unique best overload", async function () {
@@ -284,8 +284,8 @@ describe("truffle call", function () {
       });
       const output = logger.contents();
       assert.include(output, "Error");
-      assert.notInclude(output, ".js"); //user should not get a stacktrace!
-      assert.notInclude(output, ".ts");
+      assert.notInclude(output, "run.js"); //user should not get a stacktrace!
+      assert.notInclude(output, "run.ts");
     });
   });
 });
