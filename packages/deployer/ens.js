@@ -151,7 +151,9 @@ class ENS {
 
     // Set top-level name
     let builtName = nameLabels[0];
-    await this.devRegistry.setSubnodeOwner("0x0", sha3(builtName), from, {
+    const ZERO_NODE =
+      "0x0000000000000000000000000000000000000000000000000000000000000000";
+    await this.devRegistry.setSubnodeOwner(ZERO_NODE, sha3(builtName), from, {
       from
     });
 

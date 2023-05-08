@@ -96,7 +96,7 @@ export type InitializeOptions = {
  *
  * Example:
  * ```typescript
- * import type { Web3BaseProvider as Provider } from "web3-common";
+ * import type { Web3BaseProvider as Provider } from "web3-types";
  * import { db, Network } from "@truffle/db";
  *
  * declare const provider: Provider; // obtain this somehow

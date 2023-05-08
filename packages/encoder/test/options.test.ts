@@ -10,7 +10,7 @@ import * as Codec from "@truffle/codec";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
-import type { Web3BaseProvider as Provider } from "web3-common";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import BN from "bn.js";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
