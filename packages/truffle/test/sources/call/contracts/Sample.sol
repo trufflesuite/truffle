@@ -1,30 +1,32 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity ^0.8.17;
 
 contract Sample {
-  uint storedData;
 
-  function setValue(uint x) public {
-    storedData = x;
+  error MyError(uint, string);
+
+  function increment(uint x) public pure returns (uint y) {
+    return x + 1;
   }
 
-  function getValue() public view returns (uint) {
-    return storedData;
+  function returnPair() public pure returns (uint, string) {
+    return (683, "hello");
   }
 
-  function getValue(uint y) public view returns (uint) {
-    return storedData + y;
+  function sillySum(uint x, string y) public pure returns (uint) {
+    return x + y.length;
   }
 
-  function getMultipleValues() public pure returns (string memory, uint256) {
-    return ("truffle", 20);
+  function reverts() public pure {
+    revert("Oops!");
   }
 
-  function getRevertMessage() public pure {
-    revert("You are a failure");
+  function panics() public pure returns (uint) {
+    uint x = 0;
+    return 1/x;
   }
-
-  function getPanicMessage() public pure {
-    assert(0 == 1);
+  
+  function throws() public pure {
+    revert MyError(107, "goodbye");
   }
 }

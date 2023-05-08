@@ -219,7 +219,7 @@ module.exports = async function (options) {
       const contract = contracts[contractName];
       if (!contract) {
         throw new TruffleError(
-          `Error: No artitfacts found for contract named ${contractName} found.  Check the name and make sure you have compiled your contracts.`
+          `Error: No artifacts found for contract named ${contractName} found.  Check the name and make sure you have compiled your contracts.`
         );
       }
       let instance;
