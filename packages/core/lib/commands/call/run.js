@@ -39,11 +39,13 @@ module.exports = async function (options) {
     );
   }
 
-  const rawBlockNumber = config.blockNumber;
-  const blockNumber = Number(rawBlockNumber);
+  let { blockNumber } = config;
+  if (!Number.isNaN(Number(blockNumber))) {
+    blockNumber = Number(blockNumber);
+  }
   if (
     !(Number.isSafeInteger(blockNumber) && blockNumber >= 0) &&
-    !["latest", "pending", "genesis", "earliest"].includes(rawBlockNumber)
+    !["latest", "pending", "genesis", "earliest"].includes(blockNumber)
   ) {
     throw new TruffleError(
       "Invalid block number.  Block number must be nonnegative integer or one of 'latest', 'pending', 'genesis', or 'earliest'."
