@@ -31,7 +31,8 @@ module.exports = async function (options) {
   const [contractNameOrAddress, functionNameOrSignature, ...args] = config._;
   let functionEntry, transaction;
 
-  const fromAddress = config.from ?? config.networks[config.network]?.from;
+  const fromAddress =
+    options.from ?? config.networks[config.network]?.from ?? config.from;
   if (!web3Utils.isAddress(fromAddress)) {
     throw new TruffleError(
       `Error: Address ${fromAddress} is not a valid Ethereum address.` +
@@ -40,7 +41,7 @@ module.exports = async function (options) {
     );
   }
 
-  let { blockNumber } = config;
+  let blockNumber = options.block ?? "latest";
   if (!Number.isNaN(Number(blockNumber))) {
     blockNumber = Number(blockNumber);
   }
