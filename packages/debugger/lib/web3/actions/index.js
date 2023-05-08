@@ -1,8 +1,16 @@
 export const INIT_WEB3 = "INIT_WEB3";
-export function init(provider) {
+export function init(provider, ensOptions) {
   return {
     type: INIT_WEB3,
-    provider
+    provider,
+    ensOptions
+  };
+}
+
+export const WEB3_READY = "WEB3_READY";
+export function web3Ready() {
+  return {
+    type: WEB3_READY
   };
 }
 
@@ -34,6 +42,22 @@ export function fetchStorage(address, slot, blockHash, txIndex) {
   };
 }
 
+export const REVERSE_ENS_RESOLVE = "REVERSE_ENS_RESOLVE";
+export function reverseEnsResolve(address) {
+  return {
+    type: REVERSE_ENS_RESOLVE,
+    address
+  };
+}
+
+export const ENS_RESOLVE = "ENS_RESOLVE";
+export function ensResolve(name) {
+  return {
+    type: ENS_RESOLVE,
+    name
+  };
+}
+
 export const RECEIVE_BINARY = "RECEIVE_BINARY";
 export function receiveBinary(address, binary) {
   return {
@@ -58,6 +82,24 @@ export function receiveStorageFail(error) {
   return {
     type: RECEIVE_STORAGE_FAIL,
     error
+  };
+}
+
+export const RECEIVE_ENS_NAME = "RECEIVE_ENS_NAME";
+export function receiveEnsName(address, name) {
+  return {
+    type: RECEIVE_ENS_NAME,
+    address,
+    name
+  };
+}
+
+export const RECEIVE_ENS_ADDRESS = "RECEIVE_ENS_ADDRESS";
+export function receiveEnsAddress(name, address) {
+  return {
+    type: RECEIVE_ENS_ADDRESS,
+    address,
+    name
   };
 }
 

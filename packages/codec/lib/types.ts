@@ -663,7 +663,10 @@ export interface AbiArgument {
 /**
  * @Category Requests
  */
-export type DecoderRequest = StorageRequest | CodeRequest;
+export type DecoderRequest =
+  | StorageRequest
+  | CodeRequest
+  | EnsPrimaryNameRequest;
 
 /**
  * A request for storage
@@ -682,6 +685,16 @@ export interface StorageRequest {
  */
 export interface CodeRequest {
   type: "code";
+  address: string;
+}
+
+/**
+ * A request for a (primary) ENS name
+ *
+ * @Category Requests
+ */
+export interface EnsPrimaryNameRequest {
+  type: "ens-primary-name";
   address: string;
 }
 

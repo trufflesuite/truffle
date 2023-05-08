@@ -236,7 +236,8 @@ export function* decodeStorageReference(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
+        interpretations: {}
       };
     }
 
@@ -380,7 +381,8 @@ export function* decodeStorageReference(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedMembers
+        value: decodedMembers,
+        interpretations: {}
       };
     }
 
@@ -468,7 +470,8 @@ export function* decodeStorageReference(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedEntries
+        value: decodedEntries,
+        interpretations: {}
       };
     }
   }

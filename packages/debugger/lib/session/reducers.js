@@ -5,6 +5,7 @@ import { combineReducers } from "redux";
 
 import data from "lib/data/reducers";
 import evm from "lib/evm/reducers";
+import ens from "lib/ens/reducers";
 import sourcemapping from "lib/sourcemapping/reducers";
 import trace from "lib/trace/reducers";
 import controller from "lib/controller/reducers";
@@ -97,6 +98,7 @@ const session = combineReducers({
 const reduceState = combineReducers({
   session,
   data,
+  ens,
   txlog,
   evm,
   sourcemapping,

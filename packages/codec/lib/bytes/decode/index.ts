@@ -41,14 +41,16 @@ export function* decodeBytes(
         kind: "value" as const,
         value: {
           asHex: Conversion.toHexString(bytes)
-        }
+        },
+        interpretations: {}
       };
 
     case "string":
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodeString(bytes)
+        value: decodeString(bytes),
+        interpretations: {}
       };
   }
 }

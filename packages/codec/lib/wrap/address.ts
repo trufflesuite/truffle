@@ -369,7 +369,8 @@ function wrapAsAppropriateType(
         kind: "value" as const,
         value: {
           asAddress
-        }
+        },
+        interpretations: {}
       };
     case "contract":
       return {
@@ -378,7 +379,8 @@ function wrapAsAppropriateType(
         value: {
           kind: "unknown" as const,
           address: asAddress
-        }
+        },
+        interpretations: {}
       };
   }
 }

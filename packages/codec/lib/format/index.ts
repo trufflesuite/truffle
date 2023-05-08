@@ -5,7 +5,7 @@
  *
  * This module primarily defines TypeScript types for the output format
  * used in results provided by packages
- * `@truffle/decoder@^4.0.0` and `@truffle/codec@^0.1.0`.
+ * `@truffle/decoder@>=4.0.0` and `@truffle/codec@>=0.1.0`.
  *
  * See below for complete listing or continue reading
  * [Format information](#format-information) to learn about this format.
@@ -37,8 +37,8 @@
  * types.
  *
  * This format targets types and values understood by the
- * [Solidity programming language](https://solidity.readthedocs.io) and
- * the [Contract ABI specification](https://solidity.readthedocs.io/en/v0.5.3/abi-spec.html),
+ * [Solidity programming language](https://docs.soliditylang.org/) and
+ * the [Contract ABI specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html),
  * within the context of the [Ethereum Virtual Machine](https://ethereum.github.io/yellowpaper/paper.pdf)
  * (EVM) and in raw data for transactions and logs according to the
  * [Ethereum JSON RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC).
@@ -80,7 +80,18 @@
  *     the raw data that led to the error.  See [[Format.Errors|`Format.Errors`]] for
  *     more information.
  *
- *   5. `reference`: This field is a debugger-only feature and does not
+ *   5. `interpretations`: This field will also be present when `kind` is equal
+ *     to `"value"`; it is an object that may contain additional information
+ *     about the decoded value beyond what is found in `value`.  (All fields in
+ *     `interpretations` are always optional and will be included only when
+ *     applicable.)  You may wonder, what is the difference between `value`
+ *     and `interpretations`?  The answer is that the distinction is largely
+ *     historical; `interpretations` was not originally part of the format, and
+ *     it was added so that there would be a place to put new additional
+ *     information we wanted to include without having to expand `value`.  See
+ *     [[Format.Values|`Format.Values`]] for more information.
+ *
+ *   6. `reference`: This field is a debugger-only feature and does not
  *      apply to results returned by  @truffle/decoder, so it won't be documented here.
  *
  * ### Values vs. errors
@@ -172,9 +183,4 @@
 import { Types, Values, Errors } from "./common";
 import * as Utils from "./utils";
 
-export {
-  Types,
-  Values,
-  Errors,
-  Utils
-};
+export { Types, Values, Errors, Utils };

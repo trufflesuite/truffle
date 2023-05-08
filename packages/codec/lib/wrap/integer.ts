@@ -160,12 +160,12 @@ function* integerFromScientificOrUnits(
     //we could accept all of web3's units here, but, that's a little much;
     //we'll just accept the most common ones
     "": 0,
-    wei: 0,
-    gwei: 9,
-    shannon: 9,
-    szabo: 12,
-    finney: 15,
-    ether: 18
+    "wei": 0,
+    "gwei": 9,
+    "shannon": 9,
+    "szabo": 12,
+    "finney": 15,
+    "ether": 18
   };
   let quantity: Big | null;
   try {
@@ -331,7 +331,8 @@ function* enumFromNameString(
     value: {
       numericAsBN: asBN,
       name: finalComponent //we know it matches!
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -914,7 +915,8 @@ function validateAndWrap(
         kind: "value" as const,
         value: {
           asBN
-        }
+        },
+        interpretations: {}
       };
     case "int":
       if (
@@ -935,7 +937,8 @@ function validateAndWrap(
         kind: "value" as const,
         value: {
           asBN
-        }
+        },
+        interpretations: {}
       };
     case "enum":
       const fullType = <Format.Types.EnumType>(
@@ -956,7 +959,8 @@ function validateAndWrap(
         value: {
           numericAsBN: asBN,
           name: fullType.options[asBN.toNumber()]
-        }
+        },
+        interpretations: {}
       };
   }
 }

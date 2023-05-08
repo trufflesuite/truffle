@@ -12,6 +12,7 @@ import {
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
+import * as ens from "lib/ens/sagas";
 import * as evm from "lib/evm/sagas";
 import * as trace from "lib/trace/sagas";
 
@@ -1082,6 +1083,8 @@ export function* decode(definition, ref, compilationId) {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
+      case "ens-primary-name":
+        response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
     }
@@ -1134,6 +1137,8 @@ export function* decodeReturnValue() {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
+      case "ens-primary-name":
+        response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
     }
@@ -1199,6 +1204,8 @@ export function* decodeCall(decodeCurrent = false) {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
+      case "ens-primary-name":
+        response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
     }
@@ -1247,6 +1254,8 @@ export function* decodeLog() {
       case "code":
         response = yield* evm.requestCode(request.address);
         break;
+      case "ens-primary-name":
+        response = yield* ens.reverseResolveAsBytes(request.address);
       default:
         debug("unrecognized request type!");
     }

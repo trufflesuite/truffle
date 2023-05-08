@@ -133,8 +133,10 @@ function* fetchTransactionInfo(adapter, { txHash }) {
 }
 
 export function* inspectTransaction(txHash) {
+  debug("putting");
   yield put(actions.inspect(txHash));
 
+  debug("waiting");
   let action = yield take([actions.RECEIVE_TRACE, actions.ERROR_WEB3]);
   debug("action %o", action);
 
@@ -209,6 +211,50 @@ function* receiveBinary(address) {
   return binary;
 }
 
+export function* reverseEnsResolve(address) {
+  debug("forking receive name for %s", address);
+  const task = yield fork(receiveEnsName, address);
+  debug("putting the action to kick things off");
+  yield put(actions.reverseEnsResolve(address));
+  debug("waiting (outer)");
+  return yield join(task);
+}
+
+function* performEnsReverseResolution(adapter, { address }) {
+  debug("got reverse action; address = %s", address);
+  const name = yield apply(adapter, adapter.reverseEnsResolve, [address]);
+  debug("got name = %o, passing it on", name);
+  yield put(actions.receiveEnsName(address, name));
+}
+
+function* receiveEnsName(address) {
+  debug("waiting (inner)");
+  const { name } = yield take(
+    action =>
+      action.type == actions.RECEIVE_ENS_NAME && action.address == address
+  );
+  debug("received name = %s, returning", name);
+  return name;
+}
+
+export function* ensResolve(name) {
+  const task = yield fork(receiveEnsAddress, name);
+  yield put(actions.ensResolve(name));
+  return yield join(task);
+}
+
+function* performEnsResolution(adapter, { name }) {
+  const address = yield apply(adapter, adapter.ensResolve, [name]);
+  yield put(actions.receiveEnsAddress(name, address));
+}
+
+function* receiveEnsAddress(name) {
+  const { address } = yield take(
+    action => action.type == actions.RECEIVE_ENS_ADDRESS && action.name == name
+  );
+  return address;
+}
+
 export function* obtainStorage(address, slot, blockHash, txIndex) {
   debug("forking");
   const task = yield fork(function* () {
@@ -262,18 +308,27 @@ function* receiveStorageErrorHandler() {
   //rather than throw to prevent redux-saga from giving up
 }
 
-export function* init(provider) {
-  yield put(actions.init(provider));
+export function* init(provider, ensOptions) {
+  yield put(actions.init(provider, ensOptions));
+  yield take(actions.WEB3_READY);
 }
 
 export function* saga() {
   // wait for web3 init signal
-  let { provider } = yield take(actions.INIT_WEB3);
-  let adapter = new Web3Adapter(provider);
+  const { provider, ensOptions } = yield take(actions.INIT_WEB3);
+  let adapter = new Web3Adapter(provider, ensOptions);
+  yield apply(adapter, adapter.init); //set up ens
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
   yield takeEvery(actions.FETCH_STORAGE, fetchStorage, adapter);
+  yield takeEvery(
+    actions.REVERSE_ENS_RESOLVE,
+    performEnsReverseResolution,
+    adapter
+  );
+  yield takeEvery(actions.ENS_RESOLVE, performEnsResolution, adapter);
+  yield put(actions.web3Ready());
 }
 
 export default prefixName("web3", saga);

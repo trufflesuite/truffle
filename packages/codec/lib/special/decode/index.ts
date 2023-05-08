@@ -73,7 +73,8 @@ export function* decodeMagic(
             { location: "special" as const, special: "value" },
             info
           )
-        }
+        },
+        interpretations: {}
       };
     case "tx":
       return {
@@ -93,7 +94,8 @@ export function* decodeMagic(
             { location: "special" as const, special: "gasprice" },
             info
           )
-        }
+        },
+        interpretations: {}
       };
     case "block":
       let block: { [field: string]: Format.Values.Result } = {
@@ -138,7 +140,8 @@ export function* decodeMagic(
       return {
         type: dataType,
         kind: "value" as const,
-        value: block
+        value: block,
+        interpretations: {}
       };
   }
 }

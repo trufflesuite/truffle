@@ -23,12 +23,15 @@ import { createNestedSelector } from "reselect-tree";
 import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
+import ens from "lib/ens/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
 
 import { Shims } from "@truffle/compile-common";
+
+import { utils as Web3Utils } from "web3";
 
 /**
  * Debugger Session
@@ -70,8 +73,15 @@ export default class Session {
       });
     });
 
+    const registryAddress = moduleOptions?.ens?.registryAddress;
+    if (registryAddress) {
+      if (!Web3Utils.isAddress(registryAddress)) {
+        throw new Error(`Error: Invalid address ${registryAddress}`);
+      }
+    }
+
     //note that txHash is now optional
-    this._store.dispatch(actions.start(provider, txHash));
+    this._store.dispatch(actions.start(provider, txHash, moduleOptions.ens));
   }
 
   async ready() {
@@ -579,6 +589,7 @@ export default class Session {
     return createNestedSelector({
       ast,
       data,
+      ens,
       txlog,
       trace,
       evm,

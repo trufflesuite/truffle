@@ -49,7 +49,8 @@ function* boolFromBoolean(
     kind: "value" as const,
     value: {
       asBoolean: input
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -87,7 +88,8 @@ function* boolFromString(
     kind: "value" as const,
     value: {
       asBoolean
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -152,7 +154,8 @@ function* boolFromCodecBoolValue(
     kind: "value" as const,
     value: {
       asBoolean
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -204,7 +207,8 @@ function* boolFromCodecBoolError(
     kind: "value" as const,
     value: {
       asBoolean: true
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -370,6 +374,7 @@ function* boolFromOther(
     kind: "value" as const,
     value: {
       asBoolean
-    }
+    },
+    interpretations: {}
   };
 }

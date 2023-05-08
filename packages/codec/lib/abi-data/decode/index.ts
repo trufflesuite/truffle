@@ -287,7 +287,8 @@ export function* decodeAbiReferenceByAddress(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
+        interpretations: {}
       };
 
     case "struct":
@@ -369,7 +370,8 @@ export function* decodeAbiReferenceStatic(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
+        interpretations: {}
       };
 
     case "struct":
@@ -451,7 +453,8 @@ function* decodeAbiStructByPosition(
   return {
     type: dataType,
     kind: "value" as const,
-    value: decodedMembers
+    value: decodedMembers,
+    interpretations: {}
   };
 }
 
@@ -490,6 +493,7 @@ function* decodeAbiTupleByPosition(
   return {
     type: dataType,
     kind: "value" as const,
-    value: decodedMembers
+    value: decodedMembers,
+    interpretations: {}
   };
 }
