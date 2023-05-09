@@ -32,7 +32,9 @@ module.exports = async function (options) {
   let functionEntry, transaction;
 
   const fromAddress =
-    options.from ?? config.networks[config.network]?.from ?? config.from;
+    options.from ??
+    config.networks[config.network]?.from ??
+    Codec.Evm.Utils.ZERO_ADDRESS;
   if (!web3Utils.isAddress(fromAddress)) {
     throw new TruffleError(
       `Error: Address ${fromAddress} is not a valid Ethereum address.` +
