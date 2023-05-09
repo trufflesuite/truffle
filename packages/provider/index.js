@@ -49,17 +49,18 @@ module.exports = {
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         let errorMessage =
-          "There was a timeout while attempting to connect to the network at " + host +
+          "There was a timeout while attempting to connect to the network at " +
+          host +
           ".\n       Check to see that your provider is valid." +
           "\n       If you have a slow internet connection, try configuring a longer " +
           "timeout in your Truffle config. Use the " +
           "networks[networkName].networkCheckTimeout property to do this.";
 
-          if (network === "dashboard") {
-            errorMessage +=
-              "\n       Also make sure that your Truffle Dashboard browser " +
-              "tab is open and connected to MetaMask.";
-          }
+        if (network === "dashboard") {
+          errorMessage +=
+            "\n       Also make sure that your Truffle Dashboard browser " +
+            "tab is open and connected to MetaMask.";
+        }
 
         throw new Error(errorMessage);
       }, networkCheckTimeout);
@@ -75,7 +76,9 @@ module.exports = {
           } catch (error) {
             console.log(
               "> Something went wrong while attempting to connect to the " +
-                "network at " + host + ". Check your network configuration."
+                "network at " +
+                host +
+                ". Check your network configuration."
             );
             clearTimeout(noResponseFromNetworkCall);
             clearTimeout(networkCheck);
@@ -86,5 +89,5 @@ module.exports = {
         }, networkCheckDelay);
       })();
     });
-  },
+  }
 };

@@ -1,5 +1,6 @@
 const validTruffleCommands = [
   "build",
+  "call",
   "compile",
   "config",
   "console",
