@@ -108,6 +108,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     //sourcify does *not* support xinfin mainnet...?
     "apothem-xinfin",
     "canto",
+    "testnet-canto",
     "astar",
     "shiden-astar",
     "cypress-klaytn",
@@ -124,7 +125,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-stratos",
     //sourcify does *not* support base mainnet?
     "goerli-base",
-    "bear"
+    "bear",
+    "wanchain",
+    "testnet-wanchain",
+    "root",
+    "porcini-root",
+    "hedera"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
