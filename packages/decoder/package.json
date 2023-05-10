@@ -21,10 +21,11 @@
     "build": "tsc",
     "prepare": "yarn build",
     "start": "tsc --watch",
-    "test": "mocha ./test/current/test/* ./test/legacy/test/*"
+    "test": "mocha --exit ./test/current/test/* ./test/legacy/test/* ./test/ens/test/*"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@ensdomains/ensjs": "^2.1.0",
     "@truffle/abi-utils": "^0.3.9",
     "@truffle/codec": "^0.14.17",
     "@truffle/compile-common": "^0.9.4",

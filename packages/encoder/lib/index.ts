@@ -166,7 +166,8 @@ export {
   NoInternalInfoError,
   UnlinkedContractError,
   ContractNotFoundError,
-  ContractNotDeployedError
+  ContractNotDeployedError,
+  NoFunctionByThatNameError
 } from "./errors";
 
 import { ProviderAdapter } from "./adapter";

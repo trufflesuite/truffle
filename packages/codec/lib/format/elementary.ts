@@ -50,6 +50,7 @@ export interface UintValue {
     asBN: BN;
     rawAsBN?: BN;
   };
+  interpretations: {};
 }
 
 /**
@@ -64,6 +65,7 @@ export interface IntValue {
     asBN: BN;
     rawAsBN?: BN;
   };
+  interpretations: {};
 }
 
 /**
@@ -77,6 +79,7 @@ export interface BoolValue {
   value: {
     asBoolean: boolean;
   };
+  interpretations: {};
 }
 
 /**
@@ -94,6 +97,7 @@ export interface BytesStaticValue {
     asHex: string;
     rawAsHex?: string;
   };
+  interpretations: {};
 }
 
 /**
@@ -110,6 +114,7 @@ export interface BytesDynamicValue {
      */
     asHex: string;
   };
+  interpretations: {};
 }
 
 /**
@@ -130,6 +135,9 @@ export interface AddressValue {
      */
     rawAsHex?: string;
   };
+  interpretations: {
+    ensName?: StringValueInfo;
+  };
 }
 
 /**
@@ -141,6 +149,7 @@ export interface StringValue {
   type: Types.StringType;
   kind: "value";
   value: StringValueInfo;
+  interpretations: {};
 }
 
 /**
@@ -185,6 +194,7 @@ export interface FixedValue {
     asBig: Big;
     rawAsBig?: Big;
   };
+  interpretations: {};
 }
 
 /**
@@ -199,6 +209,7 @@ export interface UfixedValue {
     asBig: Big;
     rawAsBig?: Big;
   };
+  interpretations: {};
 }
 
 /**
@@ -216,6 +227,7 @@ export interface EnumValue {
      */
     numericAsBN: BN;
   };
+  interpretations: {};
 }
 
 /**
@@ -227,6 +239,7 @@ export interface UserDefinedValueTypeValue {
   type: Types.UserDefinedValueTypeType;
   kind: "value";
   value: BuiltInValueValue;
+  interpretations: {};
 }
 
 /**
@@ -238,6 +251,9 @@ export interface ContractValue {
   type: Types.ContractType;
   kind: "value";
   value: ContractValueInfo;
+  interpretations: {
+    ensName?: StringValueInfo;
+  };
 }
 
 /**

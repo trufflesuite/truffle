@@ -14,6 +14,7 @@ import sourcemappingSelector from "./sourcemapping/selectors";
 import sessionSelector from "./session/selectors";
 import stacktraceSelector from "./stacktrace/selectors";
 import controllerSelector from "./controller/selectors";
+import ensSelector from "./ens/selectors";
 
 import { Compilations } from "@truffle/codec";
 
@@ -28,15 +29,22 @@ const Debugger = {
    * @return {Debugger} instance
    */
   forTx: async function (txHash, options = {}) {
-    let { contracts, files, provider, compilations, lightMode, storageLookup } =
-      options;
+    const {
+      contracts,
+      files,
+      provider,
+      compilations,
+      lightMode,
+      storageLookup,
+      ens //currently supported options: registryAddress
+    } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
     let session = new Session(
       compilations,
       provider,
-      { lightMode, storageLookup },
+      { lightMode, storageLookup, ens },
       txHash
     );
 
@@ -52,12 +60,20 @@ const Debugger = {
    * @return {Debugger} instance
    */
   forProject: async function (options = {}) {
-    let { contracts, files, provider, compilations, lightMode } = options;
+    const {
+      contracts,
+      files,
+      provider,
+      compilations,
+      lightMode,
+      ens //currently supported options: registryAddress
+    } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
     let session = new Session(compilations, provider, {
-      lightMode
+      lightMode,
+      ens
     });
 
     await session.ready();
@@ -83,6 +99,7 @@ const Debugger = {
     return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
+      ens: ensSelector,
       txlog: txlogSelector,
       trace: traceSelector,
       evm: evmSelector,

@@ -62,7 +62,7 @@ export function* saga(moduleOptions) {
 
   debug("waiting for start");
   // wait for start signal
-  let { txHash, provider } = yield take(actions.START);
+  const { txHash, provider, ensOptions } = yield take(actions.START);
   debug("starting");
 
   if (!moduleOptions.lightMode) {
@@ -82,7 +82,7 @@ export function* saga(moduleOptions) {
 
   //initialize web3 adapter
   debug("initializing adapter");
-  yield* web3.init(provider);
+  yield* web3.init(provider, ensOptions);
 
   //process transaction (if there is one)
   //(note: this part may also set the error state)

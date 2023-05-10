@@ -47,7 +47,8 @@ module.exports = {
     const { host } = provider;
     const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
 
-    console.log(interfaceAdapter);
+    //todo web3js-migration remove
+    // console.log(interfaceAdapter);
 
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {

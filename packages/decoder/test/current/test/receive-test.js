@@ -22,7 +22,7 @@ describe("Non-function transactions", function () {
       gasLimit: 7000000,
       logging: { quiet: true }
     });
-    web3 = new Web3(provider);
+    web3 = new Web3.Web3(provider);
   });
 
   after(async () => {

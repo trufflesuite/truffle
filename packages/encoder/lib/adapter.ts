@@ -84,7 +84,7 @@ type FormattedBlock = {
 };
 const stringWhitelist = ["latest", "pending", "genesis", "earliest"];
 
-const formatBlockSpecifier = (block: BlockSpecifier): string => {
+export const formatBlockSpecifier = (block: BlockSpecifier): string => {
   if (typeof block === "string" && stringWhitelist.includes(block)) {
     // block is one of 'latest', 'pending', 'earliest', or 'genesis'
     return block === "genesis"
@@ -137,7 +137,7 @@ export class ProviderAdapter {
     this.provider = provider;
   }
 
-  private async sendRequest({
+  private async request({
     method,
     params,
     formatOutput
@@ -148,8 +148,8 @@ export class ProviderAdapter {
     let result;
     if (isEip1193Provider(this.provider)) {
       result = await this.provider.request({
-        method: method as any,
-        params: params as any
+        method,
+        params
       });
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
@@ -175,7 +175,6 @@ export class ProviderAdapter {
             if (error) {
               return reject(error);
             }
-
             if (response) {
               const { result: res } =
                 response as JsonRpcResponseWithResult<JsonRpcResult>;
@@ -189,12 +188,32 @@ export class ProviderAdapter {
     return result;
   }
 
+  public async call(
+    fromAddress: string,
+    contractAddress: string,
+    data: string,
+    blockNumber: BlockSpecifier
+  ): Promise<any> {
+    const blockToFetch = formatBlockSpecifier(blockNumber);
+    return await this.request({
+      method: "eth_call",
+      params: [
+        {
+          from: fromAddress,
+          to: contractAddress,
+          data: data
+        },
+        blockToFetch
+      ]
+    });
+  }
+
   public async getCode(
     address: string,
     block: BlockSpecifier //making this one not regularized to support encoder
   ): Promise<string> {
     const blockToFetch = formatBlockSpecifier(block);
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getCode",
       params: [address, blockToFetch]
     });
@@ -204,7 +223,7 @@ export class ProviderAdapter {
     block: BlockSpecifier
   ): Promise<FormattedBlock> {
     const blockToFetch = formatBlockSpecifier(block);
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getBlockByNumber",
       params: [blockToFetch, false],
       formatOutput: formatBlock
@@ -216,14 +235,14 @@ export class ProviderAdapter {
     fromBlock,
     toBlock
   }: PastLogsOptions): Promise<Log[]> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getLogs",
       params: [{ fromBlock, toBlock, address }]
     });
   }
 
   public async getNetworkId(): Promise<number> {
-    return await this.sendRequest({
+    return await this.request({
       method: "net_version",
       params: [],
       formatOutput: result => parseInt(result)
@@ -231,7 +250,7 @@ export class ProviderAdapter {
   }
 
   public async getBlockNumber(): Promise<number> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_blockNumber",
       params: [],
       formatOutput: result => parseInt(result)
@@ -242,7 +261,7 @@ export class ProviderAdapter {
     address: string,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getBalance",
       params: [address, formatBlockSpecifier(block)],
       formatOutput: result => parseInt(result).toString()
@@ -253,7 +272,7 @@ export class ProviderAdapter {
     address: string,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getTransactionCount",
       params: [address, formatBlockSpecifier(block)],
       formatOutput: result => parseInt(result).toString()
@@ -265,7 +284,7 @@ export class ProviderAdapter {
     position: BN,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getStorageAt",
       params: [
         address,

@@ -517,7 +517,9 @@ class DebugPrinter {
       //we just defer to the ReturndataDecodingInspector in this case
       this.config.logger.log(
         util.inspect(
-          new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+          new Codec.Export.ReturndataDecodingInspector(decodings[0], {
+            noHideAddress: true
+          }),
           inspectOptions
         )
       );
@@ -555,7 +557,9 @@ class DebugPrinter {
           //just use the inspector
           this.config.logger.log(
             util.inspect(
-              new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+              new Codec.Export.ReturndataDecodingInspector(decodings[0], {
+                noHideAddress: true
+              }),
               inspectOptions
             )
           );
@@ -576,7 +580,9 @@ class DebugPrinter {
         //again, we can use the inspector
         this.config.logger.log(
           util.inspect(
-            new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+            new Codec.Export.ReturndataDecodingInspector(decodings[0], {
+              noHideAddress: true
+            }),
             inspectOptions
           )
         );
@@ -700,12 +706,17 @@ class DebugPrinter {
       }
       if (event.decoding) {
         this.config.logger.log(
-          util.inspect(new Codec.Export.LogDecodingInspector(event.decoding), {
-            colors: true,
-            depth: null,
-            maxArrayLength: null,
-            breakLength: 80
-          })
+          util.inspect(
+            new Codec.Export.LogDecodingInspector(event.decoding, {
+              noHideAddress: true
+            }),
+            {
+              colors: true,
+              depth: null,
+              maxArrayLength: null,
+              breakLength: 80
+            }
+          )
         );
       } else {
         this.config.logger.log("Could not decode event.");

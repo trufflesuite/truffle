@@ -3,11 +3,29 @@ const debug = debugModule("debugger:web3:adapter");
 
 import Web3 from "web3";
 import * as Codec from "@truffle/codec";
+import ENS, { getEnsAddress } from "@ensdomains/ensjs";
 import { promisify } from "util";
 
 export default class Web3Adapter {
-  constructor(provider) {
+  constructor(provider, ensOptions) {
     this.web3 = new Web3(provider);
+    this.ensRegistryAddress = ensOptions.registryAddress; //note: may be null to turn off resolution
+  }
+
+  async init() {
+    debug("initting; registry = %o", this.ensRegistryAddress);
+    if (this.ensRegistryAddress === undefined) {
+      const networkId = await this.web3.eth.net.getId();
+      this.ensRegistryAddress = getEnsAddress(networkId);
+    }
+    if (this.ensRegistryAddress) {
+      //not an else! can be set up above!
+      debug("setting up");
+      this.ens = new ENS({
+        provider: this.web3.currentProvider,
+        ensAddress: this.ensRegistryAddress
+      });
+    }
   }
 
   async getTrace(txHash) {
@@ -103,5 +121,28 @@ export default class Web3Adapter {
     debug("getting deployed code for %s", address);
     let code = await this.web3.eth.getCode(address, block);
     return code === "0x0" ? "0x" : code;
+  }
+
+  async reverseEnsResolve(address) {
+    if (!this.ens) {
+      debug("no ens you fool!");
+      return null;
+    }
+    try {
+      debug("addr: %s", address);
+      //unfortunately, ensjs will throw on invalid UTF-8
+      //and we really don't want this erroring... so we'll just swallow it,
+      //sorry :-/
+      return (await this.ens.getName(address)).name;
+    } catch {
+      return null;
+    }
+  }
+
+  async ensResolve(name) {
+    if (!this.ens) {
+      return null;
+    }
+    return await this.ens.name(name).getAddress();
   }
 }

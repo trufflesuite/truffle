@@ -123,7 +123,7 @@ const util = {
 
     real.on("transactionHash", hash => {
       util.realHash = hash;
-      util.fakePromiEvent.emit("transactionHash", hash);
+      util.fakePromiEvent.eventEmitter.emit("transactionHash", hash);
     });
 
     real.on("receipt", function (receipt) {
@@ -131,7 +131,7 @@ const util = {
       this.removeAllListeners();
     });
 
-    return util.fakePromiEvent;
+    return util.fakePromiEvent.eventEmitter;
   },
 
   fakeReject: function (msg) {

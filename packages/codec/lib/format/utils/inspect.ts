@@ -23,6 +23,15 @@ function cleanStylize(options: InspectOptions): InspectOptions {
   return clonedOptions;
 }
 
+export interface ResultInspectorOptions {
+  /**
+   * This option causes the [[ResultInspector]] to display, for
+   * addresses with a reverse ENS record, both the ENS name and
+   * the address.  (By default it displays only the ENS name.)
+   */
+  noHideAddress?: boolean;
+}
+
 /**
  * This class is meant to be used with Node's
  * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
@@ -54,8 +63,10 @@ function cleanStylize(options: InspectOptions): InspectOptions {
  */
 export class ResultInspector {
   result: Format.Values.Result;
-  constructor(result: Format.Values.Result) {
+  options: ResultInspectorOptions;
+  constructor(result: Format.Values.Result, options?: ResultInspectorOptions) {
     this.result = result;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -99,34 +110,41 @@ export class ResultInspector {
               case "dynamic":
                 return options.stylize(`hex'${hex.slice(2)}'`, "string");
             }
-          case "address":
-            return options.stylize(
-              (<Format.Values.AddressValue>this.result).value.asAddress,
+          case "address": {
+            const coercedResult = this.result as Format.Values.AddressValue;
+            const addressString = options.stylize(
+              coercedResult.value.asAddress,
               "number"
             );
-          case "string": {
-            let coercedResult = <Format.Values.StringValue>this.result;
-            switch (coercedResult.value.kind) {
-              case "valid":
-                return util.inspect(coercedResult.value.asString, options);
-              case "malformed":
-                //note: this will turn malformed utf-8 into replacement characters (U+FFFD)
-                //note we need to cut off the 0x prefix
-                return util.inspect(
-                  Buffer.from(
-                    coercedResult.value.asHex.slice(2),
-                    "hex"
-                  ).toString()
-                );
+            if (coercedResult.interpretations.ensName) {
+              const nameString = options.stylize(
+                stringValueInfoToStringLossy(
+                  coercedResult.interpretations.ensName
+                ),
+                "special"
+              );
+              return this.options.noHideAddress
+                ? `${nameString} [${addressString}]`
+                : nameString;
             }
+            return options.stylize(coercedResult.value.asAddress, "number");
           }
+          case "string":
+            return util.inspect(
+              stringValueInfoToStringLossy(
+                (this.result as Format.Values.StringValue).value
+              ),
+              options
+            );
           case "array": {
             let coercedResult = <Format.Values.ArrayValue>this.result;
             if (coercedResult.reference !== undefined) {
               return formatCircular(coercedResult.reference, options);
             }
             return util.inspect(
-              coercedResult.value.map(element => new ResultInspector(element)),
+              coercedResult.value.map(
+                element => new ResultInspector(element, this.options)
+              ),
               options
             );
           }
@@ -135,8 +153,8 @@ export class ResultInspector {
               new Map(
                 (<Format.Values.MappingValue>this.result).value.map(
                   ({ key, value }) => [
-                    new ResultInspector(key),
-                    new ResultInspector(value)
+                    new ResultInspector(key, this.options),
+                    new ResultInspector(value, this.options)
                   ]
                 )
               ),
@@ -151,7 +169,7 @@ export class ResultInspector {
               Object.assign(
                 {},
                 ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
+                  [name]: new ResultInspector(value, this.options)
                 }))
               ),
               options
@@ -165,7 +183,7 @@ export class ResultInspector {
               this.result
             );
             const inspectOfUnderlying = util.inspect(
-              new ResultInspector(coercedResult.value),
+              new ResultInspector(coercedResult.value, this.options),
               options
             );
             return `${typeName}.wrap(${inspectOfUnderlying})`; //note only the underlying part is stylized
@@ -180,7 +198,7 @@ export class ResultInspector {
                 Object.assign(
                   {},
                   ...coercedResult.value.map(({ name, value }) => ({
-                    [name]: new ResultInspector(value)
+                    [name]: new ResultInspector(value, this.options)
                   }))
                 ),
                 options
@@ -188,7 +206,7 @@ export class ResultInspector {
             } else {
               return util.inspect(
                 coercedResult.value.map(
-                  ({ value }) => new ResultInspector(value)
+                  ({ value }) => new ResultInspector(value, this.options)
                 ),
                 options
               );
@@ -203,7 +221,7 @@ export class ResultInspector {
                     {},
                     ...(<Format.Values.TypeValueContract>this.result).value.map(
                       ({ name, value }) => ({
-                        [name]: new ResultInspector(value)
+                        [name]: new ResultInspector(value, this.options)
                       })
                     )
                   ),
@@ -220,7 +238,9 @@ export class ResultInspector {
                 {},
                 ...Object.entries(
                   (<Format.Values.MagicValue>this.result).value
-                ).map(([key, value]) => ({ [key]: new ResultInspector(value) }))
+                ).map(([key, value]) => ({
+                  [key]: new ResultInspector(value, this.options)
+                }))
               ),
               options
             );
@@ -228,9 +248,12 @@ export class ResultInspector {
             return enumFullName(<Format.Values.EnumValue>this.result); //not stylized
           }
           case "contract": {
+            const coercedValue = this.result as Format.Values.ContractValue;
             return util.inspect(
               new ContractInfoInspector(
-                (<Format.Values.ContractValue>this.result).value
+                coercedValue.value,
+                coercedValue.interpretations.ensName,
+                this.options
               ),
               options
             );
@@ -238,11 +261,14 @@ export class ResultInspector {
           case "function":
             switch (this.result.type.visibility) {
               case "external": {
-                let coercedResult = <Format.Values.FunctionExternalValue>(
-                  this.result
-                );
-                let contractString = util.inspect(
-                  new ContractInfoInspector(coercedResult.value.contract),
+                const coercedResult = this
+                  .result as Format.Values.FunctionExternalValue;
+                const contractString = util.inspect(
+                  new ContractInfoInspector(
+                    coercedResult.value.contract,
+                    coercedResult.interpretations.contractEnsName,
+                    this.options
+                  ),
                   { ...cleanStylize(options), colors: false }
                 );
                 let firstLine: string;
@@ -313,7 +339,7 @@ export class ResultInspector {
         switch (errorResult.error.kind) {
           case "WrappedError":
             return util.inspect(
-              new ResultInspector(errorResult.error.error),
+              new ResultInspector(errorResult.error.error, this.options),
               options
             );
           case "UintPaddingError":
@@ -394,8 +420,16 @@ export class ResultInspector {
 //these get their own class to deal with a minor complication
 class ContractInfoInspector {
   value: Format.Values.ContractValueInfo;
-  constructor(value: Format.Values.ContractValueInfo) {
+  ensName?: Format.Values.StringValueInfo;
+  options: ResultInspectorOptions;
+  constructor(
+    value: Format.Values.ContractValueInfo,
+    ensName?: Format.Values.StringValueInfo,
+    options?: ResultInspectorOptions
+  ) {
     this.value = value;
+    this.ensName = ensName;
+    this.options = options || {};
   }
   /**
    * @dev non-standard alternative interface name used by browser-util-inspect
@@ -405,16 +439,34 @@ class ContractInfoInspector {
     return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+    const { noHideAddress } = this.options;
+    const addressString = options.stylize(this.value.address, "number");
+    let mainIdentifier = addressString;
+    if (this.ensName) {
+      //replace address with name
+      mainIdentifier = options.stylize(
+        stringValueInfoToStringLossy(this.ensName),
+        "special"
+      );
+    }
+    let withClass: string;
     switch (this.value.kind) {
       case "known":
-        return (
-          options.stylize(this.value.address, "number") +
-          ` (${this.value.class.typeName})`
-        );
+        withClass = `${mainIdentifier} (${this.value.class.typeName})`;
+        break;
       case "unknown":
-        return (
-          options.stylize(this.value.address, "number") + " of unknown class"
-        );
+        withClass = `${mainIdentifier} of unknown class`;
+        break;
+    }
+    if (this.ensName && noHideAddress) {
+      //this might get a bit long, so let's break it up if needed
+      const breakingSpace =
+        withClass.length + addressString.length + 3 > options.breakLength
+          ? "\n"
+          : " ";
+      return `${withClass}${breakingSpace}[${addressString}]`;
+    } else {
+      return withClass;
     }
   }
 }
@@ -521,20 +573,10 @@ function unsafeNativizeWithTable(
       return (<Format.Values.BytesValue>result).value.asHex;
     case "address":
       return (<Format.Values.AddressValue>result).value.asAddress;
-    case "string": {
-      let coercedResult = <Format.Values.StringValue>result;
-      switch (coercedResult.value.kind) {
-        case "valid":
-          return coercedResult.value.asString;
-        case "malformed":
-          // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
-          // note we need to cut off the 0x prefix
-          return Buffer.from(
-            coercedResult.value.asHex.slice(2),
-            "hex"
-          ).toString();
-      }
-    }
+    case "string":
+      return stringValueInfoToStringLossy(
+        (result as Format.Values.StringValue).value
+      );
     case "fixed":
     case "ufixed":
       //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
@@ -701,4 +743,20 @@ export function nativizeAccessList(
       )
     };
   });
+}
+
+//turns a StringValueInfo into a string in a lossy fashion,
+//by turning malformed utf-8 into replacement characters (U+FFFD)
+export function stringValueInfoToStringLossy(
+  info: Format.Values.StringValueInfo
+): string {
+  switch (info.kind) {
+    case "valid":
+      return info.asString;
+    case "malformed":
+      return Buffer.from(
+        info.asHex.slice(2), // note we need to cut off the 0x prefix
+        "hex"
+      ).toString();
+  }
 }

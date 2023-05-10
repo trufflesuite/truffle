@@ -74,6 +74,7 @@ module.exports = {
     if (provider.request === undefined && provider.send !== undefined) {
       provider.request = make1193ProviderRequest(provider);
     }
+
     /* mark as wrapped */
     provider._alreadyWrapped = true;
 

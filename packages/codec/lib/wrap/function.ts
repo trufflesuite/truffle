@@ -78,7 +78,8 @@ function* functionFromFunctionExternalInput(
         address
       },
       selector
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -131,7 +132,8 @@ function* functionFromCodecFunctionExternalValue(
         address
       },
       selector
-    }
+    },
+    interpretations: {}
   };
 }
 
@@ -194,7 +196,8 @@ function* functionFromHexString(
         address
       },
       selector
-    }
+    },
+    interpretations: {}
   };
 }
 
