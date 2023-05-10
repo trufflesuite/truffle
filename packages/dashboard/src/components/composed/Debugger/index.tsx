@@ -265,7 +265,9 @@ function Debugger(): JSX.Element {
     status === SessionStatus.Fetching ||
     status === SessionStatus.Starting;
   let mainBody;
-  if (status === SessionStatus.Inactive) {
+  // we check the session in case the user navigated elsewhere in dashboard and
+  // then comes back to the debugger - their session will still be loaded
+  if (status === SessionStatus.Inactive && !session) {
     mainBody = <Home />;
   } else if (preparingSession) {
     mainBody = <PreparingSession ganacheLoggingOutput={loggingOutput} />;
