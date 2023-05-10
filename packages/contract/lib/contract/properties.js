@@ -232,7 +232,7 @@ module.exports = {
 
         signature += ")";
 
-        var topic = web3Utils.sha3(signature);
+        var topic = web3Utils.keccak256(signature);
 
         events[topic] = item;
       }
