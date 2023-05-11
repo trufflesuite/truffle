@@ -165,12 +165,17 @@ function Debugger(): JSX.Element {
   };
 
   // scroll to highlighted source as debugger steps
+
+  let currentDebuggerStep;
+  if (session) {
+    currentDebuggerStep = session.view(session.selectors.trace.index);
+  }
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
       const { source, start } = currentSourceRange!;
       scrollToLine({ sourceId: source.id, line: start.line });
     }
-  });
+  }, [currentDebuggerStep, currentSourceId]);
 
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
