@@ -125,17 +125,6 @@ export function addTextHighlightedClass(
         index > start.line &&
         end.column === line.length - 1);
     if (wholeLineHighlighted) {
-      const index = indexOfFirstNonWhitespaceChar(line);
-      // avoid highlighting the whitespace at the beginning of lines
-      if (index !== -1) {
-        const segments = [line.slice(0, index), line.slice(index)];
-        return (
-          segments[0] +
-          textHighlightingBeginsMarker +
-          segments[1] +
-          textHighlightingEndsMarker
-        );
-      }
       return textHighlightingBeginsMarker + line + textHighlightingEndsMarker;
     }
 
@@ -154,7 +143,7 @@ export function addTextHighlightedClass(
         textHighlightingEndsMarker +
         segments[2];
     }
-    // highlighting starting on a line but ending on another
+    // highlighting starting on the current line but ending on another
     if (start.line === index && end.line! > index) {
       const segments = [line.slice(0, start.column), line.slice(start.column)];
       editedLine =
@@ -180,10 +169,6 @@ export function addTextHighlightedClass(
     contents: editedLines.join("\n")
   };
 }
-
-const indexOfFirstNonWhitespaceChar = (str: string) => {
-  return str.split("").findIndex(letter => letter !== " " && letter !== "\t");
-};
 
 export function replaceTextHighlightedMarkings(lines: string[]) {
   return lines.map(line => {
