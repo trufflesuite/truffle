@@ -54,7 +54,7 @@ export const getInitialConfig = ({
     },
     ens: {
       enabled: false,
-      registryAddress: null
+      registryAddress: undefined
     },
     mocha: {
       bail: false,
