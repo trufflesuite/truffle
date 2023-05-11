@@ -2,7 +2,7 @@ const debug = require("debug")("decoder:test:additional-test");
 const assert = require("chai").assert;
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 const Decoder = require("../../..");
 

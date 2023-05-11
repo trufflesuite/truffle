@@ -2,7 +2,7 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
@@ -53,15 +53,17 @@ describe("Over-the-wire decoding (legacy features)", function () {
       provider: web3.currentProvider,
       projectInfo: { artifacts: Contracts }
     });
-
+    console.log("11111111111111111");
     const overrideTest = await deployedContract.interfaceAndOverrideTest();
-
+    console.log("2222222222222222222");
     const overrideBlock = overrideTest.receipt.blockNumber;
-
+    console.log("3333333333333333333333");
     const overrideTestEvents = await decoder.events({
       fromBlock: overrideBlock,
       toBlock: overrideBlock
     });
+    console.log("4444444444444444444");
+    console.log("-------", overrideTestEvents);
 
     assert.lengthOf(overrideTestEvents, 5);
 
