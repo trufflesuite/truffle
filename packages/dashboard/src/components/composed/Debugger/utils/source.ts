@@ -16,10 +16,14 @@ export function convertSourceToHtml({
   source: Source;
   sourceRange: SourceRange;
 }) {
+  const sourceWithTabsReplaced = {
+    ...source,
+    contents: source.contents.replaceAll("\t", "    ")
+  };
   // add comment markers for where spans will go later designating debugger
   // highlighting - comments so lowlight doesn't choke on html
   const sourceWithHighlightedMarkings = addTextHighlightedClass(
-    source,
+    sourceWithTabsReplaced,
     sourceRange
   );
 
@@ -100,7 +104,16 @@ export function addTextHighlightedClass(
   source: Source,
   sourceRange: SourceRange
 ) {
+  const longestLineLength = source.contents
+    .split("\n")
+    .reduce((a, currentLine) => {
+      return currentLine.length > a ? currentLine.length : a;
+    }, 0);
+
   const editedLines = source.contents.split("\n").map((line, index) => {
+    // whitespace to add at end for block highlighting
+    const bufferSpaces = " ".repeat(longestLineLength - line.length);
+
     const { start, end } = sourceRange;
     const lineHasHighlighting =
       source.id === sourceRange.source.id &&
@@ -125,7 +138,12 @@ export function addTextHighlightedClass(
         index > start.line &&
         end.column === line.length - 1);
     if (wholeLineHighlighted) {
-      return textHighlightingBeginsMarker + line + textHighlightingEndsMarker;
+      return (
+        textHighlightingBeginsMarker +
+        line +
+        bufferSpaces +
+        textHighlightingEndsMarker
+      );
     }
 
     let editedLine;
@@ -150,6 +168,7 @@ export function addTextHighlightedClass(
         segments[0] +
         textHighlightingBeginsMarker +
         segments[1] +
+        bufferSpaces +
         textHighlightingEndsMarker;
     }
     // highlighting started on a previous line but ending on the current one
@@ -161,6 +180,7 @@ export function addTextHighlightedClass(
         textHighlightingEndsMarker +
         segments[1];
     }
+
     return editedLine;
   });
 
