@@ -2,7 +2,7 @@ const debug = require("debug")("decoder:test:receive-test");
 const assert = require("chai").assert;
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 const Decoder = require("../../..");
 
@@ -22,7 +22,7 @@ describe("Non-function transactions", function () {
       gasLimit: 7000000,
       logging: { quiet: true }
     });
-    web3 = new Web3.Web3(provider);
+    web3 = new Web3(provider);
   });
 
   after(async () => {
