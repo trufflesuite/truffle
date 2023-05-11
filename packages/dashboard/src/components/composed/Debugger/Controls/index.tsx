@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDash } from "src/hooks";
 import {
   Play,
   SkipForward,
@@ -19,6 +20,11 @@ interface ControlsProps {
 
 function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
   const [stepping, setStepping] = useState(false);
+  const {
+    state: {
+      debugger: { breakpoints }
+    }
+  } = useDash()!;
   const atStart =
     session?.view($.trace.index) === 0 ||
     session?.view($.trace.index) === undefined;
@@ -31,6 +37,12 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
     setStepping
   };
 
+  const atLeastOneBreakpointSet = Object.values(breakpoints).some(
+    breakpointSet => {
+      return breakpointSet.size > 0;
+    }
+  );
+
   return (
     <Group>
       <ControlButton
@@ -38,7 +50,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
         icon={Play}
         // @ts-ignore
         step={() => session.continueUntilBreakpoint()}
-        disabled={disabled}
+        disabled={disabled || !atLeastOneBreakpointSet}
         tooltipLabel="continue until breakpoint"
       />
       <ControlButton
