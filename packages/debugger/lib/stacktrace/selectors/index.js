@@ -332,19 +332,10 @@ let stacktrace = createSelectorTree({
           switch (decoding.abi.name) {
             case "Error":
               const revertStringInfo = decoding.arguments[0].value.value;
-              switch (revertStringInfo.kind) {
-                case "valid":
-                  return { Error: revertStringInfo.asString };
-                case "malformed":
-                  //turn into a JS string while smoothing over invalid UTF-8
-                  //slice 2 to remove 0x prefix
-                  return {
-                    Error: Buffer.from(
-                      revertStringInfo.asHex.slice(2),
-                      "hex"
-                    ).toString()
-                  };
-              }
+              return {
+                Error:
+                  Codec.Export.stringValueInfoToStringLossy(revertStringInfo)
+              };
             case "Panic":
               const panicCode = decoding.arguments[0].value.value.asBN;
               return { Panic: panicCode };
