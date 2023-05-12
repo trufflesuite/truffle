@@ -13,20 +13,20 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.145",
+  "version": "0.2.146-visual-debugger.0",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.187",
-    "@truffle/config": "^1.3.54",
+    "@truffle/artifactor": "^4.0.188-visual-debugger.0",
+    "@truffle/config": "^1.3.55-visual-debugger.0",
     "@truffle/error": "^0.2.0",
     "@truffle/expect": "^0.1.5",
-    "@truffle/interface-adapter": "^0.5.31",
-    "@truffle/provider": "^0.3.7",
-    "@truffle/resolver": "^9.0.38",
+    "@truffle/interface-adapter": "^0.5.32-visual-debugger.0",
+    "@truffle/provider": "^0.3.8-visual-debugger.0",
+    "@truffle/resolver": "^9.0.39-visual-debugger.0",
     "chalk": "^4.1.2",
     "ganache": "7.7.7",
     "node-ipc": "9.2.1",
