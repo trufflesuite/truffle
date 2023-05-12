@@ -69,34 +69,6 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
-            ".truffle-debugger-source:hover": {
-              cursor: "pointer"
-            },
-            ".truffle-debugger-breakpoint-group": {
-              display: "flex",
-              marginBottom: 5
-            },
-            ".truffle-debugger-breakpoint-delete": {
-              borderRadius: 25,
-              backgroundColor: "#FA5252",
-              width: 16,
-              height: 16,
-              marginRight: 16
-            },
-            ".truffle-debugger-breakpoint:hover": {
-              cursor: "pointer"
-            },
-            ".truffle-debugger-breakpoint-delete:hover": {
-              cursor: "pointer",
-              backgroundColor: "red"
-            },
-            ".truffle-debugger-error": {
-              width: "50%"
-            },
-            ".truffle-debugger-breakpoint-group": {
-              display: "flex",
-              justifyContent: "space-between"
-            },
             ".mantine-Alert-icon": {
               "width": 28,
               "height": "auto",
