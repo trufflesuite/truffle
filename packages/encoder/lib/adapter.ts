@@ -8,6 +8,8 @@ import type {
   JsonRpcResult
 } from "web3-types";
 
+import { isNumber } from "web3-validator";
+
 // lifted from @types/web3
 type Log = {
   address: string;
@@ -96,7 +98,7 @@ export const formatBlockSpecifier = (block: BlockSpecifier): string => {
     if (block.startsWith("0x")) return block;
     // convert to hex and add '0x' prefix in case block is decimal
     return `0x${parseInt(block).toString(16)}`;
-  } else if (typeof block === "number") {
+  } else if (isNumber(block)) {
     return `0x${block.toString(16)}`;
   } else {
     throw new Error(

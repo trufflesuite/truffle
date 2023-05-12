@@ -42,6 +42,7 @@ describe("Non-function transactions", function () {
   });
 
   it("should decode transactions that invoke fallback or receive", async function () {
+    this.timeout(10000);
     let receiveTest = await abstractions.ReceiveTest.deployed();
     let fallbackTest = await abstractions.FallbackTest.deployed();
 

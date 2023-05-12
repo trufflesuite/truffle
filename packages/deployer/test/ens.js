@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { sha3 } = Web3.utils;
 const assert = require("assert");
 const Ganache = require("ganache");

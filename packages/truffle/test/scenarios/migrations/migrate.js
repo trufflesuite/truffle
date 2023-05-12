@@ -4,7 +4,7 @@ const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const sandbox = require("../sandbox");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 describe("migrate (success)", function () {
   let config, cleanupSandboxDir;

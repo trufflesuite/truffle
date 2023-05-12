@@ -1,5 +1,5 @@
 const debug = require("debug")("provider");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
@@ -21,11 +21,11 @@ module.exports = {
     } else if (options.provider) {
       provider = options.provider;
     } else if (options.websockets || /^wss?:\/\//.test(options.url)) {
-      provider = new Web3.Web3.providers.WebsocketProvider(
+      provider = new Web3.providers.WebsocketProvider(
         options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.Web3.providers.HttpProvider(
+      provider = new Web3.providers.HttpProvider(
         options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }
       );

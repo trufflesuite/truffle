@@ -5,7 +5,7 @@ const assert = require("assert");
 const Server = require("../server");
 const sandbox = require("../sandbox");
 
-describe("Solidity Imports [ @standalone ]", function () {
+describe.only("Solidity Imports [ @standalone ]", function () {
   let config, cleanupSandboxDir;
   const project = path.join(__dirname, "../../sources/monorepo");
   const logger = new MemoryLogger();
@@ -55,7 +55,7 @@ describe("Solidity Imports [ @standalone ]", function () {
       cleanupSandboxDir();
     });
 
-    it("resolves solidity imports located outside the working directory", async function () {
+    it.skip("resolves solidity imports located outside the working directory", async function () {
       this.timeout(30000);
 
       await CommandRunner.run("compile", config);

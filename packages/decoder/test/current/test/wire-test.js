@@ -1408,7 +1408,6 @@ describe("Over-the-wire decoding", function () {
       const multicall = await deployedContract.tryAggregate(false, encodedTxs);
       const multicallHash = multicall.tx;
       const multicallTx = await web3.eth.getTransaction(multicallHash);
-      console.log("5555555555555555");
       //now let's decode it and check the result!
       const multicallDecoding = await decoder.decodeTransaction(multicallTx);
       assert.isDefined(multicallDecoding.interpretations);
@@ -1472,7 +1471,6 @@ describe("Over-the-wire decoding", function () {
       //now, let's perform a multicall
       debug("encodedTxs: %O", encodedTxs);
       const deadlineInput = (Number.MAX_SAFE_INTEGER - 1) / 2;
-      console.log(deadlineInput, "*********", encodedTxs);
       const multicall = await deployedContract.multicall(
         deadlineInput,
         encodedTxs

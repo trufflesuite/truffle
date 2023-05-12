@@ -1,5 +1,5 @@
 const ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const assert = require("assert");
 
 const Deployer = require("../index");
@@ -17,7 +17,7 @@ describe("Deployer (async / await)", function () {
     },
     logging: { quiet: true }
   });
-  const web3 = new Web3.Web3(provider);
+  const web3 = new Web3(provider);
 
   beforeEach(async function () {
     this.timeout(20000);

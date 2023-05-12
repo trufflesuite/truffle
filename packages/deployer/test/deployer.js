@@ -1,5 +1,5 @@
 const ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
 
@@ -31,7 +31,7 @@ describe("Deployer (sync)", function () {
     logging: { quiet: true }
   });
 
-  const web3 = new Web3.Web3(provider);
+  const web3 = new Web3(provider);
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();

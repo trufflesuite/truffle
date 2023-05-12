@@ -6,6 +6,7 @@ import Big from "big.js";
 import utf8 from "utf8";
 import type * as Types from "@truffle/codec/format/types";
 import type * as Values from "@truffle/codec/format/values";
+import { isNumber } from "web3-validator";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big
@@ -182,17 +183,18 @@ export function toBytes(
     return bytes;
   } else {
     // BN/Big/number case
-    if (typeof data === "number") {
-      data = new BN(data);
-    } else if (isBig(data)) {
+    if (isBig(data)) {
       //note: going through string may seem silly but it's actually not terrible here,
       //since BN is binary-based and Big is decimal-based
       data = new BN(data.toFixed());
       //[toFixed is like toString except it guarantees scientific notation is not used]
+    } else if (isNumber(data as bigint | number)) {
+      data = new BN(data);
     }
-
     //note that the argument for toTwos is given in bits
-    return data.toTwos(length * 8).toArrayLike(Uint8Array as any, "be", length);
+    return (data as BN)
+      .toTwos(length * 8)
+      .toArrayLike(Uint8Array as any, "be", length);
     //big-endian
   }
 }

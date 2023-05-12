@@ -8,7 +8,7 @@ const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
 const { Compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
@@ -21,7 +21,7 @@ describe.skip("artifactor + require", () => {
     }
   });
 
-  const web3 = new Web3.Web3(provider);
+  const web3 = new Web3(provider);
 
   before(() => web3.eth.net.getId().then(id => (networkID = id)));
 
