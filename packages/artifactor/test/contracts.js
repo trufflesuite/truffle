@@ -21,7 +21,7 @@ describe.skip("artifactor + require", () => {
     }
   });
 
-  const web3 = new Web3.Web3(provider);
+  const web3 = new Web3(provider);
 
   before(() => web3.eth.net.getId().then(id => (networkID = id)));
 

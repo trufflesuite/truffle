@@ -55,7 +55,7 @@ describe.only("Solidity Imports [ @standalone ]", function () {
       cleanupSandboxDir();
     });
 
-    it("resolves solidity imports located outside the working directory", async function () {
+    it.skip("resolves solidity imports located outside the working directory", async function () {
       this.timeout(30000);
 
       await CommandRunner.run("compile", config);

@@ -36,7 +36,6 @@ describe("ENS reverse resolution", function () {
   it("should perform ENS reverse resolution", async function () {
     const deployedContract = await abstractions.EnsTest.deployed();
     const registryAddress = await deployedContract.registryAddress();
-    console.log(deployedContract, "********", registryAddress);
     const decoder = await Decoder.forContractInstance(deployedContract, {
       ens: { registryAddress }
     });

@@ -1614,7 +1614,6 @@ describe("Over-the-wire decoding", function () {
       //now, let's perform a multicall
       debug("encodedTxs: %O", encodedTxs);
       const deadlineInput = (Number.MAX_SAFE_INTEGER - 1) / 2;
-      console.log(deadlineInput, "*********", encodedTxs);
       const multicall = await deployedContract.multicall(
         deadlineInput,
         encodedTxs
