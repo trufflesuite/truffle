@@ -3,7 +3,7 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const sandbox = require("../sandbox");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 describe("production", function () {
   describe("{ production: true, confirmations: 2 } [ @geth ]", function () {

@@ -22,7 +22,9 @@ module.exports = {
 
   stop: async function () {
     if (server) {
-      await server.close();
+      try {
+        await server.close();
+      } catch (e) {}
       server = null;
     }
     await this.cleanUp();

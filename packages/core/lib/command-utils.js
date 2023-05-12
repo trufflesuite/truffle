@@ -9,7 +9,7 @@ const {
   validTruffleCommands,
   validTruffleConsoleCommands
 } = require("./commands/commands");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const TruffleError = require("@truffle/error");
 
 const defaultHost = "127.0.0.1";

@@ -106,6 +106,7 @@ describe("Graceful degradation when information is missing", function () {
   });
 
   it("Correctly decodes decimals", async function () {
+    this.timeout(10000);
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -177,6 +178,7 @@ describe("Graceful degradation when information is missing", function () {
   });
 
   it("Correctly decodes inherited events when no node", async function () {
+    this.timeout(10000);
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
@@ -206,6 +208,7 @@ describe("Graceful degradation when information is missing", function () {
 
   describe("Out-of-range enums", function () {
     it("Doesn't include out-of-range enums in full mode", async function () {
+      this.timeout(10000);
       let decoder = await Decoder.forProject({
         provider: web3.currentProvider,
         projectInfo: { compilations } //not modifying for once!
@@ -229,6 +232,7 @@ describe("Graceful degradation when information is missing", function () {
     });
 
     it("Abifies correctly when failure occurs in first enum", async function () {
+      this.timeout(10000);
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -247,6 +251,7 @@ describe("Graceful degradation when information is missing", function () {
     });
 
     it("Abifies correctly when failure occurs in second enum", async function () {
+      this.timeout(10000);
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 

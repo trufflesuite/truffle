@@ -1,7 +1,7 @@
 const debug = require("debug")("test:util");
 const fs = require("fs");
 const ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { Web3PromiEvent } = require("web3-core");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
@@ -76,7 +76,7 @@ const util = {
     Object.assign(options, { logger: log, ws: true });
 
     let provider;
-    const web3 = new Web3.Web3();
+    const web3 = new Web3();
 
     process.env.GETH
       ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {

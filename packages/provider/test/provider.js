@@ -1,7 +1,7 @@
 const assert = require("assert");
 const Ganache = require("ganache");
 const Provider = require("../index");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const promisify = require("util").promisify;
 const ProviderError = require("../error");
 
@@ -110,7 +110,7 @@ describe("Provider", function () {
 
   it.skip("fails when given a bogus provider url", async () => {
     const provider = Provider.create({
-      provider: new Web3.Web3.providers.HttpProvider("http://127.0.0.1:9999")
+      provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
     });
 
     try {

@@ -2,7 +2,7 @@ const debug = require("debug")("deployer:ens");
 const { getEnsAddress, default: ENSJS } = require("@ensdomains/ensjs");
 const contract = require("@truffle/contract");
 const { sha3 } = require("web3-utils");
-const { hash } = require("eth-ens-namehash");
+const { hash } = require("eth-ens-namehash"); //todo web3js-migration namehash is available in web3.js, too.
 
 class ENS {
   constructor({ provider, networkId, ens }) {

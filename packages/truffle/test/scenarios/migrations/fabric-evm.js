@@ -3,7 +3,7 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const sandbox = require("../sandbox");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate with [ @fabric-evm ] interface", () => {

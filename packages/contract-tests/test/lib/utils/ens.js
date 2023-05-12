@@ -1,7 +1,7 @@
 const ens = require("@truffle/contract/lib/utils/ens");
 const assert = require("assert");
 const sinon = require("sinon");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const methodABI = {
   constant: true,
   inputs: [
@@ -27,16 +27,14 @@ const methodABI = {
 };
 const txParams = {
   from: "the.other.name",
-  accessList: [{
-    address: "third.party",
-    storageKeys: []
-  }]
+  accessList: [
+    {
+      address: "third.party",
+      storageKeys: []
+    }
+  ]
 };
-const args = [
-  "my.ens.name",
-  555,
-  txParams
-];
+const args = ["my.ens.name", 555, txParams];
 const ensSettings = { enabled: true };
 const networkId = 1;
 

@@ -9,7 +9,7 @@ const glob = require("glob");
 const Ganache = require("ganache");
 const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 describe("migrate", function () {
   let config;

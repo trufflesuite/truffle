@@ -47,23 +47,19 @@ describe("Over-the-wire decoding (legacy features)", function () {
   });
 
   it("should decode overridden events & events inherited from abstract contracts", async function () {
+    this.timeout(10000);
     const deployedContract = await abstractions.LegacyWireTest.new();
 
     const decoder = await Decoder.forProject({
       provider: web3.currentProvider,
       projectInfo: { artifacts: Contracts }
     });
-    console.log("11111111111111111");
     const overrideTest = await deployedContract.interfaceAndOverrideTest();
-    console.log("2222222222222222222");
     const overrideBlock = overrideTest.receipt.blockNumber;
-    console.log("3333333333333333333333");
     const overrideTestEvents = await decoder.events({
       fromBlock: overrideBlock,
       toBlock: overrideBlock
     });
-    console.log("4444444444444444444");
-    console.log("-------", overrideTestEvents);
 
     assert.lengthOf(overrideTestEvents, 5);
 

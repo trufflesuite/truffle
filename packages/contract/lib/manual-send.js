@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:manual-send");
 const ethers = require("ethers");
-const Utils = require ("./utils");
+const Utils = require("./utils");
 const web3 = require("web3");
 const { formatters } = require("web3-core"); //used for reproducing web3's behavior
 
@@ -66,7 +66,8 @@ function handleError(error) {
 }
 
 async function handleResult(receipt, isDeployment) {
-  const deploymentFailedMessage = "The contract code couldn't be stored, please check your gas limit.";
+  const deploymentFailedMessage =
+    "The contract code couldn't be stored, please check your gas limit.";
   if (receipt.status) {
     if (isDeployment) {
       //in the deployment case, web3 might error even when technically successful @_@
@@ -92,9 +93,7 @@ async function handleResult(receipt, isDeployment) {
 function setUpParameters(params, web3) {
   let transaction = Object.assign({}, params);
   transaction.from =
-    transaction.from != undefined
-      ? transaction.from
-      : web3.eth.defaultAccount;
+    transaction.from != undefined ? transaction.from : web3.eth.defaultAccount;
   //now let's have web3 check our inputs
   transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
   //...but ethers uses gasLimit instead of gas like web3
@@ -109,11 +108,10 @@ function setUpParameters(params, web3) {
 //translate the receipt to web3 format by converting BigNumbers
 //(note: these are *ethers* BigNumbers) to numbers
 function translateReceipt(receipt) {
-  return Object.assign({},
+  return Object.assign(
+    {},
     ...Object.entries(receipt).map(([key, value]) => ({
-      [key]: Utils.is_big_number(value)
-        ? value.toNumber()
-        : value
+      [key]: Utils.is_big_number(value) ? value.toNumber() : value
     }))
   );
 }
