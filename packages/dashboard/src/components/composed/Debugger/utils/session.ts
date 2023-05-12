@@ -55,21 +55,12 @@ export async function initDebugger({
   fetchingOptions
 }: any) {
   const compilations = await operations.getCompilations();
-  const txHashToDebug = txHash
-    ? txHash
-    : // : "0xf5ad7387297428dd152997aab72c190954bcce692daf022bb63ab9aa5f199c33"; // cross contract goerli text tx hash (link verified)
-      "0x667c69bc27c0e26cf1133b954bdccd2648afcae34dbebfbf5c45e4b62a32e422"; // local MetaCoin deployment
-  // "0xfb09532437064597ac2a07f62440dd45e3806d6299e4fc86da6231ab2856f021"; // cross contract goerli test tx hash (dai unverified)
-  // "0x8d093f67b6501ff576f259a683ac3ac0a0adb3280b66e272ebbaf691242d99b1";
-  // "0xdadd2f626c81322ec8a2a20dec71c780f630ef1fab7393c675a8843365477389"; //goerli tx
-  // "0x2650974eb6390dc787df16ab86308822855f907e7463107248cfd5e424923176"
-  // "0xab2cba8e3e57a173a125d3f77a9a0a485809b8a7098b540a13593631909ccf00"; //dai tx
 
   const { session, sources, unknownAddresses } = await setupSession({
     handleCompilations: operations.handleCompilations,
     ganacheOptions,
     fetchingOptions,
-    txHash: txHashToDebug,
+    txHash,
     compilations,
     callbacks: {
       onInit: () => setStatus(SessionStatus.Initializing),
