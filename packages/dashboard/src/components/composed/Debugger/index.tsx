@@ -81,8 +81,7 @@ function Debugger(): JSX.Element {
   // currentSourceId is the "active" source displayed in Sources
   const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
 
-  const formDisabled = inputsDisabled;
-  // !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
+  const formDisabled = !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
 
   let currentSourceRange: SourceRange | Partial<SourceRange> = {
     traceIndex: -1
