@@ -48,7 +48,7 @@ export function isMoreSpecific(
   if (type2.typeClass === "userDefinedValueType") {
     type2 = getUnderlyingType(type2, userDefinedTypes);
   }
-  let typeClasses = [
+  const typeClassesMinusStringAndBool = [
     ["options"],
     ["array"],
     ["struct", "tuple"],
@@ -56,17 +56,11 @@ export function isMoreSpecific(
     ["bytes"],
     ["function"],
     ["uint", "int", "fixed", "ufixed"],
-    ["enum"],
-    ["string"],
-    ["bool"]
+    ["enum"]
   ];
-  if (strictBooleans) {
-    //swap priority of strings and bools
-    typeClasses.pop();
-    typeClasses.pop();
-    typeClasses.push(["bool"]);
-    typeClasses.push(["string"]);
-  }
+  const typeClasses = typeClassesMinusStringAndBool.concat(
+    strictBooleans ? [["bool"], ["string"]] : [["string"], ["bool"]]
+  );
   //for each type, what's the first one it counts as?
   const index1 = typeClasses.findIndex(classes =>
     classes.includes(type1.typeClass)
