@@ -587,6 +587,7 @@ interface EventParameterInfo {
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 function allocateEvent(
   abiEntry: Abi.EventEntry,
+  eventNode: Ast.AstNode | undefined,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
@@ -598,53 +599,86 @@ function allocateEvent(
   let nodeId: string;
   let id: string;
   //first: determine the corresponding event node
-  //search through base contracts, from most derived (right) to most base (left)
+  //if we're doing inheritance processing, we search through base contracts,
+  //from most derived (right) to most base (left)
+  //if we're not doing inheritance processing (i.e. if eventNode was passed),
+  //we search through *all* contracts, plus the top level!  even though we
+  //know the event node already, we still need to know where it's defined
   let node: Ast.AstNode | undefined = undefined;
-  let definedIn: Format.Types.ContractType | undefined = undefined;
+  let definedInNode: Ast.AstNode | undefined = undefined;
+  let definedIn: Format.Types.ContractType | null | undefined = undefined;
   let allocationMode: DecodingMode = "full"; //degrade to abi as needed
   debug("allocating ABI: %O", abiEntry);
   if (contractNode) {
-    //first: check same contract for the event
-    node = contractNode.nodes.find(eventNode =>
-      AbiDataUtils.definitionMatchesAbi(
-        //note this needn't actually be an event node, but then it will
-        //return false
-        abiEntry,
-        eventNode,
-        referenceDeclarations
-      )
-    );
-    //if we found the node, great!  If not...
-    if (!node) {
-      debug("didn't find node in base contract...");
-      //let's search for the node among the base contracts.
-      //but if we find it...
-      //[note: the following code is overcomplicated; it was used
-      //when we were trying to get the actual node, it's overcomplicated
-      //now that we're just determining its presence.  oh well]
-      let linearizedBaseContractsMinusSelf =
-        contractNode.linearizedBaseContracts.slice();
-      linearizedBaseContractsMinusSelf.shift(); //remove self
-      debug("checking contracts: %o", linearizedBaseContractsMinusSelf);
-      node = findNodeAndContract(
-        linearizedBaseContractsMinusSelf,
-        referenceDeclarations,
-        eventNode =>
-          AbiDataUtils.definitionMatchesAbi(
-            //note this needn't actually be a event node, but then it will return false
-            abiEntry,
-            eventNode,
-            referenceDeclarations
+    if (eventNode) {
+      node = eventNode; //we already know this one!
+      //note: we don't use findNodeAndContract here because it's meant for searching
+      //through a list of base contracts, that's not really what's going on here
+      //(we don't need all its code here anyway)
+      definedInNode = Object.values(referenceDeclarations).find(
+        possibleContractNode =>
+          possibleContractNode.nodeType === "ContractDefinition" &&
+          possibleContractNode.nodes.some(
+            (possibleEventNode: Ast.AstNode) => possibleEventNode.id === node.id
           )
-        //don't pass deriveContractNode here, we're not checking the contract itself
-      ).node; //may be undefined! that's OK!
-      if (node) {
-        //...if we find the node in an ancestor, we
-        //deliberately *don't* allocate!  instead such cases
-        //will be handled during a later combination step
-        debug("bailing out for later handling!");
-        debug("ABI: %O", abiEntry);
+      );
+      if (
+        definedInNode &&
+        definedInNode.contractKind === "library" &&
+        definedInNode.id !== contractNode.id
+      ) {
+        //skip library events!  (unless this is the library they're from)
+        //those are always considered in-play no matter what,
+        //so we don't want to handle them here or we'd end up with them appearing twice
         return undefined;
+      }
+      //if we failed to find what it's in... presumably it was defined at the file level.
+      //leave definedInNode undefined; it'll be handled below.
+    } else {
+      //first: check same contract for the event
+      node = contractNode.nodes.find(eventNode =>
+        AbiDataUtils.definitionMatchesAbi(
+          //note this needn't actually be an event node, but then it will
+          //return false
+          abiEntry,
+          eventNode,
+          referenceDeclarations
+        )
+      );
+      //if we found the node, great!  If not...
+      if (node) {
+        definedInNode = contractNode;
+      } else {
+        debug("didn't find node in base contract...");
+        //let's search for the node among the base contracts.
+        //but if we find it...
+        //[note: the following code is overcomplicated; it was used
+        //when we were trying to get the actual node, it's overcomplicated
+        //now that we're just determining its presence.  oh well]
+        let linearizedBaseContractsMinusSelf =
+          contractNode.linearizedBaseContracts.slice();
+        linearizedBaseContractsMinusSelf.shift(); //remove self
+        debug("checking contracts: %o", linearizedBaseContractsMinusSelf);
+        node = findNodeAndContract(
+          linearizedBaseContractsMinusSelf,
+          referenceDeclarations,
+          eventNode =>
+            AbiDataUtils.definitionMatchesAbi(
+              //note this needn't actually be a event node, but then it will return false
+              abiEntry,
+              eventNode,
+              referenceDeclarations
+            )
+          //don't pass deriveContractNode here, we're not checking the contract itself
+        ).node; //may be undefined! that's OK!
+        if (node) {
+          //...if we find the node in an ancestor, we
+          //deliberately *don't* allocate!  instead such cases
+          //will be handled during a later combination step
+          debug("bailing out for later handling!");
+          debug("ABI: %O", abiEntry);
+          return undefined;
+        }
       }
     }
   }
@@ -652,9 +686,17 @@ function allocateEvent(
   if (node) {
     debug("found node");
     //if we found the node, let's also turn it into a type
-    definedIn = <Format.Types.ContractType>(
-      Ast.Import.definitionToStoredType(contractNode, compilationId, compiler)
-    ); //can skip reference declarations argument here
+    if (definedInNode) {
+      definedIn = <Format.Types.ContractType>(
+        Ast.Import.definitionToStoredType(
+          definedInNode,
+          compilationId,
+          compiler
+        )
+      ); //can skip reference declarations argument here
+    } else {
+      definedIn = null; //for file-level events, once they exist
+    }
     //...and set the ID
     id = makeTypeId(node.id, compilationId);
   } else {
@@ -1304,31 +1346,73 @@ function getEventAllocationsForContract(
   compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocationTemporary[] {
-  if (!abi) {
-    //can't do much if no ABI!
-    return [];
+  let useAst = Boolean(contractNode && contractNode.usedEvents);
+  if (useAst) {
+    const eventNodes = contractNode.usedEvents.map(
+      eventNodeId => referenceDeclarations[eventNodeId]
+    );
+    let abis: Abi.EventEntry[];
+    try {
+      abis = eventNodes.map(
+        eventNode =>
+          <Abi.EventEntry>(
+            Ast.Utils.definitionToAbi(eventNode, referenceDeclarations)
+          )
+      );
+    } catch {
+      useAst = false;
+    }
+    if (useAst) {
+      //i.e. if the above operation succeeded
+      return contractNode.usedEvents
+        .map(eventNodeId => referenceDeclarations[eventNodeId])
+        .map((eventNode, index) => ({
+          selector: AbiDataUtils.abiSelector(abis[index]),
+          anonymous: abis[index].anonymous,
+          topics: AbiDataUtils.topicsCount(abis[index]),
+          allocation: allocateEvent(
+            abis[index],
+            eventNode,
+            contractNode,
+            referenceDeclarations,
+            userDefinedTypes,
+            abiAllocations,
+            compilationId,
+            compiler
+          )
+        }))
+        .filter(
+          allocationTemporary => allocationTemporary.allocation !== undefined
+        );
+      //filter out library events
+    }
   }
-  return abi
-    .filter((abiEntry: Abi.Entry) => abiEntry.type === "event")
-    .filter(
-      (abiEntry: Abi.EventEntry) =>
-        !AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)
-    ) //hack workaround
-    .map((abiEntry: Abi.EventEntry) => ({
-      selector: AbiDataUtils.abiSelector(abiEntry),
-      anonymous: abiEntry.anonymous,
-      topics: AbiDataUtils.topicsCount(abiEntry),
-      allocation: allocateEvent(
-        abiEntry,
-        contractNode,
-        referenceDeclarations,
-        userDefinedTypes,
-        abiAllocations,
-        compilationId,
-        compiler
-      )
-    }));
-  //note we do *not* filter out undefined allocations; we need these as placeholders
+  if (!useAst && abi) {
+    return abi
+      .filter((abiEntry: Abi.Entry) => abiEntry.type === "event")
+      .filter(
+        (abiEntry: Abi.EventEntry) =>
+          !AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)
+      ) //hack workaround
+      .map((abiEntry: Abi.EventEntry) => ({
+        selector: AbiDataUtils.abiSelector(abiEntry),
+        anonymous: abiEntry.anonymous,
+        topics: AbiDataUtils.topicsCount(abiEntry),
+        allocation: allocateEvent(
+          abiEntry,
+          undefined, //we don't know the event node
+          contractNode,
+          referenceDeclarations,
+          userDefinedTypes,
+          abiAllocations,
+          compilationId,
+          compiler
+        )
+        //note we do *not* filter out undefined allocations; we need these as placeholders
+      }));
+  }
+  //otherwise just return nothing
+  return [];
 }
 
 //WARNING: this function is full of hacks... sorry
@@ -1394,7 +1478,7 @@ export function getEventAllocations(
       //we'll use selector *even for anonymous* here, because it's just
       //for determining what overrides what at this point
       individualAllocations[key][allocationTemporary.selector] = {
-        context: deployedContext || constructorContext, //this is only used for determining contractKind, so we cna use either one
+        context: deployedContext || constructorContext, //this is only used for determining contractKind, so we can use either one
         contractNode,
         allocationTemporary,
         compilationId
@@ -1423,8 +1507,9 @@ export function getEventAllocations(
         contractNode,
         allocationsTemporary
       };
-      //if no contract node, that's all.  if there is...
-      if (contractNode) {
+      //if no contract node, or if we're dealing with a contract node that
+      //lists it's used events for us, that's all.  but otherwise...
+      if (contractNode && contractNode.usedEvents === undefined) {
         //...we have to do inheritance processing
         debug("contract Id: %d", contractNode.id);
         debug("base contracts: %o", contractNode.linearizedBaseContracts);

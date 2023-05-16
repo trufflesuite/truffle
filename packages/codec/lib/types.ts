@@ -322,9 +322,10 @@ export interface EventDecoding {
   class: Types.ContractType;
   /**
    * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
-   * May be omitted if we can't determine it, as may occur in ABI mode.
+   * May be omitted if we can't determine it, as may occur in ABI mode.  If null, this means that it's a file-level
+   * event (which as of right now is just future-proofing).
    */
-  definedIn?: Types.ContractType;
+  definedIn?: Types.ContractType | null;
   /**
    * The list of decoded arguments to the event.
    */
