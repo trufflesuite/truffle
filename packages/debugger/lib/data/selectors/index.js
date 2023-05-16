@@ -1084,11 +1084,8 @@ const data = createSelectorTree({
     /**
      * data.current.internalFunctionsTableKind
      */
-    internalFunctionsTableKind: createLeaf(
-      [evm.current.isIR],
-      //index/strict doesn't exist yet; in the future that will be a possible
-      //return value as well
-      isIR => (isIR ? "index/loose" : "pcpair")
+    internalFunctionsTableKind: createLeaf([evm.current.isIR], isIR =>
+      isIR ? "index" : "pcpair"
     ),
 
     /**

@@ -637,9 +637,8 @@ function decodeInternalFunction(
   info: Evm.EvmInfo,
   strict: boolean
 ): Format.Values.FunctionInternalResult {
-  const rawInfoFormat =
-    info.internalFunctionsTableKind || ("index/loose" as const);
-  //we'll default to "index/loose" if it's not specified, not because that's
+  const rawInfoFormat = info.internalFunctionsTableKind || ("index" as const);
+  //we'll default to "index" if it's not specified, not because that's
   //a reasonable default (we want to avoid ever hitting a default here,
   //debugger/decoder will set their own defaults as appropriate), but because
   //index doesn't attempt to, like, parse things, so it's better for reporting
@@ -661,8 +660,7 @@ function decodeInternalFunction(
         constructorProgramCounter: constructorPc
       };
       break;
-    case "index/loose":
-    case "index/strict":
+    case "index":
       const index: number = Conversion.toBN(bytes).toNumber();
       raw = {
         kind: "index",
@@ -705,7 +703,8 @@ function decodeInternalFunction(
           kind: "exception" as const,
           context,
           rawInformation: raw
-        }
+        },
+        interpretations: {}
       };
     }
     //another check: is only the deployed PC zero?
@@ -756,36 +755,20 @@ function decodeInternalFunction(
       break;
   }
   if (!functionEntry) {
-    //what if we didn't find an entry? our response again depends on the raw
-    //info type
-    if (rawInfoFormat === "index/loose") {
-      //in the index/loose case, this is not an error.
-      return {
-        type: dataType,
-        kind: "value" as const,
-        value: {
-          kind: "unknown" as const,
-          context,
-          rawInformation: raw
-        }
-      };
-    } else {
-      //otherwise, it is an error.  however, for technical reasons,
-      //the kind of error it is depends on whether it's a pcpair or an index.
-      const error = {
-        kind: "NoSuchInternalFunctionError" as const,
-        context,
-        rawInformation: raw
-      };
-      if (strict) {
-        throw new StopDecodingError(error);
-      }
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error
-      };
+    //If we didn't find an entry, this is an error
+    const error = {
+      kind: "NoSuchInternalFunctionError" as const,
+      context,
+      rawInformation: raw
+    };
+    if (strict) {
+      throw new StopDecodingError(error);
     }
+    return {
+      type: dataType,
+      kind: "error" as const,
+      error
+    };
   }
   //finally, the rest of this handles the case where we did find an entry,
   //and doesn't need to switch on the raw info type anymore :)
