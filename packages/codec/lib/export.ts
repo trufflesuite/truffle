@@ -448,11 +448,17 @@ export class LogDecodingInspector {
     return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-    const className = this.decoding.definedIn
-      ? this.decoding.definedIn.typeName
-      : this.decoding.class.typeName;
     const eventName = this.decoding.abi.name;
-    const fullName = `${className}.${eventName}`;
+    let fullName: string;
+    if (this.decoding.definedIn) {
+      fullName = `${this.decoding.definedIn}.${eventName}`;
+    } else if (this.decoding.definedIn === null) {
+      //file-level event
+      fullName = eventName;
+    } else {
+      //event of unknown definition location
+      fullName = `${this.decoding.class.typeName}.${eventName}`;
+    }
     switch (this.decoding.kind) {
       case "event":
         return formatFunctionLike(fullName, this.decoding.arguments, options);
