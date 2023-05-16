@@ -34,10 +34,10 @@ export async function prepareContracts(
 
   config.compilers = {
     solc: {
-      version: "0.8.18",
+      version: "0.8.20",
       settings: {
         optimizer: { enabled: false, runs: 200 },
-        evmVersion: "paris"
+        evmVersion: "shanghai"
       }
     },
     vyper: {
