@@ -338,9 +338,16 @@ describe("Graceful degradation when information is missing", function () {
     );
   }).timeout(3000);
 
-  it("Partially decodes internal functions when unreliable order", async function () {
+  it("Partially decodes internal functions when unreliable order and no internal function IDs", async function () {
     let mangledCompilations = clonedeep(compilations);
     mangledCompilations[0].unreliableSourceOrder = true;
+    for (let source of mangledCompilations[0].sources) {
+      if (source) {
+        for (let node of source.ast.nodes) {
+          delete node.internalFunctionIDs;
+        }
+      }
+    }
 
     let deployedContract = await abstractions.DowngradeTest.new();
     let decoder = await Decoder.forContractInstance(deployedContract, {
