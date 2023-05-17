@@ -1783,6 +1783,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
   private internalFunctionsTable: Codec.Evm.InternalFunctions;
+  private internalFunctionsTableKind: Codec.Evm.InternalFunctionsTableKind;
 
   private mappingKeys: Storage.Slot[] = [];
 
@@ -1891,14 +1892,7 @@ export class ContractInstanceDecoder {
       networkId: this.contractNetwork
     });
 
-    //finally: set up internal functions table (only if source order is reliable;
-    //otherwise leave as undefined)
-    //unlike the debugger, we don't *demand* an answer, so we won't set up
-    //some sort of fake table if we don't have a source map, or if any ASTs are missing
-    //(if a whole *source* is missing, we'll consider that OK)
-    //note: we don't attempt to handle Vyper source maps!
-    //we also (for now) don't attempt this if viaIR is set, since we can't
-    //currently handle decoding by index
+    //finally: set up internal functions table, if we can
     const compiler = this.compilation.compiler || this.contract.compiler;
     const viaIR =
       this.compilation?.settings?.viaIR || this.contract?.settings?.viaIR;
@@ -1909,11 +1903,17 @@ export class ContractInstanceDecoder {
       compiler.name === "solc" &&
       this.compilation.sources.every(source => !source || source.ast)
     ) {
-      //WARNING: untyped code in this block!
-      let asts: Ast.AstNode[] = this.compilation.sources.map(source =>
+      // old-style internal function pointers
+      // (only if source order is reliable; otherwise leave as undefined)
+      // unlike the debugger, we don't *demand* an answer, so we won't set up
+      // some sort of fake table if we don't have a source map, or if any ASTs
+      // are missing (if a whole *source* is missing, we'll consider that OK)
+      // note: we don't attempt to handle Vyper source maps!
+      // WARNING: untyped code in this block!
+      const asts: Ast.AstNode[] = this.compilation.sources.map(source =>
         source ? source.ast : undefined
       );
-      let instructions = SourceMapUtils.getProcessedInstructionsForBinary(
+      const instructions = SourceMapUtils.getProcessedInstructionsForBinary(
         this.compilation.sources.map(source =>
           source ? source.source : undefined
         ),
@@ -1931,10 +1931,86 @@ export class ContractInstanceDecoder {
             asts.map(SourceMapUtils.makeOverlapFunction),
             this.compilation.id
           );
-      } catch (_) {
+        this.internalFunctionsTableKind = "pcpair";
+      } catch {
         //just leave the internal functions table undefined
       }
+    } else if (viaIR && this.contractNode?.internalFunctionIDs) {
+      //and the field
+      //unfortunately, unlike in the debugger, we don't have access to scopes
+      //(or similar) (well, unless we want to go to the effort of setting that
+      //up...).  so we're just going to have to do some searching.
+      //so before we do anything else, let's set up what we'll later be searching.
+      const asts: Ast.AstNode[] = this.compilation.sources
+        .map(source => (source ? source.ast : undefined))
+        .filter(ast => ast !== undefined);
+      //we don't need to search *every* contract; internal functions can only come
+      //from the contract itself, base contracts, libraries, or free functions.
+      //I'm assuming that this assumption will continue to hold true in the future as well.
+      const sourceUnitsAndRelevantContracts = asts.concat(
+        Object.values(this.referenceDeclarations[this.compilation.id]).filter(
+          node =>
+            node.nodeType === "ContractDefinition" &&
+            (node.contractKind === "library" ||
+              this.contractNode.linearizedBaseContracts.includes(node.id))
+        )
+      );
+      //now, we can construct the table!
+      this.internalFunctionsTable = Object.assign(
+        //we start with the entry for the designated invalid function in index 0.
+        //all other functions should have index 1 or greater.
+        [{ isDesignatedInvalid: true }],
+        ...Object.entries(this.contractNode.internalFunctionIDs).map(
+          ([nodeIdAsString, index]) => {
+            const nodeId = Number(nodeIdAsString);
+            //now we perform that search we set up earlier
+            let contractNode = undefined;
+            let functionNode = undefined;
+            for (const parentNode of sourceUnitsAndRelevantContracts) {
+              const foundNode = parentNode.nodes.find(
+                node => node.id === nodeId
+              );
+              if (foundNode !== undefined) {
+                functionNode = foundNode;
+                contractNode =
+                  parentNode.nodeType === "ContractDefinition"
+                    ? parentNode
+                    : null;
+                break;
+              }
+            }
+            //if we didn't find it... oh well
+            if (functionNode === undefined) {
+              return {};
+            }
+            return {
+              [index]: {
+                //we're just going to omit the pointer-related fields...
+                //it's not worth the effort to determine these, it's not like
+                //they're even used for anything at present
+                isDesignatedInvalid: false,
+                sourceIndex: Number(functionNode.src.split(":")[2]), //to get the source index, we
+                //parse the node's source range, which has the form start:length:file
+                compilationId: this.compilation.id,
+                node: functionNode,
+                name: functionNode.name,
+                id: nodeId,
+                mutability: Codec.Ast.Utils.mutability(functionNode),
+                contractNode,
+                contractName: contractNode ? contractNode.name : null,
+                contractId: contractNode ? contractNode.id : null,
+                contractKind: contractNode ? contractNode.contractKind : null,
+                contractPayable: contractNode
+                  ? Codec.Ast.Utils.isContractPayable(contractNode)
+                  : null
+              }
+            };
+          }
+        )
+      );
+      this.internalFunctionsTableKind = "index";
     }
+    //otherwise just leave it undefined
   }
 
   private get context(): Contexts.Context {
@@ -1971,7 +2047,8 @@ export class ContractInstanceDecoder {
       allocations: this.allocations,
       contexts: this.contexts,
       currentContext: this.context,
-      internalFunctionsTable: this.internalFunctionsTable
+      internalFunctionsTable: this.internalFunctionsTable,
+      internalFunctionsTableKind: this.internalFunctionsTableKind
     };
     debug("this.contextHash: %s", this.contextHash);
 
