@@ -12,6 +12,9 @@ export interface AstNode {
   name: string;
   canonicalName?: string;
   linearizedBaseContracts?: number[];
+  internalFunctionIDs?: {
+    [nodeId: string]: number; //note the strings are numeric
+  };
   members?: AstNode[];
   underlyingType?: AstNode;
   nodes?: AstNode[];
