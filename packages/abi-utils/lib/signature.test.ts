@@ -173,7 +173,7 @@ describe("signature computation", () => {
             {
               name: "bb",
               type: "int256",
-              internalType: "address payable[]"
+              internalType: "int256"
             }
           ]
         }
