@@ -41,8 +41,10 @@ export interface EvmInfo {
   contexts?: Contexts.Contexts;
   currentContext?: Contexts.Context;
   internalFunctionsTable?: InternalFunctions;
-  internalFunctionsTableKind?: "pcpair" | "index";
+  internalFunctionsTableKind?: InternalFunctionsTableKind;
 }
+
+export type InternalFunctionsTableKind = "pcpair" | "index";
 
 export interface AllocationInfo {
   storage?: StorageAllocations;
