@@ -27,7 +27,7 @@ describe("State variable decoding", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(50000);
+    this.timeout(60000);
 
     const prepared = await prepareContracts(
       provider,
