@@ -56,9 +56,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private static readonly apiDomainsByNetworkName: { [name: string]: string } =
     {
       "mainnet": "api.etherscan.io",
-      "ropsten": "api-ropsten.etherscan.io",
-      "kovan": "api-kovan.etherscan.io",
-      "rinkeby": "api-rinkeby.etherscan.io",
       "goerli": "api-goerli.etherscan.io",
       "sepolia": "api-sepolia.etherscan.io",
       "optimistic": "api-optimistic.etherscan.io",
