@@ -9,6 +9,7 @@ This package contains a few different components:
 - [Normalize ABIs](#normalize-abis)
 - [TypeScript types](#typescript-types)
 - [Selector and signature computation](#selector-and-signature-computation)
+- [Signature parsing](#signature-parsing)
 - [Arbitrary random ABIs](#arbitrary-random-abis)
 
 ## Normalize ABIs
@@ -108,6 +109,27 @@ This package exports the following functions for computing signatures and select
 
 In addition, the package also exports the constant `ShortSelectorSize`, which
 is equal to 4 (the number of bytes in a function or event selector).
+
+## Signature parsing
+
+This package exports several functions for parsing signatures back to full ABI entries.
+Note that because signatures lose a lot of information, much of the result will
+be filled with default vales; functions will always be marked as having no outputs
+and as being nonpayable, events will always be marked as non-anonymous and their
+parameters marked as non-indexed.
+
+You can parse signatures with the `parseFunctionSignature`, `parseEventSignature`, and
+`parseErrorSignature` functions, depending on what type of ABI entry you want.
+
+There's also `parseSignature`, which will not produce a valid ABI entry, but will
+produce an object with `name` and `inputs`. The inputs will not have `indexed` fields.
+And there's also `parseParameterList`, which can be used on a signature with the name
+removed to get just the `inputs`.
+
+Note that these functions do not currently perform full validation of all the types
+used in the signature, so if you include invalid types in your signature, the parser
+may reproduce these in the output ABI. Stricter validation may be added at a later
+date.
 
 ## Arbitrary random ABIs
 
