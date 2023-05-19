@@ -235,7 +235,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         version: metadata.compiler.version,
         //we also pass the flag to remove compilationTarget, as its
         //presence can cause compile errors
-        settings: removeLibraries(metadata.settings, true),
+        settings: removeLibraries(metadata.settings, {
+          alsoRemoveCompilationTarget: true
+        }),
         specializations: {
           constructorArguments,
           libraries: metadata.settings.libraries

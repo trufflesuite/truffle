@@ -17,7 +17,12 @@ export {
 
 import EtherscanFetcher from "./etherscan";
 import SourcifyFetcher from "./sourcify";
+import BlockscoutFetcher from "./blockscout";
 
-const Fetchers: FetcherConstructor[] = [EtherscanFetcher, SourcifyFetcher];
+const Fetchers: FetcherConstructor[] = [
+  EtherscanFetcher,
+  SourcifyFetcher,
+  BlockscoutFetcher
+];
 
 export default Fetchers;

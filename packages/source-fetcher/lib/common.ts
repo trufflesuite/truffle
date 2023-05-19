@@ -17,14 +17,22 @@ export function makeFilename(name: string, extension: string = ".sol"): string {
 export const makeTimer: (milliseconds: number) => Promise<void> =
   util.promisify(setTimeout);
 
+interface RemoveLibrariesOptions {
+  alsoRemoveCompilationTarget?: boolean;
+  alsoRemoveOutputSelection?: boolean;
+}
+
 export function removeLibraries(
   settings: Types.SolcSettings,
-  alsoRemoveCompilationTarget: boolean = false
+  options?: RemoveLibrariesOptions
 ): Types.SolcSettings {
   let copySettings: Types.SolcSettings = { ...settings };
   delete copySettings.libraries;
-  if (alsoRemoveCompilationTarget) {
+  if (options?.alsoRemoveCompilationTarget) {
     delete copySettings.compilationTarget;
+  }
+  if (options?.alsoRemoveOutputSelection) {
+    delete copySettings.outputSelection;
   }
   return copySettings;
 }

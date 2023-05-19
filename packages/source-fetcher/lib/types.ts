@@ -58,8 +58,9 @@ export interface VyperOptions {
   specializations: VyperSpecializations;
 }
 
-//only including settings that would alter compiled result
-//(no outputSelection, no modelChecker once that exists, no stopAfter)
+//only including settings that would alter compiled result,
+//or that exists somewhere in what we need to deal with
+//(no modelChecker, no stopAfter)
 export interface SolcSettings {
   remappings?: string[];
   optimizer?: OptimizerSettings;
@@ -74,6 +75,7 @@ export interface SolcSettings {
     //where it's defined)
     [sourcePath: string]: string;
   };
+  outputSelection?: {}; //not going to bother typing this... we don't want to return it
 }
 
 export interface VyperSettings {
