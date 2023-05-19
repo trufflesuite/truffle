@@ -56,7 +56,7 @@ export function parseParameterList(parameterList: string): Parameter[] {
   return parameters;
 }
 
-export function parseParameterListWithRemainder(parameterList: string): {
+function parseParameterListWithRemainder(parameterList: string): {
   parameters: Parameter[];
   remaining: string;
 } {
