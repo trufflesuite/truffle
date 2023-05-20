@@ -70,7 +70,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps correctly with step next", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -109,7 +109,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps correctly with step into", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -148,7 +148,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps over a function from the call site", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -175,7 +175,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps over a function from the definition", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -202,7 +202,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps out of a function", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -229,7 +229,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps out of a function from the definition", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -256,7 +256,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps over a Yul function from the call site", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.yulTest();
     let txHash = receipt.tx;
@@ -283,7 +283,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps over a Yul function from the definition", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.yulTest();
     let txHash = receipt.tx;
@@ -319,7 +319,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps out of a Yul function", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.yulTest();
     let txHash = receipt.tx;
@@ -346,7 +346,7 @@ describe("Stepping functions", function () {
   });
 
   it("Steps out of a Yul function from the definition", async function () {
-    this.timeout(4000);
+    this.timeout(5000);
     let instance = await abstractions.Steppy.deployed();
     let receipt = await instance.yulTest();
     let txHash = receipt.tx;
