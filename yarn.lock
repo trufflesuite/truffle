@@ -8044,12 +8044,12 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abi-to-sol@^0.6.6:
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/abi-to-sol/-/abi-to-sol-0.6.6.tgz#2f0b7ea949f7015c1a7939d200b9e8d07f2c3c6d"
-  integrity sha512-PRn81rSpv6NXFPYQSw7ujruqIP6UkwZ/XoFldtiqCX8+2kHVc73xVaUVvdbro06vvBVZiwnxhEIGdI4BRMwGHw==
+abi-to-sol@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/abi-to-sol/-/abi-to-sol-0.7.0.tgz#9151c8c3a6cf3a42e1e29e02a6f1a4d9259e503b"
+  integrity sha512-DVpIPS/l5eOEDxg4sHSIXSiWQZstKZFOBZLaxw/LJYg35Rld5kE7c7Tx7xjQjAlFaw97zX8va9ZhDY3YGbdHWg==
   dependencies:
-    "@truffle/abi-utils" "^0.3.0"
+    "@truffle/abi-utils" "^1.0.0"
     "@truffle/contract-schema" "^3.3.1"
     ajv "^6.12.5"
     better-ajv-errors "^0.8.2"
