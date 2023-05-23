@@ -58,13 +58,25 @@ export const Compile = {
   // material as well as an options object
   // NOTE: this function does *not* transform the source path prefix to
   // "project:/" before passing to the compiler!
-  async sources({ sources, options }: SourcesArgs) {
-    options = Config.default().merge(options);
+  // if language is not specified, we use file names to sort it out
+  async sources({ sources, options, language }: SourcesArgs) {
+    //note we do *not* do a Config.default().merge(options),
+    //we want to *avoid* applying any defaults here
     options = normalizeOptions(options);
     //note: "solidity" here includes JSON as well!
-    const [yulNames, solidityNames] = partition(Object.keys(sources), name =>
-      name.endsWith(".yul")
-    );
+    let yulNames, solidityNames;
+    if (language === "Yul") {
+      yulNames = Object.keys(sources);
+      solidityNames = [];
+    } else if (language === "Solidity") {
+      yulNames = [];
+      solidityNames = Object.keys(sources);
+    } else {
+      //default case
+      [yulNames, solidityNames] = partition(Object.keys(sources), name =>
+        name.endsWith(".yul")
+      );
+    }
     const soliditySources = Object.assign(
       {},
       ...solidityNames.map(name => ({ [name]: sources[name] }))

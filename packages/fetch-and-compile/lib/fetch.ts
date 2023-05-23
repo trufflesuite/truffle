@@ -131,7 +131,12 @@ async function tryFetchAndCompileAddress(
     //set up the config
     let externalConfig: Config = Config.default().with({
       compilers: {
-        solc: options
+        solc: {
+          version: options.version,
+          settings: options.settings
+          //language and specializations don't go here
+          //(the latter we won't use at all)
+        }
       }
     });
     //if using docker, transform it (this does nothing if not using docker)
@@ -144,7 +149,8 @@ async function tryFetchAndCompileAddress(
     try {
       compileResult = await Compile.sources({
         options: externalConfig.with({ quiet: true }),
-        sources
+        sources,
+        language: options.language
       });
     } catch (error) {
       debug("compile error: %O", error);

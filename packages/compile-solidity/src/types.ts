@@ -11,6 +11,7 @@ export type SourcesArgs = {
     [key: string]: string;
   };
   options: Config;
+  language?: "Solidity" | "Yul"; //used to force only one specific language
 };
 
 export type Targets = string[];
