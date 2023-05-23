@@ -9,7 +9,8 @@ import {
   makeFilename,
   makeTimer,
   removeLibraries,
-  InvalidNetworkError
+  InvalidNetworkError,
+  includeDefaults
 } from "./common";
 import { networkNamesById, networksByName } from "./networks";
 
@@ -226,7 +227,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result),
+        settings: this.extractSettings(result), //no need to include defaults, they're already in
         specializations: {
           libraries: this.processLibraries(result.Library),
           constructorArguments: result.ConstructorArguments
@@ -245,7 +246,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result),
+        settings: this.extractSettings(result), //no need to include defaults, they're already in
         specializations: {
           libraries: this.processLibraries(result.Library),
           constructorArguments: result.ConstructorArguments
@@ -270,7 +271,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: jsonInput.language,
         version: result.CompilerVersion,
-        settings: removeLibraries(jsonInput.settings), //we *don't* want to pass library info!  unlinked bytecode is better!
+        settings: includeDefaults(removeLibraries(jsonInput.settings)), //we *don't* want to pass library info!  unlinked bytecode is better!
         specializations: {
           libraries: jsonInput.settings.libraries,
           constructorArguments: result.ConstructorArguments

@@ -17,6 +17,26 @@ export function makeFilename(name: string, extension: string = ".sol"): string {
 export const makeTimer: (milliseconds: number) => Promise<void> =
   util.promisify(setTimeout);
 
+export function includeDefaults(
+  settings: Types.SolcSettings
+): Types.SolcSettings {
+  if (settings.optimizer) {
+    return {
+      ...settings,
+      optimizer: {
+        ...settings.optimizer,
+        enabled: settings.optimizer.enabled ?? false,
+        runs: settings.optimizer.runs ?? 200
+      }
+    };
+  } else {
+    return {
+      ...settings,
+      optimizer: { enabled: false, runs: 200 }
+    };
+  }
+}
+
 interface RemoveLibrariesOptions {
   alsoRemoveCompilationTarget?: boolean;
   alsoRemoveOutputSelection?: boolean;
