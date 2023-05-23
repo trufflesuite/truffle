@@ -138,10 +138,13 @@ export const networkNamesById: { [id: number]: string } = {
   212: "makalu-map",
   2021: "edgeware",
   333000333: "meld",
-  222000222: "kanazawa-meld"
+  222000222: "kanazawa-meld",
+  246529: "sigma1-artis",
+  30: "rsk",
+  6: "kotti-etc"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
-  //not including ethereum classic for same reason
+  //not including ethereum classic mainnet or mordor for same reason
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(

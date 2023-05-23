@@ -47,7 +47,9 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
     {
       "mainnet": "eth.blockscout.com",
       "goerli": "eth-goerli.blockscout.com",
-      //I'm not including Ethereum Classic as it has chain ID != network ID
+      //I'm not including Ethereum Classic Mainnet as it has chain ID != network ID
+      //not including Mordor for same reason
+      "kotti-etc": "blockscout.com/etc/kotti", //Kotti, however, is fine
       "gnosis": "blockscout.com/xdai/mainnet",
       "chiado-gnosis": "blockscout.com/gnosis/chiado",
       "astar": "blockscout.com/astar",
@@ -55,7 +57,14 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "optimistic": "blockscout.com/optimism/mainnet",
       "goerli-optimistic": "blockscout.com/optimism/goerli",
       "core-poa": "blockscout.com/poa/core",
-      "core-sokol": "blockscout.com/poa/sokol"
+      "core-sokol": "blockscout.com/poa/sokol",
+      "sigma1-artis": "blockscout.com/artis/sigma1",
+      "rsk": "blockscout.com/rsk/mainnet"
+      //networks I excluded due to lack of good information about them:
+      //optimism bedrock beta (not goerli, that's alpha); optimism opcraft
+      //networks I excluded due to chain IDs conflicting with what's
+      //on chainlist.org or sourcify's chains.json:
+      //polkadot/astar's shibuya network; LUKSO L14
     };
 
   constructor(networkId: number, apiKey: string = "") {
