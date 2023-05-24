@@ -119,14 +119,23 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "tanenbaum-syscoin": "tanenbaum.io",
       "elastos": "eth.elastos.io",
       "testnet-elastos": "esc-testnet.elastos.io",
-      "smartbch": "sonar.cash"
+      "smartbch": "sonar.cash",
+      "aurora": "explorer.mainnet.aurora.dev",
+      "testnet-aurora": "explorer.testnet.aurora.dev",
+      "velas": "evmexplorer.velas.com",
+      "step": "stepscan.io",
+      "testnet-step": "testnet.stepscan.io",
+      "c1-milkomeda": "explorer-mainnet-cardano-evm.c1.milkomeda.com",
+      "testnet-c1-milkomeda": "explorer-devnet-cardano-evm.c1.milkomeda.com",
+      "tombchain": "tombscout.com",
+      "metaapes": "explorer.bas.metaapesgame.com"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);
       //optimism opcraft; chiliz mainnet; polygon edge; poochain; chainers
       //networks I excluded due to chain IDs conflicting with what's
       //on chainlist.org or sourcify's chains.json:
-      //polkadot/astar's shibuya network; LUKSO L14
+      //polkadot/astar's shibuya network; LUKSO L14; velas testnet
     };
 
   constructor(networkId: number, apiKey: string = "") {
