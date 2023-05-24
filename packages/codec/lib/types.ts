@@ -222,9 +222,18 @@ export interface MessageDecoding {
    * Further information about how the decoding may be interpreted.  Note that interpretations
    * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
    * @truffle/codec itself.  See individual interpretations for details.
-   * (Currently there are none for this type.)
    */
-  interpretations: {};
+  interpretations: {
+    /**
+     * If we can't recognize the function, we attempt to see if we can decode based on the
+     * function selector alone using https://www.4byte.directory/ to determine possible
+     * signatures.  Note these decodings will necessarily be made in ABI mode, and will
+     * even be lacking names of struct members.
+     *
+     * This interpretation will only be present if the array is nonempty.
+     */
+    selectorBasedDecodings?: FunctionDecoding[];
+  };
 }
 
 /**
@@ -251,9 +260,18 @@ export interface UnknownCallDecoding {
    * Further information about how the decoding may be interpreted.  Note that interpretations
    * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
    * @truffle/codec itself.  See individual interpretations for details.
-   * (Currently there are none for this type.)
    */
-  interpretations: {};
+  interpretations: {
+    /**
+     * If we can't recognize the function, we attempt to see if we can decode based on the
+     * function selector alone using https://www.4byte.directory/ to determine possible
+     * signatures.  Note these decodings will necessarily be made in ABI mode, and will
+     * even be lacking names of struct members.
+     *
+     * This interpretation will only be present if the array is nonempty.
+     */
+    selectorBasedDecodings?: FunctionDecoding[];
+  };
 }
 
 /**

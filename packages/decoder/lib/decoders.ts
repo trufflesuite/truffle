@@ -43,6 +43,7 @@ import {
   ArrayIndexOutOfBoundsError,
   NoProviderError
 } from "./errors";
+import { fetchSignatures } from "./fetch-signatures";
 import { Shims } from "@truffle/compile-common";
 //sorry for untyped imports!
 const SourceMapUtils = require("@truffle/source-map-utils");
@@ -441,17 +442,20 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<CalldataDecoding> {
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
     const isConstructor = !transaction.to;
-    const context = await this.getContextByAddress(
-      transaction.to,
-      blockNumber,
-      transaction.input,
-      additionalContexts
-    );
+    const context = 
+      overrideContext ||
+      (await this.getContextByAddress(
+        transaction.to,
+        blockNumber,
+        transaction.input,
+        additionalContexts
+      ));
 
     let allocations = this.allocations;
     if (context && !(context.context in this.contexts)) {
@@ -472,6 +476,7 @@ export class ProjectDecoder {
     }
 
     const data = Conversion.toBytes(transaction.input);
+    const contexts = { ...this.deployedContexts, ...additionalContexts };
     const info: Evm.EvmInfo = {
       state: {
         storage: {},
@@ -479,7 +484,7 @@ export class ProjectDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations,
-      contexts: { ...this.deployedContexts, ...additionalContexts },
+      contexts,
       currentContext: context
     };
     const decoder = decodeCalldata(info, isConstructor);
@@ -508,8 +513,23 @@ export class ProjectDecoder {
         decoding,
         transaction,
         additionalContexts,
-        additionalAllocations
+        additionalAllocations,
+        overrideContext
       );
+    }
+
+    //...and 4byte.directory processing
+    if (decoding.kind === "message" || decoding.kind === "unknown") {
+      const selectorBasedDecodings = await this.decodeTransactionBySelector(
+        transaction,
+        data, //this is redundant but included for convenience
+        additionalContexts,
+        context
+      );
+      if (selectorBasedDecodings.length > 0) {
+        decoding.interpretations.selectorBasedDecodings =
+          selectorBasedDecodings;
+      }
     }
 
     return decoding;
@@ -890,7 +910,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<CalldataDecoding> {
     //first, let's clone our decoding and its interpretations
     decoding = {
@@ -906,33 +927,38 @@ export class ProjectDecoder {
       decoding,
       transaction,
       additionalContexts,
-      additionalAllocations
+      additionalAllocations,
+      overrideContext
     );
     decoding.interpretations.aggregate = await this.interpretAggregate(
       decoding,
       transaction,
       additionalContexts,
-      additionalAllocations
+      additionalAllocations,
+      overrideContext
     );
     decoding.interpretations.tryAggregate = await this.interpretTryAggregate(
       decoding,
       transaction,
       additionalContexts,
-      additionalAllocations
+      additionalAllocations,
+      overrideContext
     );
     decoding.interpretations.deadlinedMulticall =
       await this.interpretDeadlinedMulticall(
         decoding,
         transaction,
         additionalContexts,
-        additionalAllocations
+        additionalAllocations,
+        overrideContext
       );
     decoding.interpretations.specifiedBlockhashMulticall =
       await this.interpretBlockhashedMulticall(
         decoding,
         transaction,
         additionalContexts,
-        additionalAllocations
+        additionalAllocations,
+        overrideContext
       );
 
     return decoding;
@@ -946,7 +972,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<(Codec.CalldataDecoding | null)[] | undefined> {
     if (
       decoding.kind === "function" &&
@@ -965,7 +992,8 @@ export class ProjectDecoder {
               callResult as Format.Values.BytesResult,
               transaction,
               additionalContexts,
-              additionalAllocations
+              additionalAllocations,
+              overrideContext
             )
         )
       );
@@ -982,14 +1010,16 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<Codec.CalldataDecoding | null> {
     switch (callResult.kind) {
       case "value":
         return await this.decodeTransactionWithAdditionalContexts(
           { ...transaction, input: callResult.value.asHex },
           additionalContexts,
-          additionalAllocations
+          additionalAllocations,
+          overrideContext
         );
       case "error":
         return null;
@@ -1004,7 +1034,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<CallInterpretationInfo[] | undefined> {
     if (
       decoding.kind === "function" &&
@@ -1029,7 +1060,8 @@ export class ProjectDecoder {
                 | Format.Values.TupleResult,
               transaction,
               additionalContexts,
-              additionalAllocations
+              additionalAllocations,
+              overrideContext
             )
         )
       );
@@ -1046,7 +1078,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<CallInterpretationInfo> {
     switch (callResult.kind) {
       case "value":
@@ -1073,7 +1106,8 @@ export class ProjectDecoder {
                   to: address
                 },
                 additionalContexts,
-                additionalAllocations
+                additionalAllocations,
+                overrideContext
               );
             return { address, decoding: subDecoding };
           case "error":
@@ -1092,7 +1126,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<TryAggregateInfo | undefined> {
     if (
       decoding.kind === "function" &&
@@ -1122,7 +1157,8 @@ export class ProjectDecoder {
                 | Format.Values.TupleResult,
               transaction,
               additionalContexts,
-              additionalAllocations
+              additionalAllocations,
+              overrideContext
             )
         )
       );
@@ -1140,7 +1176,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<DeadlinedMulticallInfo | undefined> {
     if (
       decoding.kind === "function" &&
@@ -1164,7 +1201,8 @@ export class ProjectDecoder {
               callResult as Format.Values.BytesResult,
               transaction,
               additionalContexts,
-              additionalAllocations
+              additionalAllocations,
+              overrideContext
             )
         )
       );
@@ -1182,7 +1220,8 @@ export class ProjectDecoder {
       [
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
-    }
+    },
+    overrideContext?: Contexts.Context
   ): Promise<BlockhashedMulticallInfo | undefined> {
     if (
       decoding.kind === "function" &&
@@ -1206,7 +1245,8 @@ export class ProjectDecoder {
               callResult as Format.Values.BytesResult,
               transaction,
               additionalContexts,
-              additionalAllocations
+              additionalAllocations,
+              overrideContext
             )
         )
       );
@@ -1214,6 +1254,67 @@ export class ProjectDecoder {
     } else {
       return undefined;
     }
+  }
+
+  private async decodeTransactionBySelector(
+    transaction: DecoderTypes.Transaction,
+    data: Uint8Array, //this is redundant but included for convenience
+    additionalContexts: Contexts.Contexts,
+    context: Contexts.Context | null
+  ): Promise<FunctionDecoding[]> {
+    if (data.length < Evm.Utils.SELECTOR_SIZE) {
+      return [];
+    }
+    const selector = data.slice(0, Evm.Utils.SELECTOR_SIZE);
+    const signatures: string[] = await fetchSignatures(selector);
+    const abis = signatures.map(Abi.parseFunctionSignature);
+    const fakeContextHash =
+      "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"; //hash of empty string
+    //the particular choice here doesn't really matter, but I figured let's pick something that will never
+    //occur as a real context hash
+    //(remember that context hashes are currently taken of the ASCII hex string, so the input
+    //will never be empty)
+    let decodings: FunctionDecoding[] = [];
+    for (const abiEntry of abis) {
+      //create a fake context with only this one ABI entry
+      //we can't do it with multiple of them because codec is not prepared
+      //for the idea that multiple might match
+      const fakeContextAbi = { [Abi.abiSelector(abiEntry)]: abiEntry };
+      const fakeContext = context
+        ? { ...context, abi: fakeContextAbi }
+        : {
+            abi: fakeContextAbi,
+            context: fakeContextHash,
+            binary: "0x",
+            isConstructor: false
+          };
+      const additionalAllocations = Object.values(
+        AbiData.Allocate.getCalldataAllocations(
+          [
+            {
+              abi: [abiEntry],
+              compiler: null,
+              contractNode: null,
+              deployedContext: fakeContext
+              //we won't need anything else
+            }
+          ],
+          {}, //we won't need the reference declarations
+          {}, //we won't need the user-defined types
+          {} //we won't need the struct allocations
+        ).functionAllocations
+      )[0];
+      const decoding = await this.decodeTransactionWithAdditionalContexts(
+        transaction,
+        additionalContexts,
+        additionalAllocations,
+        fakeContext //force decoding to use the fake context & not attempt to detect
+      );
+      if (decoding.kind === "function") {
+        decodings.push(decoding);
+      }
+    }
+    return decodings;
   }
 }
 
@@ -1408,7 +1509,7 @@ export class ContractDecoder {
     const blockNumber = await this.regularizeBlock(block);
     const status = options.status; //true, false, or undefined
 
-    const selector = AbiData.Utils.abiSelector(abi);
+    const selector = Abi.abiSelector(abi);
     let allocation: AbiData.Allocate.ReturndataAllocation;
     if (this.contextHash !== undefined) {
       allocation =
