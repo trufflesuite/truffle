@@ -167,7 +167,7 @@ export const networkNamesById: { [id: number]: string } = {
   1000: "gton",
   50021: "testnet-gton",
   //shib does not appear to have a mainnet yet
-  719: "testnet-shib", //note: not on chainlist.org,
+  719: "testnet-shib", //note: not on chainlist.org
   787: "acala",
   595: "mandala-acala",
   686: "karura",
@@ -176,7 +176,6 @@ export const networkNamesById: { [id: number]: string } = {
   2222: "kava",
   2221: "testnet-kava",
   2569: "techpay",
-  //not including techpay testnet as I can't determine its network ID
   10687: "point",
   113: "dehvo",
   20: "elastos",
@@ -187,7 +186,41 @@ export const networkNamesById: { [id: number]: string } = {
   2001: "c1-milkomeda",
   200101: "testnet-c1-milkomeda",
   6969: "tombchain",
-  16350: "metaapes"
+  16350: "metaapes",
+  321: "kucoin",
+  10946: "quadrans",
+  10947: "testnet-quadrans",
+  1313114: "etho",
+  32520: "bitgert",
+  813: "qitmeer",
+  8131: "testnet-qitmeer",
+  144: "v2-phi",
+  39797: "energi",
+  15551: "loop",
+  14441: "testnet-loop",
+  1994: "ekta",
+  7341: "shyft",
+  1987: "ethergem",
+  2152: "findora",
+  2153: "anvil-findora",
+  134: "iexec",
+  96: "bitkub",
+  25925: "testnet-bitkub",
+  1433: "rikeza",
+  3797: "alveychain",
+  20001: "camelark",
+  20531812: "tecraspace", //note: not on chainlist.org
+  8888: "xana",
+  1620: "atheios",
+  5197: "eraswap",
+  248: "oasys",
+  47805: "rei",
+  73927: "mixin",
+  111: "etherlite",
+  955305: "contentfabric",
+  119: "enuls",
+  120: "testnet-enuls",
+  3737: "crossbell"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason

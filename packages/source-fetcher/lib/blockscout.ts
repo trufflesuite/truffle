@@ -64,6 +64,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "alfajores-celo": "explorer.celo.org/alfajores",
       "baklava-celo": "explorer.celo.org/baklava",
       "cannoli-celo": "explorer.celo.org/cannoli",
+      //not including Callisto as it has chain ID != network ID
       "palm": "explorer.palm.io",
       "testnet-palm": "explorer.palm-uat.xyz",
       "fuse": "exporer.fuse.io",
@@ -128,14 +129,44 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "c1-milkomeda": "explorer-mainnet-cardano-evm.c1.milkomeda.com",
       "testnet-c1-milkomeda": "explorer-devnet-cardano-evm.c1.milkomeda.com",
       "tombchain": "tombscout.com",
-      "metaapes": "explorer.bas.metaapesgame.com"
-      //not including Callisto as it has chain ID != network ID
-      //networks I excluded due to lack of good information about them:
-      //optimism bedrock beta (not goerli, that's alpha);
-      //optimism opcraft; chiliz mainnet; polygon edge; poochain; chainers
-      //networks I excluded due to chain IDs conflicting with what's
-      //on chainlist.org or sourcify's chains.json:
-      //polkadot/astar's shibuya network; LUKSO L14; velas testnet
+      "metaapes": "explorer.bas.metaapesgame.com",
+      "energyweb": "explorer.energyweb.org",
+      "volta-energyweb": "volta-explorer.energyweb.org",
+      "kucoin": "scan.kcc.io",
+      "quadrans": "explorer.quadrans.io",
+      "testnet-quadrans": "explorer.testnet.quadrans.io",
+      "etho": "explorer.ethoprotocol.com",
+      "bitgert": "brisescan.com",
+      "qitmeer": "qng.meerscan.io",
+      "testnet-qitmeer": "qng-testnet.meerscan.io",
+      "v2-phi": "phiscan.com",
+      "energi": "explorer.energi.network",
+      "loop": "explorer.mainnetloop.com",
+      "testnet-loop": "explorer.testnetloop.com",
+      "ekta": "ektascan.io",
+      "multivac": "mtvscout.com",
+      "shyft": "bx.veriscope.network",
+      "ethergem": "blockscout.egem.io",
+      "findora": "evm.findorascan.io",
+      "anvil-findora": "testnet-anvil.evm.findorascan.io",
+      "iexec": "blockscout-bellecour.iex.ec",
+      "bitkub": "www.bkcscan.com",
+      "testnet-bitkub": "testnet.bkcscan.com",
+      "rikeza": "rikscan.com",
+      "alveychain": "alveyscan.com",
+      "camelark": "scan.camelark.com",
+      "tecraspace": "explorer.tecra.space",
+      "xana": "xanachain.xana.net",
+      "atheios": "explorer.atheios.org",
+      "eraswap": "eraswap.info",
+      "oasys": "scan.oasys.games",
+      "rei": "scan.rei.network",
+      "mixin": "scan.mvm.dev",
+      "etherlite": "explorer.etherlite.org",
+      "contentfabric": "exp.contentfabric.io",
+      "enuls": "evmscan.nuls.io",
+      "testnet-enuls": "beta.evmscan.nuls.io",
+      "crossbell": "scan.crossbell.io"
     };
 
   constructor(networkId: number, apiKey: string = "") {
