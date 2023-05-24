@@ -30,6 +30,7 @@ export const networkNamesById: { [id: number]: string } = {
   42220: "celo",
   44787: "alfajores-celo",
   62320: "baklava-celo",
+  17323: "cannoli-celo", //note: not on chainlist.org
   43114: "avalanche",
   43113: "fuji-avalanche",
   11111: "wagmi-avalanche",
@@ -103,6 +104,8 @@ export const networkNamesById: { [id: number]: string } = {
   23295: "testnet-sapphire-oasis",
   14: "flare",
   19: "songbird-flare",
+  16: "coston-flare",
+  114: "coston2-flare",
   2048: "stratos", //not presently supported by either fetcher, but...
   2047: "testnet-stratos",
   8453: "base",
@@ -141,7 +144,10 @@ export const networkNamesById: { [id: number]: string } = {
   222000222: "kanazawa-meld",
   246529: "sigma1-artis",
   30: "rsk",
-  6: "kotti-etc"
+  6: "kotti-etc",
+  2046399126: "europa-skale",
+  2009: "cloudwalk",
+  2008: "testnet-cloudwalk"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason

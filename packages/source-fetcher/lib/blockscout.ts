@@ -59,9 +59,26 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "core-poa": "blockscout.com/poa/core",
       "core-sokol": "blockscout.com/poa/sokol",
       "sigma1-artis": "blockscout.com/artis/sigma1",
-      "rsk": "blockscout.com/rsk/mainnet"
+      "rsk": "blockscout.com/rsk/mainnet",
+      "celo": "explorer.celo.org/mainnet",
+      "alfajores-celo": "explorer.celo.org/alfajores",
+      "baklava-celo": "explorer.celo.org/baklava",
+      "cannoli-celo": "explorer.celo.org/cannoli",
+      "palm": "explorer.palm.io",
+      "testnet-palm": "explorer.palm-uat.xyz",
+      "fuse": "exporer.fuse.io",
+      "flare": "flare-exporer.flare.network",
+      "songbird-flare": "songbird-exporer.flare.network",
+      "coston-flare": "coston-exporer.flare.network",
+      "coston2-flare": "coston2-exporer.flare.network",
+      "europa-skale": "elated-tan-skat.explorer.mainnet.skalenodes.com",
+      "emerald-oasis": "exporer.emerald.oasis.dev",
+      "cloudwalk": "exporer.mainnet.cloudwalk.io",
+      "testnet-cloudwalk": "exporer.testnet.cloudwalk.io"
+      //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
-      //optimism bedrock beta (not goerli, that's alpha); optimism opcraft
+      //optimism bedrock beta (not goerli, that's alpha);
+      //optimism opcraft; chiliz mainnet
       //networks I excluded due to chain IDs conflicting with what's
       //on chainlist.org or sourcify's chains.json:
       //polkadot/astar's shibuya network; LUKSO L14
