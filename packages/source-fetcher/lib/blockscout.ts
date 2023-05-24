@@ -95,7 +95,15 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "gton": "explorer.gton.network",
       "testnet-gton": "explorer.testnet.gton.network",
       //shib does not appear to have a mainnet yet
-      "testnet-shib": "puppyscan.shib.io"
+      "testnet-shib": "puppyscan.shib.io",
+      "moonbeam": "blockscout.moonbeam.network",
+      "moonriver": "blockscout.moonriver.moonbeam.network",
+      "moonbase-alpha": "moonbase-blockscout.testnet.moonbeam.network",
+      "acala": "blockscout.acala.network",
+      "mandala-acala": "blockscout.mandala.acala.network",
+      "karura": "blockscout.karura.network",
+      "edgeware": "edgscan.live",
+      "exosama": "explorer.exosama.com"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);

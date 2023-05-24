@@ -167,7 +167,12 @@ export const networkNamesById: { [id: number]: string } = {
   1000: "gton",
   50021: "testnet-gton",
   //shib does not appear to have a mainnet yet
-  719: "testnet-shib" //note: not on chainlist.org
+  719: "testnet-shib", //note: not on chainlist.org,
+  787: "acala",
+  595: "mandala-acala",
+  686: "karura",
+  2021: "edgeware",
+  2109: "exosama"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason
