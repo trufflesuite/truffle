@@ -103,7 +103,18 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "mandala-acala": "blockscout.mandala.acala.network",
       "karura": "blockscout.karura.network",
       "edgeware": "edgscan.live",
-      "exosama": "explorer.exosama.com"
+      "exosama": "explorer.exosama.com",
+      "cronos": "cronos.org/explorer",
+      "evmos": "blockscout.evmos.org",
+      "testnet-evmos": "evm.evmos.dev",
+      "kava": "explorer.kava.io",
+      "testnet-kava": "explorer.testnet.kava.io",
+      "canto": "evm.explorer.canto.io",
+      "testnet-canto": "testnet.tuber.build",
+      "techpay": "tpcscan.com",
+      //not including techpay testnet as I can't determine its network ID
+      "point": "explorer.pointnetwork.io",
+      "dehvo": "explorer.dehvo.com"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);
