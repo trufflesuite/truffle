@@ -77,7 +77,25 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "testnet-cloudwalk": "exporer.testnet.cloudwalk.io",
       "sx": "explorer.sx.technology",
       "dogechain": "explorer.dogechain.dog",
-      "testnet-dogechain": "explorer-testnet.dogechain.dog"
+      "testnet-dogechain": "explorer-testnet.dogechain.dog",
+      "nova-arbitrum": "nova-explorer.arbitrum.io",
+      "andromeda-metis": "andromeda-explorer.metis.io",
+      "goerli-metis": "goerli.explorer.metisdevops.link",
+      "boba-avalanche": "blockexplorer.avax.boba.network",
+      "bobafuji-avalanche": "blockexplorer.testnet.avax.boba.network",
+      "boba-binance": "blockexplorer.bnb.boba.network",
+      "testnet-boba-binance": "blockexplorer.testnet.bnb.boba.network",
+      "bobabeam": "blockexplorer.bobabeam.boba.network",
+      "bobabase": "blockexplorer.bobabase.boba.network",
+      "bobaopera": "blockexplorer.bobaopera.boba.network",
+      "testnet-bobaopera": "blockexplorer.testnet.bobaopera.boba.network",
+      "nahmii": "explorer.nahmii.io",
+      //blockscout does not yet support scroll mainnet
+      "alpha-scroll": "blockscout.scroll.io",
+      "gton": "explorer.gton.network",
+      "testnet-gton": "explorer.testnet.gton.network",
+      //shib does not appear to have a mainnet yet
+      "testnet-shib": "puppyscan.shib.io"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);

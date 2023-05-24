@@ -27,6 +27,8 @@ export const networkNamesById: { [id: number]: string } = {
   56: "binance",
   97: "testnet-binance",
   5611: "testnet-opbnb-binance",
+  56288: "boba-binance",
+  9728: "testnet-boba-binance",
   42220: "celo",
   44787: "alfajores-celo",
   62320: "baklava-celo",
@@ -44,6 +46,8 @@ export const networkNamesById: { [id: number]: string } = {
   78430: "amplify-avalanche",
   78431: "bulletin-avalanche",
   78432: "conduit-avalanche",
+  43288: "boba-avalanche",
+  4328: "bobafuji-avalanche",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -66,15 +70,19 @@ export const networkNamesById: { [id: number]: string } = {
   1284: "moonbeam",
   1285: "moonriver",
   1287: "moonbase-alpha",
+  1294: "bobabeam",
+  1297: "bobabase",
+  301: "bobaopera",
+  4051: "testnet-bobaopera",
   122: "fuse",
   11297108109: "palm",
   11297108099: "testnet-palm",
-  70: "hoo", //not presently supported by either fetcher, but formerly by etherscan
+  70: "hoo", //not presently supported by any fetcher, but formerly by etherscan
   25: "cronos",
   338: "testnet-cronos", //not presently supported by either fetcher, but formerly by etherscan
   199: "bttc",
   1029: "donau-bttc",
-  1024: "clover", //not presently supported by either fetcher, but formerly by etherscan
+  1024: "clover", //not presently supported by any fetcher, but formerly by etherscan
   44: "crab-darwinia",
   43: "pangolin-darwinia",
   9001: "evmos",
@@ -88,7 +96,7 @@ export const networkNamesById: { [id: number]: string } = {
   73799: "volta-energyweb",
   71402: "godwoken",
   71401: "testnet-godwoken",
-  50: "xinfin", //not presently supported by either fetcher, but...
+  50: "xinfin", //not presently supported by any fetcher, but...
   51: "apothem-xinfin",
   7700: "canto",
   7701: "testnet-canto",
@@ -96,7 +104,7 @@ export const networkNamesById: { [id: number]: string } = {
   336: "shiden-astar",
   8217: "cypress-klaytn",
   1001: "baobab-klaytn",
-  7000: "zetachain", //not presently supported by either fetcher, but...
+  7000: "zetachain", //not presently supported by any fetcher, but...
   7001: "athens-zetachain",
   42262: "emerald-oasis",
   42261: "testnet-emerald-oasis",
@@ -106,7 +114,7 @@ export const networkNamesById: { [id: number]: string } = {
   19: "songbird-flare",
   16: "coston-flare",
   114: "coston2-flare",
-  2048: "stratos", //not presently supported by either fetcher, but...
+  2048: "stratos", //not presently supported by any fetcher, but...
   2047: "testnet-stratos",
   8453: "base",
   84531: "goerli-base",
@@ -118,6 +126,7 @@ export const networkNamesById: { [id: number]: string } = {
   295: "hedera",
   1149: "symplexia",
   2000: "dogechain",
+  568: "testnet-dogechain",
   1339: "elysium",
   167005: "grimsvotn-taiko",
   167006: "eldfell-taiko",
@@ -149,8 +158,16 @@ export const networkNamesById: { [id: number]: string } = {
   2009: "cloudwalk",
   2008: "testnet-cloudwalk",
   416: "sx",
-  2000: "dogechain",
-  568: "testnet-dogechain"
+  647: "toronto-sx",
+  1088: "andromeda-metis",
+  599: "goerli-metis",
+  5551: "nahmii",
+  534352: "scroll", //not presently supported by any fetcher, but...
+  534353: "alpha-scroll",
+  1000: "gton",
+  50021: "testnet-gton",
+  //shib does not appear to have a mainnet yet
+  719: "testnet-shib" //note: not on chainlist.org
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason
