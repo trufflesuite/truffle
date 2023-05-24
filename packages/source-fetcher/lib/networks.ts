@@ -178,7 +178,10 @@ export const networkNamesById: { [id: number]: string } = {
   2569: "techpay",
   //not including techpay testnet as I can't determine its network ID
   10687: "point",
-  113: "dehvo"
+  113: "dehvo",
+  20: "elastos",
+  21: "testnet-elastos",
+  10000: "smartbch"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason

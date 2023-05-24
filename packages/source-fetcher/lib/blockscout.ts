@@ -114,7 +114,12 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "techpay": "tpcscan.com",
       //not including techpay testnet as I can't determine its network ID
       "point": "explorer.pointnetwork.io",
-      "dehvo": "explorer.dehvo.com"
+      "dehvo": "explorer.dehvo.com",
+      "syscoin": "explorer.syscoin.org",
+      "tanenbaum-syscoin": "tanenbaum.io",
+      "elastos": "eth.elastos.io",
+      "testnet-elastos": "esc-testnet.elastos.io",
+      "smartbch": "sonar.cash"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);
