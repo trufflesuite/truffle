@@ -74,11 +74,14 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "europa-skale": "elated-tan-skat.explorer.mainnet.skalenodes.com",
       "emerald-oasis": "exporer.emerald.oasis.dev",
       "cloudwalk": "exporer.mainnet.cloudwalk.io",
-      "testnet-cloudwalk": "exporer.testnet.cloudwalk.io"
+      "testnet-cloudwalk": "exporer.testnet.cloudwalk.io",
+      "sx": "explorer.sx.technology",
+      "dogechain": "explorer.dogechain.dog",
+      "testnet-dogechain": "explorer-testnet.dogechain.dog"
       //not including Callisto as it has chain ID != network ID
       //networks I excluded due to lack of good information about them:
       //optimism bedrock beta (not goerli, that's alpha);
-      //optimism opcraft; chiliz mainnet
+      //optimism opcraft; chiliz mainnet; polygon edge; poochain; chainers
       //networks I excluded due to chain IDs conflicting with what's
       //on chainlist.org or sourcify's chains.json:
       //polkadot/astar's shibuya network; LUKSO L14

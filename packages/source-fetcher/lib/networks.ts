@@ -147,7 +147,10 @@ export const networkNamesById: { [id: number]: string } = {
   6: "kotti-etc",
   2046399126: "europa-skale",
   2009: "cloudwalk",
-  2008: "testnet-cloudwalk"
+  2008: "testnet-cloudwalk",
+  416: "sx",
+  2000: "dogechain",
+  568: "testnet-dogechain"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason
