@@ -159,6 +159,8 @@ export const networkNamesById: { [id: number]: string } = {
   2008: "testnet-cloudwalk",
   416: "sx",
   647: "toronto-sx",
+  2000: "dogechain",
+  568: "testnet-dogechain",
   1088: "andromeda-metis",
   599: "goerli-metis",
   5551: "nahmii",
@@ -220,7 +222,20 @@ export const networkNamesById: { [id: number]: string } = {
   955305: "contentfabric",
   119: "enuls",
   120: "testnet-enuls",
-  3737: "crossbell"
+  3737: "crossbell",
+  5000: "mantle", //not presently supported by any fetcher, but...
+  5001: "testnet-mantle",
+  324: "era-zksync", //not presently supported by any fetcher, but...
+  280: "goerli-era-zksync",
+  369: "pulsechain", //not presently supported by any fetcher, but...
+  943: "v4-testnet-pulsechain",
+  4919: "venidium", //not presently supported by any fetcher, but...
+  4918: "testnet-venidium",
+  88880: "scoville-chiliz", //I can't find good info on chiliz mainnet
+  59140: "goerli-linea", //does this even have a corresponding mainnet?
+  1662: "yuma-horizen", //does this even have a corresponding mainnet?
+  5758: "satoshichain", //does this even have a corresponding mainnet?
+  7649: "testnet-lamina1" //does this even have a corresponding mainnet?
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason

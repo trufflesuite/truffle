@@ -47,6 +47,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
     {
       "mainnet": "eth.blockscout.com",
       "goerli": "eth-goerli.blockscout.com",
+      "goerli-base": "base-goerli.blockscout.com",
       //I'm not including Ethereum Classic Mainnet as it has chain ID != network ID
       //not including Mordor for same reason
       "kotti-etc": "blockscout.com/etc/kotti", //Kotti, however, is fine
@@ -77,6 +78,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "cloudwalk": "exporer.mainnet.cloudwalk.io",
       "testnet-cloudwalk": "exporer.testnet.cloudwalk.io",
       "sx": "explorer.sx.technology",
+      "toronto-sx": "explorer.toronto.sx.technology",
       "dogechain": "explorer.dogechain.dog",
       "testnet-dogechain": "explorer-testnet.dogechain.dog",
       "nova-arbitrum": "nova-explorer.arbitrum.io",
@@ -166,7 +168,23 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "contentfabric": "exp.contentfabric.io",
       "enuls": "evmscan.nuls.io",
       "testnet-enuls": "beta.evmscan.nuls.io",
-      "crossbell": "scan.crossbell.io"
+      "crossbell": "scan.crossbell.io",
+      //blockscout does not support polygon zkevm mainnet
+      "testnet-zkevm-polygon": "explorer.public.zkevm-test.net",
+      "goerli-linea": "explorer.goerli.linea.build",
+      //blockscout does not support mantle mainnet
+      "testnet-mantle": "explorer.testnet.mantle.xyz",
+      //blockscout does not support zksync era mainnet
+      "goerli-era-zksync": "zksync2-testnet.zkscan.io",
+      //blockscout does not support pulsechain mainnet
+      "v4-testnet-pulsechain": "scan.v4.testnet.pulsechain.com",
+      //blockscout does not support venidium mainnet
+      "testnet-venidium": "evm-testnet.venidiumexplorer.com",
+      //blockscout does support chiliz mainnet, but I can't find good info on it
+      "scoville-chiliz": "scoville-explorer.chiliz.com",
+      "yuma-horizen": "yuma-explorer.horizen.io",
+      "satoshichain": "satoshiscan.io",
+      "testnet-lamina1": "testnet-explorer.lamina1.global"
     };
 
   constructor(networkId: number, apiKey: string = "") {
