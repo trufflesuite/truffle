@@ -1304,8 +1304,10 @@ export class ProjectDecoder {
         fakeContext //force decoding to use the fake context & not attempt to detect
       );
       if (decoding.kind === "function") {
+        debug("accepted");
         decodings.push(decoding);
       }
+      debug("moving on");
     }
     return decodings;
   }

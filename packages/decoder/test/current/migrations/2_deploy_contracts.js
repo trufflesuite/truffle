@@ -6,6 +6,7 @@ const WireTestRedHerring = artifacts.require("WireTestRedHerring");
 const ReceiveTest = artifacts.require("ReceiveTest");
 const FallbackTest = artifacts.require("FallbackTest");
 const DecodingSample = artifacts.require("DecodingSample");
+const Sink = artifacts.require("Sink");
 
 module.exports = function (deployer) {
   deployer.deploy(DecoyLibrary);
@@ -17,4 +18,5 @@ module.exports = function (deployer) {
   deployer.deploy(FallbackTest);
   deployer.deploy(DecodingSample);
   deployer.deploy(WireTestRedHerring);
+  deployer.deploy(Sink);
 };
