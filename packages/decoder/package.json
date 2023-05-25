@@ -31,6 +31,8 @@
     "@truffle/compile-common": "^0.9.5",
     "@truffle/encoder": "^1.0.16",
     "@truffle/source-map-utils": "^1.3.112",
+    "async-retry": "^1.3.1",
+    "axios": "1.2.4",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "web3-utils": "1.10.0"
