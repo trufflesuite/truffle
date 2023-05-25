@@ -435,7 +435,8 @@ export class ProjectDecoder {
         selector: string
       ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
     },
-    overrideContext?: Contexts.Context
+    overrideContext?: Contexts.Context,
+    isForSelectorBasedDecoding?: boolean
   ): Promise<CalldataDecoding> {
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
@@ -450,11 +451,24 @@ export class ProjectDecoder {
       ));
 
     let allocations = this.allocations;
-    if (context && !(context.context in this.contexts)) {
-      //if the context comes from additionalContexts,
+    if (overrideContext) {
+      //if we've got an override context, let's override some things
+      //(this branch is used when doing selector-based decoding)
+      allocations = {
+        ...this.allocations,
+        calldata: {
+          ...this.allocations.calldata,
+          functionAllocations: {
+            ...this.allocations.calldata.functionAllocations,
+            [context.context]: additionalAllocations
+          }
+        }
+      };
+    } else if (context && !(context.context in this.contexts)) {
+      //otherwise, if the context comes from additionalContexts,
       //we'll add the additional allocations to the allocations;
       //however, we'll allow other allocations to override it...
-      //it's only supposed to be used if necessary!
+      //when we're not overriding, it's only supposed to be used if necessary!
       allocations = {
         ...this.allocations,
         calldata: {
@@ -479,7 +493,11 @@ export class ProjectDecoder {
       contexts,
       currentContext: context
     };
-    const decoder = decodeCalldata(info, isConstructor);
+    const decoder = decodeCalldata(
+      info,
+      isConstructor,
+      isForSelectorBasedDecoding
+    ); //turn on strict mode for selector-based decoding
 
     let result = decoder.next();
     while (result.done === false) {
@@ -511,7 +529,10 @@ export class ProjectDecoder {
     }
 
     //...and 4byte.directory processing
-    if (decoding.kind === "message" || decoding.kind === "unknown") {
+    if (
+      (decoding.kind === "message" || decoding.kind === "unknown") &&
+      !isForSelectorBasedDecoding //prevent infinite loops!
+    ) {
       const selectorBasedDecodings = await this.decodeTransactionBySelector(
         transaction,
         data, //this is redundant but included for convenience
@@ -1297,12 +1318,25 @@ export class ProjectDecoder {
           {} //we won't need the struct allocations
         ).functionAllocations
       )[0];
-      const decoding = await this.decodeTransactionWithAdditionalContexts(
-        transaction,
-        additionalContexts,
-        additionalAllocations,
-        fakeContext //force decoding to use the fake context & not attempt to detect
-      );
+      let decoding: CalldataDecoding;
+      try {
+        decoding = await this.decodeTransactionWithAdditionalContexts(
+          transaction,
+          additionalContexts,
+          additionalAllocations,
+          fakeContext, //force decoding to use the fake context & not attempt to detect
+          true //prevent infinite loops! and turn on strict mode
+        );
+      } catch (error) {
+        //because we're decoding in strict mode, it may error.
+        if (error instanceof Codec.StopDecodingError) {
+          //decoding didn't match, go to the next one
+          continue;
+        } else {
+          //unexpected error, rethrow!
+          throw error;
+        }
+      }
       if (decoding.kind === "function") {
         debug("accepted");
         decodings.push(decoding);

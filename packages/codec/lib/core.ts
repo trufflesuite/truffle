@@ -51,7 +51,8 @@ export function* decodeVariable(
  */
 export function* decodeCalldata(
   info: Evm.EvmInfo,
-  isConstructor?: boolean //ignored if context! trust context instead if have
+  isConstructor?: boolean, //ignored if context! trust context instead if have
+  strictAbiMode?: boolean //used for selector-based decoding
 ): Generator<DecoderRequest, CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if (context === null) {
@@ -130,7 +131,8 @@ export function* decodeCalldata(
     try {
       value = yield* decode(dataType, argumentAllocation.pointer, info, {
         abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
-        allowRetry: decodingMode === "full"
+        allowRetry: decodingMode === "full",
+        strictAbiMode
       });
     } catch (error) {
       if (
@@ -156,7 +158,8 @@ export function* decodeCalldata(
           argumentAllocation.pointer,
           info,
           {
-            abiPointerBase: allocation.offset
+            abiPointerBase: allocation.offset,
+            strictAbiMode
           }
         );
         //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
@@ -173,6 +176,29 @@ export function* decodeCalldata(
         ? { name, value }
         : { value }
     );
+  }
+  //if we're in strict mode, do a re-encoding check
+  if (strictAbiMode) {
+    const decodedArgumentValues = decodedArguments.map(
+      argument => argument.value
+    );
+    const reEncodedData = AbiData.Encode.encodeTupleAbi(
+      decodedArgumentValues,
+      info.allocations.abi
+    );
+    const encodedData = info.state.calldata.subarray(Evm.Utils.SELECTOR_SIZE); //slice off the selector
+    //NOTE: I'm assuming this isn't a constructor.  right now strict mode is only used
+    //for functions, not constructors.  if this is a constructor than the above line
+    //won't work properly... you'd want to strip off the whole bytecode.
+    if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
+      //if not, this allocation doesn't work
+      debug("rejected due to mismatch");
+      throw new StopDecodingError({
+        kind: "ReEncodingMismatchError" as const,
+        data: encodedData,
+        reEncodedData
+      });
+    }
   }
   if (isConstructor) {
     return {
