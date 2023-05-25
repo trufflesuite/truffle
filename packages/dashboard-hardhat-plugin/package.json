@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-hardhat-plugin",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Truffle Dashboard for Hardhat plugin",
   "repository": {
     "type": "git",
