@@ -186,10 +186,11 @@ export function* decodeCalldata(
       decodedArgumentValues,
       info.allocations.abi
     );
-    const encodedData = info.state.calldata.subarray(Evm.Utils.SELECTOR_SIZE); //slice off the selector
-    //NOTE: I'm assuming this isn't a constructor.  right now strict mode is only used
-    //for functions, not constructors.  if this is a constructor than the above line
-    //won't work properly... you'd want to strip off the whole bytecode.
+    const selectorLength = isConstructor
+      ? (context.binary.length - 2) / 2 //for a constructor, the bytecode acts as the "selector"
+      : //note we have to account for the fact that it's a hex string
+        Evm.Utils.SELECTOR_SIZE;
+    const encodedData = info.state.calldata.subarray(selectorLength); //slice off the selector
     if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
       //if not, this allocation doesn't work
       debug("rejected due to mismatch");
