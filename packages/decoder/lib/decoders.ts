@@ -1267,6 +1267,7 @@ export class ProjectDecoder {
     }
     const selector = data.slice(0, Evm.Utils.SELECTOR_SIZE);
     const signatures: string[] = await fetchSignatures(selector);
+    debug("signatures: %O", signatures);
     const abis = signatures.map(Abi.parseFunctionSignature);
     const fakeContextHash =
       "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"; //hash of empty string
