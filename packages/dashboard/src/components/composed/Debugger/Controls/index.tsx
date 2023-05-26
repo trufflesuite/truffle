@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useDash } from "src/hooks";
 import {
-  Play,
-  SkipForward,
-  FastForward,
-  Download,
-  Upload,
-  RotateCcw
-} from "react-feather";
+  Continue,
+  Into,
+  Next,
+  Out,
+  Over,
+  Reset
+} from "src/components/composed/Debugger/Controls/icons";
 import { Group } from "@mantine/core";
 import { selectors as $ } from "@truffle/debugger";
 import ControlButton from "src/components/composed/Debugger/Controls/ControlButton";
@@ -47,7 +47,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
     <Group>
       <ControlButton
         {...controlButtonProps}
-        icon={Play}
+        icon={Continue}
         // @ts-ignore
         step={() => session.continueUntilBreakpoint()}
         disabled={disabled || !atLeastOneBreakpointSet}
@@ -55,7 +55,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
       />
       <ControlButton
         {...controlButtonProps}
-        icon={SkipForward}
+        icon={Next}
         // @ts-ignore
         step={() => session.stepNext()}
         disabled={disabled}
@@ -63,7 +63,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
       />
       <ControlButton
         {...controlButtonProps}
-        icon={FastForward}
+        icon={Over}
         // @ts-ignore
         step={() => session.stepOver()}
         disabled={disabled}
@@ -71,7 +71,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
       />
       <ControlButton
         {...controlButtonProps}
-        icon={Download}
+        icon={Into}
         // @ts-ignore
         step={() => session.stepInto()}
         disabled={disabled}
@@ -79,7 +79,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
       />
       <ControlButton
         {...controlButtonProps}
-        icon={Upload}
+        icon={Out}
         // @ts-ignore
         step={() => session.stepOut()}
         disabled={disabled}
@@ -87,7 +87,7 @@ function Controls({ session, stepEffect }: ControlsProps): JSX.Element {
       />
       <ControlButton
         {...controlButtonProps}
-        icon={RotateCcw}
+        icon={Reset}
         // @ts-ignore
         step={() => session.reset()}
         disabled={atStart}
