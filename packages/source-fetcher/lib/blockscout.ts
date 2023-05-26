@@ -55,12 +55,14 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "chiado-gnosis": "blockscout.com/gnosis/chiado",
       "astar": "blockscout.com/astar",
       "shiden-astar": "blockscout.com/shiden",
+      "shibuya-astar": "blockscout.com/shibuya",
       "optimistic": "blockscout.com/optimism/mainnet",
       "goerli-optimistic": "blockscout.com/optimism/goerli",
       "core-poa": "blockscout.com/poa/core",
       "core-sokol": "blockscout.com/poa/sokol",
       "sigma1-artis": "blockscout.com/artis/sigma1",
       "rsk": "blockscout.com/rsk/mainnet",
+      "l14-lukso": "blockscout.com/lukso/l14",
       "celo": "explorer.celo.org/mainnet",
       "alfajores-celo": "explorer.celo.org/alfajores",
       "baklava-celo": "explorer.celo.org/baklava",
@@ -126,6 +128,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "aurora": "explorer.mainnet.aurora.dev",
       "testnet-aurora": "explorer.testnet.aurora.dev",
       "velas": "evmexplorer.velas.com",
+      //velas testnet is not included because it conflicts with etherlite!!
       "step": "stepscan.io",
       "testnet-step": "testnet.stepscan.io",
       "c1-milkomeda": "explorer-mainnet-cardano-evm.c1.milkomeda.com",
@@ -180,6 +183,8 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "v4-testnet-pulsechain": "scan.v4.testnet.pulsechain.com",
       //blockscout does not support venidium mainnet
       "testnet-venidium": "evm-testnet.venidiumexplorer.com",
+      "hyperon": "hyperonscan.com",
+      "agung-peaq": "scout.agung.peaq.network",
       //blockscout does support chiliz mainnet, but I can't find good info on it
       "scoville-chiliz": "scoville-explorer.chiliz.com",
       "yuma-horizen": "yuma-explorer.horizen.io",

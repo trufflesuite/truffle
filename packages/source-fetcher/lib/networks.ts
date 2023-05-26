@@ -59,6 +59,7 @@ export const networkNamesById: { [id: number]: string } = {
   28: "rinkeby-boba",
   2888: "goerli-boba",
   106: "velas",
+  //velas testnet is not included because it conflicts with etherlite!!
   82: "meter",
   83: "testnet-meter",
   1313161554: "aurora",
@@ -102,6 +103,7 @@ export const networkNamesById: { [id: number]: string } = {
   7701: "testnet-canto",
   592: "astar",
   336: "shiden-astar",
+  81: "shibuya-astar", //NOTE: conflicts with Zenith testnet Vilinus in chains.json
   8217: "cypress-klaytn",
   1001: "baobab-klaytn",
   7000: "zetachain", //not presently supported by any fetcher, but...
@@ -231,14 +233,19 @@ export const networkNamesById: { [id: number]: string } = {
   943: "v4-testnet-pulsechain",
   4919: "venidium", //not presently supported by any fetcher, but...
   4918: "testnet-venidium",
+  22: "l14-lukso", //NOTE: conflicts with ELA-DID-Sidechain in chains.json
+  500: "hyperon", //NOTE: conflicts with Camino in chains.json
+  9999: "agung-peaq", //NOTE: conflicts myOwn in chains.json
   88880: "scoville-chiliz", //I can't find good info on chiliz mainnet
   59140: "goerli-linea", //does this even have a corresponding mainnet?
   1662: "yuma-horizen", //does this even have a corresponding mainnet?
   5758: "satoshichain", //does this even have a corresponding mainnet?
   7649: "testnet-lamina1" //does this even have a corresponding mainnet?
+  //not including morpher as it conflicts with elastos testnet
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic mainnet or mordor for same reason
+  //not includin callisto for same reason
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
