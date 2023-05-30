@@ -105,7 +105,9 @@ export const networkNamesById: { [id: number]: string } = {
   999: "testnet-wanchain",
   7668: "root",
   7672: "porcini-root",
-  295: "hedera"
+  295: "hedera",
+  1149: "symplexia",
+  2000: "dogechain"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
