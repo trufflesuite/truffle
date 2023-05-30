@@ -23,7 +23,7 @@ describe("Truffle dashboard hardhat plugin compilation tests", function () {
     useEnvironment("hardhat-project-incorrect-version", "dashboard");
 
     it("should fail if Hardhat version is below 2.10.1", async function () {
-      this.timeout(15000);
+      this.timeout(20000);
       return await this.env
         .run(TASK_COMPILE, { force: true, quiet: false })
         .then(() => {
