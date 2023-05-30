@@ -9,8 +9,7 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     backgroundColor: theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
   },
   sourceLine: {
-    height: 20,
-    marginBottom: 2,
+    height: 22,
     display: "flex"
   },
   spacer: {
