@@ -130,7 +130,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-wanchain",
     "root",
     "porcini-root",
-    "hedera"
+    "hedera",
+    "symplexia",
+    "dogechain"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
