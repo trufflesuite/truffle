@@ -48,7 +48,9 @@ function MantineGlobal(): JSX.Element {
             // class for highlighting source material in debugger
             ".truffle-debugger-text-highlighted": {
               backgroundColor:
-                colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
+                colorScheme === "dark" ? "#4444aa60" : "#ffff0050",
+              display: "inline-block",
+              height: "100%"
             },
 
             ".truffle-debugger-input-and-button": {
