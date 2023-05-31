@@ -300,7 +300,8 @@ describe("Overload resolution", () => {
 
     it("Encodes as string as last resort with strict booleans on", async () => {
       const { abi, tx } = await encoder.encodeTransaction("overloaded", [""], {
-        allowOptions: true
+        allowOptions: true,
+        strictBooleans: true
       });
       assert.lengthOf(abi.inputs, 1);
       assert.strictEqual(abi.inputs[0].type, "string");
