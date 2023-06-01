@@ -16,6 +16,7 @@ export function convertSourceToHtml({
   source: Source;
   sourceRange: SourceRange;
 }) {
+  // DETERMINE WHERE TEXT IS HIGHLIGHTED AND MARK WITH COMMENTS
   // add comment markers for where spans will go later designating debugger
   // highlighting - comments so lowlight doesn't choke on html
   const sourceWithHighlightedMarkings = addTextHighlightedClass(
@@ -23,70 +24,21 @@ export function convertSourceToHtml({
     sourceRange
   );
 
-  // run the source through lowlight for syntax highlighting
+  // ADD SYNTAX HIGHLIGHTING (HTML) AND BREAK INTO INDIVIDUAL LINES
   const sourceWithSyntaxHighlighting = addSyntaxHighlighting(
     sourceWithHighlightedMarkings
   ).split("\n");
 
+  // COMPLETE LOWLIGHT'S HTML SINCE WE BROKE THE SOURCE INTO LINES
   // HACK: we need to detect where lowlight added spans for multiline comments
   // and add more because we break the source into lines
   const sourceWithAddedSpans = addMultilineCommentSpans(
     sourceWithSyntaxHighlighting
   );
 
+  // REPLACE OUR HIGHLIGHTING MARKERS WITH HTML
   // replace comment markers with spans denoting the debugger's highlighted text
   return replaceTextHighlightedMarkings(sourceWithAddedSpans);
-}
-
-export function addMultilineCommentSpans(sourceLines: string[]) {
-  let inMultilineComment: boolean = false;
-  const lowlightCommentSpan = `<span class="hljs-comment">`;
-  const closingSpan = `</span>`;
-  const sourceWithSpans: string[] = [];
-  for (const line of sourceLines) {
-    if (
-      !inMultilineComment &&
-      line.includes(lowlightCommentSpan) &&
-      !line.slice(line.indexOf(lowlightCommentSpan)).includes(closingSpan)
-    ) {
-      // line where a multiline comment begins with no closing span
-      inMultilineComment = true;
-      sourceWithSpans.push(line + closingSpan);
-    } else if (inMultilineComment && !line.includes(closingSpan)) {
-      // line in the middle of a multiline comment without closing span
-      sourceWithSpans.push(lowlightCommentSpan + line + closingSpan);
-    } else if (inMultilineComment && line.includes(closingSpan)) {
-      // line where a multiline comment begins
-      sourceWithSpans.push(lowlightCommentSpan + line);
-      inMultilineComment = false;
-    } else {
-      // line of code not in a multiline comment
-      sourceWithSpans.push(line);
-    }
-  }
-  return sourceWithSpans;
-}
-
-export function getCurrentSourceRange(session: Session) {
-  const traceIndex = session.view($.trace.index);
-  const { id } = session.view($.sourcemapping.current.source);
-  const {
-    lines: { start, end }
-  } = session.view($.sourcemapping.current.sourceRange);
-  return {
-    traceIndex,
-    source: { id },
-    start,
-    end
-  };
-}
-
-lowlight.registerLanguage("solidity", solidity);
-const processor = unified().use(rehypeStringify);
-
-export function addSyntaxHighlighting(source: Source) {
-  const highlighted = lowlight.highlight("solidity", source.contents);
-  return processor.stringify(highlighted);
 }
 
 const textHighlightingBeginsMarker = ` /****truffle-debugger-highlight-begin****/`;
@@ -96,6 +48,7 @@ const closingSpan = `</span>`;
 // lowlight wraps our markers in spans which we need to remove when we replace
 // the markers with our spans for highlighting
 const highlightJsCommentSpan = `<span class=\"hljs-comment\">`;
+
 export function addTextHighlightedClass(
   source: Source,
   sourceRange: SourceRange
@@ -168,6 +121,57 @@ export function addTextHighlightedClass(
     ...source,
     contents: editedLines.join("\n")
   };
+}
+
+export function addMultilineCommentSpans(sourceLines: string[]) {
+  let inMultilineComment: boolean = false;
+  const lowlightCommentSpan = `<span class="hljs-comment">`;
+  const closingSpan = `</span>`;
+  const sourceWithSpans: string[] = [];
+  for (const line of sourceLines) {
+    if (
+      !inMultilineComment &&
+      line.includes(lowlightCommentSpan) &&
+      !line.slice(line.indexOf(lowlightCommentSpan)).includes(closingSpan)
+    ) {
+      // line where a multiline comment begins with no closing span
+      inMultilineComment = true;
+      sourceWithSpans.push(line + closingSpan);
+    } else if (inMultilineComment && !line.includes(closingSpan)) {
+      // line in the middle of a multiline comment without closing span
+      sourceWithSpans.push(lowlightCommentSpan + line + closingSpan);
+    } else if (inMultilineComment && line.includes(closingSpan)) {
+      // line where a multiline comment begins
+      sourceWithSpans.push(lowlightCommentSpan + line);
+      inMultilineComment = false;
+    } else {
+      // line of code not in a multiline comment
+      sourceWithSpans.push(line);
+    }
+  }
+  return sourceWithSpans;
+}
+
+export function getCurrentSourceRange(session: Session) {
+  const traceIndex = session.view($.trace.index);
+  const { id } = session.view($.sourcemapping.current.source);
+  const {
+    lines: { start, end }
+  } = session.view($.sourcemapping.current.sourceRange);
+  return {
+    traceIndex,
+    source: { id },
+    start,
+    end
+  };
+}
+
+lowlight.registerLanguage("solidity", solidity);
+const processor = unified().use(rehypeStringify);
+
+export function addSyntaxHighlighting(source: Source) {
+  const highlighted = lowlight.highlight("solidity", source.contents);
+  return processor.stringify(highlighted);
 }
 
 export function replaceTextHighlightedMarkings(lines: string[]) {
