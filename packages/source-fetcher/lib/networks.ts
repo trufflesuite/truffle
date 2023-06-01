@@ -161,8 +161,6 @@ export const networkNamesById: { [id: number]: string } = {
   2008: "testnet-cloudwalk",
   416: "sx",
   647: "toronto-sx",
-  2000: "dogechain",
-  568: "testnet-dogechain",
   1088: "andromeda-metis",
   599: "goerli-metis",
   5551: "nahmii",
