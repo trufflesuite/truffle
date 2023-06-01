@@ -69,7 +69,7 @@ interface SourcesProps {
   sources: SourceType[];
   currentSourceRange: SourceRange;
   unknownAddresses: UnknownAddress[] | null;
-  currentSourceId: string | null;
+  currentSourceId: string | undefined;
   setCurrentSourceId: (sourceId: string) => void;
 }
 
@@ -86,9 +86,9 @@ function Sources({
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
 
-  // initialize sources after we get all of them
+  // display the first source when currentSourceRange is `undefined`
   useEffect(() => {
-    if (currentSourceId === null) {
+    if (currentSourceId === undefined) {
       const sourceIds = sources.map(({ id }) => id);
       setCurrentSourceId(sourceIds[0]);
     }
@@ -109,7 +109,7 @@ function Sources({
   const unknownSourcesExist = unknownAddresses && unknownAddresses.length > 0;
 
   let sourcesContent, unknownSourcesContent;
-  if (currentSourceId !== null) {
+  if (currentSourceId !== undefined) {
     sourcesContent = sources.map((source: SourceType) => (
       <Tabs.Panel
         key={source.id}
