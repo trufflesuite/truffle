@@ -249,6 +249,7 @@ export class VersionRange {
     const url = `${urlRoot.replace(/\/+$/, "")}/list.json`;
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
+      events.emit("fetchSolcList:succeed");
       return response.data;
     } catch (error) {
       events.emit("fetchSolcList:fail");
