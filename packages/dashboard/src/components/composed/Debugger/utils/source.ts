@@ -3,6 +3,10 @@ import rehypeStringify from "rehype-stringify";
 import { lowlight } from "lowlight/lib/core";
 import { solidity } from "highlightjs-solidity";
 import { selectors as $ } from "@truffle/debugger";
+import {
+  highlightedTextTag,
+  closingHighlightedTextTag
+} from "src/components/composed/Debugger/utils";
 import type {
   Session,
   Source,
@@ -43,7 +47,6 @@ export function convertSourceToHtml({
 
 const textHighlightingBeginsMarker = ` /****truffle-debugger-highlight-begin****/`;
 const textHighlightingEndsMarker = ` /****truffle-debugger-highlight-end****/`;
-const highlightedTextSpan = `<span class="truffle-debugger-text-highlighted">`;
 const closingSpan = `</span>`;
 // lowlight wraps our markers in spans which we need to remove when we replace
 // the markers with our spans for highlighting
@@ -184,14 +187,14 @@ export function replaceTextHighlightedMarkings(lines: string[]) {
           highlightJsCommentSpan +
           textHighlightingBeginsMarker.slice(1) +
           closingSpan,
-        highlightedTextSpan
+        highlightedTextTag
       )
       .replace(
         " " +
           highlightJsCommentSpan +
           textHighlightingEndsMarker.slice(1) +
           closingSpan,
-        closingSpan
+        closingHighlightedTextTag
       );
   });
 }
