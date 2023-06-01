@@ -3,10 +3,7 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
-import {
-  removeLibraries,
-  includeDefaults
-} from "./common";
+import { removeLibraries } from "./common";
 import { networkNamesById, networksByName } from "./networks";
 import retry from "async-retry";
 
@@ -238,11 +235,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         version: metadata.compiler.version,
         //we also pass the flag to remove compilationTarget, as its
         //presence can cause compile errors
-        settings: includeDefaults(
-          removeLibraries(metadata.settings, {
-            alsoRemoveCompilationTarget: true
-          })
-        ),
+        settings: removeLibraries(metadata.settings, {
+          alsoRemoveCompilationTarget: true
+        }),
         specializations: {
           constructorArguments,
           libraries: metadata.settings.libraries
