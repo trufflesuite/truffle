@@ -1,5 +1,9 @@
 import { createStyles } from "@mantine/core";
 import { useDash } from "src/hooks";
+import {
+  highlightedTextTag,
+  closingHighlightedTextTag
+} from "src/components/composed/Debugger/utils";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   lineNumber: {
@@ -37,6 +41,7 @@ interface SourceLineProps {
   lastLine: boolean;
   firstHighlightedLine: boolean;
   sourceId: string;
+  lineHasHighlighting: boolean;
 }
 
 function SourceLine({
@@ -44,7 +49,8 @@ function SourceLine({
   lineNumber,
   lineNumberGutterWidth,
   lastLine,
-  sourceId
+  sourceId,
+  lineHasHighlighting
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
   const {
@@ -55,12 +61,20 @@ function SourceLine({
   } = useDash()!;
 
   if (!lastLine) line += "\n";
-  const lineNumberDisplay =
-    `<span class="${classes.lineNumber}">` +
-    " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
-    lineNumber +
-    "  " +
-    `</span>`;
+  // if the line contains highlighting we highlight the line number as well
+  const lineNumberDisplay = lineHasHighlighting
+    ? `<span class="${classes.lineNumber}">` +
+      " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
+      highlightedTextTag +
+      lineNumber +
+      closingHighlightedTextTag +
+      "  " +
+      `</span>`
+    : `<span class="${classes.lineNumber}">` +
+      " ".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
+      lineNumber +
+      "  " +
+      `</span>`;
 
   const spacer =
     breakpoints &&

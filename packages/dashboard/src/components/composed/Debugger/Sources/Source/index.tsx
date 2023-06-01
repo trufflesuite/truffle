@@ -41,14 +41,15 @@ function Source({ source, sourceRange }: SourceProps): JSX.Element {
       <pre className={classes.source}>
         {sourceLines.map((line: string, index: number) => {
           const key = `${source.id}-line-${index}`;
-          const selected =
+          const lineHasHighlighting =
             source.id === sourceRange.source.id &&
             index >= start.line &&
             (end.line === null ||
               end.column === null ||
               (end.column === 0 && index < end.line) ||
               (end.column > 0 && index <= end.line));
-          const firstHighlightedLine = selected && index === start.line;
+          const firstHighlightedLine =
+            lineHasHighlighting && index === start.line;
 
           const props = {
             key,
@@ -57,7 +58,8 @@ function Source({ source, sourceRange }: SourceProps): JSX.Element {
             lineNumberGutterWidth,
             lastLine: index === sourceLines.length - 1,
             firstHighlightedLine,
-            sourceId: source.id
+            sourceId: source.id,
+            lineHasHighlighting
           };
 
           return <SourceLine {...props} />;
