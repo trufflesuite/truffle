@@ -85,8 +85,8 @@ function Debugger(): JSX.Element {
   let currentSourceRange: SourceRange | Partial<SourceRange> = {
     traceIndex: -1
   };
-  let currentStep;
 
+  let currentStep;
   // wait until the debugger has been initialized and then get source info
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
@@ -163,18 +163,12 @@ function Debugger(): JSX.Element {
     borderBottomLeftRadius: "0px"
   };
 
-  // scroll to highlighted source as debugger steps
-
-  let currentDebuggerStep;
-  if (session) {
-    currentDebuggerStep = session.view(session.selectors.trace.index);
-  }
   useEffect(() => {
     if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
       const { source, start } = currentSourceRange!;
       scrollToLine({ sourceId: source.id, line: start.line });
     }
-  }, [currentDebuggerStep, currentSourceId]);
+  }, [currentStep, currentSourceId]);
 
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
@@ -217,11 +211,6 @@ function Debugger(): JSX.Element {
     // when source exists, that means it should be a full SourceRange
     return item.source !== undefined;
   };
-
-  if (session) {
-    currentSourceRange = getCurrentSourceRange(session);
-    currentStep = session.view(session.selectors.trace.index);
-  }
 
   let content;
   if (session && sources && isSourceRange(currentSourceRange)) {
