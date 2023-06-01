@@ -78,7 +78,9 @@ function Debugger(): JSX.Element {
     status === SessionStatus.Starting;
 
   // currentSourceId is the "active" source displayed in Sources
-  const [currentSourceId, setCurrentSourceId] = useState<string | null>(null);
+  const [currentSourceId, setCurrentSourceId] = useState<string | undefined>(
+    undefined
+  );
 
   const formDisabled = !/0x[a-z0-9]{64}/i.test(inputValue) || inputsDisabled;
 
@@ -90,6 +92,15 @@ function Debugger(): JSX.Element {
   // wait until the debugger has been initialized and then get source info
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
+    // if the starting source is unknown, we may get `undefined` in the source
+    // range - in that case we'll initialize it manually from the stacktrace
+    if (!currentSourceRange.source?.id && !currentSourceId) {
+      const currentContractAddress = session.view(
+        session.selectors.stacktrace.current.report
+      )[0].address;
+      // when the contract is "unknown", the source id will be the address
+      setCurrentSourceId(currentContractAddress);
+    }
     currentStep = session.view(session.selectors.trace.index);
   }
 
