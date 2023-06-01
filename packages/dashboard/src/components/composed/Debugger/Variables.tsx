@@ -71,8 +71,8 @@ function Variables({
       // section here is a variable category such as a Solidity built-in
       // or contract variable
       for (const section in sections) {
-        const variableValues: Array<JSX.Element> = sections[section].map(
-          (variableName: keyof typeof variables) => {
+        const variableValues: Array<JSX.Element> = sections[section]
+          .map((variableName: keyof typeof variables) => {
             if (variables) {
               return (
                 <>
@@ -87,9 +87,11 @@ function Variables({
                   </dd>
                 </>
               );
+            } else {
+              return undefined;
             }
-          }
-        );
+          })
+          .filter((item: JSX.Element | undefined) => item);
         if (variableValues.length > 0) {
           entries.push(
             <dl key={section}>
@@ -104,7 +106,7 @@ function Variables({
     }
 
     getVariables();
-  }, [currentStep, session]);
+  }, [currentStep, session, classes.variablesTypes]);
 
   return (
     <Flex direction="column" className={classes.variablesContainer}>
