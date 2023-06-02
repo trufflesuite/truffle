@@ -27,7 +27,7 @@ function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
         <Flex>
           <Loader />
           <div className={classes.title}>
-            Preparing your debugger session...
+            Preparing your debugger session, this may take a minute.
           </div>
         </Flex>
         {ganacheLoggingOutput.length > 0 ? (
