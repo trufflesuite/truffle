@@ -204,8 +204,7 @@ const Utils = {
           : item.toString();
         const ethersBN = bigNumberify(stringValue);
         converted.push(ethersBN);
-      }
-      if (typeof item === "bigint") {
+      } else if (typeof item === "bigint") {
         converted.push(bigNumberify(item.toString()));
       } else {
         converted.push(item);
