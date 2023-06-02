@@ -18,7 +18,7 @@ export async function loadParser(
   { events, compilers: { solc: solcConfig } }: Config,
   providedSolc?: any
 ) {
-  if (providedSolc) {
+  if (providedSolc && solcConfig.parser === undefined) {
     return makeParseImports(providedSolc);
   }
   const { parser } = solcConfig;
