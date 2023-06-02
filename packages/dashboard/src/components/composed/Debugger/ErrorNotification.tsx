@@ -34,7 +34,7 @@ function ErrorNotification({ error }: { error: Error }): JSX.Element {
           network for your transaction. See the error below for more
           information.
         </Text>
-        <Text>{error.message}</Text>
+        <Text fw={700}>{error.message}</Text>
       </Container>
     </Flex>
   );
