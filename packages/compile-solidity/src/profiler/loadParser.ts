@@ -14,10 +14,13 @@ import type Config from "@truffle/config";
  * up to twice: first time as usual, to get the specific version, then a second
  * time to get the solcjs of that version.
  */
-export async function loadParser({
-  events,
-  compilers: { solc: solcConfig }
-}: Config) {
+export async function loadParser(
+  { events, compilers: { solc: solcConfig } }: Config,
+  providedSolc?: any
+) {
+  if (providedSolc && solcConfig.parser === undefined) {
+    return makeParseImports(providedSolc);
+  }
   const { parser } = solcConfig;
 
   const supplier = new CompilerSupplier({ events, solcConfig });
