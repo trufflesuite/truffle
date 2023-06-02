@@ -52,7 +52,7 @@
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^4.9.5"
+    "typescript": "^4.0.3"
   },
   "peerDependencies": {
     "hardhat": "^2.0.0"

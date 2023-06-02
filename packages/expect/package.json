@@ -31,8 +31,8 @@
     "@types/node": "~12.12.0",
     "mocha": "10.1.0",
     "tsd": "^0.25.0",
-    "ttypescript": "1.5.15",
-    "typescript": "^4.9.5",
+    "ttypescript": "1.5.13",
+    "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1"
   },
   "keywords": [

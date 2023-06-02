@@ -66,9 +66,9 @@
     "ts-jest": "29.0.3",
     "ts-node": "10.7.0",
     "tsconfig-paths": "^3.9.0",
-    "ttypescript": "1.5.15",
+    "ttypescript": "1.5.13",
     "typedoc": "0.22.18",
-    "typescript": "^4.9.5",
+    "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1",
     "web3-core": "1.10.0"
   },
