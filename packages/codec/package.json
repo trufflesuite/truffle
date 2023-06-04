@@ -46,7 +46,7 @@
     "@types/semver": "^6.0.0",
     "@types/utf8": "^2.1.6",
     "ts-node": "10.7.0",
-    "ttypescript": "1.5.13",
+    "ttypescript": "1.5.15",
     "typedoc": "0.22.18",
     "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1"
