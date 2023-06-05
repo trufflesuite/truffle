@@ -1,4 +1,4 @@
-import { Flex, Text, Container, createStyles } from "@mantine/core";
+import { Flex, Text, createStyles } from "@mantine/core";
 import { WarningIcon } from "src/components/composed/Debugger/WarningIcon";
 
 const useStyles = createStyles(theme => ({
@@ -7,7 +7,8 @@ const useStyles = createStyles(theme => ({
     height: "100%"
   },
   notificationAndError: {
-    maxWidth: "75%",
+    wordWrap: "break-word",
+    maxWidth: "55%",
     backgroundColor:
       theme.colorScheme === "dark"
         ? "#082720"
