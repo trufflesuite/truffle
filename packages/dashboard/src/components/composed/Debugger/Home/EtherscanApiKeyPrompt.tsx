@@ -23,8 +23,7 @@ const useStyles = createStyles(theme => ({
     "&:hover": {
       cursor: "pointer"
     },
-    "color": "blue",
-    "textAlign": "right",
+    "color": "#E03131",
     "fontSize": 14
   },
   halfWidth: {
@@ -87,17 +86,22 @@ function EtherScanApiKeyPrompt() {
   } else {
     const onElementClick = () => removeEtherscanApiKey();
     return (
-      <Stack align="center" className={classes.etherscanMessageContainer}>
-        <Text size="sm" className={classes.halfWidth}>
-          We have found an Etherscan API key that you previously entered in your
-          browser. To delete this from browser storage, click the link below.
+      <Stack className={classes.promptContainer}>
+        <Text size="sm">
+          <b>
+            We found an EtherScan API key that you've previously entered via
+            your browser.
+          </b>{" "}
+          Delete it from browser storage to use another key.
         </Text>
         <Text
           size="sm"
-          className={`${classes.reset} ${classes.halfWidth}`}
+          className={`${classes.reset}`}
           onClick={onElementClick}
+          underline={true}
+          weight={700}
         >
-          delete your api key
+          Delete API Key
         </Text>
       </Stack>
     );
