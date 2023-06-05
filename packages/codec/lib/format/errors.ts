@@ -1003,9 +1003,9 @@ export interface InternalFunctionInABIError {
 }
 
 /**
- * This doesn't really belong here, but we need something for
- * when re-encoding doesn't match and we're decoding a transaction
- * (since there we have to error instead of just skipping).
+ * This isn't really an error that one can get as part of a `Result`, but we
+ * need something for when re-encoding doesn't match and we're decoding a
+ * transaction (since there we have to error instead of just skipping).
  *
  * @Category Internal-use errors
  */

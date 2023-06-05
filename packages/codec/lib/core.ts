@@ -52,7 +52,11 @@ export function* decodeVariable(
 export function* decodeCalldata(
   info: Evm.EvmInfo,
   isConstructor?: boolean, //ignored if context! trust context instead if have
-  strictAbiMode?: boolean //used for selector-based decoding
+  strictAbiMode?: boolean //used for selector-based decoding. has two effects:
+  //1. sets the strictAbiMode option when calling decode(), causing it to throw
+  //if it encounters a problem rather than returning an ErrorResult;
+  //2. performs a re-encoding check at the end (like decodeEvevent and decodeReturndata)
+  //and throws if it fails
 ): Generator<DecoderRequest, CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if (context === null) {
