@@ -10,6 +10,7 @@ import { maxValue, minValue, places } from "./utils";
 export function isMoreSpecificMultiple(
   types1: Format.Types.OptionallyNamedType[],
   types2: Format.Types.OptionallyNamedType[],
+  strictBooleans: boolean,
   userDefinedTypes: Format.Types.TypesById
 ): boolean {
   //just wrap the types in tuples and defer to isMoreSpecific()
@@ -21,7 +22,13 @@ export function isMoreSpecificMultiple(
     typeClass: "tuple",
     memberTypes: types2
   };
-  return isMoreSpecific(combinedType1, combinedType2, userDefinedTypes, true);
+  return isMoreSpecific(
+    combinedType1,
+    combinedType2,
+    strictBooleans,
+    userDefinedTypes,
+    true
+  );
   //that last flag is so we ignore variable names at top level
 }
 
@@ -30,6 +37,7 @@ export function isMoreSpecificMultiple(
 export function isMoreSpecific(
   type1: Format.Types.Type,
   type2: Format.Types.Type,
+  strictBooleans: boolean,
   userDefinedTypes: Format.Types.TypesById,
   ignoreComponentNames: boolean = false //this flag is *not* applied recursively!
 ): boolean {
@@ -40,7 +48,7 @@ export function isMoreSpecific(
   if (type2.typeClass === "userDefinedValueType") {
     type2 = getUnderlyingType(type2, userDefinedTypes);
   }
-  const typeClasses = [
+  const typeClassesMinusStringAndBool = [
     ["options"],
     ["array"],
     ["struct", "tuple"],
@@ -48,10 +56,11 @@ export function isMoreSpecific(
     ["bytes"],
     ["function"],
     ["uint", "int", "fixed", "ufixed"],
-    ["enum"],
-    ["string"],
-    ["bool"]
+    ["enum"]
   ];
+  const typeClasses = typeClassesMinusStringAndBool.concat(
+    strictBooleans ? [["bool"], ["string"]] : [["string"], ["bool"]]
+  );
   //for each type, what's the first one it counts as?
   const index1 = typeClasses.findIndex(classes =>
     classes.includes(type1.typeClass)
@@ -78,12 +87,14 @@ export function isMoreSpecific(
         //we haven't actually checked visibility, so we'll have to coerce
         <Format.Types.FunctionExternalType>type1,
         <Format.Types.FunctionExternalType>type2,
+        strictBooleans,
         userDefinedTypes
       );
     case "array":
       return isMoreSpecificArray(
         type1,
         <Format.Types.ArrayType>type2,
+        strictBooleans,
         userDefinedTypes
       );
     case "bytes":
@@ -102,6 +113,7 @@ export function isMoreSpecific(
       return isMoreSpecificTuple(
         type1,
         <Format.Types.TupleType>type2,
+        strictBooleans,
         userDefinedTypes,
         ignoreComponentNames
       );
@@ -192,6 +204,7 @@ function isMoreSpecificString(
 function isMoreSpecificArray(
   type1: Format.Types.ArrayType,
   type2: Format.Types.ArrayType,
+  strictBooleans: boolean,
   userDefinedTypes: Format.Types.TypesById
 ): boolean {
   //static is more specific than dynamic, but
@@ -205,13 +218,19 @@ function isMoreSpecificArray(
   //length and types must both be more specific
   return (
     moreSpecificLength &&
-    isMoreSpecific(type1.baseType, type2.baseType, userDefinedTypes)
+    isMoreSpecific(
+      type1.baseType,
+      type2.baseType,
+      strictBooleans,
+      userDefinedTypes
+    )
   );
 }
 
 function isMoreSpecificFunction(
   type1: Format.Types.FunctionExternalType,
   type2: Format.Types.FunctionExternalType,
+  strictBooleans: boolean,
   userDefinedTypes?: Format.Types.TypesById
 ): boolean {
   switch (type2.kind) {
@@ -238,6 +257,7 @@ function isMoreSpecificFunction(
               !isMoreSpecific(
                 type1.outputParameterTypes[i],
                 type2.outputParameterTypes[i],
+                strictBooleans,
                 userDefinedTypes
               )
             ) {
@@ -256,6 +276,7 @@ function isMoreSpecificFunction(
                 //swapped for contravariance, I guess...?
                 type2.inputParameterTypes[i],
                 type1.inputParameterTypes[i],
+                strictBooleans,
                 userDefinedTypes
               )
             ) {
@@ -282,23 +303,24 @@ function isMutabilityMoreSpecific(
 function isMoreSpecificTuple(
   type1: TupleLikeType,
   type2: TupleLikeType,
+  strictBooleans: boolean,
   userDefinedTypes: Format.Types.TypesById,
   ignoreComponentNames: boolean = false
 ): boolean {
   debug("type1: %O", type1);
   debug("type2: %O", type2);
-  const fullType1 = (<TupleLikeType>Format.Types.fullType(
-    type1,
-    userDefinedTypes
-  ));
-  const fullType2 = (<TupleLikeType>Format.Types.fullType(
-    type2,
-    userDefinedTypes
-  ));
+  const fullType1 = <TupleLikeType>(
+    Format.Types.fullType(type1, userDefinedTypes)
+  );
+  const fullType2 = <TupleLikeType>(
+    Format.Types.fullType(type2, userDefinedTypes)
+  );
   const types1: Format.Types.Type[] = (<Format.Types.OptionallyNamedType[]>(
-    fullType1.memberTypes)).map(member => member.type);
+    fullType1.memberTypes
+  )).map(member => member.type);
   const types2: Format.Types.Type[] = (<Format.Types.OptionallyNamedType[]>(
-    fullType2.memberTypes)).map(member => member.type);
+    fullType2.memberTypes
+  )).map(member => member.type);
   //lengths must match
   if (types1.length !== types2.length) {
     return false;
@@ -306,7 +328,9 @@ function isMoreSpecificTuple(
   //individual types must satisfy isMoreSpecific
   for (let i = 0; i < types1.length; i++) {
     //note we do *not* pass along the ignoreComponentNames flag
-    if (!isMoreSpecific(types1[i], types2[i], userDefinedTypes)) {
+    if (
+      !isMoreSpecific(types1[i], types2[i], strictBooleans, userDefinedTypes)
+    ) {
       return false;
     }
   }
@@ -316,9 +340,11 @@ function isMoreSpecificTuple(
     //(and all exist)
     //then compare by component names in addition to by position
     let names1: string[] = (<Format.Types.OptionallyNamedType[]>(
-      fullType1.memberTypes)).map(member => member.name);
+      fullType1.memberTypes
+    )).map(member => member.name);
     let names2: string[] = (<Format.Types.OptionallyNamedType[]>(
-      fullType2.memberTypes)).map(member => member.name);
+      fullType2.memberTypes
+    )).map(member => member.name);
     //we just created these via a map so it's OK to sort in-place
     names1.sort();
     names2.sort();
@@ -331,7 +357,7 @@ function isMoreSpecificTuple(
     }
     if (namesEqual) {
       debug("names equal");
-      for(let i = 0; i < types1.length; i++) {
+      for (let i = 0; i < types1.length; i++) {
         const type1 = types1[i];
         const name = fullType1.memberTypes[i].name;
         const type2 = fullType2.memberTypes.find(
@@ -340,7 +366,7 @@ function isMoreSpecificTuple(
         debug("name: %s", name);
         debug("type1: %O", type1);
         debug("type2: %O", type2);
-        if (!isMoreSpecific(type1, type2, userDefinedTypes)) {
+        if (!isMoreSpecific(type1, type2, strictBooleans, userDefinedTypes)) {
           debug("returning false");
           return false;
         }

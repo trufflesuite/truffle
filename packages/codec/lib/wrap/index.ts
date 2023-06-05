@@ -268,6 +268,7 @@ export function* resolveAndWrap(
         !isMoreSpecificMultiple(
           comparisonResolution.arguments,
           resolution.arguments,
+          strictBooleans,
           userDefinedTypes
         ) ||
         //because the comparison is nonstrict, this comparison is added to
@@ -278,6 +279,7 @@ export function* resolveAndWrap(
         isMoreSpecificMultiple(
           resolution.arguments,
           comparisonResolution.arguments,
+          strictBooleans,
           userDefinedTypes
         )
     )
