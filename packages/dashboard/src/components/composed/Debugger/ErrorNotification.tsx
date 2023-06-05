@@ -7,7 +7,8 @@ const useStyles = createStyles(theme => ({
     height: "100%"
   },
   notificationAndError: {
-    maxWidth: "75%",
+    wordWrap: "break-word",
+    maxWidth: "55%",
     backgroundColor:
       theme.colorScheme === "dark"
         ? "#082720"
