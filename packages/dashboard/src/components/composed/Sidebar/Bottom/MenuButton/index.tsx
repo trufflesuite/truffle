@@ -1,9 +1,14 @@
 import { Menu, Text, useMantineColorScheme, createStyles } from "@mantine/core";
+import { showNotification, hideNotification } from "@mantine/notifications";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "@wagmi/core";
 import { Slash } from "react-feather";
 import { useDash } from "src/hooks";
 import Button from "src/components/composed/Sidebar/Bottom/MenuButton/Button";
+import {
+  frameWalletNotifications,
+  frameWalletNotificationId
+} from "src/utils/notifications";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, fn } = theme;
@@ -33,7 +38,20 @@ function MenuButton(): JSX.Element {
   const { classes } = useStyles();
 
   if (!isConnected) {
-    return <Button onClick={() => void connect()} />;
+    return (
+      <Button
+        onClick={async () => {
+          try {
+            await window.ethereum?.request({ method: "eth_requestAccounts" });
+            hideNotification(frameWalletNotificationId);
+          } catch (err) {
+            if (/^No Frame account selected$/i.test((err as any)?.message))
+              showNotification(frameWalletNotifications["no-account"]);
+          }
+          connect();
+        }}
+      />
+    );
   } else {
     return (
       <Menu
