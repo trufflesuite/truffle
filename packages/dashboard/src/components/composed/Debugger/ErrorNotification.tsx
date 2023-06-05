@@ -1,4 +1,4 @@
-import { Flex, Text, Container, createStyles } from "@mantine/core";
+import { Flex, Text, createStyles } from "@mantine/core";
 import { WarningIcon } from "src/components/composed/Debugger/WarningIcon";
 
 const useStyles = createStyles(theme => ({
