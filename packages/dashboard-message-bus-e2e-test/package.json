@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@truffle/dashboard-message-bus-e2e-test",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "Private e2e test package for testing the dashboard-message-bus and the dashboard-message-bus-client without circular dependencies",
   "scripts": {
     "test": "jest --verbose"
@@ -24,10 +24,10 @@
   },
   "devDependencies": {
     "@ganache/ethereum": "^0.1.5",
-    "@truffle/dashboard": "^0.3.21",
-    "@truffle/dashboard-message-bus": "^0.1.10",
-    "@truffle/dashboard-message-bus-client": "^0.1.10",
-    "@truffle/dashboard-message-bus-common": "^0.1.5",
+    "@truffle/dashboard": "^0.3.22",
+    "@truffle/dashboard-message-bus": "^0.1.11",
+    "@truffle/dashboard-message-bus-client": "^0.1.11",
+    "@truffle/dashboard-message-bus-common": "^0.1.6",
     "@types/debug": "^4.1.5",
     "@types/jest": "^27.0.3",
     "@types/node": "~12.12.0",
