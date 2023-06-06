@@ -6,8 +6,8 @@ import { Slash } from "react-feather";
 import { useDash } from "src/hooks";
 import Button from "src/components/composed/Sidebar/Bottom/MenuButton/Button";
 import {
-  frameWalletNotifications,
-  frameWalletNotificationId
+  walletConnectionNotifications,
+  walletConnectionNotificationId
 } from "src/utils/notifications";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
@@ -43,10 +43,18 @@ function MenuButton(): JSX.Element {
         onClick={async () => {
           try {
             await window.ethereum?.request({ method: "eth_requestAccounts" });
-            hideNotification(frameWalletNotificationId);
+            hideNotification(walletConnectionNotificationId);
           } catch (err) {
-            if (/^No Frame account selected$/i.test((err as any)?.message))
-              showNotification(frameWalletNotifications["no-account"]);
+            const { message } = (err as any) || {};
+            showNotification(
+              /^No Frame account selected$/i.test(message)
+                ? walletConnectionNotifications["no-frame-account"]()
+                : /^Permission denied, approve .* in Frame to continue$/i.test(
+                    message
+                  )
+                ? walletConnectionNotifications["no-frame-permission"]()
+                : walletConnectionNotifications["general"](message)
+            );
           }
           connect();
         }}
