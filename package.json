@@ -29,7 +29,7 @@
     "lerna-update-wizard": "1.1.2",
     "lint-staged": "^12.1.2",
     "nyc": "15.1.0",
-    "prettier": "^2.5.1",
+    "prettier": "^2.8.8",
     "prs-merged-since": "^1.1.0",
     "typescript": "^4.9.5"
   },
