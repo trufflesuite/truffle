@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.13",
+  "version": "0.2.14",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -24,7 +24,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.2.0",
+    "@truffle/error": "^0.2.1",
     "app-module-path": "^2.2.0",
     "original-require": "^1.0.1"
   },

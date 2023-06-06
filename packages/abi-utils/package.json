@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utilities for working with ABIs",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
