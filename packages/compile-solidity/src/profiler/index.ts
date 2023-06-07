@@ -13,9 +13,9 @@ export const Profiler = {
 
   // Returns the minimal set of sources to pass to solc as compilations targets,
   // as well as the complete set of sources so solc can resolve the comp targets' imports.
-  requiredSources: async (options: Config) => {
+  requiredSources: async (options: Config, solc?: any) => {
     // get parser
-    const parseImports = await loadParser(options);
+    const parseImports = await loadParser(options, solc);
 
     // generate profiler
     const profiler = new TruffleProfiler({

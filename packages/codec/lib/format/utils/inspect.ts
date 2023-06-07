@@ -30,6 +30,12 @@ export interface ResultInspectorOptions {
    * the address.  (By default it displays only the ENS name.)
    */
   noHideAddress?: boolean;
+  /**
+   * This flag, if set, causes mappings to be rendered via objects
+   * rather than Maps.  This is intended for compatibility and not
+   * recommended for normal use.
+   */
+  renderMappingsViaObjects?: boolean;
 }
 
 /**
@@ -149,17 +155,37 @@ export class ResultInspector {
             );
           }
           case "mapping":
-            return util.inspect(
-              new Map(
-                (<Format.Values.MappingValue>this.result).value.map(
-                  ({ key, value }) => [
-                    new ResultInspector(key, this.options),
-                    new ResultInspector(value, this.options)
-                  ]
-                )
-              ),
-              options
-            );
+            if (!this.options.renderMappingsViaObjects) {
+              //normal case
+              return util.inspect(
+                new Map(
+                  (<Format.Values.MappingValue>this.result).value.map(
+                    ({ key, value }) => [
+                      new ResultInspector(key, this.options),
+                      new ResultInspector(value, this.options)
+                    ]
+                  )
+                ),
+                options
+              );
+            } else {
+              //compatibility case
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...(<Format.Values.MappingValue>this.result).value.map(
+                    ({ key, value }) => ({
+                      //need to stringify key
+                      [util.inspect(
+                        new ResultInspector(key, this.options),
+                        options
+                      )]: new ResultInspector(value, this.options)
+                    })
+                  )
+                ),
+                options
+              );
+            }
           case "struct": {
             let coercedResult = <Format.Values.StructValue>this.result;
             if (coercedResult.reference !== undefined) {

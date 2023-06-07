@@ -165,7 +165,8 @@ export const Compile = {
           name: "solc",
           version: solc.version()
         }
-      })
+      }),
+      solc
     );
     debug("compilationTargets: %O", compilationTargets);
 

@@ -5,7 +5,7 @@
     "**/test/*"
   ],
   "out": "../dist/docs",
-  "readme": "../README.md",
+  "readme": "./README.md",
   "media": "./media",
   "json": "./api.json",
   "tsconfig": "./tsconfig.json",

@@ -868,12 +868,15 @@ export class ContractEncoder {
    * 6. external function pointers
    * 7. numeric types
    * 8. `enum`s
-   * 9. `string`
-   * 10. `bool`
+   * 9. `string` [is #10 with `strictBooleans`]
+   * 10. `bool` [is #9 with `strictBooleans`]
    *
    * (Note that if the encoder does not know that a certain argument is
    * supposed to be an enum, it will of course just be treated as the
    * underlying numeric type.)
+   *
+   * (If the `strictBooleans` option is passed, the priority order of `string`
+   * and `bool` is swapped.)
    *
    * Moreover, within each category there is a priority ordering (which is
    * not always total).  Specifically:

@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-message-bus-common",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Message types that are used when communicating with the Truffle dashboard message bus",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,6 +30,6 @@
   },
   "devDependencies": {
     "@types/node": "~12.12.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.9.5"
   }
 }

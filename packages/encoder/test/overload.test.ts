@@ -279,6 +279,40 @@ describe("Overload resolution", () => {
       );
     });
 
+    it("Prefers bools to strings with strict booleans on", async () => {
+      const { abi, tx } = await encoder.encodeTransaction(
+        "overloaded",
+        ["true"],
+        {
+          allowOptions: true,
+          strictBooleans: true
+        }
+      );
+      assert.lengthOf(abi.inputs, 1);
+      assert.strictEqual(abi.inputs[0].type, "bool");
+      const selector = Codec.AbiData.Utils.abiSelector(abi);
+      assert.strictEqual(
+        tx.data,
+        selector +
+          "0000000000000000000000000000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Encodes as string as last resort with strict booleans on", async () => {
+      const { abi, tx } = await encoder.encodeTransaction("overloaded", [""], {
+        allowOptions: true,
+        strictBooleans: true
+      });
+      assert.lengthOf(abi.inputs, 1);
+      assert.strictEqual(abi.inputs[0].type, "string");
+      const selector = Codec.AbiData.Utils.abiSelector(abi);
+      assert.strictEqual(
+        tx.data,
+        selector +
+          "00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000"
+      );
+    });
+
     it("Treats UDVT same as underlying type (bytes1)", async () => {
       const { abi, tx } = await encoder.encodeTransaction(
         "overloaded",
