@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  .prefix,
+  .suffix,
+  .children {
+    display: flex;
+  }
+  .toggle {
+    height: 0.8rem;
+    background: transparent;
+    border: none;
+    color: #6c6c6c;
+    cursor: pointer;
+  }
+  &-wrap {
+    flex-direction: column;
+    .children {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 1rem;
+    }
+  }
+}
+
+.hide {
+  display: none !important;
+}

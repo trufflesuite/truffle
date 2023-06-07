@@ -1,0 +1,44 @@
+.link {
+  color: #888;
+  font-family: monospace;
+  text-decoration: none;
+  &:hover {
+    color: #000;
+    text-decoration: underline;
+  }
+  &-dim {
+    color: #ccc;
+  }
+}
+
+.links {
+  position: sticky;
+  top: 0;
+  width: 20%;
+  min-width: min-content;
+  max-height: 100vh;
+  overflow-y: scroll;
+  margin: 0;
+  padding: 2rem 4rem;
+  box-sizing: border-box;
+  list-style-type: square;
+  > li {
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.content {
+  padding: 4rem 10rem;
+  width: 100%;
+  .entry {
+    min-height: 200px;
+    > h2 {
+      margin-top: 0;
+    }
+  }
+  > hr {
+    width: 100%;
+    margin: 4rem 0;
+  }
+}
