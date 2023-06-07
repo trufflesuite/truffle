@@ -13,7 +13,7 @@
     "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "solc-bump": "node ./scripts/solc-bump.js",
     "update": "lernaupdate",
-    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test -- --missing .",
+    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test --ignore @truffle/codec-components -- --missing .",
     "check-truffle-namespace-dependency-versions": "node ./scripts/check-truffle-namespace-dependency-versions.js"
   },
   "devDependencies": {
