@@ -272,7 +272,27 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
         : result.ContractName === "Vyper_contract"
         ? "Vyper"
         : "Solidity";
+    // case *: TEMPORARY HACK
+    // PLEASE REMOVE AS SOON AS IS FEASIBLE
+    // See https://github.com/blockscout/blockscout/issues/7648 for an explanation of the issue
+    // This is a hack to detect the problem case, and return null there rather than return an
+    // unusable result.  (If CompilerSettings is present, that means we're in the Sourcify
+    // case or the JSON case; the JSON case will have outputSelection while the Sourcify case
+    // won't.  we also check for the presence of AdditionalSources since there's no problem
+    // otherwise.
+    // NOTE: Once blockscout fixes this bug, presumably the bug fix won't go up everywhere.
+    // Still, we can't reasonably go distinguishing based on that, so I'd suggest removing
+    // this code as soon as the bug is fixed at all.
+    if (
+      result.CompilerSettings &&
+      !result.CompilerSettings.outputSelection &&
+      result.AdditionalSources &&
+      result.AdditionalSources.length > 0
+    ) {
+      return null;
+    }
     if (language === "Vyper") {
+      //case 2: Vyper
       return {
         contractName: result.ContractName,
         sources: this.processSources(result, "Vyper"),
@@ -286,7 +306,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
         }
       };
     } else {
-      //Solidity and Yul
+      //case 3: Solidity and Yul
       return {
         contractName: result.ContractName,
         sources: this.processSources(result, language),
