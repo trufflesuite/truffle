@@ -40,7 +40,7 @@ export const initialState: State = {
     sources: null,
     unknownAddresses: null,
     session: null,
-    txToRun: null,
+    txToRun: undefined,
     breakpoints: {}
   },
   decoder: null,
