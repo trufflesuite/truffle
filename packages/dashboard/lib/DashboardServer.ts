@@ -106,12 +106,8 @@ export class DashboardServer {
       let config;
       try {
         config = Config.detect();
-      } catch (error) {
-        const notFound = "Could not find suitable configuration file.";
-        if (!error.message.includes(notFound)) {
-          throw error;
-        }
-      }
+        // we'll ignore errors as we only get the config for the api key
+      } catch {}
 
       // a key provided in the browser takes precedence over on in the config
       let etherscanKey: undefined | string;
