@@ -71,7 +71,7 @@ export interface HandleMessageAction extends BaseAction {
 
 export interface SetTxToRunAction extends BaseAction {
   type: "set-tx-to-run";
-  data: ReceivedMessageLifecycle<DashboardProviderMessage> | null;
+  data: ReceivedMessageLifecycle<DashboardProviderMessage>;
 }
 
 export interface UpdateProviderMessageSenderAction extends BaseAction {
