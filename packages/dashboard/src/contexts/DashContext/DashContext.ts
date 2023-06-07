@@ -24,7 +24,7 @@ export interface ContextValue {
     handleCompilations: () => Promise<void>;
     toggleDebuggerBreakpoint: (value: ToggleDebuggerBreakpointArgs) => void;
     setTxToRun: (
-      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => void;
   };
   dispatch?: React.Dispatch<Action>;
