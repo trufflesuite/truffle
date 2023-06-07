@@ -1,0 +1,16 @@
+{
+  "mainEntryPointFilePath": "../dist/react/index.d.ts",
+  "dtsRollup": {
+    "enabled": true,
+    "untrimmedFilePath": "../dist/react/index.d.ts"
+  },
+  "apiReport": { "enabled": false },
+  "docModel": { "enabled": false },
+  "tsdocMetadata": { "enabled": false },
+  "messages": {
+    "extractorMessageReporting": {
+      "ae-forgotten-export": { "logLevel": "none" },
+      "ae-missing-release-tag": { "logLevel": "none" }
+    }
+  }
+}

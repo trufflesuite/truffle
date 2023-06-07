@@ -34,7 +34,12 @@
     "./react-styles": "./dist/react/index.css"
   },
   "scripts": {
-    "prepare": "exit 0"
+    "build": "tsc && node ./scripts/build.js",
+    "dev": "vite",
+    "docs": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prepare": "yarn build"
   },
   "dependencies": {
     "@truffle/codec": "^0.15.2"
