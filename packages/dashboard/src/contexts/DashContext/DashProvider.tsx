@@ -330,7 +330,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       });
     },
     setTxToRun: (
-      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage> | null
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => {
       dispatch({
         type: "set-tx-to-run",

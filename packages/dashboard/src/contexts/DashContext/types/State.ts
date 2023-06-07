@@ -25,7 +25,7 @@ export interface State {
     unknownAddresses: UnknownAddress[] | null;
     session: Session | null;
     breakpoints: BreakpointState;
-    txToRun: ReceivedMessageLifecycle<DashboardProviderMessage> | null;
+    txToRun?: ReceivedMessageLifecycle<DashboardProviderMessage>;
   };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
