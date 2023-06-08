@@ -2,8 +2,6 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import path from "path";
 import getPort from "get-port";
 import open from "open";
-import { fetchAndCompile } from "@truffle/fetch-and-compile";
-import { sha1 } from "object-hash";
 import { v4 as uuid } from "uuid";
 import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import { sha1 } from "object-hash";
@@ -101,6 +99,7 @@ export class DashboardServer {
     }
 
     this.expressApp.get("/fetch-and-compile", async (req, res, next) => {
+      let result;
       try {
         const { address, networkId, etherscanApiKey } = req.query as Record<
           string,
@@ -129,7 +128,6 @@ export class DashboardServer {
             apiKey: etherscanKey
           }
         });
-
 
         result = (await fetchAndCompile(address, config)).compileResult;
       } catch (error) {
