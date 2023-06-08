@@ -7,7 +7,7 @@ const { Shims } = require("@truffle/compile-common");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Artifactor = require("@truffle/artifactor");
-const Resolver = require("@truffle/resolver");
+const Resolver = require("@truffle/resolver").default;
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
