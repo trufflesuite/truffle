@@ -230,7 +230,14 @@ async function fetchCompilationsAndAddToSession({
     if (etherscanApiKey) {
       url = url + `&etherscanApiKey=${etherscanApiKey}`;
     }
+
     const fetchResult = await fetch(url);
+    if (!fetchResult.ok) {
+      throw new Error(
+        `There was an error fetching the source material for ${address}. ` +
+          `Check the Truffle Dashboard server logging for more information.`
+      );
+    }
     const { compilations, hashes } = await fetchResult.json();
     if (compilations.length === 0) {
       unknownAddresses.push(address);
