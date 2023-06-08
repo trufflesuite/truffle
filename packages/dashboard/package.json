@@ -39,6 +39,7 @@
     "@mantine/prism": "^5.0.0",
     "@truffle/codec": "^0.15.2",
     "@truffle/config": "^1.3.57",
+    "@truffle/fetch-and-compile": "^0.5.48",
     "@truffle/dashboard-message-bus": "^0.1.11",
     "@truffle/dashboard-message-bus-client": "^0.1.11",
     "@truffle/dashboard-message-bus-common": "^0.1.6",

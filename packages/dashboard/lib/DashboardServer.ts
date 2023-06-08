@@ -2,6 +2,8 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import path from "path";
 import getPort from "get-port";
 import open from "open";
+import { fetchAndCompile } from "@truffle/fetch-and-compile";
+import { sha1 } from "object-hash";
 import { v4 as uuid } from "uuid";
 import Config from "@truffle/config";
 import {
@@ -9,6 +11,7 @@ import {
   LogMessage,
   logMessageType
 } from "@truffle/dashboard-message-bus-common";
+import type { Compilation } from "@truffle/compile-common";
 import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import cors from "cors";
@@ -94,6 +97,58 @@ export class DashboardServer {
       await this.connectToMessageBus();
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
+
+    this.expressApp.get("/fetch-and-compile", async (req, res) => {
+      const { address, networkId, etherscanApiKey } = req.query as Record<
+        string,
+        string
+      >;
+      let config;
+      try {
+        config = Config.detect();
+        // we'll ignore errors as we only get the config for the api key
+      } catch {}
+
+      // a key provided in the browser takes precedence over on in the config
+      let etherscanKey: undefined | string;
+      if (etherscanApiKey) {
+        etherscanKey = etherscanApiKey;
+      } else if (config && config.etherscan !== undefined) {
+        etherscanKey = config.etherscan.apiKey;
+      }
+
+      config = Config.default().merge({
+        networks: {
+          custom: { network_id: networkId }
+        },
+        network: "custom",
+        etherscan: {
+          apiKey: etherscanKey
+        }
+      });
+
+      let result;
+      try {
+        result = (await fetchAndCompile(address, config)).compileResult;
+      } catch (error) {
+        if (!error.message.includes("No verified sources")) {
+          throw error;
+        }
+      }
+      if (result) {
+        // we calculate hashes on the server because it is at times too
+        // resource intensive for the browser and causes it to crash
+        const hashes = result.compilations.map((compilation: Compilation) => {
+          return sha1(compilation);
+        });
+        res.json({
+          hashes,
+          compilations: result.compilations
+        });
+      } else {
+        res.json({ compilations: [] });
+      }
+    });
 
     this.expressApp.get("/analytics", (_req, res) => {
       const userConfig = Config.getUserConfig();
