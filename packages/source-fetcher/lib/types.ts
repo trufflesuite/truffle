@@ -101,7 +101,7 @@ export interface SolcSources {
 }
 
 export interface SolcInput {
-  language: "Solidity";
+  language: "Solidity" | "Yul" | "SolidityAST";
   sources: SolcSources;
   settings: SolcSettings;
 }
