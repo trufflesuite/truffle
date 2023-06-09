@@ -11,6 +11,7 @@ import Home from "src/components/composed/Debugger/Home";
 import ErrorNotification from "src/components/composed/Debugger/ErrorNotification";
 import {
   initDebugger,
+  forkNetworkWithTxAndInitDebugger,
   SessionStatus
 } from "src/components/composed/Debugger/utils";
 import { useDash } from "src/hooks";
@@ -66,6 +67,17 @@ function Debugger(): JSX.Element {
   const [error, setError] = useState<Error>();
   const [loggingOutput, setLoggingOutput] = useState<string>("");
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.Inactive);
+
+  if (txToRun && status === SessionStatus.Inactive) {
+    setStatus(SessionStatus.Initializing);
+    forkNetworkWithTxAndInitDebugger({
+      tx: txToRun,
+      operations,
+      setStatus,
+      etherscanApiKey,
+      setLoggingOutput
+    });
+  }
 
   // goToBreakpoint stores breakpoint info when a user clicks on one
   // so we can jump to it in Sources
@@ -292,15 +304,13 @@ function Debugger(): JSX.Element {
               type="text"
               placeholder="Transaction hash"
             />
-            {txToRun ? null : (
-              <Button
-                onClick={onButtonClick}
-                disabled={formDisabled}
-                style={buttonStyles}
-              >
-                Debug
-              </Button>
-            )}
+            <Button
+              onClick={onButtonClick}
+              disabled={formDisabled}
+              style={buttonStyles}
+            >
+              Debug
+            </Button>
           </div>
         </Header>
         {mainBody}
