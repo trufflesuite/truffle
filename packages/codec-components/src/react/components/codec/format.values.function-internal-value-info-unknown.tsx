@@ -1,11 +1,17 @@
 import React from "react";
 import type { Format } from "@truffle/codec";
 import { createCodecComponent } from "../../utils/create-codec-component";
+import { Code } from "../common/code";
 
 export const { FunctionInternalValueInfoUnknown } = createCodecComponent(
   "FunctionInternalValueInfoUnknown",
-  (data: Format.Values.FunctionInternalValueInfoUnknown) => (
-    // TODO
-    <span>{data.constructorProgramCounter.toString()}</span>
+  ({ context }: Format.Values.FunctionInternalValueInfoUnknown) => (
+    <Code>
+      <Code type="contract" title="type: contract">
+        {context.typeName}
+      </Code>
+      <Code type="period">.</Code>
+      <Code type="function">?</Code>
+    </Code>
   )
 );
