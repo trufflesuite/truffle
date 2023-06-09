@@ -21,6 +21,9 @@ export function createCommonComponent<
       ? React.createElement(customComponent, props as NonNullable<typeof props>)
       : createDefaultElement(props);
   }
+
+  CommonComponent.displayName = name;
+
   return {
     [name]: CommonComponent
   } as {
