@@ -140,6 +140,8 @@ function Debugger(): JSX.Element {
     });
     const ganacheOptions = {
       fork: { provider },
+      // normally Ganache forks 5 blocks behind the current block, turn this off
+      preLatestConfirmations: 0,
       logging: {
         logger: {
           log: (message: string) => {
