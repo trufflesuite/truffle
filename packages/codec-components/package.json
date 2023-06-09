@@ -1,7 +1,7 @@
 {
   "name": "@truffle/codec-components",
   "description": "UI component library for @truffle/codec data",
-  "version": "0.1.0-canary-7",
+  "version": "0.1.0-canary-8",
   "keywords": [
     "solidity",
     "ethereum",
