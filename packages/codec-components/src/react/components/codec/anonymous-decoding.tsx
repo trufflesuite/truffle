@@ -21,8 +21,7 @@ export const { AnonymousDecoding } = createCodecComponent(
         suffix={
           <>
             <Code type="bracket">)</Code>
-            {/* TODO */}
-            <Code type="default">&nbsp;anonymous</Code>
+            <Code type="anonymous-keyword">&nbsp;anonymous</Code>
           </>
         }
         empty={data.arguments.length === 0}
