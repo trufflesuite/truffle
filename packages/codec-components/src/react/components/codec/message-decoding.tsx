@@ -14,7 +14,6 @@ export const { MessageDecoding } = createCodecComponent(
           <>
             <Code type="contract">{data.class.typeName}</Code>
             <Code type="period">.</Code>
-            {/* TODO */}
             <Code type="function">{data.abi?.type || "?"}</Code>
             <Code type="bracket">(</Code>
           </>

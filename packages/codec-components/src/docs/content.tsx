@@ -104,6 +104,7 @@ const entries: ContentEntry[] = [
     name: "MessageDecoding",
     content: (
       <>
+        <p>Consider: Better display for unknown function name (no abi)</p>
         <h3>fallback</h3>
         <C.MessageDecoding data={data.messageDecoding.fallback} />
         <h3>receive</h3>
@@ -174,6 +175,7 @@ const entries: ContentEntry[] = [
     name: "UnknownBytecodeDecoding",
     content: (
       <>
+        <p>Consider: Somehow emphasize that this is a decoding</p>
         <h3>Some contract</h3>
         <C.UnknownBytecodeDecoding
           data={data.unknownBytecodeDecoding.someContract}
@@ -186,6 +188,7 @@ const entries: ContentEntry[] = [
     name: "UnknownCallDecoding",
     content: (
       <>
+        <p>Consider: Somehow emphasize that this is a decoding</p>
         <h3>0x2f048afa</h3>
         <C.UnknownCallDecoding data={data.unknownCallDecoding.decoding} />
       </>
@@ -196,6 +199,7 @@ const entries: ContentEntry[] = [
     name: "UnknownCreationDecoding",
     content: (
       <>
+        <p>Consider: Somehow emphasize that this is a decoding</p>
         <h3>Unknown</h3>
         <C.UnknownCreationDecoding
           data={data.unknownCreationDecoding.decoding}
