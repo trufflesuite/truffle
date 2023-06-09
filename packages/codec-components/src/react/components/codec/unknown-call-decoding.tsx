@@ -6,7 +6,6 @@ import { Code } from "../common/code";
 export const { UnknownCallDecoding } = createCodecComponent(
   "UnknownCallDecoding",
   ({ data }: Codec.UnknownCallDecoding) => (
-    // TODO
     <Code type="bytes" title="data sent to contract (unknown)">
       {data}
     </Code>
