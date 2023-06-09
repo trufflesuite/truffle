@@ -9,21 +9,24 @@ import { Code } from "../common/code";
 
 export const { AccessList } = createCodecComponent(
   "AccessList",
-  (data: Codec.AccessList) => (
-    <Container
-      prefix={<Code type="bracket">{useInjectedNode().prefix?.prefix}[</Code>}
-      suffix={<Code type="bracket">]</Code>}
-      empty={data.length === 0}
-    >
-      {data.map((accessListForAccess, index) => (
-        <InjectedNode
-          reset={index === data.length - 1}
-          value={{ content: { suffix: <Code type="comma">,&nbsp;</Code> } }}
-          key={index}
-        >
-          <AccessListForAddress data={accessListForAccess} />
-        </InjectedNode>
-      ))}
-    </Container>
-  )
+  (data: Codec.AccessList) => {
+    const { prefix, suffix } = useInjectedNode();
+    return (
+      <Container
+        prefix={<Code type="bracket">{prefix?.prefix}[</Code>}
+        suffix={<Code type="bracket">]{suffix?.suffix}</Code>}
+        empty={data.length === 0}
+      >
+        {data.map((accessListForAccess, index) => (
+          <InjectedNode
+            reset={index === data.length - 1}
+            value={{ content: { suffix: <Code type="comma">,&nbsp;</Code> } }}
+            key={index}
+          >
+            <AccessListForAddress data={accessListForAccess} />
+          </InjectedNode>
+        ))}
+      </Container>
+    );
+  }
 );
