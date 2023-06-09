@@ -255,7 +255,13 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private static processJsonResult(
     result: EtherscanResult,
     jsonInput: Types.SolcInput
-  ): Types.SourceInfo {
+  ): Types.SourceInfo | null {
+    if (jsonInput.language === "SolidityAST") {
+      //I don't know whether this is actually possible on Etherscan,
+      //but there's no way we can reasonably handle it, so let's
+      //just be defensive and refuse it
+      return null;
+    }
     return {
       contractName: result.ContractName,
       sources: this.processSources(jsonInput.sources),
