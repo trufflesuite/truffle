@@ -21,13 +21,15 @@ interface DirectoryEntry {
   bytes_signature: string;
 }
 
-//note: input should be 4 bytes long
-export async function fetchSignatures(selector: Uint8Array): Promise<string[]> {
+export async function fetchSignatures(
+  selector: Uint8Array, //note: input should be 4 bytes long
+  url: string
+): Promise<string[]> {
   const selectorString = Conversion.toHexString(selector);
   let page: number = 1;
   let signatures: string[] = [];
   while (true) {
-    const response = await getSuccessfulResponse(selectorString, page);
+    const response = await getSuccessfulResponse(selectorString, url, page);
     signatures = signatures.concat(
       response.results.map(({ text_signature }) => text_signature)
     ); //append new signatures
@@ -41,12 +43,13 @@ export async function fetchSignatures(selector: Uint8Array): Promise<string[]> {
 
 async function getSuccessfulResponse(
   selector: string,
+  url: string,
   page: number
 ): Promise<DirectoryResponse> {
   return await retry(
     async () =>
       (
-        await axios.get("https://www.4byte.directory/api/v1/signatures/", {
+        await axios.get(`${url}/v1/signatures/`, {
           params: {
             hex_signature: selector,
             page
