@@ -17,6 +17,8 @@ export interface CustomComponentsContextValue {
   codec?: Partial<
     CustomCodecComponents<{
       AbiArgument: Codec.AbiArgument;
+      AccessListForAddress: Codec.AccessListForAddress;
+      AccessList: Codec.AccessList;
       AnonymousDecoding: Codec.AnonymousDecoding;
       BytecodeDecoding: Codec.BytecodeDecoding;
       CalldataDecoding: Codec.CalldataDecoding;
