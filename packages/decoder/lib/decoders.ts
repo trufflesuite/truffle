@@ -49,6 +49,8 @@ import { Shims } from "@truffle/compile-common";
 const SourceMapUtils = require("@truffle/source-map-utils");
 const { default: ENS, getEnsAddress } = require("@ensdomains/ensjs");
 
+const defaultSelectorDirectory = "https://www.4byte.directory/api";
+
 /**
  * The ProjectDecoder class.  Decodes transactions and logs.  See below for a method listing.
  * @category Decoder
@@ -72,6 +74,8 @@ export class ProjectDecoder {
   private ens: any | null; //any should be ENS, sorry >_>
   private ensSettings: DecoderTypes.EnsSettings;
 
+  private selectorDirectory: string | null;
+
   private addProjectInfoNonce: number = 0;
 
   /**
@@ -80,7 +84,8 @@ export class ProjectDecoder {
   constructor(
     compilations: Compilations.Compilation[],
     provider: Provider,
-    ensSettings?: DecoderTypes.EnsSettings
+    ensSettings?: DecoderTypes.EnsSettings,
+    selectorDirectory?: DecoderTypes.SelectorDirectorySettings
   ) {
     if (!provider) {
       throw new NoProviderError();
@@ -98,6 +103,10 @@ export class ProjectDecoder {
         ensSettings?.provider !== undefined ? ensSettings?.provider : provider, //importantly, null does not trigger this case
       registryAddress: ensSettings?.registryAddress
     }; //we don't use an object spread because we want undefined to be ignored
+    this.selectorDirectory = selectorDirectory?.enabled
+      ? selectorDirectory.url ?? defaultSelectorDirectory
+      : null;
+
     let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
 
     ({
@@ -1283,11 +1292,18 @@ export class ProjectDecoder {
     additionalContexts: Contexts.Contexts,
     context: Contexts.Context | null
   ): Promise<FunctionDecoding[]> {
+    //first: bail out if no directory
+    if (this.selectorDirectory === null) {
+      return [];
+    }
     if (data.length < Evm.Utils.SELECTOR_SIZE) {
       return [];
     }
     const selector = data.slice(0, Evm.Utils.SELECTOR_SIZE);
-    const signatures: string[] = await fetchSignatures(selector);
+    const signatures: string[] = await fetchSignatures(
+      selector,
+      this.selectorDirectory
+    );
     debug("signatures: %O", signatures);
     const abis = signatures.map(Abi.parseFunctionSignature);
     const fakeContextHash =

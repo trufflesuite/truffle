@@ -67,7 +67,8 @@ describe("Selector-based decoding", function () {
 
     const decoder = await Decoder.forProject({
       provider: web3.currentProvider,
-      projectInfo: { artifacts: [abstractions.Sink] }
+      projectInfo: { artifacts: [abstractions.Sink] },
+      selectorDirectory: { enabled: true }
     });
 
     const truffleReceipt = await deployedContract.sendTransaction({
@@ -106,7 +107,8 @@ describe("Selector-based decoding", function () {
 
     const decoder = await Decoder.forProject({
       provider: web3.currentProvider,
-      projectInfo: { artifacts: [] } //no info given!
+      projectInfo: { artifacts: [] }, //no info given!
+      selectorDirectory: { enabled: true }
     });
 
     const truffleReceipt = await deployedContract.sendTransaction({
@@ -145,7 +147,8 @@ describe("Selector-based decoding", function () {
 
     const decoder = await Decoder.forProject({
       provider: web3.currentProvider,
-      projectInfo: { artifacts: [abstractions.Sink] }
+      projectInfo: { artifacts: [abstractions.Sink] },
+      selectorDirectory: { enabled: true }
     });
 
     const truffleReceipt = await deployedContract.sendTransaction({
@@ -154,6 +157,32 @@ describe("Selector-based decoding", function () {
       //second word: 33
       //third word: 0
       data: "0x00000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000210000000000000000000000000000000000000000000000000000000000000000"
+    });
+    const tx = await web3.eth.getTransaction(truffleReceipt.tx);
+
+    const overallDecoding = await decoder.decodeTransaction(tx);
+
+    assert.equal(overallDecoding.kind, "message");
+    assert.notProperty(
+      overallDecoding.interpretations,
+      "selectorBasedDecodings"
+    );
+  });
+
+  it("excludes selector-based interpretation when not enabled", async function () {
+    this.timeout(4000);
+    const deployedContract = await abstractions.Sink.deployed();
+
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: [abstractions.Sink] }
+    });
+
+    const truffleReceipt = await deployedContract.sendTransaction({
+      //selector: 0
+      //first argument: 2^255+1
+      //second argument: 1
+      data: "0x0000000010000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000001"
     });
     const tx = await web3.eth.getTransaction(truffleReceipt.tx);
 
