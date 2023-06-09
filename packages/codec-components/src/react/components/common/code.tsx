@@ -20,6 +20,7 @@ export type CodeProps = {
     | "function"
     | "event"
     | "event-keyword"
+    | "anonymous-keyword"
     | "error"
     | "revert-keyword"
     | "bracket"
