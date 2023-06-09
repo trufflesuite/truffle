@@ -10,7 +10,8 @@ export async function forkNetworkWithTxAndInitDebugger({
   tx,
   operations,
   setStatus,
-  etherscanApiKey
+  etherscanApiKey,
+  setLoggingOutput
 }: any) {
   const { method, params } = tx.message.payload;
   const ganacheOptions = {
@@ -20,8 +21,16 @@ export async function forkNetworkWithTxAndInitDebugger({
     },
     wallet: {
       unlockedAccounts: [params[0].from]
+    },
+    logging: {
+      logger: {
+        log: (message: string) => {
+          setLoggingOutput(message);
+        }
+      }
     }
   };
+
   // @ts-ignore
   const forkedProvider = ganacheProvider(ganacheOptions);
   const networkId = await forkedProvider.request({
