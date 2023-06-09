@@ -1,4 +1,6 @@
 export * from "./components/codec/abi-argument";
+export * from "./components/codec/access-list-for-address";
+export * from "./components/codec/access-list";
 export * from "./components/codec/anonymous-decoding";
 export * from "./components/codec/bytecode-decoding";
 export * from "./components/codec/calldata-decoding";
