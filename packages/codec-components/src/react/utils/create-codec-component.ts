@@ -45,6 +45,8 @@ export function createCodecComponent<
       : createDefaultElement(data);
   }
 
+  PolymorphicComponent.displayName = name;
+
   return {
     [name]: PolymorphicComponent
   } as {
