@@ -1,9 +1,11 @@
 import React from "react";
 import type { Format } from "@truffle/codec";
 import { createCodecComponent } from "../../utils/create-codec-component";
+import { CodecError } from "../common/codec-error";
 
 export const { UserDefinedTypeNotFoundError } = createCodecComponent(
   "UserDefinedTypeNotFoundError",
-  // TODO
-  (data: Format.Errors.UserDefinedTypeNotFoundError) => <span>{data.kind}</span>
+  ({ kind, type }: Format.Errors.UserDefinedTypeNotFoundError) => (
+    <CodecError kind={kind}>{type.typeName}</CodecError>
+  )
 );

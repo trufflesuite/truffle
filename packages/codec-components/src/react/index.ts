@@ -91,6 +91,9 @@ export * from "./components/codec/format.errors.user-defined-type-not-found-erro
 export * from "./components/codec/format.errors.user-defined-value-type-error-result";
 export * from "./components/codec/format.errors.user-defined-value-type-error";
 export * from "./components/codec/format.errors.wrapped-error";
+export * from "./components/codec/format.storage.range";
+export * from "./components/codec/format.storage.slot";
+export * from "./components/codec/format.storage.storage-position";
 export * from "./components/codec/format.values.abi-result";
 export * from "./components/codec/format.values.abi-value";
 export * from "./components/codec/format.values.address-result";
@@ -177,6 +180,7 @@ export * from "./components/codec/unknown-creation-decoding";
 
 export * from "./components/common/abi-arguments";
 export * from "./components/common/code";
+export * from "./components/common/codec-error";
 export * from "./components/common/container";
 
 export * from "./components/providers/codec-components";

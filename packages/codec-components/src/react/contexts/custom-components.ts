@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import type Codec from "@truffle/codec";
 import type { AbiArgumentsProps } from "../components/common/abi-arguments";
 import type { CodeProps } from "../components/common/code";
+import type { CodecErrorProps } from "../components/common/codec-error";
 import type { ContainerProps } from "../components/common/container";
 
 export type CustomComponent<P> = (props: P) => JSX.Element;
@@ -108,6 +109,9 @@ export interface CustomComponentsContextValue {
       UserDefinedValueTypeErrorResult: Codec.Format.Errors.UserDefinedValueTypeErrorResult;
       UserDefinedValueTypeError: Codec.Format.Errors.UserDefinedValueTypeError;
       WrappedError: Codec.Format.Errors.WrappedError;
+      Range: Codec.Storage.Range;
+      Slot: Codec.Storage.Slot;
+      StoragePosition: Codec.Storage.StoragePosition;
       AbiResult: Codec.Format.Values.AbiResult;
       AbiValue: Codec.Format.Values.AbiValue;
       AddressResult: Codec.Format.Values.AddressResult;
@@ -197,6 +201,7 @@ export interface CustomComponentsContextValue {
     CustomCommonComponents<{
       AbiArguments: AbiArgumentsProps;
       Code: CodeProps;
+      CodecError: CodecErrorProps;
       Container: ContainerProps;
     }>
   >;
