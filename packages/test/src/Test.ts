@@ -320,7 +320,7 @@ export const Test = {
     global.interfaceAdapter = interfaceAdapter;
     // @ts-ignore
     global.web3 = web3;
-    const resolvedChai = config.chaiOverride ? config.chaiOverride : chai;
+    const resolvedChai = config.chai?.package ?? chai;
     // @ts-ignore
     global.assert = resolvedChai.assert;
     // @ts-ignore
