@@ -412,7 +412,15 @@ export class ProjectDecoder {
     }
     if (name !== null) {
       //do a forward resolution check to make sure it matches
-      const checkAddress = await this.ens.name(name).getAddress();
+      let checkAddress: string;
+      try {
+        checkAddress = await this.ens.name(name).getAddress();
+      } catch {
+        //why the try/catch?  because forward resolution will throw if the
+        //name contains certain characters that are illegal in a domain name,
+        //but this isn't in any way enforced on reverse resolution above. yay.
+        checkAddress = null;
+      }
       if (checkAddress !== address) {
         //if it doesn't, the name is no good!
         name = null;

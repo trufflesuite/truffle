@@ -143,6 +143,13 @@ export default class Web3Adapter {
     if (!this.ens) {
       return null;
     }
-    return await this.ens.name(name).getAddress();
+    try {
+      //unfortunately, ensjs will error if the name contains certain characters
+      //that aren't allowed in domain names.
+      //and again, we really don't want this erroring, so we swallow it, sorry :-/
+      return await this.ens.name(name).getAddress();
+    } catch {
+      return null;
+    }
   }
 }
