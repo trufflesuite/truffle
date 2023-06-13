@@ -110,7 +110,10 @@ function Debugger(): JSX.Element {
         session.selectors.stacktrace.current.report
       )[0].address;
       // when the contract is "unknown", the source id will be the address
-      setCurrentSourceId(currentContractAddress);
+      // we need this if check so that no loop occurs when the value is falsy
+      if (currentContractAddress) {
+        setCurrentSourceId(currentContractAddress);
+      }
     }
     currentStep = session.view(session.selectors.trace.index);
   }
