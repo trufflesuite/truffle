@@ -205,17 +205,6 @@ function Debugger(): JSX.Element {
     }
   }, [goToBreakpoint]);
 
-  // check whether we need to scroll to a breakpoint
-  // this is to ensure the source has fully rendered before scrolling
-  useEffect(() => {
-    if (goToBreakpoint !== null) {
-      const { sourceId, line } = goToBreakpoint;
-      // @ts-ignore
-      scrollToLine({ sourceId, line });
-      setGoToBreakpoint(null);
-    }
-  }, [goToBreakpoint]);
-
   const handleBreakpointComponentClick = ({
     sourceId,
     line
