@@ -132,7 +132,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "porcini-root",
     "hedera",
     "symplexia",
-    "dogechain"
+    "dogechain",
+    "cronos",
+    "elysium",
+    "alpha3-taiko",
+    "bitkub",
+    "testnet-bitkub"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
