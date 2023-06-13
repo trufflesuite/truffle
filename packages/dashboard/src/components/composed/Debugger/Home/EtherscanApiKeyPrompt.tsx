@@ -67,8 +67,8 @@ function EtherScanApiKeyPrompt() {
     return (
       <Container className={classes.promptContainer}>
         <Text size="sm">
-          <b>Want a speedier experience?</b> Add your EtherScan API key to more
-          quickly download external contract sources.
+          ️<b>🏎 Want a speedier experience?</b> Add your EtherScan API key to
+          more quickly download external contract sources.
         </Text>
         <Flex className={classes.inputGroup}>
           <Input
@@ -89,7 +89,7 @@ function EtherScanApiKeyPrompt() {
       <Stack className={classes.promptContainer}>
         <Text size="sm">
           <b>
-            We found an EtherScan API key that you've previously entered via
+            🕵️‍♀️ We found an EtherScan API key that you've previously entered via
             your browser.
           </b>{" "}
           Delete it from browser storage to use another key.
