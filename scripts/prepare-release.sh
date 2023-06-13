@@ -12,7 +12,7 @@ git checkout develop
 git pull origin develop
 
 ## Build
-yarn bootstrap
+yarn install
 
 ## Get output of changes for release notes
 prs-merged-since --repo trufflesuite/truffle --tag v$LAST_PUBLISHED_TAG --format markdown
