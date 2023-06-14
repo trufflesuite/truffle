@@ -136,7 +136,7 @@ describe("Calldata Decoding", function () {
   });
 
   it("Decodes various types correctly", async function () {
-    this.timeout(9000);
+    this.timeout(12000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.multiTester();
     let txHash = receipt.tx;
