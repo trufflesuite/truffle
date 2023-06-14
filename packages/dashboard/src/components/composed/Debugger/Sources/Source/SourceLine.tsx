@@ -17,20 +17,24 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     display: "flex"
   },
   spacer: {
-    minHeight: 16,
-    minWidth: 16,
-    height: 16,
-    width: 16,
+    minHeight: 22,
+    minWidth: 22,
+    width: 22,
     marginRight: 5
   },
+  breakpointSpacerContainer: {
+    minHeight: 22,
+    minWidth: 22,
+    width: 22,
+    display: "flex",
+    marginRight: 5,
+    alignItems: "center"
+  },
   breakpointSpacer: {
-    minHeight: 16,
-    minWidth: 16,
-    height: 16,
     width: 16,
+    height: 16,
     backgroundColor: "#FA5252",
-    borderRadius: 25,
-    marginRight: 5
+    borderRadius: 25
   }
 }));
 
@@ -80,7 +84,9 @@ function SourceLine({
     breakpoints &&
     breakpoints[sourceId] &&
     breakpoints[sourceId].has(lineNumber) ? (
-      <div className={classes.breakpointSpacer} />
+      <div className={classes.breakpointSpacerContainer}>
+        <div className={classes.breakpointSpacer} />
+      </div>
     ) : (
       <div className={classes.spacer} />
     );
