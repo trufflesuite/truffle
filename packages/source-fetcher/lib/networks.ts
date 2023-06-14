@@ -206,8 +206,6 @@ export const networkNamesById: { [id: number]: string } = {
   2152: "findora",
   2153: "anvil-findora",
   134: "iexec",
-  96: "bitkub",
-  25925: "testnet-bitkub",
   1433: "rikeza",
   3797: "alveychain",
   20001: "camelark",
