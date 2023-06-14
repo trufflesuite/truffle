@@ -1,0 +1,80 @@
+.code {
+  font-family: monospace;
+  font-size: 0.8rem;
+  --red: #ff304a;
+  --orange: #f26311;
+  --blue: #1570cf;
+  --navy: #0f2e72;
+  --purple: #7c1aaa;
+  --dark: #3a3a3a;
+  &-address {
+    color: var(--blue);
+  }
+  &-boolean {
+    color: var(--blue);
+  }
+  &-bytes {
+    color: var(--blue);
+    word-break: break-all;
+  }
+  &-number {
+    color: var(--blue);
+  }
+  &-string {
+    color: var(--navy);
+  }
+  &-enum {
+    color: var(--purple);
+  }
+  &-struct {
+    color: var(--purple);
+  }
+  &-new-keyword {
+    color: var(--red);
+  }
+  &-contract {
+    color: var(--blue);
+  }
+  &-function {
+    color: var(--purple);
+  }
+  &-event {
+    color: var(--purple);
+  }
+  &-event-keyword {
+    color: var(--red);
+  }
+  &-anonymous-keyword {
+    color: var(--dark);
+  }
+  &-error {
+    color: var(--blue);
+  }
+  &-revert-keyword {
+    color: var(--purple);
+  }
+  &-bracket-0 {
+    color: var(--orange);
+  }
+  &-bracket-1 {
+    color: var(--purple);
+  }
+  &-bracket-2 {
+    color: var(--blue);
+  }
+  &-name {
+    color: var(--dark);
+  }
+  &-colon {
+    color: var(--red);
+  }
+  &-comma {
+    color: var(--dark);
+  }
+  &-period {
+    color: var(--dark);
+  }
+  &-default {
+    color: var(--dark);
+  }
+}
