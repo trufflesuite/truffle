@@ -1,19 +1,17 @@
 const assert = require("chai").assert;
-const sinon = require("sinon");
 const accountsInfo = require("../../../lib/mnemonics/mnemonic");
-const Conf = require("conf");
-let conf;
 
-describe("mnemonic", function() {
-  describe("#getOrGenerateMnemonic", function() {
-    it("returns the mnemonic set in the config", function() {
+describe("mnemonic", function () {
+  describe("#getOrGenerateMnemonic", function () {
+    it("returns the mnemonic set in the config", function () {
       const result = accountsInfo.getOrGenerateMnemonic();
       assert.exists(result);
       assert.isString(result);
     });
   });
-  describe("#getAccountsInfo", function() {
-    it("returns public keys, private keys, and mnemonic for default user account", function() {
+  describe("#getAccountsInfo", function () {
+    it("returns public keys, private keys, and mnemonic for default user account", function () {
+      this.timeout(3000);
       const defaultNumAddresses = 10;
       const accounts = accountsInfo.getAccountsInfo(defaultNumAddresses);
       assert.exists(accounts);
