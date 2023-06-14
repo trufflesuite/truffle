@@ -57,6 +57,9 @@ export function addTextHighlightedClass(
   sourceRange: SourceRange
 ) {
   const editedLines = source.contents.split("\n").map((line, index) => {
+    if (line.length === 0) {
+      return line;
+    }
     const { start, end } = sourceRange;
     const lineHasHighlighting =
       source.id === sourceRange.source.id &&
