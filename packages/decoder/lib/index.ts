@@ -195,7 +195,8 @@ export async function forProject(
   let decoder = new ProjectDecoder(
     compilations,
     settings.provider,
-    ensSettings
+    ensSettings,
+    settings.selectorDirectory
   );
   await decoder.init();
   return decoder;

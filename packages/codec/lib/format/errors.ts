@@ -979,7 +979,8 @@ export interface OverlargePointersNotImplementedError {
  */
 export type InternalUseError =
   | OverlongArrayOrStringStrictModeError
-  | InternalFunctionInABIError;
+  | InternalFunctionInABIError
+  | ReEncodingMismatchError;
 
 /**
  * Error for the stricter length check in strict mode
@@ -999,4 +1000,17 @@ export interface OverlongArrayOrStringStrictModeError {
  */
 export interface InternalFunctionInABIError {
   kind: "InternalFunctionInABIError";
+}
+
+/**
+ * This isn't really an error that one can get as part of a `Result`, but we
+ * need something for when re-encoding doesn't match and we're decoding a
+ * transaction (since there we have to error instead of just skipping).
+ *
+ * @Category Internal-use errors
+ */
+export interface ReEncodingMismatchError {
+  kind: "ReEncodingMismatchError";
+  data: Uint8Array;
+  reEncodedData: Uint8Array;
 }

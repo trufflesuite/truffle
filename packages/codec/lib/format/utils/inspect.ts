@@ -30,7 +30,7 @@ export interface ResultInspectorOptions {
    * the address.  (By default it displays only the ENS name.)
    */
   noHideAddress?: boolean;
-   /**
+  /**
    * This flag, if set, causes mappings to be rendered via objects
    * rather than Maps.  This is intended for compatibility and not
    * recommended for normal use.

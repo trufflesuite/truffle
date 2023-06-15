@@ -49,6 +49,12 @@ export interface DecoderSettings {
    * provider.
    */
   ens?: EnsSettings;
+  /**
+   * This field can be included to enable selector-based decoding, using a
+   * selector directory (such as 4byte.directory) when other
+   * decoding methods fail.
+   */
+  selectorDirectory?: SelectorDirectorySettings;
 }
 
 //WARNING: copypasted from @truffle/encoder!
@@ -70,6 +76,24 @@ export interface EnsSettings {
    * current network, ENS resolution will be disabled.
    */
   registryAddress?: string;
+}
+
+/**
+ * This type contains settings for the use of a selector directory
+ * when other decoding methods fail.
+ * @Category inputs
+ */
+export interface SelectorDirectorySettings {
+  /**
+   * Set this to true to enable selector-based decoding.
+   */
+  enabled?: boolean;
+  /**
+   * URL for the selector directory API endpoint.  It should conform to
+   * the [4byte.directory API](https://www.4byte.directory/docs/) protocol.
+   * Defaults to `"https://www.4byte.directory/api"`.
+   */
+  url?: string;
 }
 
 /**
