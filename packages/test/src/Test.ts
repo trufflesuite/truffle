@@ -320,10 +320,11 @@ export const Test = {
     global.interfaceAdapter = interfaceAdapter;
     // @ts-ignore
     global.web3 = web3;
+    const resolvedChai = config.chai?.package ?? chai;
     // @ts-ignore
-    global.assert = chai.assert;
+    global.assert = resolvedChai.assert;
     // @ts-ignore
-    global.expect = chai.expect;
+    global.expect = resolvedChai.expect;
     // @ts-ignore
     global.artifacts = {
       require: (importPath: string) => {
