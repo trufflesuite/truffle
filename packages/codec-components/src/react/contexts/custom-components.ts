@@ -86,6 +86,7 @@ export interface CustomComponentsContextValue {
       OverlargePointersNotImplementedError: Codec.Format.Errors.OverlargePointersNotImplementedError;
       OverlongArrayOrStringStrictModeError: Codec.Format.Errors.OverlongArrayOrStringStrictModeError;
       OverlongArraysAndStringsNotImplementedError: Codec.Format.Errors.OverlongArraysAndStringsNotImplementedError;
+      ReEncodingMismatchError: Codec.Format.Errors.ReEncodingMismatchError;
       ReadErrorBytes: Codec.Format.Errors.ReadErrorBytes;
       ReadErrorStack: Codec.Format.Errors.ReadErrorStack;
       ReadErrorStorage: Codec.Format.Errors.ReadErrorStorage;
