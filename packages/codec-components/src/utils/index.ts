@@ -39,6 +39,7 @@ export * from "./type-guards/decoder-error/options-error";
 export * from "./type-guards/decoder-error/overlarge-pointers-not-implemented-error";
 export * from "./type-guards/decoder-error/overlong-array-or-string-strict-mode-error";
 export * from "./type-guards/decoder-error/overlong-arrays-and-strings-not-implemented-error";
+export * from "./type-guards/decoder-error/re-encoding-mismatch-error";
 export * from "./type-guards/decoder-error/read-error";
 export * from "./type-guards/decoder-error/read-error-bytes";
 export * from "./type-guards/decoder-error/read-error-stack";
