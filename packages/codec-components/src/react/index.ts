@@ -68,6 +68,7 @@ export * from "./components/codec/format.errors.options-error";
 export * from "./components/codec/format.errors.overlarge-pointers-not-implemented-error";
 export * from "./components/codec/format.errors.overlong-array-or-string-strict-mode-error";
 export * from "./components/codec/format.errors.overlong-arrays-and-strings-not-implemented-error";
+export * from "./components/codec/format.errors.re-encoding-mismatch-error";
 export * from "./components/codec/format.errors.read-error-bytes";
 export * from "./components/codec/format.errors.read-error-stack";
 export * from "./components/codec/format.errors.read-error-storage";
