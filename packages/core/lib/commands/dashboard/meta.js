@@ -3,15 +3,19 @@ module.exports = {
   description:
     "Start Truffle Dashboard to sign development transactions using browser wallet",
   builder: {
-    port: {
+    "port": {
       describe: "Specify the port to start the dashboard and RPC endpoint on",
       type: "number"
     },
-    host: {
+    "host": {
       describe: "Specify the host to start the dashboard and RPC endpoint on",
       type: "string"
     },
-    verbose: {
+    "no-auto-open": {
+      describe: "Disable opening dashboard in default browser on start",
+      type: "boolean"
+    },
+    "verbose": {
       describe: "Display debug logs for the dashboard server and message bus",
       type: "boolean"
     }
@@ -26,6 +30,10 @@ module.exports = {
       {
         option: "--host <string>",
         description: "Start the dashboard and RPC endpoint on a specific host."
+      },
+      {
+        option: "--no-auto-open",
+        description: "Disable opening dashboard in default browser on start"
       },
       {
         option: "--verbose",

@@ -7,10 +7,11 @@ module.exports = async function (options) {
 
   const port = options.port || config.dashboard.port;
   const host = options.host || config.dashboard.host;
+  const autoOpen = options.autoOpen ?? config.dashboard.autoOpen;
   const verbose = options.verbose || config.dashboard.verbose;
   const rpc = true;
 
-  const dashboardServerOptions = { port, host, verbose, rpc };
+  const dashboardServerOptions = { port, host, autoOpen, verbose, rpc };
   const dashboardServer = new DashboardServer(dashboardServerOptions);
   await dashboardServer.start();
 
