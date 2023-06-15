@@ -50,6 +50,7 @@ export const getInitialConfig = ({
     dashboard: {
       host: "localhost",
       port: 24012,
+      autoOpen: true,
       verbose: false
     },
     ens: {

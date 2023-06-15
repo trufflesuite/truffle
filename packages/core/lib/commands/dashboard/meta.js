@@ -11,6 +11,10 @@ module.exports = {
       describe: "Specify the host to start the dashboard and RPC endpoint on",
       type: "string"
     },
+    autoOpen: {
+      describe: "Open dashboard in default browser on start",
+      type: "boolean"
+    },
     verbose: {
       describe: "Display debug logs for the dashboard server and message bus",
       type: "boolean"
@@ -26,6 +30,10 @@ module.exports = {
       {
         option: "--host <string>",
         description: "Start the dashboard and RPC endpoint on a specific host."
+      },
+      {
+        option: "--autoOpen <boolean>",
+        description: "Open dashboard in default browser on start"
       },
       {
         option: "--verbose",
