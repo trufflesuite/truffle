@@ -35,6 +35,9 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
     height: 16,
     backgroundColor: "#FA5252",
     borderRadius: 25
+  },
+  content: {
+    display: "flex"
   }
 }));
 
@@ -101,6 +104,7 @@ function SourceLine({
     <div className={classes.sourceLine} onClick={handleClick}>
       {spacer}
       <div
+        className={classes.content}
         id={lineId}
         dangerouslySetInnerHTML={{ __html: lineNumberDisplay + line }}
       />
