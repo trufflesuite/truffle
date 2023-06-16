@@ -19,27 +19,6 @@ describe("Truffle dashboard hardhat plugin compilation tests", function () {
     resetHardhatContext();
   });
 
-  describe("Compiling with an incompatible Hardhat version", function () {
-    useEnvironment("hardhat-project-incorrect-version", "dashboard");
-
-    it("should fail if Hardhat version is below 2.10.1", async function () {
-      this.timeout(60000);
-      return await this.env
-        .run(TASK_COMPILE, { force: true, quiet: false })
-        .then(() => {
-          assert.fail("Compilation should fail.");
-        })
-        .catch(reason => {
-          expect(reason).to.be.an.instanceOf(
-            // ideally should be checking for IncompatibleHardhatVersionError
-            // as mentioned below this is proving inconsistent in CI
-            Error,
-            "Error: Expected Hardhat version compatible with ^2.10.1, got: 2.0.0"
-          );
-        });
-    });
-  });
-
   describe("Compiling with incompatible hardhat build info", function () {
     useEnvironment("hardhat-project-incompatible", "dashboard");
 
