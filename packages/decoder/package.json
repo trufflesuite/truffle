@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.4.4",
+  "version": "5.5.0",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -27,7 +27,7 @@
   "dependencies": {
     "@ensdomains/ensjs": "^2.1.0",
     "@truffle/abi-utils": "^1.0.1",
-    "@truffle/codec": "^0.15.2",
+    "@truffle/codec": "^0.15.3",
     "@truffle/compile-common": "^0.9.6",
     "@truffle/encoder": "^1.0.19",
     "@truffle/source-map-utils": "^1.3.113",
@@ -36,11 +36,11 @@
     "web3-utils": "4.0.5"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.57",
+    "@truffle/config": "^1.3.58",
     "@truffle/contract-schema": "^3.4.14",
-    "@truffle/migrate": "^3.3.40",
+    "@truffle/migrate": "^3.3.41",
     "@truffle/provider": "^0.3.10",
-    "@truffle/workflow-compile": "^4.0.63",
+    "@truffle/workflow-compile": "^4.0.64",
     "@types/big.js": "^6.0.2",
     "@types/bn.js": "^5.1.0",
     "@types/debug": "^4.1.5",
