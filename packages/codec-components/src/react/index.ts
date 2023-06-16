@@ -129,6 +129,9 @@ export * from "./components/codec/format.values.function-external-value-info-kno
 export * from "./components/codec/format.values.function-external-value-info";
 export * from "./components/codec/format.values.function-external-value-info-unknown";
 export * from "./components/codec/format.values.function-external-value";
+export * from "./components/codec/format.values.function-internal-raw-info";
+export * from "./components/codec/format.values.function-internal-raw-info-pc-pair";
+export * from "./components/codec/format.values.function-internal-raw-info-index";
 export * from "./components/codec/format.values.function-internal-result";
 export * from "./components/codec/format.values.function-internal-value-info-exception";
 export * from "./components/codec/format.values.function-internal-value-info-known";
