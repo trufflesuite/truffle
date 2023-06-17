@@ -1,6 +1,6 @@
 # Introduction and prerequisites
 
-Truffle uses lerna to manage multi-package repositories. Each Truffle module is defined in its own npm package in the `packages/` directory.
+Truffle uses [lerna](https://github.com/lerna/lerna) to manage multi-package repositories. Each Truffle module is defined in its own npm package in the `packages/` directory.
 
 The entry point of these modules is `@truffle/core`. This is where the command line parser is setup.
 
