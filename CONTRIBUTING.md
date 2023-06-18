@@ -17,7 +17,7 @@ The heart of Truffle lies in the `@truffle/core` package. Whenever a command
 is run, `packages/core/cli.js` gets run with everything following `truffle`
 (on the command line) being passed in as arguments. In other words, if you run
 `truffle migrate --network myNetwork`, then `packages/core/cli.js` gets run
-with "migrate" and "--network myNetwork" as arguments.
+with "`migrate`" and "`--network myNetwork`" as arguments.
 
 Throughout the course of running `packages/core/cli.js`, Truffle parses out what
 commands and options the user has provided, instantiates an instance of the
