@@ -50,4 +50,4 @@ This package is a distribution package of the Truffle command line tool. Please 
 
 ### License
 
-MIT
+[MIT](./LICENSE)
