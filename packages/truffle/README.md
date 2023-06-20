@@ -7,7 +7,7 @@
 -----------------------
 
 
-Truffle is a development environment, testing framework and asset pipeline for Ethereum, aiming to make life as an Ethereum developer easier. With Truffle, you get:
+Truffle is a development environment, testing framework, and asset pipeline for Ethereum, aiming to make life as an Ethereum developer easier. With Truffle you get:
 
 * Built-in smart contract compilation, linking, deployment and binary management.
 * Automated contract testing with Mocha and Chai.
