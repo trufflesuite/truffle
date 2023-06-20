@@ -38,7 +38,7 @@ For a default set of contracts and tests, run the following within an empty proj
 $ truffle init
 ```
 
-From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
+From there, you can run `truffle compile`, `truffle migrate`, and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
 Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands above. If you'd like to [configure a more advanced development environment](https://trufflesuite.com/docs/truffle/reference/configuration) we recommend you install the blockchain server separately by running `npm install -g ganache` at the command line.
 
