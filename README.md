@@ -75,7 +75,7 @@ _Notes on project branches:_
 - `develop`: Work targeting stable release (v5)
 - `next`: Not currently in use
 
-Please make pull requests against `develop`.
+Please make pull requests against `develop` branch.
 
 There is a bit more information in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
