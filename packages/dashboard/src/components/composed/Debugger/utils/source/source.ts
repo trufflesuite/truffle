@@ -2,13 +2,12 @@ import { unified } from "unified";
 import rehypeStringify from "rehype-stringify";
 import { lowlight } from "lowlight/lib/core";
 import { solidity } from "highlightjs-solidity";
-import { selectors as $ } from "@truffle/debugger";
 import {
   highlightedTextTag,
   closingHighlightedTextTag
 } from "src/components/composed/Debugger/utils";
+import { completeMultilineSpans } from "src/components/composed/Debugger/utils/source/htmlUtils";
 import type {
-  Session,
   Source,
   SourceRange
 } from "src/components/composed/Debugger/utils";
@@ -20,13 +19,13 @@ export function convertSourceToHtml({
   source: Source;
   sourceRange: SourceRange;
 }) {
-  // DETERMINE WHERE TEXT IS HIGHLIGHTED AND MARK WITH COMMENTS
-  // add comment markers for where spans will go later designating debugger
-  // highlighting - comments so lowlight doesn't choke on html
-  const sourceWithHighlightedMarkings = addTextHighlightedClass(
-    source,
-    sourceRange
-  );
+  // DETERMINE WHERE TEXT IS HIGHLIGHTED AND MARK
+  // for lines that are fully highlighted, we don't update them but mark it in
+  // an array - for partially hightlighted lines, we add comment markers for
+  // where spans will go later designating debugger highlighting - we mark
+  // them here as comments so lowlight doesn't choke on html
+  const { sourceWithHighlightedMarkings, fullyHighlightedLines } =
+    markTextHighlighted(source, sourceRange);
 
   // ADD SYNTAX HIGHLIGHTING (HTML) AND BREAK INTO INDIVIDUAL LINES
   const sourceWithSyntaxHighlighting = addSyntaxHighlighting(
@@ -34,15 +33,18 @@ export function convertSourceToHtml({
   ).split("\n");
 
   // COMPLETE LOWLIGHT'S HTML SINCE WE BROKE THE SOURCE INTO LINES
-  // HACK: we need to detect where lowlight added spans for multiline comments
+  // HACK: we need to detect where lowlight added spans for multiline stuff
   // and add more because we break the source into lines
-  const sourceWithAddedSpans = addMultilineCommentSpans(
+  const sourceWithAddedSpans = completeMultilineSpans(
     sourceWithSyntaxHighlighting
   );
 
   // REPLACE OUR HIGHLIGHTING MARKERS WITH HTML
   // replace comment markers with spans denoting the debugger's highlighted text
-  return replaceTextHighlightedMarkings(sourceWithAddedSpans);
+  return replaceTextHighlightedMarkings({
+    source: sourceWithAddedSpans,
+    fullyHighlightedLines
+  });
 }
 
 const textHighlightingBeginsMarker = ` /****truffle-debugger-highlight-begin****/`;
@@ -52,10 +54,8 @@ const closingSpan = `</span>`;
 // the markers with our spans for highlighting
 const highlightJsCommentSpan = `<span class=\"hljs-comment\">`;
 
-export function addTextHighlightedClass(
-  source: Source,
-  sourceRange: SourceRange
-) {
+export function markTextHighlighted(source: Source, sourceRange: SourceRange) {
+  const fullyHighlightedLines = new Set<number>();
   const editedLines = source.contents.split("\n").map((line, index) => {
     if (line.length === 0) {
       return line;
@@ -84,7 +84,8 @@ export function addTextHighlightedClass(
         index > start.line &&
         end.column === line.length - 1);
     if (wholeLineHighlighted) {
-      return textHighlightingBeginsMarker + line + textHighlightingEndsMarker;
+      fullyHighlightedLines.add(index);
+      return line;
     }
 
     let editedLine;
@@ -124,9 +125,20 @@ export function addTextHighlightedClass(
   });
 
   return {
-    ...source,
-    contents: editedLines.join("\n")
+    fullyHighlightedLines,
+    sourceWithHighlightedMarkings: {
+      ...source,
+      contents: editedLines.join("\n")
+    }
   };
+}
+
+lowlight.registerLanguage("solidity", solidity);
+const processor = unified().use(rehypeStringify);
+
+export function addSyntaxHighlighting(source: Source) {
+  const highlighted = lowlight.highlight("solidity", source.contents);
+  return processor.stringify(highlighted);
 }
 
 export function addMultilineCommentSpans(sourceLines: string[]) {
@@ -158,46 +170,44 @@ export function addMultilineCommentSpans(sourceLines: string[]) {
   return sourceWithSpans;
 }
 
-export function getCurrentSourceRange(session: Session) {
-  const traceIndex = session.view($.trace.index);
-  const { id } = session.view($.sourcemapping.current.source);
-  const {
-    lines: { start, end }
-  } = session.view($.sourcemapping.current.sourceRange);
-  return {
-    traceIndex,
-    source: { id },
-    start,
-    end
-  };
-}
-
-lowlight.registerLanguage("solidity", solidity);
-const processor = unified().use(rehypeStringify);
-
-export function addSyntaxHighlighting(source: Source) {
-  const highlighted = lowlight.highlight("solidity", source.contents);
-  return processor.stringify(highlighted);
-}
-
-export function replaceTextHighlightedMarkings(lines: string[]) {
-  return lines.map(line => {
+export function replaceTextHighlightedMarkings({
+  source,
+  fullyHighlightedLines
+}: {
+  source: string[];
+  fullyHighlightedLines: Set<number>;
+}) {
+  return source.map((line, index) => {
+    // wrap the entire thing if it is fully highlighted
+    if (fullyHighlightedLines.has(index)) {
+      return highlightedTextTag + line + closingHighlightedTextTag;
+    }
     // we need to add the space to make lowlight parse the comment correctly
     // as a comment as there are some cases where it marks it incorrectly
-    return line
-      .replace(
-        " " +
-          highlightJsCommentSpan +
-          textHighlightingBeginsMarker.slice(1) +
-          closingSpan,
-        highlightedTextTag
-      )
-      .replace(
-        " " +
-          highlightJsCommentSpan +
-          textHighlightingEndsMarker.slice(1) +
-          closingSpan,
-        closingHighlightedTextTag
-      );
+    return (
+      line
+        .replaceAll(
+          " " +
+            highlightJsCommentSpan +
+            textHighlightingBeginsMarker.slice(1) +
+            closingSpan,
+          highlightedTextTag
+        )
+        .replaceAll(
+          " " +
+            highlightJsCommentSpan +
+            textHighlightingEndsMarker.slice(1) +
+            closingSpan,
+          closingHighlightedTextTag
+        )
+        // sometimes the markings don't get wrapped by lowlight for some reason
+        // we replace the ones it missed here
+        .replaceAll(textHighlightingBeginsMarker.slice(1), highlightedTextTag)
+        .replaceAll(
+          textHighlightingEndsMarker.slice(1),
+          closingHighlightedTextTag
+        )
+        .replace(/(?<!<span) /g, "&nbsp;")
+    );
   });
 }
