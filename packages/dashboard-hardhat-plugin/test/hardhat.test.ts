@@ -23,7 +23,7 @@ describe("Truffle dashboard hardhat plugin compilation tests", function () {
     useEnvironment("hardhat-project-incompatible", "dashboard");
 
     it("should fail when incompatible hardhat build info (e.g. hh-sol-build-info-2) is detected", async function () {
-      this.timeout(20000);
+      this.timeout(30000);
       await this.env.run(TASK_COMPILE, {
         force: false,
         quiet: false,
