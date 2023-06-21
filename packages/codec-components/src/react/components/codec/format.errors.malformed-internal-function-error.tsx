@@ -12,7 +12,7 @@ export const { MalformedInternalFunctionError } = createCodecComponent(
     rawInformation
   }: Format.Errors.MalformedInternalFunctionError) => (
     <CodecError kind={kind}>
-      {context.typeName} pointer has zero deployed program counter
+      {context.typeName} pointer has zero deployed program counter&nbsp;
       <FunctionInternalRawInfoPcPair data={rawInformation} />
     </CodecError>
   )
