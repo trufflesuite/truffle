@@ -12,7 +12,8 @@ export const { NoSuchInternalFunctionError } = createCodecComponent(
     rawInformation
   }: Format.Errors.NoSuchInternalFunctionError) => (
     <CodecError kind={kind}>
-      {context.typeName} function pointer does not point to a valid function
+      {context.typeName} function pointer does not point to a valid
+      function&nbsp;
       <FunctionInternalRawInfo data={rawInformation} />
     </CodecError>
   )
