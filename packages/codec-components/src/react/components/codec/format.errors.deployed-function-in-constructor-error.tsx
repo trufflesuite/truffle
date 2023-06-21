@@ -12,7 +12,7 @@ export const { DeployedFunctionInConstructorError } = createCodecComponent(
     rawInformation
   }: Format.Errors.DeployedFunctionInConstructorError) => (
     <CodecError kind={kind}>
-      Deployed-style pointer in {context.typeName} constructor
+      Deployed-style pointer in {context.typeName} constructor&nbsp;
       <FunctionInternalRawInfoPcPair data={rawInformation} />
     </CodecError>
   )
