@@ -41,9 +41,20 @@ const useStyles = createStyles(theme => ({
   variablesContent: {
     paddingLeft: 10
   },
+  variablesSection: {
+    listStyleType: "none",
+    marginBlockStart: "0em",
+    marginBlockEnd: "0em",
+    marginInlineStart: "0em",
+    marginInlineEnd: "0em",
+    paddingInlineStart: "0em",
+    marginBottom: "1em"
+  },
   variablesTypes: {
     fontSize: 12,
-    fontWeight: 800
+    fontWeight: 800,
+    textDecoration: "underline",
+    marginBottom: "0.5em"
   }
 }));
 
@@ -75,12 +86,14 @@ function Variables({
           .map((variableName: keyof typeof variables) => {
             if (variables) {
               return (
-                <>
-                  <dt>{"  " + variableName}</dt>
-                  <dd>
-                    <CodecComponents.Result data={variables[variableName]} />
-                  </dd>
-                </>
+                <li key={variableName}>
+                  <CodecComponents.NameValuePair
+                    data={{
+                      name: `${variableName}`,
+                      value: variables[variableName]
+                    }}
+                  />
+                </li>
               );
             } else {
               return undefined;
@@ -89,10 +102,10 @@ function Variables({
           .filter((item: JSX.Element | undefined) => item);
         if (variableValues.length > 0) {
           entries.push(
-            <dl key={section}>
+            <div key={section}>
               <div className={classes.variablesTypes}>{section}</div>
-              {...variableValues}
-            </dl>
+              <ul className={classes.variablesSection}>{...variableValues}</ul>
+            </div>
           );
         }
       }
@@ -101,7 +114,7 @@ function Variables({
     }
 
     getVariables();
-  }, [currentStep, session, classes.variablesTypes]);
+  }, [currentStep, session, classes.variablesTypes, classes.variablesSection]);
 
   return (
     <Flex direction="column" className={classes.variablesContainer}>
