@@ -4,23 +4,31 @@ import { createCodecComponent } from "../../utils/create-codec-component";
 import { Result } from "./format.values.result";
 import { NextBracketDepth } from "../providers/next-bracket-depth";
 import { InjectedNode } from "../providers/injected-node";
+import { useInjectedNode } from "../../contexts/injected-node";
 import { Container } from "../common/container";
 import { Code } from "../common/code";
 
 export const { MagicValue } = createCodecComponent(
   "MagicValue",
   ({ type, value }: Format.Values.MagicValue) => {
+    const { prefix, suffix } = useInjectedNode();
     const valueLength = Object.keys(value).length;
     return (
       <Container
         prefix={
           <>
+            {prefix?.prefix}
             <Code title={`type: ${type.variable}`} type="bracket">
               {"{"}
             </Code>
           </>
         }
-        suffix={<Code type="bracket">{"}"}</Code>}
+        suffix={
+          <>
+            <Code type="bracket">{"}"}</Code>
+            {suffix?.suffix}
+          </>
+        }
         empty={valueLength === 0}
       >
         <NextBracketDepth>
