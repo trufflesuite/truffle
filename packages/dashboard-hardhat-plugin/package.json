@@ -23,11 +23,10 @@
     "truffle-dashboard"
   ],
   "scripts": {
-    "test": "yarn setup-fixtures && mocha test/**/*.test.ts",
+    "test": "mocha test/**/*.test.ts",
     "build": "tsc",
     "watch": "tsc -w",
-    "prepare": "yarn build",
-    "setup-fixtures": "cd test/fixture-projects/hardhat-project-incorrect-version && yarn"
+    "prepare": "yarn build"
   },
   "files": [
     "dist/src/",
