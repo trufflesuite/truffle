@@ -31,7 +31,6 @@ describe("nativize (ethers format)", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(60000);
     const prepared = await prepareContracts(
       provider,
       path.resolve(__dirname, "..")

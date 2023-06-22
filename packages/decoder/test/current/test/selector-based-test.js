@@ -52,7 +52,7 @@ describe("Selector-based decoding", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(60000);
+    this.timeout(30000);
 
     const prepared = await prepareContracts(
       provider,
