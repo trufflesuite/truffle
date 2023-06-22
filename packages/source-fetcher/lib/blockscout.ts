@@ -389,8 +389,8 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
     const evmVersion: string =
       result.EVMVersion === "default" ? undefined : result.EVMVersion;
     //just as in the Etherscan fetcher, we want to ignore the optimization settings
-    //for Vyper, because Blockscout doesn't support them properly (see comment there,
-    //it works the same here)
+    //for Vyper, because it's not clear that Blockscout supports them properly
+    //(but this may need to be revisited eventually)
     if (evmVersion) {
       return { evmVersion };
     } else {
