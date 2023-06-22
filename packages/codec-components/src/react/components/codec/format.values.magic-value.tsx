@@ -15,9 +15,9 @@ export const { MagicValue } = createCodecComponent(
       <Container
         prefix={
           <>
-            <Code title="type: magic (debugger-only)">{type.variable}</Code>
-            <Code type="colon">:</Code>
-            <Code type="bracket">{"{"}</Code>
+            <Code title={`type: ${type.variable}`} type="bracket">
+              {"{"}
+            </Code>
           </>
         }
         suffix={<Code type="bracket">{"}"}</Code>}
