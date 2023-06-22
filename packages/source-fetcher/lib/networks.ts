@@ -112,7 +112,8 @@ export const networkNamesById: { [id: number]: string } = {
   //taiko doesn't seem to have a mainnet yet
   167005: "alpha3-taiko",
   96: "bitkub",
-  25925: "testnet-bitkub"
+  25925: "testnet-bitkub",
+  7777777: "zora"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
 };
