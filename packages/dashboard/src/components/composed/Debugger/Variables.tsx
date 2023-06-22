@@ -73,16 +73,20 @@ function Variables({
       // section here is a variable category such as a Solidity built-in
       // or contract variable
       for (const section in sections) {
+        console.debug("sectionname %s", section);
+        console.debug("section %o", sections[section]);
         const variableValues: Array<JSX.Element> = sections[section]
           .map((variableName: keyof typeof variables) => {
             if (variables) {
               return (
-                <>
-                  <dt>{"  " + variableName}</dt>
-                  <dd>
-                    <CodecComponents.Result data={variables[variableName]} />
-                  </dd>
-                </>
+                <div>
+                  <CodecComponents.NameValuePair
+                    data={{
+                      name: `${variableName}`,
+                      value: variables[variableName]
+                    }}
+                  />
+                </div>
               );
             } else {
               return undefined;
@@ -91,10 +95,10 @@ function Variables({
           .filter((item: JSX.Element | undefined) => item);
         if (variableValues.length > 0) {
           entries.push(
-            <dl key={section}>
+            <div key={section}>
               <div className={classes.variablesTypes}>{section}</div>
               {...variableValues}
-            </dl>
+            </div>
           );
         }
       }
