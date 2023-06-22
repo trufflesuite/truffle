@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import type { Session } from "src/components/composed/Debugger/utils";
-import inspect from "browser-util-inspect";
-import * as Codec from "@truffle/codec";
 import * as CodecComponents from "@truffle/codec-components/react";
 import "@truffle/codec-components/react-styles";
 import { createStyles, Flex } from "@mantine/core";

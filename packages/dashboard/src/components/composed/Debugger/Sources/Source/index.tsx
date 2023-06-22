@@ -48,7 +48,7 @@ function Source({ source, sourceRange }: SourceProps): JSX.Element {
   const lineNumbers: JSX.Element[] = [];
   const sourceLines: JSX.Element[] = [];
 
-  rawSourceLines.map((line: string, index: number) => {
+  rawSourceLines.forEach((line: string, index: number) => {
     const sourceLineKey = `${source.id}-sourceLine-${index}`;
     const lineNumberKey = `${source.id}-lineNumber-${index}`;
     const lineHasHighlighting =
