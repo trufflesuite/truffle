@@ -221,6 +221,10 @@ export const networkNamesById: { [id: number]: string } = {
   119: "enuls",
   120: "testnet-enuls",
   3737: "crossbell",
+  1890: "phoenix-lightlink",
+  1892: "pegasus-lightlink",
+  245022934: "neon", //not presently supported by any fetcher, but...
+  245022926: "devnet-neon",
   5000: "mantle", //not presently supported by any fetcher, but...
   5001: "testnet-mantle",
   324: "era-zksync", //not presently supported by any fetcher, but...
@@ -236,7 +240,8 @@ export const networkNamesById: { [id: number]: string } = {
   59140: "goerli-linea", //does this even have a corresponding mainnet?
   1662: "yuma-horizen", //does this even have a corresponding mainnet?
   5758: "satoshichain", //does this even have a corresponding mainnet?
-  7649: "testnet-lamina1" //does this even have a corresponding mainnet?
+  7649: "testnet-lamina1", //does this even have a corresponding mainnet?
+  5167003: "wannsee-mxc" //does this even have a corresponding mainnet?
   //not including morpher as it conflicts with elastos testnet
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason

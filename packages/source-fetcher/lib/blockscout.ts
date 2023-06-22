@@ -63,6 +63,11 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "sigma1-artis": "blockscout.com/artis/sigma1",
       "rsk": "blockscout.com/rsk/mainnet",
       "l14-lukso": "blockscout.com/lukso/l14",
+      "phoenix-lightlink": "phoenix.lightlink.io",
+      "pegasus-lightlink": "pegasus.lightlink.io",
+      "athens-zetachain": "zetachain-athens-2.blockscout.com",
+      //no support currently for neon mainnet
+      "devnet-neon": "devnet.neon.blockscout.com",
       "celo": "explorer.celo.org/mainnet",
       "alfajores-celo": "explorer.celo.org/alfajores",
       "baklava-celo": "explorer.celo.org/baklava",
@@ -189,7 +194,9 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "scoville-chiliz": "scoville-explorer.chiliz.com",
       "yuma-horizen": "yuma-explorer.horizen.io",
       "satoshichain": "satoshiscan.io",
-      "testnet-lamina1": "testnet-explorer.lamina1.global"
+      "testnet-lamina1": "testnet-explorer.lamina1.global",
+      "alpha3-taiko": "explorer.test.taiko.xyz",
+      "wannsee-mxc": "wannsee-explorer.mxc.com"
     };
 
   constructor(networkId: number, apiKey: string = "") {
