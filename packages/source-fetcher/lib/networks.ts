@@ -63,7 +63,7 @@ export const networkNamesById: { [id: number]: string } = {
   11297108099: "testnet-palm",
   70: "hoo", //not presently supported by either fetcher, but formerly by etherscan
   25: "cronos",
-  338: "testnet-cronos",
+  338: "testnet-cronos", //not presently supported by either fetcher, but formerly by etherscan
   199: "bttc",
   1029: "donau-bttc",
   1024: "clover", //not presently supported by either fetcher, but formerly by etherscan
