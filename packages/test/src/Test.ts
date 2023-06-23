@@ -44,7 +44,7 @@ interface SetJSTestGlobalsInterface {
 export const Test = {
   run: async function (
     options: Config,
-    createInTestDebugFunction: CreateInTestDebugFunction
+    createInTestDebugFunction?: CreateInTestDebugFunction
   ) {
     expect.options(options, [
       "contracts_directory",
@@ -55,6 +55,20 @@ export const Test = {
       "network_id",
       "provider"
     ]);
+
+    // if test is used standalone, this function won't be setup like in core
+    if (createInTestDebugFunction === undefined) {
+      createInTestDebugFunction = () => {
+        return () => {
+          config.logger.log(
+            `${colors.bold(
+              "Warning:"
+            )} Use of in-test debugging is only available when running ` +
+              `truffle test --debug.`
+          );
+        };
+      };
+    }
 
     const config = Config.default().merge(options);
 
