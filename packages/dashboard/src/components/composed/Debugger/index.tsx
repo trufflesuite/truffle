@@ -85,6 +85,7 @@ function Debugger(): JSX.Element {
     null
   );
   const inputsDisabled =
+    status === SessionStatus.PreparingForInitialization ||
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
     status === SessionStatus.Starting;
@@ -140,6 +141,7 @@ function Debugger(): JSX.Element {
   };
 
   const onButtonClick = async () => {
+    setStatus(SessionStatus.PreparingForInitialization);
     const provider = window.ethereum;
     if (!provider) {
       throw new Error(
@@ -266,6 +268,7 @@ function Debugger(): JSX.Element {
   }
 
   const preparingSession =
+    status === SessionStatus.PreparingForInitialization ||
     status === SessionStatus.Initializing ||
     status === SessionStatus.Fetching ||
     status === SessionStatus.Starting;
