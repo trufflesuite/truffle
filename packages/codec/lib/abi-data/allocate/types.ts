@@ -135,7 +135,7 @@ export interface EventAllocations {
 export interface EventAllocation {
   abi: Abi.EventEntry;
   contextHash: string;
-  definedIn?: Format.Types.ContractType; //is omitted if we don't know
+  definedIn?: Format.Types.ContractType | null; //is omitted if we don't know
   id?: string; //is omitted if we don't know
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
@@ -150,7 +150,8 @@ export interface EventArgumentAllocation {
 
 //now let's go back and fill in returndata
 export interface ReturndataAllocations {
-  [contextHash: string]: { //NOTE: contextHash here can also be "" to represent no context
+  [contextHash: string]: {
+    //NOTE: contextHash here can also be "" to represent no context
     [selector: string]: RevertReturndataAllocation[];
   };
 }
