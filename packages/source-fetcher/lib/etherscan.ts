@@ -79,7 +79,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "moonriver": "api-moonriver.moonscan.io",
       "moonbase-alpha": "api-moonbase.moonscan.io",
       "cronos": "api.cronoscan.com",
-      "testnet-cronos": "api-testnet.cronoscan.com",
       "bttc": "api.bttcscan.com",
       "donau-bttc": "api-testnet.bttcscan.com",
       "celo": "api.celoscan.io",
