@@ -3,10 +3,14 @@ import type { Format } from "@truffle/codec";
 import { createCodecComponent } from "../../utils/create-codec-component";
 import { useInjectedNode } from "../../contexts/injected-node";
 import { Code } from "../common/code";
+import { FunctionInternalRawInfo } from "./format.values.function-internal-raw-info";
 
 export const { FunctionInternalValueInfoUnknown } = createCodecComponent(
   "FunctionInternalValueInfoUnknown",
-  ({ context }: Format.Values.FunctionInternalValueInfoUnknown) => {
+  ({
+    context,
+    rawInformation
+  }: Format.Values.FunctionInternalValueInfoUnknown) => {
     const { prefix, content } = useInjectedNode();
     return (
       <Code>
@@ -15,7 +19,7 @@ export const { FunctionInternalValueInfoUnknown } = createCodecComponent(
           {context.typeName}
         </Code>
         <Code type="period">.</Code>
-        <Code type="function">?</Code>
+        <FunctionInternalRawInfo data={rawInformation} />
         {content?.suffix}
       </Code>
     );

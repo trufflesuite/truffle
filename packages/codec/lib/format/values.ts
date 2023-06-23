@@ -38,13 +38,15 @@ import type {
   ContractValueInfoUnknown,
   StringValueInfo
 } from "./elementary";
+import type { FunctionInternalRawInfo } from "./internal";
 import type * as Common from "@truffle/codec/common";
 import type * as Abi from "@truffle/abi-utils";
 
 export * from "./elementary"; //can't do 'export type *'
+export * from "./internal";
 
 /*
- * SECTION 1: Generic types for values in neneral (including errors).
+ * SECTION 1: Generic types for values in general (including errors).
  */
 
 /**
@@ -557,8 +559,7 @@ export type FunctionInternalValueInfo =
 export interface FunctionInternalValueInfoKnown {
   kind: "function";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfo;
   name: string;
   /**
    * Is null for a free function
@@ -583,8 +584,7 @@ export interface FunctionInternalValueInfoKnown {
 export interface FunctionInternalValueInfoException {
   kind: "exception";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfo;
 }
 
 /**
@@ -604,8 +604,7 @@ export interface FunctionInternalValueInfoException {
 export interface FunctionInternalValueInfoUnknown {
   kind: "unknown";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfo;
 }
 
 /*

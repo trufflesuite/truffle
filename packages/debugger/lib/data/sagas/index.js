@@ -1050,6 +1050,9 @@ export function* decode(definition, ref, compilationId) {
   const internalFunctionsTable = yield select(
     data.current.internalFunctionsTable
   );
+  const internalFunctionsTableKind = yield select(
+    data.current.internalFunctionsTableKind
+  );
 
   debug("definition: %o");
   debug("ref: %o");
@@ -1065,7 +1068,8 @@ export function* decode(definition, ref, compilationId) {
       allocations,
       contexts,
       currentContext,
-      internalFunctionsTable
+      internalFunctionsTable,
+      internalFunctionsTableKind
     },
     compilationId
   );
@@ -1110,6 +1114,9 @@ export function* decodeReturnValue() {
   const internalFunctionsTable = yield select(
     data.current.internalFunctionsTable
   );
+  const internalFunctionsTableKind = yield select(
+    data.current.internalFunctionsTableKind
+  );
   debug("returnAllocation: %O", returnAllocation);
 
   const decoder = Codec.decodeReturndata(
@@ -1119,7 +1126,8 @@ export function* decodeReturnValue() {
       allocations,
       contexts,
       currentContext,
-      internalFunctionsTable
+      internalFunctionsTable,
+      internalFunctionsTableKind
     },
     returnAllocation,
     status,
@@ -1227,6 +1235,9 @@ export function* decodeLog() {
   const internalFunctionsTable = yield select(
     data.current.internalFunctionsTable
   );
+  const internalFunctionsTableKind = yield select(
+    data.current.internalFunctionsTableKind
+  );
 
   const decoder = Codec.decodeEvent(
     {
@@ -1235,7 +1246,8 @@ export function* decodeLog() {
       allocations,
       contexts,
       currentContext,
-      internalFunctionsTable
+      internalFunctionsTable,
+      internalFunctionsTableKind
     },
     null, //pass null as address to indicate we know the context already
     {

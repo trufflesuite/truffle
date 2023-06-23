@@ -375,18 +375,7 @@ export function* decodeBasic(
             };
           }
           bytes = removePadding(bytes, dataType, paddingMode);
-          const deployedPc = bytes.slice(-Evm.Utils.PC_SIZE);
-          const constructorPc = bytes.slice(
-            -Evm.Utils.PC_SIZE * 2,
-            -Evm.Utils.PC_SIZE
-          );
-          return decodeInternalFunction(
-            dataType,
-            deployedPc,
-            constructorPc,
-            info,
-            strict
-          );
+          return decodeInternalFunction(dataType, bytes, info, strict);
       }
       break; //to satisfy TypeScript
 
@@ -644,89 +633,133 @@ export function* decodeExternalFunction(
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
 function decodeInternalFunction(
   dataType: Format.Types.FunctionInternalType,
-  deployedPcBytes: Uint8Array,
-  constructorPcBytes: Uint8Array,
+  bytes: Uint8Array,
   info: Evm.EvmInfo,
   strict: boolean
 ): Format.Values.FunctionInternalResult {
-  const deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
-  const constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
+  const rawInfoFormat = info.internalFunctionsTableKind || ("index" as const);
+  //we'll default to "index" if it's not specified, not because that's
+  //a reasonable default (we want to avoid ever hitting a default here,
+  //debugger/decoder will set their own defaults as appropriate), but because
+  //index doesn't attempt to, like, parse things, so it's better for reporting
+  //errors if we have no clue what's going on
+  let raw: Format.Values.FunctionInternalRawInfo;
+  switch (rawInfoFormat) {
+    case "pcpair":
+      const deployedPcBytes = bytes.slice(-Evm.Utils.PC_SIZE);
+      const constructorPcBytes = bytes.slice(
+        -Evm.Utils.PC_SIZE * 2,
+        -Evm.Utils.PC_SIZE
+      );
+      const deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
+      const constructorPc: number =
+        Conversion.toBN(constructorPcBytes).toNumber();
+      raw = {
+        kind: "pcpair",
+        deployedProgramCounter: deployedPc,
+        constructorProgramCounter: constructorPc
+      };
+      break;
+    case "index":
+      const index: number = Conversion.toBN(bytes).toNumber();
+      raw = {
+        kind: "index",
+        functionIndex: index
+      };
+      break;
+  }
   const context: Format.Types.ContractType = Contexts.Import.contextToType(
     info.currentContext
   );
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
-  if (!info.internalFunctionsTable) {
+  if (!info.internalFunctionsTable || !info.internalFunctionsTableKind) {
+    //note we end up here if the table kind wasn't set; the "index" default above
+    //is *only* for error handling
     return {
       type: dataType,
       kind: "value" as const,
       value: {
         kind: "unknown" as const,
         context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: constructorPc
+        rawInformation: raw
       },
       interpretations: {}
     };
   }
-  //also before we continue: is the PC zero? if so let's just return that
-  if (deployedPc === 0 && constructorPc === 0) {
-    return {
-      type: dataType,
-      kind: "value" as const,
-      value: {
-        kind: "exception" as const,
-        context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: constructorPc
-      },
-      interpretations: {}
-    };
-  }
-  //another check: is only the deployed PC zero?
-  if (deployedPc === 0 && constructorPc !== 0) {
-    const error = {
-      kind: "MalformedInternalFunctionError" as const,
-      context,
-      deployedProgramCounter: 0,
-      constructorProgramCounter: constructorPc
-    };
-    if (strict) {
-      throw new StopDecodingError(error);
-    }
-    return {
-      type: dataType,
-      kind: "error" as const,
-      error
-    };
-  }
-  //one last pre-check: is this a deployed-format pointer in a constructor?
-  if (info.currentContext.isConstructor && constructorPc === 0) {
-    const error = {
-      kind: "DeployedFunctionInConstructorError" as const,
-      context,
+  //this switch block handles exceptional cases that are only relevant in the pcpair case
+  if (raw.kind === "pcpair") {
+    //defining these for convenience
+    const {
       deployedProgramCounter: deployedPc,
-      constructorProgramCounter: 0
-    };
-    if (strict) {
-      throw new StopDecodingError(error);
+      constructorProgramCounter: constructorPc
+    } = raw;
+    //also before we continue: is the PC zero? if so let's just return that
+    if (deployedPc === 0 && constructorPc === 0) {
+      return {
+        type: dataType,
+        kind: "value" as const,
+        value: {
+          kind: "exception" as const,
+          context,
+          rawInformation: raw
+        },
+        interpretations: {}
+      };
     }
-    return {
-      type: dataType,
-      kind: "error" as const,
-      error
-    };
+    //another check: is only the deployed PC zero?
+    if (deployedPc === 0 && constructorPc !== 0) {
+      const error = {
+        kind: "MalformedInternalFunctionError" as const,
+        context,
+        rawInformation: raw
+      };
+      if (strict) {
+        throw new StopDecodingError(error);
+      }
+      return {
+        type: dataType,
+        kind: "error" as const,
+        error
+      };
+    }
+    //one last pre-check: is this a deployed-format pointer in a constructor?
+    if (info.currentContext.isConstructor && constructorPc === 0) {
+      const error = {
+        kind: "DeployedFunctionInConstructorError" as const,
+        context,
+        rawInformation: raw
+      };
+      if (strict) {
+        throw new StopDecodingError(error);
+      }
+      return {
+        type: dataType,
+        kind: "error" as const,
+        error
+      };
+    }
   }
-  //otherwise, we get our function
-  const pc = info.currentContext.isConstructor ? constructorPc : deployedPc;
-  const functionEntry = info.internalFunctionsTable[pc];
+  //if we didn't hit any of those exceptional cases, we now attempt to look
+  //up the function in the table
+  let functionEntry: Evm.InternalFunction | undefined;
+  switch (raw.kind) {
+    case "pcpair":
+      const pc = info.currentContext.isConstructor
+        ? raw.constructorProgramCounter
+        : raw.deployedProgramCounter;
+      functionEntry = info.internalFunctionsTable[pc];
+      break;
+    case "index":
+      functionEntry = info.internalFunctionsTable[raw.functionIndex];
+      break;
+  }
   if (!functionEntry) {
-    //if it's not zero and there's no entry... error!
+    //If we didn't find an entry, this is an error
     const error = {
       kind: "NoSuchInternalFunctionError" as const,
       context,
-      deployedProgramCounter: deployedPc,
-      constructorProgramCounter: constructorPc
+      rawInformation: raw
     };
     if (strict) {
       throw new StopDecodingError(error);
@@ -737,6 +770,8 @@ function decodeInternalFunction(
       error
     };
   }
+  //finally, the rest of this handles the case where we did find an entry,
+  //and doesn't need to switch on the raw info type anymore :)
   if (functionEntry.isDesignatedInvalid) {
     return {
       type: dataType,
@@ -744,8 +779,7 @@ function decodeInternalFunction(
       value: {
         kind: "exception" as const,
         context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: constructorPc
+        rawInformation: raw
       },
       interpretations: {}
     };
@@ -760,8 +794,7 @@ function decodeInternalFunction(
     value: {
       kind: "function" as const,
       context,
-      deployedProgramCounter: deployedPc,
-      constructorProgramCounter: constructorPc,
+      rawInformation: raw,
       name,
       id,
       definedIn,

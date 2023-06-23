@@ -18,6 +18,10 @@ import type * as Types from "./types";
 import type * as Ast from "@truffle/codec/ast/types";
 import type * as Storage from "@truffle/codec/storage/types";
 import type { PaddingType } from "@truffle/codec/common";
+import type {
+  FunctionInternalRawInfo,
+  FunctionInternalRawInfoPcPair
+} from "./internal";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -731,17 +735,15 @@ export interface FunctionInternalPaddingError {
 }
 
 /**
- * Indicates that the function pointer being decoded
- * fails to point to a valid function, and also is not one of the
- * default values
+ * Indicates that the function pointer being decoded fails to point to a valid
+ * function, and also is not one of the default values
  *
  * @Category Function types
  */
 export interface NoSuchInternalFunctionError {
   kind: "NoSuchInternalFunctionError";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfo;
 }
 
 /**
@@ -753,8 +755,7 @@ export interface NoSuchInternalFunctionError {
 export interface DeployedFunctionInConstructorError {
   kind: "DeployedFunctionInConstructorError";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfoPcPair; //will never be index
 }
 
 /**
@@ -766,8 +767,7 @@ export interface DeployedFunctionInConstructorError {
 export interface MalformedInternalFunctionError {
   kind: "MalformedInternalFunctionError";
   context: Types.ContractType;
-  deployedProgramCounter: number;
-  constructorProgramCounter: number;
+  rawInformation: FunctionInternalRawInfoPcPair; //will never be index
 }
 
 /*

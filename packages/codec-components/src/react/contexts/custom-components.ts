@@ -147,6 +147,9 @@ export interface CustomComponentsContextValue {
       FunctionExternalValueInfoUnknown: Codec.Format.Values.FunctionExternalValueInfoUnknown;
       FunctionExternalValueInfo: Codec.Format.Values.FunctionExternalValueInfo;
       FunctionExternalValue: Codec.Format.Values.FunctionExternalValue;
+      FunctionInternalRawInfo: Codec.Format.Values.FunctionInternalRawInfo;
+      FunctionInternalRawInfoPcPair: Codec.Format.Values.FunctionInternalRawInfoPcPair;
+      FunctionInternalRawInfoIndex: Codec.Format.Values.FunctionInternalRawInfoIndex;
       FunctionInternalResult: Codec.Format.Values.FunctionInternalResult;
       FunctionInternalValueInfoException: Codec.Format.Values.FunctionInternalValueInfoException;
       FunctionInternalValueInfoKnown: Codec.Format.Values.FunctionInternalValueInfoKnown;

@@ -1075,13 +1075,82 @@ const data = createSelectorTree({
      * data.current.internalFunctionsTable
      */
     internalFunctionsTable: createLeaf(
-      [evm.current.isIR, "./functionsByProgramCounter"],
+      [evm.current.isIR, "./functionsByProgramCounter", "./functionsByIndex"],
       //for Solidity compiled with IR turned on, internal function pointers
-      //are encoded by index rather than by PC value.  unfortunately the
-      //indices are hard to predict and so at present we can't decode these
-      //(at least, not without a fair bit more effort).  As such we won't set
-      //up an internal functions table if IR is turned on.
-      (isIR, byPC) => (isIR ? undefined : byPC)
+      //are encoded in terms of an index rather than a PC value.
+      (isIR, byPC, byIndex) => (isIR ? byIndex : byPC)
+    ),
+
+    /**
+     * data.current.internalFunctionsTableKind
+     */
+    internalFunctionsTableKind: createLeaf([evm.current.isIR], isIR =>
+      isIR ? "index" : "pcpair"
+    ),
+
+    /**
+     * data.current.functionsByIndex
+     */
+    functionsByIndex: createLeaf(
+      [evm.current.context, "./scopes/inlined"],
+      ({ compilationId, contractId }, scopes) => {
+        if (contractId === undefined) {
+          return undefined;
+        }
+        const contractNode = scopes[contractId].definition;
+        if (!contractNode.internalFunctionIDs) {
+          //note that we could end up in this branch either because the version is <0.8.20,
+          //or because the particular contract doesn't use internal function pointers.
+          //in the former case, then, oh well, we can't decode.
+          //in the latter case, well, it doesn't really matter what we return, does it?
+          return undefined;
+        }
+        return Object.assign(
+          //we start with the entry for the designated invalid function in index 0.
+          //all other functions should have index 1 or greater.
+          [{ isDesignatedInvalid: true }],
+          ...Object.entries(contractNode.internalFunctionIDs).map(
+            ([nodeId, index]) => {
+              nodeId = Number(nodeId); //nodeId is a string initially, so let's make it a number
+              let {
+                definition: node,
+                pointer,
+                parentId: contractId
+              } = scopes[nodeId];
+              let { definition: contractNode, pointer: contractPointer } =
+                scopes[contractId];
+              if (contractNode.nodeType !== "ContractDefinition") {
+                //i.e., if this is a free function; in this case the nodeType
+                //of the parent should equal "SourceUnit"
+                contractNode = null;
+                contractId = null;
+                contractPointer = null;
+              }
+              return {
+                [index]: {
+                  isDesignatedInvalid: false,
+                  sourceIndex: Number(node.src.split(":")[2]), //to get the source index, we
+                  //parse the node's source range, which has the form start:length:file
+                  compilationId,
+                  pointer,
+                  node,
+                  name: node.name,
+                  id: nodeId,
+                  mutability: Codec.Ast.Utils.mutability(node),
+                  contractPointer,
+                  contractNode,
+                  contractName: contractNode ? contractNode.name : null,
+                  contractId,
+                  contractKind: contractNode ? contractNode.contractKind : null,
+                  contractPayable: contractNode
+                    ? Codec.Ast.Utils.isContractPayable(contractNode)
+                    : null
+                }
+              };
+            }
+          )
+        );
+      }
     ),
 
     /**
