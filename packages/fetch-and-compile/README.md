@@ -104,13 +104,16 @@ export interface FetchAndCompileOptions {
   };
   fetch?: {
     precedence?: string[]; //which fetchers to use and in what order; defaults
-    //to ["etherscan", "sourcify"]
+    //to ["etherscan", "sourcify", "blockscout"]
     fetcherOptions?: {
       etherscan?: {
         apiKey: string; //etherscan API key if you have one to speed things up
       };
       sourcify?: {
         //nothing to go here at present
+      };
+      blockscout?: {
+        apiKey: string; //blockscout API key if you have one
       };
     };
   };
