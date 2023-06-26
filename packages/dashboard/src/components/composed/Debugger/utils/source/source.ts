@@ -61,6 +61,20 @@ export function markTextHighlighted(source: Source, sourceRange: SourceRange) {
       return line;
     }
     const { start, end } = sourceRange;
+    // HACK: at times the debugger returns values of `null` which can mean that
+    // the source maps are bad - one case is where the end values are too large
+    // for a given source - here we try to account for this by assuming it
+    // goes until the end of the file
+    if (
+      source.id === sourceRange.source.id &&
+      index >= start.line &&
+      end.line === null
+    ) {
+      fullyHighlightedLines.add(index);
+      return line;
+    }
+    // END HACK
+
     const lineHasHighlighting =
       source.id === sourceRange.source.id &&
       index >= start.line &&
