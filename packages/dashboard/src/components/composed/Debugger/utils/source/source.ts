@@ -83,6 +83,9 @@ export function markTextHighlighted(source: Source, sourceRange: SourceRange) {
       (index === end.line! &&
         index > start.line &&
         end.column === line.length - 1);
+    // if the whole line is highlighted, we'll add the highlighting later -
+    // weird html issues occur when we add it here due to us breaking up the
+    // html into lines, thus breaking multiline tags
     if (wholeLineHighlighted) {
       fullyHighlightedLines.add(index);
       return line;
