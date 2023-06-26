@@ -138,7 +138,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "alpha3-taiko",
     "bitkub",
     "testnet-bitkub",
-    "zora"
+    "zora",
+    "rollux",
+    "tanenbaum-rollux"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
   ]);
