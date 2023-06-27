@@ -15,11 +15,8 @@ const useStyles = createStyles(theme => ({
       theme.colorScheme === "dark" ? theme.colors["truffle-brown"][8] : "white"
   },
   source: {
-    "&:hover": {
-      cursor: "pointer"
-    },
-    "paddingTop": 15,
-    "paddingLeft": 15
+    paddingTop: 15,
+    paddingLeft: 15
   },
   lineNumbersContainer: {
     height: 22,
