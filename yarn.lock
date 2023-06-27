@@ -6572,7 +6572,7 @@
     utf8 "^3.0.0"
     web3-utils "1.10.0"
 
-"@truffle/debugger@^11.0.24":
+"@truffle/debugger@^11.1.5":
   version "11.1.5"
   resolved "https://registry.yarnpkg.com/@truffle/debugger/-/debugger-11.1.5.tgz#bd9f79bc00b110f1ef5436f1144edc22e0d099b9"
   integrity sha512-zRVmxVhxNHxJEaqsuHvCLdDAKr4QJiVwf7PI/iwP4YFEt9cjyEMEM9iKLU9nntuqvzWewgerlFpGdyGJYYwyrA==
