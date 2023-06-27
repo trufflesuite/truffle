@@ -14,7 +14,10 @@ interface LineNumberProps {
 
 const useStyles = createStyles(() => ({
   lineNumber: {
-    display: "flex"
+    "&:hover": {
+      cursor: "pointer"
+    },
+    "display": "flex"
   },
   spacer: {
     minHeight: 22,
