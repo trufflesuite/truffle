@@ -1,5 +1,4 @@
 import { createStyles } from "@mantine/core";
-import { useDash } from "src/hooks";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   lineNumber: {
@@ -33,20 +32,13 @@ function SourceLine({
   sourceId
 }: SourceLineProps): JSX.Element {
   const { classes } = useStyles();
-  const {
-    operations: { toggleDebuggerBreakpoint }
-  } = useDash()!;
 
   if (!lastLine) line += "\n";
-
-  const handleClick = () => {
-    toggleDebuggerBreakpoint({ line: lineNumber, sourceId });
-  };
 
   const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
 
   return (
-    <div className={classes.sourceLine} onClick={handleClick}>
+    <div className={classes.sourceLine}>
       <div
         className={classes.content}
         id={lineId}
