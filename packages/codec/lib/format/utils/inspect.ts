@@ -117,23 +117,28 @@ export class ResultInspector {
                 return options.stylize(`hex'${hex.slice(2)}'`, "string");
             }
           case "address": {
-            const coercedResult = this.result as Format.Values.AddressValue;
-            const addressString = options.stylize(
-              coercedResult.value.asAddress,
-              "number"
+            const coercedValue = this.result as Format.Values.AddressValue;
+            //the address/contract distinction has gotten pretty silly!
+            //so we're just going to convert to the contract case and
+            //use the existing code there.
+            const contractValueInfo = coercedValue.interpretations.contractClass
+              ? {
+                  kind: "known" as const,
+                  address: coercedValue.value.asAddress,
+                  class: coercedValue.interpretations.contractClass
+                }
+              : {
+                  kind: "unknown" as const,
+                  address: coercedValue.value.asAddress
+                };
+            return util.inspect(
+              new ContractInfoInspector(
+                contractValueInfo,
+                coercedValue.interpretations.ensName,
+                this.options
+              ),
+              options
             );
-            if (coercedResult.interpretations.ensName) {
-              const nameString = options.stylize(
-                stringValueInfoToStringLossy(
-                  coercedResult.interpretations.ensName
-                ),
-                "special"
-              );
-              return this.options.noHideAddress
-                ? `${nameString} [${addressString}]`
-                : nameString;
-            }
-            return options.stylize(coercedResult.value.asAddress, "number");
           }
           case "string":
             return util.inspect(
