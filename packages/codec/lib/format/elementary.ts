@@ -137,6 +137,7 @@ export interface AddressValue {
   };
   interpretations: {
     ensName?: StringValueInfo;
+    contractClass?: Types.ContractType;
   };
 }
 
