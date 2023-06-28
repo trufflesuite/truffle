@@ -131,6 +131,20 @@ describe("Over-the-wire decoding", function () {
       defaultConstructorHash
     );
 
+    for (let tx of [
+      constructorTx,
+      emitStuffTx,
+      moreStuffTx,
+      globalTestTx,
+      inheritedTx,
+      getterTx1,
+      getterTx2,
+      defaultConstructorTx
+    ]) {
+      //while we're here, let's test string input to the decoder
+      tx.blockNumber = String(tx.blockNumber);
+    }
+
     let constructorDecoding = await decoder.decodeTransaction(constructorTx);
     let emitStuffDecoding = await decoder.decodeTransaction(emitStuffTx);
     let moreStuffDecoding = await decoder.decodeTransaction(moreStuffTx);
