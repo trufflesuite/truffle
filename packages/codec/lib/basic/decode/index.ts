@@ -222,7 +222,7 @@ export function* decodeBasic(
       }
       bytes = removePadding(bytes, dataType, paddingMode);
       const address = Evm.Utils.toAddress(bytes);
-      let decoded = {
+      let decoded: Format.Values.AddressValue = {
         type: dataType,
         kind: "value" as const,
         value: {
@@ -234,7 +234,12 @@ export function* decodeBasic(
       //now: attach interpretations
       const ensName = yield* reverseEnsResolve(address);
       if (ensName !== null) {
-        decoded.interpretations = { ensName };
+        decoded.interpretations.ensName = ensName;
+      }
+      //yes, this makes the contract/address distinction a little silly
+      const contractValueInfo = yield* decodeContract(bytes, info);
+      if (contractValueInfo.kind === "known") {
+        decoded.interpretations.contractClass = contractValueInfo.class;
       }
       return decoded;
     }
