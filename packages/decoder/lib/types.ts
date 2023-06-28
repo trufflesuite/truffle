@@ -125,11 +125,28 @@ export interface ContractState {
 
 /**
  * This type represents a web3 Log object that has been decoded.
- * Note that it extends the Log type and just adds an additional field
- * with the decoding.
+ * Note that it extends the Log type.   The differences are:
+ *
+ *   1. It adds an additional field with the decodings;
+ *   2. Some fields that in Log are allowed to be strings,
+ *     here are specified as numbers.  (Because this type is
+ *     for output and that type is for input.)
  * @category Results
  */
 export interface DecodedLog extends Log {
+  /**
+   * Index of the log within the block.
+   */
+  logIndex?: number;
+  /**
+   * Index within the block of the emitting transaction; null if
+   * block is pending.
+   */
+  transactionIndex?: number | null;
+  /**
+   * The block number.  Null if pending.
+   */
+  blockNumber: number | null;
   /**
    * An array of possible decodings of the given log -- it's an array because logs can be ambiguous.
    *
@@ -247,7 +264,7 @@ export interface ReturnOptions {
  *
  * Intended to work like Web3's
  * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
- * type.
+ * type, but with strings allowed where it requires numbers.
  * @category Inputs
  */
 export interface Transaction {
@@ -258,7 +275,7 @@ export interface Transaction {
   /**
    * The nonce of the sender before this transaction was sent.
    */
-  nonce?: number;
+  nonce?: number | string | bigint;
   /**
    * Hash of this transaction's block as hex string; null if pending.
    */
@@ -266,11 +283,11 @@ export interface Transaction {
   /**
    * This transaction's block number; null if pending.
    */
-  blockNumber: number | null;
+  blockNumber: number | string | bigint | null;
   /**
    * Index of transaction in block; null if block is pending.
    */
-  transactionIndex?: number | null;
+  transactionIndex?: number | string | bigint | null;
   /**
    * Address of the sender (as checksummed hex string).
    */
@@ -299,7 +316,7 @@ export interface Transaction {
   /**
    * A positive unsigned 8-bit number between 0 and 0x7f that represents the type of the transaction.
    */
-  type?: number;
+  type?: number | string | bigint;
   /**
    * The maximum fee per gas that the transaction is willing to pay in total.
    */
@@ -317,7 +334,7 @@ export interface Transaction {
  *
  * Intended to work like Web3's
  * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
- * type.
+ * type, but with strings allowed where it requires numbers.
  * @category Inputs
  */
 export interface Log {
@@ -336,12 +353,12 @@ export interface Log {
   /**
    * Index of the log within the block.
    */
-  logIndex?: number;
+  logIndex?: number | string | bigint;
   /**
    * Index within the block of the emitting transaction; null if
    * block is pending.
    */
-  transactionIndex?: number | null;
+  transactionIndex?: number | string | bigint | null;
   /**
    * The emitting transaction's hash (as hex string).
    */
@@ -353,7 +370,7 @@ export interface Log {
   /**
    * The block number.  Null if pending.
    */
-  blockNumber: number | null;
+  blockNumber: number | string | bigint | null;
 }
 
 //HACK
