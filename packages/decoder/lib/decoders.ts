@@ -455,7 +455,8 @@ export class ProjectDecoder {
     overrideContext?: Contexts.Context,
     isForSelectorBasedDecoding?: boolean
   ): Promise<CalldataDecoding> {
-    const block = transaction.blockNumber;
+    const block =
+      transaction.blockNumber !== null ? Number(transaction.blockNumber) : null;
     const blockNumber = await this.regularizeBlock(block);
     const isConstructor = !transaction.to;
     const context = 
@@ -615,7 +616,7 @@ export class ProjectDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.Contexts = {}
   ): Promise<LogDecoding[]> {
-    const block = log.blockNumber;
+    const block = log.blockNumber !== null ? Number(log.blockNumber) : null;
     const blockNumber = await this.regularizeBlock(block);
     const data = Conversion.toBytes(log.data);
     const topics = log.topics.map(Conversion.toBytes);
