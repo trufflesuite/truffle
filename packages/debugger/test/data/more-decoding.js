@@ -446,9 +446,9 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
-      await bugger.variables()
-    );
+    const rawVariables = await bugger.variables();
+    const variables =
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(rawVariables);
     debug("variables %O", variables);
 
     const expectedResult = {
@@ -457,7 +457,11 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
+      stringMap: {
+        "0xdeadbeef": "0xdeadbeef",
+        "12345": "12345",
+        "hello": "hello"
+      },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
@@ -476,6 +480,16 @@ describe("Further Decoding", function () {
     };
 
     assert.deepInclude(variables, expectedResult);
+
+    //while we're at it, let's also test the interpretation on addressMap[address]
+    const value = rawVariables.addressMap.value[0].value;
+    assert.equal(value.kind, "value");
+    assert.equal(value.type.typeClass, "address");
+    assert.isDefined(value.interpretations.contractClass);
+    assert.equal(
+      value.interpretations.contractClass.typeName,
+      "ElementaryTest"
+    );
   });
 
   it("Splices locations correctly", async function () {
