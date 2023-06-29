@@ -140,7 +140,7 @@ function Debugger(): JSX.Element {
     }
   };
 
-  const onButtonClick = async () => {
+  const startDebugger = async () => {
     setStatus(SessionStatus.PreparingForInitialization);
     const provider = window.ethereum;
     if (!provider) {
@@ -183,6 +183,16 @@ function Debugger(): JSX.Element {
       });
     } catch (error) {
       setError(error as Error);
+    }
+  };
+
+  const onButtonClick = () => startDebugger();
+
+  // make input responsive to "enter" key
+  const handleKeyDown = (e: any) => {
+    if (formDisabled) return;
+    if (e.keyCode === 13) {
+      startDebugger();
     }
   };
 
@@ -298,6 +308,7 @@ function Debugger(): JSX.Element {
               disabled={inputsDisabled}
               type="text"
               placeholder="Transaction hash"
+              onKeyDown={handleKeyDown}
             />
             <Button
               onClick={onButtonClick}
