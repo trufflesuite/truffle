@@ -117,7 +117,8 @@ describe("nativize (ethers format)", function () {
           });
           const logs = receipt.logs;
           assert.lengthOf(logs, 1);
-          const log = logs[0];
+          let log = logs[0];
+          log.blockNumber = String(log.blockNumber); //while we're here, let's test the ability to take strings :P
           const decodings = await decoder.decodeLog(log);
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
