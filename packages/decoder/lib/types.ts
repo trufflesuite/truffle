@@ -125,7 +125,7 @@ export interface ContractState {
 
 /**
  * This type represents a web3 Log object that has been decoded.
- * Note that it extends the Log type.   The differences are:
+ * Note that it has the same fields the Log type.   The differences are:
  *
  *   1. It adds an additional field with the decodings;
  *   2. Some fields that in Log are allowed to be strings,
@@ -133,16 +133,36 @@ export interface ContractState {
  *     for output and that type is for input.)
  * @category Results
  */
-export interface DecodedLog extends Log {
+export interface DecodedLog {
+  /**
+   * Address of the emitter (as checksummed hex string).
+   */
+  address: string;
+  /**
+   * The log's data section (as hex string).
+   */
+  data: string;
+  /**
+   * The log's topics; each is a hex string representing 32 bytes.
+   */
+  topics: string[];
   /**
    * Index of the log within the block.
    */
-  logIndex?: number;
+  logIndex: number;
   /**
    * Index within the block of the emitting transaction; null if
    * block is pending.
    */
-  transactionIndex?: number | null;
+  transactionIndex: number | null;
+  /**
+   * The emitting transaction's hash (as hex string).
+   */
+  transactionHash: string;
+  /**
+   * The block hash (as hex string).  Null if pending.
+   */
+  blockHash: string | null;
   /**
    * The block number.  Null if pending.
    */
