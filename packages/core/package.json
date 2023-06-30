@@ -82,7 +82,6 @@
     "source-map-support": "^0.5.19",
     "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
-    "universal-analytics": "^0.4.17",
     "uuid": "^9.0.0",
     "web3": "1.10.0",
     "web3-utils": "1.10.0",
