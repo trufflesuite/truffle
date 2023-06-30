@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.37",
+  "version": "2.1.38",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -32,7 +32,7 @@
     "@truffle/error": "^0.2.1",
     "@truffle/expect": "^0.1.6",
     "@truffle/interface-adapter": "^0.5.34",
-    "@truffle/resolver": "^9.0.47",
+    "@truffle/resolver": "^9.0.48",
     "debug": "^4.3.1",
     "original-require": "^1.0.1"
   },
