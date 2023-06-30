@@ -25,7 +25,6 @@ module.exports = {
     }
 
     if (userId) {
-      // eslint-disable-next-line no-unused-vars
       const mixpanel = Mixpanel.init(TRUFFLE_TOKEN, {
         keepAlive: false
       });
