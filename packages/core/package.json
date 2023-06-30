@@ -19,7 +19,7 @@
   },
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha ./test/** ./test/**/*"
+    "test": "mocha ./test/** ./test/**/*.js ./test/**/**/*.js"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.194",

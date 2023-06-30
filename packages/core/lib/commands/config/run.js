@@ -1,10 +1,10 @@
+const analyticsUtils = require("./utils");
 const userLevelSettings = ["analytics"];
 /**
  * run config commands to get/set/list Truffle config options
  * @param {Object} options
  **/
 module.exports = async function (options) {
-  const googleAnalytics = require("../../services/analytics/google.js");
   const Config = require("@truffle/config");
   const OS = require("os");
 
@@ -31,14 +31,14 @@ module.exports = async function (options) {
   }
 
   if (command === null) {
-    return await googleAnalytics.setUserConfigViaPrompt();
+    return await analyticsUtils.setUserConfigViaPrompt();
   } else if (command.userLevel) {
     switch (command.key) {
       case "analytics": {
         if (command.set) {
-          googleAnalytics.setAnalytics(command.value);
+          analyticsUtils.setAnalytics(command.value);
         } else {
-          log(googleAnalytics.getAnalytics());
+          log(analyticsUtils.getAnalytics());
         }
         break;
       }
@@ -47,7 +47,7 @@ module.exports = async function (options) {
     return;
   } else if (command.list) {
     log("Truffle config values");
-    log(`analytics = ${googleAnalytics.getAnalytics()}`);
+    log(`analytics = ${analyticsUtils.getAnalytics()}`);
   } else {
     const config = Config.detect(options);
 
