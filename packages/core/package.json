@@ -73,6 +73,7 @@
     "iter-tools": "^7.5.0",
     "js-interpreter": "2.2.0",
     "lodash": "^4.17.21",
+    "mixpanel": "0.17.0",
     "mocha": "10.1.0",
     "node-emoji": "^1.8.1",
     "original-require": "^1.0.1",
