@@ -19,6 +19,12 @@ const truffleOffBgColorSelectors = [
   ".mantine-Paper-root"
 ].join(", ");
 
+const watermelonHex = "#E86591";
+const orangeHex = "#E4A663";
+const redHex = "#D60000";
+const mintHex = "#3FE0C5";
+const greenHex = "#00D717";
+
 function MantineGlobal(): JSX.Element {
   return (
     <Global
@@ -101,35 +107,37 @@ function MantineGlobal(): JSX.Element {
               color: colors["truffle-beige"][8],
               fontStyle: "italic"
             },
-            ".hljs-keyword, .hljs-selector-tag": {
-              color: colors.pink[8],
+            ".hljs-keyword": {
+              color: mintHex,
               fontWeight: "bold"
             },
             ".hljs-subst": {
               color: colors.pink[7],
               fontWeight: "normal"
             },
-            ".hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-attr":
-              {
-                color: colors.violet[7]
-              },
-            ".hljs-string, .hljs-doctag": {
-              color: colors.orange[4]
+            ".hljs-number": {
+              color: redHex
             },
-            ".hljs-title, .hljs-section, .hljs-selector-id": {
-              color: colors["truffle-teal"][8],
+            ".hljs-literal": {
+              color: watermelonHex
+            },
+            ".hljs-string, .hljs-doctag": {
+              color: greenHex
+            },
+            ".hljs-section, .hljs-selector-id": {
+              color: orangeHex,
               fontWeight: "bold"
             },
             ".hljs-type, .hljs-class, .hljs-title": {
-              color: colors["truffle-teal"][8],
+              color: orangeHex,
               fontWeight: "bold"
             },
-            ".hljs-tag, .hljs-name, .hljs-attribute": {
+            ".hljs-attribute": {
               color: colors["truffle-teal"][8],
               fontWeight: "normal"
             },
             ".hljs-built_in, .hljs-builtin-name": {
-              color: colors["truffle-teal"][8]
+              color: watermelonHex
             }
           }
         ];
