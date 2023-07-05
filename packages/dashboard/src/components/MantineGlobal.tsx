@@ -107,7 +107,7 @@ function MantineGlobal(): JSX.Element {
               color: colors["truffle-beige"][8],
               fontStyle: "italic"
             },
-            ".hljs-keyword, .hljs-selector-tag": {
+            ".hljs-keyword": {
               color: mintHex,
               fontWeight: "bold"
             },
@@ -115,17 +115,16 @@ function MantineGlobal(): JSX.Element {
               color: colors.pink[7],
               fontWeight: "normal"
             },
-            ".hljs-number, .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-attr":
-              {
-                color: redHex
-              },
+            ".hljs-number": {
+              color: redHex
+            },
             ".hljs-literal": {
               color: watermelonHex
             },
             ".hljs-string, .hljs-doctag": {
               color: greenHex
             },
-            ".hljs-title, .hljs-section, .hljs-selector-id": {
+            ".hljs-section, .hljs-selector-id": {
               color: orangeHex,
               fontWeight: "bold"
             },
@@ -133,7 +132,7 @@ function MantineGlobal(): JSX.Element {
               color: orangeHex,
               fontWeight: "bold"
             },
-            ".hljs-tag, .hljs-name, .hljs-attribute": {
+            ".hljs-attribute": {
               color: colors["truffle-teal"][8],
               fontWeight: "normal"
             },
