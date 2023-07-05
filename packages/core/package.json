@@ -19,7 +19,7 @@
   },
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha ./test/** ./test/**/*"
+    "test": "mocha ./test/** ./test/**/*.js ./test/**/**/*.js"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.194",
@@ -73,6 +73,7 @@
     "iter-tools": "^7.5.0",
     "js-interpreter": "2.2.0",
     "lodash": "^4.17.21",
+    "mixpanel": "^0.17.0",
     "mocha": "10.1.0",
     "node-emoji": "^1.8.1",
     "original-require": "^1.0.1",
@@ -81,7 +82,6 @@
     "source-map-support": "^0.5.19",
     "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
-    "universal-analytics": "^0.4.17",
     "uuid": "^9.0.0",
     "web3": "1.10.0",
     "web3-utils": "1.10.0",
