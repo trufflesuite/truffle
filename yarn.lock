@@ -6556,43 +6556,6 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@truffle/codec@^0.15.3":
-  version "0.15.3"
-  resolved "https://registry.yarnpkg.com/@truffle/codec/-/codec-0.15.3.tgz#0d76810b0d61f2a1ab53fecbb9d2e6c0afcdcdea"
-  integrity sha512-8dRxZEaPS+Qo9v90zl+zQ8RSSqNCd88yrdUS5mSfEGMsmiixR5l3R85c8QfV73B4WNYlMLTa9mC0JmhG1vqz2Q==
-  dependencies:
-    "@truffle/abi-utils" "^1.0.1"
-    "@truffle/compile-common" "^0.9.6"
-    big.js "^6.0.3"
-    bn.js "^5.1.3"
-    cbor "^5.2.0"
-    debug "^4.3.1"
-    lodash "^4.17.21"
-    semver "7.3.7"
-    utf8 "^3.0.0"
-    web3-utils "1.10.0"
-
-"@truffle/debugger@^11.1.5":
-  version "11.1.5"
-  resolved "https://registry.yarnpkg.com/@truffle/debugger/-/debugger-11.1.5.tgz#bd9f79bc00b110f1ef5436f1144edc22e0d099b9"
-  integrity sha512-zRVmxVhxNHxJEaqsuHvCLdDAKr4QJiVwf7PI/iwP4YFEt9cjyEMEM9iKLU9nntuqvzWewgerlFpGdyGJYYwyrA==
-  dependencies:
-    "@ensdomains/ensjs" "^2.1.0"
-    "@truffle/abi-utils" "^1.0.1"
-    "@truffle/codec" "^0.15.3"
-    "@truffle/source-map-utils" "^1.3.114"
-    bn.js "^5.1.3"
-    debug "^4.3.1"
-    json-pointer "^0.6.1"
-    json-stable-stringify "^1.0.1"
-    lodash "^4.17.21"
-    redux "^3.7.2"
-    redux-saga "1.0.0"
-    reselect-tree "^1.3.7"
-    semver "7.3.7"
-    web3 "1.10.0"
-    web3-eth-abi "1.10.0"
-
 "@trufflesuite/bigint-buffer@1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.10.tgz#a1d9ca22d3cad1a138b78baaf15543637a3e1692"
@@ -20728,6 +20691,11 @@ object-inspect@^1.12.0:
   resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.12.2.tgz#c0641f26394532f28ab8d796ab954e43c009a8ea"
   integrity sha512-z+cPxW0QGUp0mcqcsgQyLVRDoXFQbXOwBaqyF7VIgI4TWNQsDHrBpUQslRmIfAoYWdYzs6UlKJtB2XJpTaNSpQ==
 
+object-inspect@^1.12.2:
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.12.3.tgz#ba62dffd67ee256c8c086dfae69e016cd1f198b9"
+  integrity sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==
+
 object-inspect@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.7.0.tgz#f4f6bd181ad77f006b5ece60bd0b6f398ff74a67"
@@ -23572,13 +23540,6 @@ semver@7.3.4:
   version "7.3.4"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.4.tgz#27aaa7d2e4ca76452f98d3add093a72c943edc97"
   integrity sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==
-  dependencies:
-    lru-cache "^6.0.0"
-
-semver@7.3.7:
-  version "7.3.7"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.7.tgz#12c5b649afdbf9049707796e22a4028814ce523f"
-  integrity sha512-QlYTucUYOews+WeEujDoEGziz4K6c47V/Bd+LjSSYcA94p+DmINdf7ncaUinThfvZyu13lN9OY1XDxt8C0Tw0g==
   dependencies:
     lru-cache "^6.0.0"
 
