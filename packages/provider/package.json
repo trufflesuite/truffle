@@ -26,7 +26,7 @@
     "web3": "4.1.1"
   },
   "devDependencies": {
-    "ganache": "7.8.0",
+    "ganache": "7.9.0",
     "mocha": "10.1.0"
   },
   "keywords": [

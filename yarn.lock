@@ -14531,10 +14531,10 @@ functions-have-names@^1.2.2:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.2.tgz#98d93991c39da9361f8e50b337c4f6e41f120e21"
   integrity sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
 
-ganache@7.8.0:
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.8.0.tgz#02154384f246b66e98974cbcbb18e8372df3c2e0"
-  integrity sha512-IrUYvsaE/m2/NaVIZ7D/gCnsmyU/buechnH6MhUipzG1qJcZIwIp/DoP/LZUcHyhy0Bv0NKZD2pGOjpRhn7l7A==
+ganache@7.9.0:
+  version "7.9.0"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.9.0.tgz#561deceb376b1c4e8998ac8e5a842574507d3295"
+  integrity sha512-KdsTZaAKqDXTNDMKnLzg0ngX8wnZKyVGm7HD03GIyUMVRuXI83s0CUEaGIDWRUWTQP7BE8sDh7QtbW+NoX4zrQ==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.10"
     "@trufflesuite/uws-js-unofficial" "20.10.0-unofficial.2"
