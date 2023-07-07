@@ -26,9 +26,6 @@ const useStyles = createStyles(theme => ({
     "color": "#E03131",
     "fontSize": 14
   },
-  halfWidth: {
-    width: "50%"
-  },
   promptContainer: {
     width: "50%",
     borderRadius: 4,
@@ -38,9 +35,6 @@ const useStyles = createStyles(theme => ({
         : theme.colors["truffle-teal"][0],
     border: `solid ${theme.colors["truffle-teal"][7]}`,
     padding: 15
-  },
-  etherscanMessageContainer: {
-    width: "100%"
   }
 }));
 
