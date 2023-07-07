@@ -737,6 +737,7 @@ var DebugUtils = {
       name,
       decoding.arguments,
       inspectOptions,
+      { noHideAddress: true },
       false,
       indent
     );
