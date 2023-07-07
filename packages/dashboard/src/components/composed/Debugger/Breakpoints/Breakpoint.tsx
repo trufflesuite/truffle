@@ -10,7 +10,7 @@ const useStyles = createStyles(() => ({
     "&:hover": {
       cursor: "pointer"
     },
-    "borderRadius": 25,
+    "borderRadius": 8,
     "backgroundColor": "#FA5252",
     "width": 16,
     "height": 16,
