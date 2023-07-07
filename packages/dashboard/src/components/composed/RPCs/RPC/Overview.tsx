@@ -86,7 +86,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
     },
     rejectButton: { ref: getRef("rejectButton") },
     confirmButton: { ref: getRef("confirmButton") },
-    simulateTxButton: {
+    debugButton: {
       backgroundColor:
         colorScheme === "dark"
           ? colors["truffle-teal"][6]
@@ -113,8 +113,8 @@ type OverviewProps = {
   onRejectButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
-  onSimulateButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
-  onSimulateButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
+  onDebugButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
+  onDebugButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 function Overview({
@@ -131,8 +131,8 @@ function Overview({
   onRejectButtonLeave,
   onConfirmButtonEnter,
   onConfirmButtonLeave,
-  onSimulateButtonEnter,
-  onSimulateButtonLeave
+  onDebugButtonEnter,
+  onDebugButtonLeave
 }: OverviewProps): JSX.Element {
   const { method } = lifecycle.message.payload;
   const decodingInspected = inspectDecoding(decoding);
@@ -145,7 +145,7 @@ function Overview({
   const navigate = useNavigate();
   const onConfirmButtonClick = () => void userConfirmMessage(lifecycle);
   const onRejectButtonClick = () => void userRejectMessage(lifecycle);
-  const onSimulateButtonClick = () => {
+  const onDebugButtonClick = () => {
     setTxToRun(lifecycle);
     navigate("/debugger");
   };
@@ -206,12 +206,12 @@ function Overview({
         </Group>
         <Button
           size="md"
-          onClick={onSimulateButtonClick}
-          onMouseEnter={onSimulateButtonEnter}
-          onMouseLeave={onSimulateButtonLeave}
-          className={`${classes.button} ${classes.simulateTxButton}`}
+          onClick={onDebugButtonClick}
+          onMouseEnter={onDebugButtonEnter}
+          onMouseLeave={onDebugButtonLeave}
+          className={`${classes.button} ${classes.debugButton}`}
         >
-          SimulateTx
+          Debug
         </Button>
       </Group>
     </Stack>
