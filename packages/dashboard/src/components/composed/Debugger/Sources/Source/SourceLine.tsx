@@ -1,12 +1,6 @@
 import { createStyles } from "@mantine/core";
 
-const useStyles = createStyles((theme, _params, _getRef) => ({
-  lineNumber: {
-    color: theme.colorScheme === "dark" ? "#59534c" : "#c4b08d"
-  },
-  selected: {
-    backgroundColor: theme.colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
-  },
+const useStyles = createStyles(() => ({
   sourceLine: {
     height: 22,
     display: "flex"
