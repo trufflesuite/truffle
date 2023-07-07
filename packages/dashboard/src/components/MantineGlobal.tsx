@@ -21,9 +21,12 @@ const truffleOffBgColorSelectors = [
 
 const watermelonHex = "#E86591";
 const orangeHex = "#E4A663";
+const orangeBrightHex = "#E78820";
 const redHex = "#D60000";
 const mintHex = "#3FE0C5";
+const mintDarkHex = "#0FBEA1";
 const greenHex = "#00D717";
+const greenDarkHex = "#00A412";
 
 function MantineGlobal(): JSX.Element {
   return (
@@ -103,12 +106,18 @@ function MantineGlobal(): JSX.Element {
                     : colors["truffle-beige"][5]
               }
             },
+            ".codec-components-code-bracket": {
+              color: colors["truffle-beige"][8]
+            },
             ".hljs-comment, .hljs-quote": {
-              color: colors["truffle-beige"][8],
+              color:
+                theme.colorScheme === "dark"
+                  ? colors["truffle-beige"][8]
+                  : colors["truffle-beige"][6],
               fontStyle: "italic"
             },
             ".hljs-keyword": {
-              color: mintHex,
+              color: theme.colorScheme === "dark" ? mintHex : mintDarkHex,
               fontWeight: "bold"
             },
             ".hljs-subst": {
@@ -118,25 +127,25 @@ function MantineGlobal(): JSX.Element {
             ".hljs-number": {
               color: redHex
             },
-            ".hljs-literal": {
-              color: watermelonHex
-            },
             ".hljs-string, .hljs-doctag": {
-              color: greenHex
+              color: theme.colorScheme === "dark" ? greenHex : greenDarkHex
             },
-            ".hljs-section, .hljs-selector-id": {
-              color: orangeHex,
-              fontWeight: "bold"
-            },
-            ".hljs-type, .hljs-class, .hljs-title": {
-              color: orangeHex,
+            [[
+              ".hljs-type",
+              ".hljs-class",
+              ".hljs-title",
+              ".hljs-section",
+              ".hljs-selector-id",
+              ".codec-components-code-name"
+            ].join(", ")]: {
+              color: theme.colorScheme === "dark" ? orangeHex : orangeBrightHex,
               fontWeight: "bold"
             },
             ".hljs-attribute": {
               color: colors["truffle-teal"][8],
               fontWeight: "normal"
             },
-            ".hljs-built_in, .hljs-builtin-name": {
+            ".hljs-literal, .hljs-built_in, .hljs-builtin-name": {
               color: watermelonHex
             }
           }
