@@ -11,7 +11,11 @@ const useStyles = createStyles(() => ({
   }
 }));
 
-function PreparingSession({ ganacheLoggingOutput }: any): JSX.Element {
+function PreparingSession({
+  ganacheLoggingOutput
+}: {
+  ganacheLoggingOutput: string;
+}): JSX.Element {
   const { classes } = useStyles();
   const [ganacheOutput, setGanacheOutput] = useState<string[]>([]);
 
