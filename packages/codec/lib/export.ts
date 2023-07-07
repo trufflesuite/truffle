@@ -312,13 +312,15 @@ export class CalldataDecodingInspector {
           return formatMulticall(
             fullName,
             this.decoding.interpretations.multicall,
-            options
+            options,
+            this.options
           );
         } else if (this.decoding.interpretations.aggregate) {
           return formatAggregate(
             fullName,
             this.decoding.interpretations.aggregate,
-            options
+            options,
+            this.options
           );
         } else if (this.decoding.interpretations.tryAggregate) {
           const { requireSuccess, calls } =
@@ -327,6 +329,7 @@ export class CalldataDecodingInspector {
             fullName,
             calls,
             options,
+            this.options,
             "requireSuccess",
             options.stylize(requireSuccess.toString(), "number")
           );
@@ -337,6 +340,7 @@ export class CalldataDecodingInspector {
             fullName,
             decodings,
             options,
+            this.options,
             "deadline",
             options.stylize(deadline.toString(), "number")
           );
@@ -347,16 +351,23 @@ export class CalldataDecodingInspector {
             fullName,
             decodings,
             options,
+            this.options,
             "previousBlockhash",
             options.stylize(specifiedBlockhash, "number")
           );
         }
-        return formatFunctionLike(fullName, this.decoding.arguments, options);
+        return formatFunctionLike(
+          fullName,
+          this.decoding.arguments,
+          options,
+          this.options
+        );
       case "constructor":
         return formatFunctionLike(
           `new ${this.decoding.class.typeName}`,
           this.decoding.arguments,
-          options
+          options,
+          this.options
         );
       case "message":
         const { data, abi } = this.decoding;
@@ -377,6 +388,7 @@ export class CalldataDecodingInspector {
             `${this.decoding.class.typeName}.${abi.type}`,
             [{ value: codecValue }],
             options,
+            this.options,
             true // we don't need to see the type here!
           );
         } else {
@@ -461,12 +473,18 @@ export class LogDecodingInspector {
     }
     switch (this.decoding.kind) {
       case "event":
-        return formatFunctionLike(fullName, this.decoding.arguments, options);
+        return formatFunctionLike(
+          fullName,
+          this.decoding.arguments,
+          options,
+          this.options
+        );
       case "anonymous":
         return formatFunctionLike(
           `<anonymous> ${fullName}`,
           this.decoding.arguments,
-          options
+          options,
+          this.options
         );
     }
   }
@@ -496,7 +514,8 @@ export class ReturndataDecodingInspector {
         return formatFunctionLike(
           "Returned values: ",
           this.decoding.arguments,
-          options
+          options,
+          this.options
         );
       case "returnmessage":
         const { data } = this.decoding;
@@ -528,7 +547,8 @@ export class ReturndataDecodingInspector {
         return formatFunctionLike(
           `Error thrown:${OS.EOL}${name}`,
           this.decoding.arguments,
-          options
+          options,
+          this.options
         );
       case "bytecode":
         //this one gets custom handling :P
@@ -601,9 +621,9 @@ export function formatFunctionLike(
   header: string,
   values: AbiArgument[],
   options: InspectOptions,
+  inspectorOptions?: ResultInspectorOptions,
   suppressType: boolean = false,
-  indent: number = 2, //for use by debug-utils
-  inspectorOptions?: ResultInspectorOptions
+  indent: number = 2 //for use by debug-utils
 ): string {
   if (values.length === 0) {
     return `${header}()`;
@@ -637,9 +657,9 @@ function formatMulticall(
   fullName: string,
   decodings: (CalldataDecoding | null)[],
   options: InspectOptions,
+  inspectorOptions?: ResultInspectorOptions,
   additionalParameterName?: string,
-  additionalParameterValue?: string,
-  inspectorOptions?: ResultInspectorOptions
+  additionalParameterValue?: string
 ): string {
   if (decodings.length === 0) {
     return `${fullName}()`;
@@ -670,9 +690,9 @@ function formatAggregate(
   fullName: string,
   calls: CallInterpretationInfo[],
   options: InspectOptions,
+  inspectorOptions?: ResultInspectorOptions,
   additionalParameterName?: string,
-  additionalParameterValue?: string,
-  inspectorOptions?: ResultInspectorOptions
+  additionalParameterValue?: string
 ): string {
   if (calls.length === 0) {
     return `${fullName}()`;
