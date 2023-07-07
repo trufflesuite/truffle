@@ -98,7 +98,7 @@ export class DashboardServer {
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
 
-    this.expressApp.get("/fetch-and-compile", async (req, res, next) => {
+    this.expressApp.get("/fetch-and-compile", async (req, res) => {
       let result;
       try {
         const { address, networkId, etherscanApiKey } = req.query as Record<
@@ -132,7 +132,7 @@ export class DashboardServer {
         result = (await fetchAndCompile(address, config)).compileResult;
       } catch (error) {
         if (!error.message.includes("No verified sources")) {
-          return next(error);
+          throw error;
         }
       }
       if (result) {
