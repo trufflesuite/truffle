@@ -16,8 +16,7 @@ export async function forkNetworkWithTxAndInitDebugger({
   const { method, params } = tx.message.payload;
   const ganacheOptions = {
     fork: {
-      // @ts-ignore
-      provider: window.ethereum
+      provider: window.ethereum as any
     },
     wallet: {
       unlockedAccounts: [params[0].from]
@@ -31,7 +30,6 @@ export async function forkNetworkWithTxAndInitDebugger({
     }
   };
 
-  // @ts-ignore
   const forkedProvider = ganacheProvider(ganacheOptions);
   const networkId = await forkedProvider.request({
     method: "net_version",
