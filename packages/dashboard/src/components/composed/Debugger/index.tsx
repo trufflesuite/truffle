@@ -35,6 +35,7 @@ const useStyles = createStyles(theme => ({
     paddingLeft: 32,
     paddingRight: 32,
     display: "flex",
+    border: "none",
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors["truffle-brown"][8]
