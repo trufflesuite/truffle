@@ -76,7 +76,7 @@ function Variables({
       const sections = session.view(
         session.selectors.data.current.identifiers.sections
       );
-      const variables = await session!.variables();
+      const variables = await session.variables();
 
       const entries = [];
       // section here is a variable category such as a Solidity built-in
