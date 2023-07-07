@@ -10,7 +10,7 @@ export const decodableRpcMethodsArr = [
   "eth_signTypedData_v4"
 ] as const;
 export const decodableRpcMethods = new Set(decodableRpcMethodsArr);
-export type DecodableRpcMethod = typeof decodableRpcMethodsArr[number];
+export type DecodableRpcMethod = (typeof decodableRpcMethodsArr)[number];
 
 export const interactiveRpcMethodsArr = [
   ...decodableRpcMethodsArr,
@@ -19,14 +19,14 @@ export const interactiveRpcMethodsArr = [
   "eth_signTypedData_v1"
 ] as const;
 export const interactiveRpcMethods = new Set(interactiveRpcMethodsArr);
-export type InteractiveRpcMethod = typeof interactiveRpcMethodsArr[number];
+export type InteractiveRpcMethod = (typeof interactiveRpcMethodsArr)[number];
 
 export const unsupportedRpcMethodsArr = [
   "eth_sign",
   "eth_signTransaction"
 ] as const;
 export const unsupportedRpcMethods = new Set(unsupportedRpcMethodsArr);
-export type UnsupportedRpcMethod = typeof unsupportedRpcMethodsArr[number];
+export type UnsupportedRpcMethod = (typeof unsupportedRpcMethodsArr)[number];
 
 export const unsupportedMessageResponse = new Map<UnsupportedRpcMethod, string>(
   [
@@ -40,6 +40,8 @@ export const unsupportedMessageResponse = new Map<UnsupportedRpcMethod, string>(
     ]
   ]
 );
+
+export const etherscanApiKeyName = "trfl.dash.etherscan-api-key";
 
 export const chainIDtoName = {
   ...chainIDtoNameJson

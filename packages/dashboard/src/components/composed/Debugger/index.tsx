@@ -20,6 +20,7 @@ import type {
   BreakpointType,
   SourceRange
 } from "src/components/composed/Debugger/utils";
+import { etherscanApiKeyName } from "src/utils/constants";
 
 const useStyles = createStyles(theme => ({
   debugger: {
@@ -64,7 +65,7 @@ function Debugger(): JSX.Element {
     }
   } = useDash()!;
 
-  const [etherscanApiKey] = useLocalStorage({ key: "etherscan-api-key" });
+  const [etherscanApiKey] = useLocalStorage({ key: etherscanApiKeyName });
   const [error, setError] = useState<Error>();
   const [loggingOutput, setLoggingOutput] = useState<string>("");
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.Inactive);
