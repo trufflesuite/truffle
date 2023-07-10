@@ -46,7 +46,7 @@ function Breakpoint({
         onClick={() =>
           handleBreakpointDeleteClick({
             sourceId,
-            line: line.toString()
+            line: line
           })
         }
       ></div>
@@ -55,7 +55,7 @@ function Breakpoint({
         onClick={() =>
           handleBreakpointComponentClick({
             sourceId,
-            line: line.toString()
+            line: line
           })
         }
       >
