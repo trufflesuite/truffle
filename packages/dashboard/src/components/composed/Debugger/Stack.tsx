@@ -74,11 +74,7 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
         const displayAddress =
           address === undefined ? "unknown address" : address;
         const stackDisplay = `at ${name} [address ${displayAddress}]`;
-        return (
-          <div className="truffle-debugger-stack-item" key={index}>
-            {stackDisplay}
-          </div>
-        );
+        return <div key={index}>{stackDisplay}</div>;
       });
       setOutput(entries);
     }
