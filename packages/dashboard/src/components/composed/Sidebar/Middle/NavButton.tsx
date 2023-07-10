@@ -3,7 +3,7 @@ import { UnstyledButton, Group, Text, createStyles } from "@mantine/core";
 import { useLocation } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
-  const { colors, colorScheme, radius } = theme;
+  const { colors, colorScheme, radius, fn } = theme;
   return {
     button: {
       display: "block",
@@ -22,6 +22,14 @@ const useStyles = createStyles((theme, _params, _getRef) => {
         colorScheme === "dark"
           ? colors["truffle-brown"][6]
           : colors["truffle-beige"][2]
+    },
+    inactive: {
+      "&:hover": {
+        backgroundColor:
+          colorScheme === "dark"
+            ? fn.lighten(colors["truffle-brown"][8], 0.08)
+            : fn.darken(colors["truffle-beige"][4], 0.08)
+      }
     }
   };
 });
@@ -51,7 +59,9 @@ function NavButton({
       p="xl"
       className={`${classes.button} ${
         disabled ? classes.disabled : undefined
-      } ${location.pathname.startsWith(to) ? classes.active : undefined}`}
+      } ${
+        location.pathname.startsWith(to) ? classes.active : classes.inactive
+      }`}
     >
       <Group position="apart">
         <Group>
