@@ -57,21 +57,6 @@ function MantineGlobal(): JSX.Element {
                 colorScheme === "dark" ? "#4444aa60" : "#ffff0050"
             },
 
-            ".truffle-debugger-input-and-button": {
-              display: "flex",
-              flexGrow: 1
-            },
-            ".truffle-debugger-input-and-button > div > input": {
-              borderTopRightRadius: 0,
-              borderBottomRightRadius: 0,
-              border: 0,
-              height: 42,
-              backgroundColor:
-                theme.colorScheme === "dark"
-                  ? theme.colors["truffle-brown"][5]
-                  : "#FFFFFF"
-            },
-
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
