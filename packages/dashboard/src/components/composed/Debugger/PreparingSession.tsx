@@ -41,11 +41,9 @@ function PreparingSession({
             Preparing your debugger session, this may take some time.
           </div>
         </Flex>
-        {ganacheLoggingOutput.length > 0 ? (
-          <pre
-            dangerouslySetInnerHTML={{ __html: ganacheOutput.join("<br>") }}
-          />
-        ) : null}
+        {ganacheLoggingOutput.length > 0 && (
+          <pre>{ganacheOutput.join("\n")}</pre>
+        )}
       </div>
     </Flex>
   );
