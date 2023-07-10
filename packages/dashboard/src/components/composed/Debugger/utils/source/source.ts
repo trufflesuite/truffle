@@ -158,35 +158,6 @@ export function addSyntaxHighlighting(source: Source) {
   return processor.stringify(highlighted);
 }
 
-export function addMultilineCommentSpans(sourceLines: string[]) {
-  let inMultilineComment: boolean = false;
-  const lowlightCommentSpan = `<span class="hljs-comment">`;
-  const closingSpan = `</span>`;
-  const sourceWithSpans: string[] = [];
-  for (const line of sourceLines) {
-    if (
-      !inMultilineComment &&
-      line.includes(lowlightCommentSpan) &&
-      !line.slice(line.indexOf(lowlightCommentSpan)).includes(closingSpan)
-    ) {
-      // line where a multiline comment begins with no closing span
-      inMultilineComment = true;
-      sourceWithSpans.push(line + closingSpan);
-    } else if (inMultilineComment && !line.includes(closingSpan)) {
-      // line in the middle of a multiline comment without closing span
-      sourceWithSpans.push(lowlightCommentSpan + line + closingSpan);
-    } else if (inMultilineComment && line.includes(closingSpan)) {
-      // line where a multiline comment begins
-      sourceWithSpans.push(lowlightCommentSpan + line);
-      inMultilineComment = false;
-    } else {
-      // line of code not in a multiline comment
-      sourceWithSpans.push(line);
-    }
-  }
-  return sourceWithSpans;
-}
-
 export function replaceTextHighlightedMarkings({
   source,
   fullyHighlightedLines
