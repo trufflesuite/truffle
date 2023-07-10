@@ -6,7 +6,8 @@ const useStyles = createStyles(() => ({
     display: "flex"
   },
   content: {
-    height: 22
+    height: 22,
+    display: "flex"
   }
 }));
 
