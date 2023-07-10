@@ -42,6 +42,20 @@ const useStyles = createStyles(theme => ({
         ? theme.colors["truffle-brown"][8]
         : theme.colors["truffle-beige"][3]
   },
+  inputAndButton: {
+    "display": "flex",
+    "flexGrow": 1,
+    "& > div > input": {
+      borderTopRightRadius: 0,
+      borderBottomRightRadius: 0,
+      border: 0,
+      height: 42,
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? theme.colors["truffle-brown"][5]
+          : "#FFFFFF"
+    }
+  },
   mainContent: {
     height: "calc(100vh - 108px)",
     paddingBottom: 36,
@@ -302,7 +316,7 @@ function Debugger(): JSX.Element {
       <div className={classes.debugger}>
         <Header height={66} className={classes.inputGroup}>
           <Controls session={session} stepEffect={sessionTick} />
-          <div className="truffle-debugger-input-and-button">
+          <div className={classes.inputAndButton}>
             <Input
               style={{ height: "42px", marginLeft: "34px" }}
               value={inputValue}
