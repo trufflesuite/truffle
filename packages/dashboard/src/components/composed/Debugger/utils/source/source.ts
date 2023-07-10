@@ -52,7 +52,7 @@ const textHighlightingEndsMarker = ` /****truffle-debugger-highlight-end****/`;
 const closingSpan = `</span>`;
 // lowlight wraps our markers in spans which we need to remove when we replace
 // the markers with our spans for highlighting
-const highlightJsCommentSpan = `<span class=\"hljs-comment\">`;
+const highlightJsCommentSpan = `<span class="hljs-comment">`;
 
 export function markTextHighlighted(source: Source, sourceRange: SourceRange) {
   const fullyHighlightedLines = new Set<number>();
