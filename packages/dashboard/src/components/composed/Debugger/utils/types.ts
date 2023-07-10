@@ -4,7 +4,7 @@ export type Selector = any;
 
 export type BreakpointType = {
   sourceId: string;
-  line: string;
+  line: number;
 };
 
 export type UnknownAddress = string;

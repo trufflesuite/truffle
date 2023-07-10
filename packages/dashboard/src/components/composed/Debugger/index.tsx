@@ -144,15 +144,15 @@ function Debugger(): JSX.Element {
   }) => {
     const lineNumber = line + 1;
     const lineId = `${sourceId.slice(-10)}-${lineNumber}`;
-    const targetLine: any = document.getElementById(lineId);
+    const targetLine: HTMLElement | null = document.getElementById(lineId);
     if (targetLine) {
       const offsetTop = targetLine.offsetTop;
-      // @ts-ignore
       const scroller = document.getElementById(`source-${sourceId.slice(-10)}`);
-      // @ts-ignore
-      const scrollerHeight = scroller.offsetHeight;
-      // @ts-ignore - approx. 60% gets the line to the middle of the container
-      scroller.scrollTop = offsetTop - scrollerHeight * 0.6;
+      if (scroller) {
+        const scrollerHeight = scroller.offsetHeight;
+        // approx. 60% gets the line to the middle of the container
+        scroller.scrollTop = offsetTop - scrollerHeight * 0.6;
+      }
     }
   };
 
@@ -230,7 +230,6 @@ function Debugger(): JSX.Element {
   useEffect(() => {
     if (goToBreakpoint !== null) {
       const { sourceId, line } = goToBreakpoint;
-      // @ts-ignore
       scrollToLine({ sourceId, line });
       setGoToBreakpoint(null);
     }
@@ -247,7 +246,7 @@ function Debugger(): JSX.Element {
   const handleBreakpointDeleteClick = ({ sourceId, line }: BreakpointType) => {
     operations.toggleDebuggerBreakpoint({
       sourceId,
-      line: parseInt(line)
+      line
     });
   };
 
