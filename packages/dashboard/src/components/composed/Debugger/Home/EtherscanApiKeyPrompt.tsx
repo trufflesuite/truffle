@@ -8,6 +8,7 @@ import {
   createStyles
 } from "@mantine/core";
 import { useInputState, useLocalStorage } from "@mantine/hooks";
+import { etherscanApiKeyName } from "src/utils/constants";
 
 const useStyles = createStyles(theme => ({
   inputGroup: {
@@ -43,7 +44,7 @@ function EtherScanApiKeyPrompt() {
 
   const [etherscanApiKey, setEtherscanApiKey, removeEtherscanApiKey] =
     useLocalStorage({
-      key: "etherscan-api-key"
+      key: etherscanApiKeyName
     });
   const [inputValue, setInputValue] = useInputState<string>("");
 
