@@ -89,8 +89,7 @@ function Sources({
   // display the first source when currentSourceRange is `undefined`
   useEffect(() => {
     if (currentSourceId === undefined) {
-      const sourceIds = sources.map(({ id }) => id);
-      setCurrentSourceId(sourceIds[0]);
+      setCurrentSourceId(sources[0].id);
     }
   }, [sources, currentSourceId, setCurrentSourceId]);
 
