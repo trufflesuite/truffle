@@ -331,6 +331,18 @@ export class CalldataDecodingInspector {
             options,
             this.options,
             "requireSuccess",
+            options.stylize(requireSuccess.toString(), "number"),
+            true //including try here would be redundant, so suppress it
+          );
+        } else if (this.decoding.interpretations.tryAggregate) {
+          const { requireSuccess, calls } =
+            this.decoding.interpretations.tryAggregate;
+          return formatAggregate(
+            fullName,
+            calls,
+            options,
+            this.options,
+            "requireSuccess",
             options.stylize(requireSuccess.toString(), "number")
           );
         } else if (this.decoding.interpretations.deadlinedMulticall) {
@@ -692,24 +704,40 @@ function formatAggregate(
   options: InspectOptions,
   inspectorOptions?: ResultInspectorOptions,
   additionalParameterName?: string,
-  additionalParameterValue?: string
+  additionalParameterValue?: string,
+  suppressTry: boolean = false
 ): string {
   if (calls.length === 0) {
     return `${fullName}()`;
   }
   const indent = 2;
-  let formattedCalls = calls.map(({ address, decoding }, index) => {
-    const formattedCall =
-      decoding === null
-        ? "<decoding error>"
-        : util
-            .inspect(
+  let formattedCalls = calls.map(
+    ({ address, allowFailure, value, decoding }, index) => {
+      let formattedCall =
+        decoding === null
+          ? "<decoding error>"
+          : util.inspect(
               new CalldataDecodingInspector(decoding, inspectorOptions),
               options
-            )
-            .replace(".", `(${options.stylize(address, "number")}).`); //HACK: splice in the address
-    return formattedCall + (index < calls.length - 1 ? "," : "");
-  });
+            );
+      if (value !== null && value.gtn(0)) {
+        formattedCall = formattedCall.replace(
+          ".",
+          `{value: ${options.stylize(value.toString(), "number")}}.` //HACK: splice in the value
+        );
+      }
+      if (address !== null) {
+        formattedCall = formattedCall.replace(
+          ".",
+          `(${options.stylize(address, "number")}).`
+        ); //HACK: splice in the address
+      }
+      if (allowFailure && !suppressTry && decoding !== null) {
+        formattedCall = "[try] " + formattedCall;
+      }
+      return formattedCall + (index < calls.length - 1 ? "," : "");
+    }
+  );
   if (additionalParameterName) {
     formattedCalls.unshift(
       `${additionalParameterName}: ${additionalParameterValue},`

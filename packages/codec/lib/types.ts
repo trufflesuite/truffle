@@ -120,8 +120,8 @@ export interface FunctionDecoding {
     /**
      * If this interpretation is present, indicates that the transaction can be
      * understood as an `aggregate` (from multicallv2).  This also includes
-     * `blockAndAggregate`.  See [[CallInterpretationInfo]] for more
-     * information.
+     * `blockAndAggregate`, as well as `aggregate3` (from multicallv3), and
+     * `aggregate3Value`.  See [[CallInterpretationInfo]] for more information.
      */
     aggregate?: CallInterpretationInfo[];
     /**
@@ -952,6 +952,14 @@ export interface CallInterpretationInfo {
    * The decoding of the call; may be null in case of error.
    */
   decoding: CalldataDecoding | null;
+  /**
+   * Whether failure was allowed; may be null in case of error.
+   */
+  allowFailure: boolean | null;
+  /**
+   * The value sent with the call, in Wei.  May be null in case of error.
+   */
+  value: BN | null;
 }
 
 /**

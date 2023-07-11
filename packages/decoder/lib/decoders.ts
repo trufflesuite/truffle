@@ -1096,6 +1096,63 @@ export class ProjectDecoder {
             )
         )
       );
+    } else if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "aggregate3" &&
+      decoding.abi.inputs.length === 1 &&
+      decoding.abi.inputs[0].type === "tuple[]" &&
+      decoding.abi.inputs[0].components.length === 3 &&
+      decoding.abi.inputs[0].components[0].type === "address" &&
+      decoding.abi.inputs[0].components[1].type === "bool" &&
+      decoding.abi.inputs[0].components[2].type === "bytes" &&
+      decoding.arguments[0].value.kind === "value"
+    ) {
+      //Identical to above, just split out for clarity
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      return await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInAggregate(
+              callResult as
+                | Format.Values.StructResult
+                | Format.Values.TupleResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations,
+              overrideContext
+            )
+        )
+      );
+    } else if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "aggregate3Value" &&
+      decoding.abi.inputs.length === 1 &&
+      decoding.abi.inputs[0].type === "tuple[]" &&
+      decoding.abi.inputs[0].components.length === 4 &&
+      decoding.abi.inputs[0].components[0].type === "address" &&
+      decoding.abi.inputs[0].components[1].type === "bool" &&
+      decoding.abi.inputs[0].components[2].type === "uint256" &&
+      decoding.abi.inputs[0].components[3].type === "bytes" &&
+      decoding.arguments[0].value.kind === "value"
+    ) {
+      //Identical to above, just split out for clarity
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      return await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInAggregate(
+              callResult as
+                | Format.Values.StructResult
+                | Format.Values.TupleResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations,
+              overrideContext
+            )
+        )
+      );
     } else {
       return undefined;
     }
@@ -1112,41 +1169,62 @@ export class ProjectDecoder {
     },
     overrideContext?: Contexts.Context
   ): Promise<CallInterpretationInfo> {
-    switch (callResult.kind) {
-      case "value":
-        const addressResult = callResult.value[0]
-          .value as Codec.Format.Values.AddressResult;
-        const bytesResult = callResult.value[1]
-          .value as Codec.Format.Values.BytesResult;
-        let address: string;
-        switch (addressResult.kind) {
-          case "value":
-            address = addressResult.value.asAddress;
-            break;
-          case "error":
-            //can't decode in this case
-            return { address: null, decoding: null };
-        }
-        switch (bytesResult.kind) {
-          case "value":
-            const subDecoding =
-              await this.decodeTransactionWithAdditionalContexts(
-                {
-                  ...transaction,
-                  input: bytesResult.value.asHex,
-                  to: address
-                },
-                additionalContexts,
-                additionalAllocations,
-                overrideContext
-              );
-            return { address, decoding: subDecoding };
-          case "error":
-            return { address, decoding: null };
-        }
-      case "error":
-        return { address: null, decoding: null };
+    if (callResult.kind === "error") {
+      return {
+        address: null,
+        allowFailure: null,
+        value: null,
+        decoding: null
+      };
     }
+    let address: string;
+    let subDecoding: Codec.CalldataDecoding;
+    let value: BN = new BN(0);
+    let allowFailure: boolean = false;
+    for (const { value: subResult } of callResult.value) {
+      switch (subResult.type.typeClass) {
+        case "address":
+          if (subResult.kind === "error") {
+            address = null;
+          } else {
+            address = (subResult as Format.Values.AddressValue).value.asAddress;
+          }
+          break;
+        case "bool":
+          if (subResult.kind === "error") {
+            allowFailure = null;
+          } else {
+            allowFailure = (subResult as Format.Values.BoolValue).value
+              .asBoolean;
+          }
+          break;
+        case "uint":
+          if (subResult.kind === "error") {
+            value = null;
+          } else {
+            value = (subResult as Format.Values.UintValue).value.asBN.clone();
+          }
+          break;
+        case "bytes":
+          if (subResult.kind === "error") {
+            subDecoding = null;
+          } else {
+            const asHex = (subResult as Format.Values.BytesValue).value.asHex;
+            subDecoding = await this.decodeTransactionWithAdditionalContexts(
+              {
+                ...transaction,
+                input: asHex,
+                to: address
+              },
+              additionalContexts,
+              additionalAllocations,
+              overrideContext
+            );
+          }
+          break;
+      }
+    }
+    return { address, allowFailure, value, decoding: subDecoding };
   }
 
   private async interpretTryAggregate(
@@ -1179,20 +1257,22 @@ export class ProjectDecoder {
       const decodedArray = decoding.arguments[1]
         .value as Format.Values.ArrayValue;
       const requireSuccess: boolean = decodedBool.value.asBoolean;
-      const calls = await Promise.all(
-        decodedArray.value.map(
-          async callResult =>
-            await this.interpretCallInAggregate(
-              callResult as
-                | Format.Values.StructResult
-                | Format.Values.TupleResult,
-              transaction,
-              additionalContexts,
-              additionalAllocations,
-              overrideContext
-            )
+      const calls = (
+        await Promise.all(
+          decodedArray.value.map(
+            async callResult =>
+              await this.interpretCallInAggregate(
+                callResult as
+                  | Format.Values.StructResult
+                  | Format.Values.TupleResult,
+                transaction,
+                additionalContexts,
+                additionalAllocations,
+                overrideContext
+              )
+          )
         )
-      );
+      ).map(call => ({ ...call, allowFailure: !requireSuccess }));
       return { requireSuccess, calls };
     } else {
       return undefined;
