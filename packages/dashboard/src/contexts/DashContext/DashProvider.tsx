@@ -49,15 +49,6 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const dbHelper = useMemo(
     () => ({
       dbPromise: stateRef.current.dbPromise,
-      async getAllCompilations() {
-        const tx = (await this.dbPromise).transaction(
-          "Compilation",
-          "readonly"
-        );
-        const store = tx.objectStore("Compilation");
-        const compilations = await store.getAll();
-        return compilations.map(entry => entry.data);
-      },
       async has(hash: string) {
         return !!(await (await this.dbPromise).getKey("Compilation", hash));
       },
@@ -313,7 +304,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     },
     handleCompilations,
     getCompilations: async (): Promise<Compilation[]> => {
-      return await dbHelper.getAllCompilations();
+      const { dbPromise } = state;
+      const compilations = await (await dbPromise).getAll("Compilation");
+      return compilations.map(entry => entry.data);
     },
     setDebuggerSessionData: ({
       unknownAddresses,
