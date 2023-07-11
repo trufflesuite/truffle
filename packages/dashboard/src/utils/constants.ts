@@ -2,6 +2,7 @@ import chainIDtoNameJson from "src/assets/chainIDtoName.json";
 
 export const EMOTION_KEY = "trfl";
 export const COLOR_SCHEME_KEY = "trfl.dash.color-scheme";
+export const etherscanApiKeyName = "trfl.dash.etherscan-api-key";
 
 export const decodableRpcMethodsArr = [
   "eth_sendTransaction",
@@ -40,8 +41,6 @@ export const unsupportedMessageResponse = new Map<UnsupportedRpcMethod, string>(
     ]
   ]
 );
-
-export const etherscanApiKeyName = "trfl.dash.etherscan-api-key";
 
 export const chainIDtoName = {
   ...chainIDtoNameJson
