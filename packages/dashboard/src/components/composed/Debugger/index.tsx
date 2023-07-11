@@ -56,6 +56,11 @@ const useStyles = createStyles(theme => ({
           : "#FFFFFF"
     }
   },
+  button: {
+    height: "42px",
+    borderTopLeftRadius: "0px",
+    borderBottomLeftRadius: "0px"
+  },
   mainContent: {
     height: "calc(100vh - 108px)",
     paddingBottom: 36,
@@ -147,12 +152,12 @@ function Debugger(): JSX.Element {
     const targetLine: HTMLElement | null = document.getElementById(lineId);
     if (targetLine) {
       const offsetTop = targetLine.offsetTop;
-      const scroller = document.getElementById(`source-${sourceId.slice(-10)}`);
-      if (scroller) {
-        const scrollerHeight = scroller.offsetHeight;
-        // approx. 60% gets the line to the middle of the container
-        scroller.scrollTop = offsetTop - scrollerHeight * 0.6;
-      }
+      const scroller = document.getElementById(
+        `source-${sourceId.slice(-10)}`
+      )!;
+      const scrollerHeight = scroller.offsetHeight;
+      // approx. 60% gets the line to the middle of the container
+      scroller.scrollTop = offsetTop - scrollerHeight * 0.6;
     }
   };
 
@@ -210,12 +215,6 @@ function Debugger(): JSX.Element {
     if (e.keyCode === 13) {
       startDebugger();
     }
-  };
-
-  const buttonStyles = {
-    height: "42px",
-    borderTopLeftRadius: "0px",
-    borderBottomLeftRadius: "0px"
   };
 
   useEffect(() => {
@@ -328,7 +327,7 @@ function Debugger(): JSX.Element {
             <Button
               onClick={onButtonClick}
               disabled={formDisabled}
-              style={buttonStyles}
+              classNames={{ root: classes.button }}
             >
               Debug
             </Button>
