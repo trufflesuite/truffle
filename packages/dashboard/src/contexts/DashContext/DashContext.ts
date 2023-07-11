@@ -21,7 +21,10 @@ export interface ContextValue {
     updateAnalyticsConfig: (value: boolean) => void;
     setDebuggerSessionData: (value: SetDebuggerSessionDataArgs) => void;
     getCompilations: (compilations: Compilation[]) => Promise<Compilation[]>;
-    handleCompilations: () => Promise<void>;
+    handleCompilations: (
+      compilations: Compilation[],
+      hashes?: string[]
+    ) => Promise<void>;
     toggleDebuggerBreakpoint: (value: ToggleDebuggerBreakpointArgs) => void;
     setTxToRun: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
