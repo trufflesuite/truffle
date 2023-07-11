@@ -51,23 +51,22 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       //I'm not including Ethereum Classic Mainnet as it has chain ID != network ID
       //not including Mordor for same reason
       "kotti-etc": "blockscout.com/etc/kotti", //Kotti, however, is fine
-      "gnosis": "blockscout.com/xdai/mainnet",
-      "chiado-gnosis": "blockscout.com/gnosis/chiado",
+      "gnosis": "gnosis.blockscout.com",
+      "chiado-gnosis": "gnosis-chiado.blockscout.com",
       "astar": "blockscout.com/astar",
       "shiden-astar": "blockscout.com/shiden",
       "shibuya-astar": "blockscout.com/shibuya",
-      "optimistic": "blockscout.com/optimism/mainnet",
-      "goerli-optimistic": "blockscout.com/optimism/goerli",
+      "optimistic": "optimism.blockscout.com",
+      "goerli-optimistic": "optimism-goerli.blockscout.com",
       "core-poa": "blockscout.com/poa/core",
       "core-sokol": "blockscout.com/poa/sokol",
-      "sigma1-artis": "blockscout.com/artis/sigma1",
       "rsk": "blockscout.com/rsk/mainnet",
       "l14-lukso": "blockscout.com/lukso/l14",
       "phoenix-lightlink": "phoenix.lightlink.io",
       "pegasus-lightlink": "pegasus.lightlink.io",
       "athens-zetachain": "zetachain-athens-2.blockscout.com",
       //no support currently for neon mainnet
-      "devnet-neon": "devnet.neon.blockscout.com",
+      "devnet-neon": "neon-devnet.blockscout.com",
       "celo": "explorer.celo.org/mainnet",
       "alfajores-celo": "explorer.celo.org/alfajores",
       "baklava-celo": "explorer.celo.org/baklava",
