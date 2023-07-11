@@ -52,4 +52,6 @@ export interface Session {
   stepInto(): Promise<void>;
   stepOut(): Promise<void>;
   reset(): Promise<void>;
+  addBreakpoint(arg: { line: number; sourceId: string }): void;
+  removeBreakpoint(arg: { line: number; sourceId: string }): void;
 }
