@@ -42,7 +42,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
     emit Done();
   } //just a dummy function, not 
 
-  constructor(bool status, bytes memory info, Ternary whoknows) {
+  constructor(bool status, bytes memory info, Ternary whoknows) payable {
     deepStruct["blornst"].push();
     deepStruct["blornst"].push();
     deepString.push();
@@ -98,7 +98,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
 
   event HasIndices(uint, uint indexed, string, string indexed, uint);
 
-  function indexTest(uint a, uint b, string memory c, string memory d, uint e) public {
+  function indexTest(uint a, uint b, string memory c, string memory d, uint e) public payable {
     emit HasIndices(a, b, c, d, e);
   }
 
@@ -241,12 +241,37 @@ contract WireTest is WireTestParent, WireTestAbstract {
     }
   }
 
-  event Result(bytes);
-
   function tryAggregate(bool requireSuccess, Call[] calldata calls) external {
     for (uint i = 0; i < calls.length; i++) {
       (bool success, bytes memory result) = calls[i].target.call(calls[i].data);
       if (requireSuccess) require(success);
+    }
+  }
+
+  struct Call3 {
+    address target;
+    bool allowFailure;
+    bytes data;
+  }
+
+  function aggregate3(Call3[] calldata calls) external {
+    for (uint i = 0; i < calls.length; i++) {
+      (bool success, bytes memory result) = calls[i].target.call(calls[i].data);
+      if (!calls[i].allowFailure) require(success);
+    }
+  }
+
+  struct Call3Value {
+    address target;
+    bool allowFailure;
+    uint value;
+    bytes data;
+  }
+
+  function aggregate3Value(Call3Value[] calldata calls) external {
+    for (uint i = 0; i < calls.length; i++) {
+      (bool success, bytes memory result) = calls[i].target.call{value: calls[i].value}(calls[i].data);
+      if (!calls[i].allowFailure) require(success);
     }
   }
 
@@ -297,7 +322,7 @@ contract WireTestRedHerring {
     emit NonAmbiguousEvent();
   }
 
-  function otherMethod(uint k) public {
+  function otherMethod(uint k) public payable {
     emit SemiAmbiguousEvent(k, 0);
   }
 }
