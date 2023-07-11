@@ -99,36 +99,36 @@ export class DashboardServer {
     }
 
     this.expressApp.get("/fetch-and-compile", async (req, res) => {
+      const { address, networkId, etherscanApiKey } = req.query as Record<
+        string,
+        string
+      >;
+      let config;
+      try {
+        config = Config.detect();
+        // we'll ignore errors as we only get the config for the api key
+      } catch {}
+
+      // a key provided in the browser takes precedence over on in the config
+      let etherscanKey: undefined | string;
+      if (etherscanApiKey) {
+        etherscanKey = etherscanApiKey;
+      } else if (config && config.etherscan !== undefined) {
+        etherscanKey = config.etherscan.apiKey;
+      }
+
+      config = Config.default().merge({
+        networks: {
+          custom: { network_id: networkId }
+        },
+        network: "custom",
+        etherscan: {
+          apiKey: etherscanKey
+        }
+      });
+
       let result;
       try {
-        const { address, networkId, etherscanApiKey } = req.query as Record<
-          string,
-          string
-        >;
-        let config;
-        try {
-          config = Config.detect();
-          // we'll ignore errors as we only get the config for the api key
-        } catch {}
-
-        // a key provided in the browser takes precedence over on in the config
-        let etherscanKey: undefined | string;
-        if (etherscanApiKey) {
-          etherscanKey = etherscanApiKey;
-        } else if (config && config.etherscan !== undefined) {
-          etherscanKey = config.etherscan.apiKey;
-        }
-
-        config = Config.default().merge({
-          networks: {
-            custom: { network_id: networkId }
-          },
-          network: "custom",
-          etherscan: {
-            apiKey: etherscanKey
-          }
-        });
-
         result = (await fetchAndCompile(address, config)).compileResult;
       } catch (error) {
         if (!error.message.includes("No verified sources")) {
