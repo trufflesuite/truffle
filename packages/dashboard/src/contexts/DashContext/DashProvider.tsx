@@ -345,7 +345,6 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   };
 
   return (
-    // @ts-ignore
     <DashContext.Provider value={{ state, operations }}>
       {children}
     </DashContext.Provider>
