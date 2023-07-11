@@ -13,7 +13,7 @@ module.exports = function (deployer) {
   deployer.link(DecoyLibrary, DowngradeTest);
   deployer.deploy(WireTestLibrary);
   deployer.link(WireTestLibrary, WireTest);
-  deployer.deploy(WireTest, false, "0x", 0);
+  deployer.deploy(WireTest, false, "0x", 0, { value: 100 });
   deployer.deploy(ReceiveTest);
   deployer.deploy(FallbackTest);
   deployer.deploy(DecodingSample);

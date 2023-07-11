@@ -1370,8 +1370,10 @@ describe("Over-the-wire decoding", function () {
       assert.isArray(calls);
       assert.lengthOf(calls, methods.length);
       for (let i = 0; i < methods.length; i++) {
-        const { address, decoding } = calls[i];
+        const { address, allowFailure, value, decoding } = calls[i];
         assert.strictEqual(address, contracts[i].address);
+        assert.isFalse(allowFailure);
+        assert(value.eqn(0));
         assert.strictEqual(decoding.kind, "function");
         assert.strictEqual(decoding.decodingMode, "full");
         assert.strictEqual(decoding.abi.name, methodNames[i]);
@@ -1428,8 +1430,138 @@ describe("Over-the-wire decoding", function () {
       assert.isArray(calls);
       assert.lengthOf(calls, methods.length);
       for (let i = 0; i < methods.length; i++) {
-        const { address, decoding } = calls[i];
+        const { address, allowFailure, value, decoding } = calls[i];
         assert.strictEqual(address, contracts[i].address);
+        assert.isTrue(allowFailure); //since we didn't require success
+        assert(value.eqn(0));
+        assert.strictEqual(decoding.kind, "function");
+        assert.strictEqual(decoding.decodingMode, "full");
+        assert.strictEqual(decoding.abi.name, methodNames[i]);
+        assert.strictEqual(
+          decoding.class.typeName,
+          contracts[i].constructor.contractName
+        );
+        const variablesByName = Object.fromEntries(
+          decoding.arguments.map(({ name, value }) => [name, value])
+        );
+        assert.deepEqual(
+          Codec.Format.Utils.Inspect.unsafeNativizeVariables(variablesByName),
+          argsNamed[i]
+        );
+      }
+    });
+
+    it("Decodes multicalls (v3 w/o value)", async function () {
+      const deployedContract = await abstractions.WireTest.deployed();
+      const otherContract = await abstractions.WireTestRedHerring.new();
+
+      const decoder = await Decoder.forProject({
+        provider: web3.currentProvider,
+        projectInfo: { artifacts: Contracts }
+      });
+
+      //first, let's encode some calls
+      const contracts = [otherContract, deployedContract];
+      const methodNames = ["otherMethod", "indexTest"];
+      const methods = [otherContract.otherMethod, deployedContract.indexTest];
+      const failureAllowed = [false, true];
+      const argsNamed = [
+        { k: 63 },
+        { a: 7, b: 89, c: "hello", d: "indecipherable", e: 62 }
+      ];
+      const args = argsNamed.map(argsObject => Object.values(argsObject));
+      let encodedTxs = [];
+      for (let i = 0; i < methods.length; i++) {
+        encodedTxs.push({
+          target: contracts[i].address,
+          allowFailure: failureAllowed[i],
+          data: (await methods[i].request(...args[i])).data
+        });
+      }
+
+      //now, let's perform a multicall
+      debug("encodedTxs: %O", encodedTxs);
+      const multicall = await deployedContract.aggregate3(encodedTxs);
+      const multicallHash = multicall.tx;
+      const multicallTx = await web3.eth.getTransaction(multicallHash);
+
+      //now let's decode it and check the result!
+      const multicallDecoding = await decoder.decodeTransaction(multicallTx);
+      assert.isDefined(multicallDecoding.interpretations);
+      const calls = multicallDecoding.interpretations.aggregate;
+      assert.isArray(calls);
+      assert.lengthOf(calls, methods.length);
+      for (let i = 0; i < methods.length; i++) {
+        const { address, allowFailure, value, decoding } = calls[i];
+        debug("calls[i]: %O", calls[i]);
+        assert.strictEqual(address, contracts[i].address);
+        assert.strictEqual(allowFailure, failureAllowed[i]);
+        assert(value.eqn(0));
+        assert.strictEqual(decoding.kind, "function");
+        assert.strictEqual(decoding.decodingMode, "full");
+        assert.strictEqual(decoding.abi.name, methodNames[i]);
+        assert.strictEqual(
+          decoding.class.typeName,
+          contracts[i].constructor.contractName
+        );
+        const variablesByName = Object.fromEntries(
+          decoding.arguments.map(({ name, value }) => [name, value])
+        );
+        assert.deepEqual(
+          Codec.Format.Utils.Inspect.unsafeNativizeVariables(variablesByName),
+          argsNamed[i]
+        );
+      }
+    });
+
+    it("Decodes multicalls (v3 w/value)", async function () {
+      const deployedContract = await abstractions.WireTest.deployed();
+      const otherContract = await abstractions.WireTestRedHerring.new();
+
+      const decoder = await Decoder.forProject({
+        provider: web3.currentProvider,
+        projectInfo: { artifacts: Contracts }
+      });
+
+      //first, let's encode some calls
+      const contracts = [otherContract, deployedContract];
+      const methodNames = ["otherMethod", "indexTest"];
+      const methods = [otherContract.otherMethod, deployedContract.indexTest];
+      const failureAllowed = [false, true];
+      const values = [1, 2];
+      const argsNamed = [
+        { k: 63 },
+        { a: 7, b: 89, c: "hello", d: "indecipherable", e: 62 }
+      ];
+      const args = argsNamed.map(argsObject => Object.values(argsObject));
+      let encodedTxs = [];
+      for (let i = 0; i < methods.length; i++) {
+        encodedTxs.push({
+          target: contracts[i].address,
+          allowFailure: failureAllowed[i],
+          value: values[i],
+          data: (await methods[i].request(...args[i])).data
+        });
+      }
+
+      //now, let's perform a multicall
+      debug("encodedTxs: %O", encodedTxs);
+      const multicall = await deployedContract.aggregate3Value(encodedTxs);
+      const multicallHash = multicall.tx;
+      const multicallTx = await web3.eth.getTransaction(multicallHash);
+
+      //now let's decode it and check the result!
+      const multicallDecoding = await decoder.decodeTransaction(multicallTx);
+      assert.isDefined(multicallDecoding.interpretations);
+      const calls = multicallDecoding.interpretations.aggregate;
+      assert.isArray(calls);
+      assert.lengthOf(calls, methods.length);
+      for (let i = 0; i < methods.length; i++) {
+        const { address, allowFailure, value, decoding } = calls[i];
+        debug("calls[i]: %O", calls[i]);
+        assert.strictEqual(address, contracts[i].address);
+        assert.strictEqual(allowFailure, failureAllowed[i]);
+        assert(value.eqn(values[i]));
         assert.strictEqual(decoding.kind, "function");
         assert.strictEqual(decoding.decodingMode, "full");
         assert.strictEqual(decoding.abi.name, methodNames[i]);
