@@ -83,14 +83,12 @@ export const reducer = (state: State, action: Action): State => {
         state.debugger.breakpoints![sourceId]
       );
       if (breakpointExists) {
-        // @ts-ignore
         state.debugger.session!.removeBreakpoint({
           line: debuggerLine,
           sourceId
         });
         newBreakpointStateForSource.delete(line);
       } else {
-        // @ts-ignore
         state.debugger.session!.addBreakpoint({ line: debuggerLine, sourceId });
         newBreakpointStateForSource.add(line);
       }
@@ -114,7 +112,6 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         debugger: {
-          // @ts-ignore
           ...data,
           breakpoints: breakpointsInitialState
         }
