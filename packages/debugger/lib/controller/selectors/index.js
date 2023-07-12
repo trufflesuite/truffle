@@ -144,14 +144,16 @@ const controller = createSelectorTree({
     callstack: createLeaf([stacktrace.current.callstack.preupdated], identity),
 
     /**
-     * controller.current.isAnyFrameInternal
+     * controller.current.isAnyFrameGenerated
      *
-     * This selector checks whether there are any internal (unmapped or
-     * generated) stackframes on the callstack.  We should regard ourselves
+     * This selector checks whether there are any generated sources
+     * stackframes on the callstack.  We should regard ourselves
      * as still inside a generated source until there are none.
+     * (We only consider generated sources here, not other sorts of internal
+     * sources, to prevent potential problems.)
      */
-    isAnyFrameInternal: createLeaf(["./callstack"], callstack =>
-      callstack.some(frame => frame.sourceIsInternal)
+    isAnyFrameGenerated: createLeaf(["./callstack"], callstack =>
+      callstack.some(frame => frame.sourceIsGenerated)
     ),
 
     /**
