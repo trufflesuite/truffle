@@ -1,3 +1,4 @@
+/* eslint react-hooks/exhaustive-deps: 0 */
 import { useState, useEffect } from "react";
 import { createStyles, Flex, Loader } from "@mantine/core";
 
@@ -25,9 +26,7 @@ function PreparingSession({
     } else {
       setGanacheOutput(ganacheOutput.concat(ganacheLoggingOutput));
     }
-  }, [
-    ganacheLoggingOutput
-  ]); /* eslint-disable-line react-hooks/exhaustive-deps  */
+  }, [ganacheLoggingOutput]);
 
   return (
     <Flex

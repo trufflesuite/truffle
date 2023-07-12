@@ -163,17 +163,9 @@ function Debugger(): JSX.Element {
 
   const startDebugger = async () => {
     setStatus(SessionStatus.PreparingForInitialization);
-    const provider = window.ethereum;
-    if (!provider) {
-      throw new Error(
-        "There was no provider found in the browser. Ensure you have " +
-          "MetaMask connected to the current page."
-      );
-    }
+    const provider = window.ethereum as any;
     const networkId = await provider.request({
-      // @ts-ignore
       method: "net_version",
-      // @ts-ignore
       params: []
     });
     const ganacheOptions = {
