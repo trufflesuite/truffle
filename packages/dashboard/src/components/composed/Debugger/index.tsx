@@ -25,11 +25,7 @@ import { etherscanApiKeyName } from "src/utils/constants";
 const useStyles = createStyles(theme => ({
   debugger: {
     height: "100vh",
-    overflowY: "hidden",
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors["truffle-brown"][8]
-        : theme.colors["truffle-beige"][3]
+    overflowY: "hidden"
   },
   inputGroup: {
     paddingTop: 26,
@@ -49,11 +45,7 @@ const useStyles = createStyles(theme => ({
       borderTopRightRadius: 0,
       borderBottomRightRadius: 0,
       border: 0,
-      height: 42,
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors["truffle-brown"][5]
-          : "#FFFFFF"
+      height: 42
     }
   },
   button: {
