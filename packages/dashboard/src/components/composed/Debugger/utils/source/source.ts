@@ -2,10 +2,7 @@ import { unified } from "unified";
 import rehypeStringify from "rehype-stringify";
 import { lowlight } from "lowlight/lib/core";
 import { solidity } from "highlightjs-solidity";
-import {
-  highlightedTextTag,
-  closingHighlightedTextTag
-} from "src/components/composed/Debugger/utils";
+import { highlightedTextClass } from "src/components/composed/Debugger/utils";
 import { completeMultilineSpans } from "src/components/composed/Debugger/utils/source/htmlUtils";
 import type {
   Source,
@@ -166,9 +163,11 @@ export function replaceTextHighlightedMarkings({
   fullyHighlightedLines: Set<number>;
 }) {
   return source.map((line, index) => {
+    const highlightedTextTag = `<span class="${highlightedTextClass}">`;
+    const closingTag = `</span>`;
     // wrap the entire thing if it is fully highlighted
     if (fullyHighlightedLines.has(index)) {
-      return highlightedTextTag + line + closingHighlightedTextTag;
+      return highlightedTextTag + line + "</span>";
     }
     // we need to add the space to make lowlight parse the comment correctly
     // as a comment as there are some cases where it marks it incorrectly
@@ -186,15 +185,12 @@ export function replaceTextHighlightedMarkings({
             highlightJsCommentSpan +
             textHighlightingEndsMarker.slice(1) +
             closingSpan,
-          closingHighlightedTextTag
+          closingTag
         )
         // sometimes the markings don't get wrapped by lowlight for some reason
         // we replace the ones it missed here
         .replaceAll(textHighlightingBeginsMarker.slice(1), highlightedTextTag)
-        .replaceAll(
-          textHighlightingEndsMarker.slice(1),
-          closingHighlightedTextTag
-        )
+        .replaceAll(textHighlightingEndsMarker.slice(1), closingTag)
         .replace(/(?<!<span) /g, "&nbsp;")
     );
   });
