@@ -34,23 +34,31 @@ function ControlButton({
   }));
   const { classes } = useStyles();
 
-  return (
-    <Tooltip label={tooltipLabel}>
-      <ActionIcon
-        {...props}
-        className={classes.button}
-        disabled={stepping || disabled}
-        onClick={async () => {
-          setStepping(true);
-          await step();
-          setStepping(false);
-          stepEffect();
-        }}
-      >
-        {createElement(icon)}
-      </ActionIcon>
-    </Tooltip>
+  const actionIcon = (
+    <ActionIcon
+      {...props}
+      className={classes.button}
+      disabled={stepping || disabled}
+      onClick={async () => {
+        setStepping(true);
+        await step();
+        setStepping(false);
+        stepEffect();
+      }}
+    >
+      {createElement(icon)}
+    </ActionIcon>
   );
+
+  // there is an issue with the tooltips where it doesn't vanish when the button
+  // switches to disabled state - we manually remove it to make it vanish
+  const output = disabled ? (
+    actionIcon
+  ) : (
+    <Tooltip label={tooltipLabel}>{actionIcon}</Tooltip>
+  );
+
+  return output;
 }
 
 export default ControlButton;
