@@ -57,9 +57,7 @@ function NavButton({
       component={Link}
       to={to}
       p="xl"
-      className={`${classes.button} ${
-        disabled ? classes.disabled : undefined
-      } ${
+      className={`${classes.button} ${disabled ? classes.disabled : ""} ${
         location.pathname.startsWith(to) ? classes.active : classes.inactive
       }`}
     >
