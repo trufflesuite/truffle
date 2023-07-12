@@ -4,15 +4,11 @@ import Middle from "src/components/composed/Sidebar/Middle";
 import Bottom from "src/components/composed/Sidebar/Bottom";
 import Divider from "src/components/composed/Sidebar/Divider";
 
-const useStyles = createStyles((theme, _params, _getRef) => ({
+const useStyles = createStyles((_theme, _params, _getRef) => ({
   sideBar: {
     height: "100vh",
     width: 370,
-    borderRight: "none",
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors["truffle-brown"][8]
-        : theme.colors["truffle-beige"][4]
+    borderRight: "none"
   }
 }));
 
