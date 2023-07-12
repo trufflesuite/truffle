@@ -18,7 +18,7 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
     justifyContent: "center"
   },
   label: {
-    "> .mantine-Title-root": {
+    "> .trfl-Title-root": {
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
