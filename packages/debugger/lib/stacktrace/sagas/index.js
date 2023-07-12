@@ -63,12 +63,16 @@ function* stacktraceSaga() {
     const nextLocation = yield select(stacktrace.next.location);
     const nextParent = yield select(stacktrace.next.contractNode);
     const nextSourceIsInternal = yield select(stacktrace.next.sourceIsInternal);
+    const nextSourceIsGenerated = yield select(
+      stacktrace.next.sourceIsGenerated
+    );
     yield put(
       actions.jumpIn(
         currentLocation,
         nextLocation.node,
         nextParent,
-        nextSourceIsInternal
+        nextSourceIsInternal,
+        nextSourceIsGenerated
       )
     );
     positionUpdated = true;

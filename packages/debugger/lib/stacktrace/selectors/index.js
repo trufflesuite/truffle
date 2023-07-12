@@ -112,6 +112,15 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
+     * .sourceIsGenerated
+     * only specifically generated sources, not unmapped code or anything!
+     */
+    sourceIsGenerated: createLeaf(
+      ["./location/source"],
+      source => source.internal
+    ),
+
+    /**
      * .strippedLocation
      */
     strippedLocation: createLeaf(
