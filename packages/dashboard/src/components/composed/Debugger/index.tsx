@@ -117,7 +117,6 @@ function Debugger(): JSX.Element {
   // wait until the debugger has been initialized and then get source info
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
-    console.log("the current source range -- %o", currentSourceRange);
     // if the starting source is unknown, we may get `undefined` in the source
     // range - in that case we'll initialize it manually from the stacktrace
     if (!currentSourceRange.source?.id && !currentSourceId) {
