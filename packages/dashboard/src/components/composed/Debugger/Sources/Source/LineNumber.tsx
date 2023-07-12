@@ -1,7 +1,4 @@
-import {
-  highlightedTextTag,
-  closingHighlightedTextTag
-} from "src/components/composed/Debugger/utils";
+import { highlightedTextClass } from "src/components/composed/Debugger/utils";
 import { createStyles } from "@mantine/core";
 import { useDash } from "src/hooks";
 
@@ -55,19 +52,19 @@ function LineNumber({
     operations: { toggleDebuggerBreakpoint }
   } = useDash()!;
   // if the line contains highlighting we highlight the line number as well
-  const lineNumberDisplay = lineHasHighlighting
-    ? `<span class="${classes.lineNumber}">` +
-      "&nbsp;".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
-      highlightedTextTag +
-      lineNumber +
-      closingHighlightedTextTag +
-      "&nbsp;&nbsp;" +
-      `</span>`
-    : `<span class="${classes.lineNumber}">` +
-      "&nbsp;".repeat(lineNumberGutterWidth - lineNumber.toString().length) +
-      lineNumber +
-      "&nbsp;&nbsp;" +
-      `</span>`;
+  const lineNumberDisplay = lineHasHighlighting ? (
+    <span className={classes.lineNumber}>
+      {" ".repeat(lineNumberGutterWidth - lineNumber.toString().length)}
+      <span className={highlightedTextClass}>{lineNumber}</span>
+      {"  "}
+    </span>
+  ) : (
+    <span className={classes.lineNumber}>
+      {" ".repeat(lineNumberGutterWidth - lineNumber.toString().length)}
+      {lineNumber}
+      {"  "}
+    </span>
+  );
 
   const spacer =
     breakpoints &&
@@ -87,7 +84,7 @@ function LineNumber({
   return (
     <div onClick={handleClick} className={classes.lineNumber}>
       {spacer}
-      <div dangerouslySetInnerHTML={{ __html: lineNumberDisplay }} />
+      {lineNumberDisplay}
     </div>
   );
 }
