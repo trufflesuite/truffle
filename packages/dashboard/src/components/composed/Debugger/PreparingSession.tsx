@@ -25,7 +25,9 @@ function PreparingSession({
     } else {
       setGanacheOutput(ganacheOutput.concat(ganacheLoggingOutput));
     }
-  }, [ganacheLoggingOutput]);
+  }, [
+    ganacheLoggingOutput
+  ]); /* eslint-disable-line react-hooks/exhaustive-deps  */
 
   return (
     <Flex

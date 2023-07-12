@@ -12,11 +12,11 @@ const fonts = [
   }
 ];
 
-const truffleBgColorSelectors = [".mantine-AppShell-root"].join(", ");
+const truffleBgColorSelectors = [".trfl-AppShell-root"].join(", ");
 
 const truffleOffBgColorSelectors = [
-  ".mantine-Navbar-root",
-  ".mantine-Paper-root"
+  ".trfl-Navbar-root",
+  ".trfl-Paper-root"
 ].join(", ");
 
 const watermelonHex = "#E86591";
@@ -60,7 +60,7 @@ function MantineGlobal(): JSX.Element {
             ".trfl-Input-wrapper": {
               flexGrow: 1
             },
-            ".mantine-Alert-icon": {
+            ".trfl-Alert-icon": {
               "width": 28,
               "height": "auto",
               "> svg": {
@@ -68,20 +68,20 @@ function MantineGlobal(): JSX.Element {
                 width: 28
               }
             },
-            ".mantine-Notification-root": {
+            ".trfl-Notification-root": {
               "backgroundColor":
                 colorScheme === "dark" ? colors["dark"][4] : white,
               "padding": "1rem 1rem 1rem 2rem",
-              ".mantine-Notification-title": {
+              ".trfl-Notification-title": {
                 fontSize: 15
               }
             },
-            ".mantine-Prism-code": {
+            ".trfl-Prism-code": {
               "backgroundColor":
                 colorScheme === "dark"
                   ? `${fn.darken(colors["truffle-brown"][9], 0.1)} !important`
                   : `${colors["truffle-beige"][0]} !important`,
-              ".mantine-Prism-lineNumber": {
+              ".trfl-Prism-lineNumber": {
                 color:
                   colorScheme === "dark"
                     ? colors["truffle-brown"][5]
