@@ -156,9 +156,27 @@ let stacktrace = createSelectorTree({
    */
   current: {
     /**
-     * stacktrace.current.callstack
+     * stacktrace.current.callstack (namespace)
      */
-    callstack: createLeaf(["/state"], state => state.proc.callstack),
+    callstack: {
+      /**
+       * stacktrace.current.callstack (selector)
+       */
+      _: createLeaf(["/state"], state => state.proc.callstack),
+
+      /**
+       * stacktrace.current.callstack.preupdated
+       */
+      preupdated: createLeaf(
+        ["./_", "/current/returnCounter"],
+        (callstack, returnCounter) =>
+          popNWhere(
+            callstack,
+            returnCounter,
+            frame => frame.type === "external"
+          )
+      )
+    },
 
     /**
      * stacktrace.current.returnCounter
@@ -398,18 +416,14 @@ let stacktrace = createSelectorTree({
      */
     report: createLeaf(
       [
-        "./callstack",
+        "./callstack/preupdated",
         "./returnCounter",
         "./lastPosition",
         "/current/strippedLocation"
       ],
       (callstack, returnCounter, lastPosition, currentLocation) =>
         generateReport(
-          popNWhere(
-            callstack,
-            returnCounter,
-            frame => frame.type === "external"
-          ),
+          callstack,
           currentLocation || lastPosition,
           null,
           undefined
