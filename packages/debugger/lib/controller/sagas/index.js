@@ -78,6 +78,9 @@ function* advance(action) {
  */
 function* stepNext() {
   const starting = yield select(controller.current.location);
+  const isStartingGenerated = yield select(
+    controller.current.isAnyFrameGenerated
+  );
   const allowInternal = yield select(controller.stepIntoInternalSources);
 
   let upcoming, finished, isUpcomingGenerated;
@@ -100,7 +103,7 @@ function* stepNext() {
       //we started in an internal source
       (!allowInternal &&
         (upcoming.source.internal || isUpcomingGenerated) &&
-        !starting.source.internal) ||
+        !(starting.source.internal || isStartingGenerated)) ||
       upcoming.sourceRange.length === 0 ||
       upcoming.source.id === undefined ||
       (upcoming.node && isDeliberatelySkippedNodeType(upcoming.node)) ||
