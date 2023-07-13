@@ -68,7 +68,7 @@ function Variables({
   currentStep
 }: VariablesArgs): JSX.Element | null {
   const { classes } = useStyles();
-  const [output, setOutput] = useState<JSX.Element[] | null>(null);
+  const [variables, setVariables] = useState<any>(null);
 
   // when the debugger step changes, update variables
   useEffect(() => {
@@ -76,51 +76,73 @@ function Variables({
       const sections = session.view(
         session.selectors.data.current.identifiers.sections
       );
-      const variables = await session.variables();
+      const vars = await session.variables();
+      if (!vars || Object.keys(vars).length === 0) return;
 
-      const entries = [];
-      // section here is a variable category such as a Solidity built-in
+      const variableValues: { [key: string]: any } = {};
+
+      // section here is a variable category/type such as a Solidity built-in
       // or contract variable
-      for (const section in sections) {
-        const variableValues: Array<JSX.Element> = sections[section]
-          .map((variableName: keyof typeof variables) => {
-            if (variables) {
-              return (
-                <li key={variableName}>
-                  <CodecComponents.NameValuePair
-                    data={{
-                      name: `${variableName}`,
-                      value: variables[variableName]
-                    }}
-                  />
-                </li>
-              );
-            } else {
-              return undefined;
-            }
-          })
-          .filter((item: JSX.Element | undefined) => item);
-        if (variableValues.length > 0) {
-          entries.push(
-            <div key={section}>
-              <div className={classes.variablesTypes}>{section}</div>
-              <ul className={classes.variablesSection}>{...variableValues}</ul>
-            </div>
-          );
-        }
-      }
-
-      setOutput(entries);
+      Object.keys(sections).forEach((section: string) => {
+        const sectionVars = sections[section];
+        if (!sectionVars || sectionVars.length === 0) return;
+        sectionVars.forEach((varName: string) => {
+          variableValues[section] = {
+            ...variableValues[section],
+            [varName]: vars[varName]
+          };
+        });
+      });
+      setVariables(variableValues);
     }
 
     getVariables();
   }, [currentStep, session, classes.variablesTypes, classes.variablesSection]);
 
+  const output = variables
+    ? Object.keys(variables).map(sectionName => {
+        // if there are no variables for a section/type, display just the name
+        if (
+          !variables[sectionName] ||
+          Object.keys(variables[sectionName]).length === 0
+        ) {
+          return (
+            <div key={sectionName}>
+              <div className={classes.variablesTypes}>{sectionName}</div>
+              <ul className={classes.variablesSection}></ul>
+            </div>
+          );
+        }
+
+        // calculate variable values and put them in the appropriate section
+        const variableVals = Object.keys(variables[sectionName]).map(
+          (variableName: string) => {
+            return (
+              <li key={variableName}>
+                <CodecComponents.NameValuePair
+                  data={{
+                    name: `${variableName}`,
+                    value: variables[sectionName][variableName]
+                  }}
+                />
+              </li>
+            );
+          }
+        );
+        return (
+          <div key={sectionName}>
+            <div className={classes.variablesTypes}>{sectionName}</div>
+            <ul className={classes.variablesSection}>{variableVals}</ul>
+          </div>
+        );
+      })
+    : null;
+
   return (
     <Flex direction="column" className={classes.variablesContainer}>
       <div className={classes.sectionHeader}>Variables</div>
       <div className={classes.variables}>
-        <pre className={classes.variablesContent}>{output ? output : ""}</pre>
+        <pre className={classes.variablesContent}>{output}</pre>
       </div>
     </Flex>
   );
