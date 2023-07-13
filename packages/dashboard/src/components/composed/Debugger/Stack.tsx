@@ -47,7 +47,7 @@ type StackArgs = {
 
 function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
   const { classes } = useStyles();
-  const [output, setOutput] = useState<JSX.Element[] | null>(null);
+  const [stackReport, setStackReport] = useState<JSX.Element[] | null>(null);
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getStack() {
@@ -55,7 +55,13 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
       if (!report) return;
       // we need to display this information in the reverse order
       report.reverse();
-      const entries = report.map((reportItem: any, index: number) => {
+      setStackReport(report);
+    }
+    getStack();
+  }, [currentStep, session]);
+
+  const output = stackReport
+    ? stackReport.map((reportItem: any, index: number) => {
         const { address, contractName, functionName, isConstructor, type } =
           reportItem;
         let name: string;
@@ -75,17 +81,14 @@ function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
           address === undefined ? "unknown address" : address;
         const stackDisplay = `at ${name} [address ${displayAddress}]`;
         return <div key={index}>{stackDisplay}</div>;
-      });
-      setOutput(entries);
-    }
-    getStack();
-  }, [currentStep, session]);
+      })
+    : null;
 
   return (
     <Flex direction="column" className={classes.stackContainer}>
       <div className={classes.sectionHeader}>Stack</div>
       <div className={classes.stack}>
-        <pre className={classes.stackContent}>{output ? output : ""}</pre>
+        <pre className={classes.stackContent}>{output}</pre>
       </div>
     </Flex>
   );
