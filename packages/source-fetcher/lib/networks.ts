@@ -175,8 +175,6 @@ export const networkNamesById: { [id: number]: string } = {
   686: "karura",
   2021: "edgeware",
   2109: "exosama",
-  2222: "kava",
-  2221: "testnet-kava",
   2569: "techpay",
   10687: "point",
   113: "dehvo",
