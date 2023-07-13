@@ -7,6 +7,7 @@ import * as Codec from "@truffle/codec";
 
 import evm from "lib/evm/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 
@@ -136,6 +137,24 @@ const controller = createSelectorTree({
         (raw, loaded) => (loaded ? raw : false)
       )
     },
+
+    /**
+     * controller.current.callstack
+     */
+    callstack: createLeaf([stacktrace.current.callstack.preupdated], identity),
+
+    /**
+     * controller.current.isAnyFrameGenerated
+     *
+     * This selector checks whether there are any generated sources
+     * stackframes on the callstack.  We should regard ourselves
+     * as still inside a generated source until there are none.
+     * (We only consider generated sources here, not other sorts of internal
+     * sources, to prevent potential problems.)
+     */
+    isAnyFrameGenerated: createLeaf(["./callstack"], callstack =>
+      callstack.some(frame => frame.sourceIsGenerated)
+    ),
 
     /**
      * controller.current.trace

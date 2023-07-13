@@ -10,7 +10,13 @@ function callstack(state = [], action) {
   let newFrame;
   switch (action.type) {
     case actions.JUMP_IN:
-      const { location, functionNode, contractNode, sourceIsInternal } = action;
+      const {
+        location,
+        functionNode,
+        contractNode,
+        sourceIsInternal,
+        sourceIsGenerated
+      } = action;
       newFrame = {
         type: "internal",
         calledFromLocation: location,
@@ -27,7 +33,8 @@ function callstack(state = [], action) {
             ? contractNode.name
             : undefined,
         combineWithNextInternal: false,
-        sourceIsInternal
+        sourceIsInternal,
+        sourceIsGenerated
         //note we don't currently account for getters because currently
         //we can't; fallback, receive, constructors, & modifiers also remain
         //unaccounted for at present

@@ -78,9 +78,12 @@ function* advance(action) {
  */
 function* stepNext() {
   const starting = yield select(controller.current.location);
+  const isStartingGenerated = yield select(
+    controller.current.isAnyFrameGenerated
+  );
   const allowInternal = yield select(controller.stepIntoInternalSources);
 
-  let upcoming, finished;
+  let upcoming, finished, isUpcomingGenerated;
 
   do {
     // advance at least once step
@@ -88,6 +91,7 @@ function* stepNext() {
 
     // and check the next source range
     upcoming = yield select(controller.current.location);
+    isUpcomingGenerated = yield select(controller.current.isAnyFrameGenerated);
 
     finished = yield select(controller.current.trace.finished);
 
@@ -98,8 +102,8 @@ function* stepNext() {
       //don't stop on an internal source unless allowInternal is on or
       //we started in an internal source
       (!allowInternal &&
-        upcoming.source.internal &&
-        !starting.source.internal) ||
+        (upcoming.source.internal || isUpcomingGenerated) &&
+        !(starting.source.internal || isStartingGenerated)) ||
       upcoming.sourceRange.length === 0 ||
       upcoming.source.id === undefined ||
       (upcoming.node && isDeliberatelySkippedNodeType(upcoming.node)) ||
