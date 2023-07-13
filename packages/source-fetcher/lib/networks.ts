@@ -115,9 +115,18 @@ export const networkNamesById: { [id: number]: string } = {
   25925: "testnet-bitkub",
   7777777: "zora",
   570: "rollux",
-  57000: "tanenbaum-rollux"
+  57000: "tanenbaum-rollux",
+  6119: "uptn",
+  2222: "kava",
+  2221: "testnet-kava",
+  314: "filecoin",
+  32769: "zilliqa",
+  33101: "testnet-zilliqa",
+  111111: "siberium", //not presently supported by either fetcher, but...
+  111000: "testnet-siberium"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
+  //not including ethereum classic for same reason
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
