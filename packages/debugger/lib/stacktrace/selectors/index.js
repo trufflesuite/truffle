@@ -175,6 +175,10 @@ let stacktrace = createSelectorTree({
 
       /**
        * stacktrace.current.callstack.preupdated
+       * This selector reflects the callstack as it actually is at the current
+       * moment, rather than carrying around additional error information on top
+       * in case it turns out to be relevant -- it's been "preupdated" assuming
+       * we don't want the error info on top, which in certain cases, we don't.
        */
       preupdated: createLeaf(
         ["./_", "/current/returnCounter"],
