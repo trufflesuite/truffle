@@ -79,6 +79,10 @@ const config: webpack.Configuration = {
       {
         test: /\.(png|ttf)$/,
         type: "asset/resource"
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
       }
     ]
   },

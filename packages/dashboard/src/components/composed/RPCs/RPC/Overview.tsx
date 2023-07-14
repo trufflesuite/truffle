@@ -5,6 +5,7 @@ import { useDash } from "src/hooks";
 import { inspectDecoding } from "src/utils/dash";
 import type { Decoding } from "src/utils/dash";
 import ChainIcon from "src/components/common/ChainIcon";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const {
@@ -48,6 +49,12 @@ const useStyles = createStyles((theme, _params, getRef) => {
         "&:hover": {
           backgroundColor: colors["truffle-teal"][9]
         }
+      },
+      [`& .${getRef("debugButton")}`]: {
+        "backgroundColor": fn.rgba(colors["truffle-teal"][7], 0.6),
+        "&:hover": {
+          backgroundColor: colors["truffle-teal"][7]
+        }
       }
     },
     info: {
@@ -74,7 +81,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
           ? colors["truffle-beige"][3]
           : colors["truffle-beige"][8]
     },
-    buttons: {
+    buttonsContainer: {
       minWidth: buttonsWidth
     },
     button: {
@@ -85,6 +92,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
     },
     rejectButton: { ref: getRef("rejectButton") },
     confirmButton: { ref: getRef("confirmButton") },
+    debugButton: { ref: getRef("debugButton") },
     confirmButtonRightIcon: {
       marginLeft: 4,
       marginRight: 6
@@ -106,6 +114,8 @@ type OverviewProps = {
   onRejectButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
   onConfirmButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
+  onDebugButtonEnter: React.MouseEventHandler<HTMLButtonElement>;
+  onDebugButtonLeave: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 function Overview({
@@ -121,25 +131,31 @@ function Overview({
   onRejectButtonEnter,
   onRejectButtonLeave,
   onConfirmButtonEnter,
-  onConfirmButtonLeave
+  onConfirmButtonLeave,
+  onDebugButtonEnter,
+  onDebugButtonLeave
 }: OverviewProps): JSX.Element {
   const { method } = lifecycle.message.payload;
   const decodingInspected = inspectDecoding(decoding);
   const {
     state: { chainInfo },
-    operations: { userConfirmMessage, userRejectMessage }
+    operations: { userConfirmMessage, userRejectMessage, setTxToRun }
   } = useDash()!;
   const { classes } = useStyles();
 
+  const navigate = useNavigate();
   const onConfirmButtonClick = () => void userConfirmMessage(lifecycle);
   const onRejectButtonClick = () => void userRejectMessage(lifecycle);
+  const onDebugButtonClick = () => {
+    setTxToRun(lifecycle);
+    navigate("/debugger");
+  };
 
   return (
-    <Group
+    <Stack
       onClick={onBackClick}
       onMouseEnter={onBackEnter}
       onMouseLeave={onBackLeave}
-      position="apart"
       pl={42}
       pr={35}
       py="lg"
@@ -166,29 +182,40 @@ function Overview({
           </Text>
         )}
       </Stack>
-      <Group className={classes.buttons}>
+      <Group className={classes.buttonsContainer} position="apart">
+        <Group>
+          <Button
+            size="md"
+            onClick={onRejectButtonClick}
+            onMouseEnter={onRejectButtonEnter}
+            onMouseLeave={onRejectButtonLeave}
+            className={`${classes.button} ${classes.rejectButton}`}
+          >
+            Reject
+          </Button>
+          <Button
+            size="md"
+            onClick={onConfirmButtonClick}
+            onMouseEnter={onConfirmButtonEnter}
+            onMouseLeave={onConfirmButtonLeave}
+            rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
+            className={`${classes.button} ${classes.confirmButton}`}
+            classNames={{ rightIcon: classes.confirmButtonRightIcon }}
+          >
+            Confirm
+          </Button>
+        </Group>
         <Button
           size="md"
-          onClick={onRejectButtonClick}
-          onMouseEnter={onRejectButtonEnter}
-          onMouseLeave={onRejectButtonLeave}
-          className={`${classes.button} ${classes.rejectButton}`}
+          onClick={onDebugButtonClick}
+          onMouseEnter={onDebugButtonEnter}
+          onMouseLeave={onDebugButtonLeave}
+          className={`${classes.button} ${classes.debugButton}`}
         >
-          Reject
-        </Button>
-        <Button
-          size="md"
-          onClick={onConfirmButtonClick}
-          onMouseEnter={onConfirmButtonEnter}
-          onMouseLeave={onConfirmButtonLeave}
-          rightIcon={<ChainIcon chainID={chainInfo.id!} height={16} />}
-          className={`${classes.button} ${classes.confirmButton}`}
-          classNames={{ rightIcon: classes.confirmButtonRightIcon }}
-        >
-          Confirm
+          Debug
         </Button>
       </Group>
-    </Group>
+    </Stack>
   );
 }
 

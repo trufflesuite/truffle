@@ -1,6 +1,7 @@
 import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAccount, useNetwork } from "wagmi";
 import { sha1 } from "object-hash";
+import { deleteDB } from "idb/with-async-ittr";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isCliEventMessage,
@@ -24,6 +25,10 @@ import {
   rejectMessage,
   getChainNameByID
 } from "src/utils/dash";
+import type {
+  SetDebuggerSessionDataArgs,
+  ToggleDebuggerBreakpointArgs
+} from "src/contexts/DashContext/types";
 
 const ARBITRARY_DB_MAX_BYTES = 500_000_000;
 const ARBITRARY_DB_MAX_PERCENT = 0.8;
@@ -82,10 +87,8 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     []
   );
 
-  const handleWorkflowCompileResult = useCallback(
-    async (data: WorkflowCompileResult) => {
-      const { compilations } = data;
-
+  const handleCompilations = useCallback(
+    async (compilations: Compilation[], hashes?: string[]) => {
       if (compilations.length === 0 || !stateRef.current.decoder) return;
 
       let decoderNeedsUpdate = false;
@@ -100,7 +103,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       // - Batch inserting.
       // - Mirroring some kind of db state.
       for (const compilation of compilations) {
-        const hash = sha1(compilation);
+        let hash = hashes
+          ? hashes[compilations.indexOf(compilation)]
+          : sha1(compilation);
 
         // If the in-memory decoder doesn't have this compilation,
         // save it for decoder re-init after this for-loop ends.
@@ -169,8 +174,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
             // Handle compilations separately because:
             // a) Db operations are async
             // b) Avoid duplicate work (e.g. loop, hash)
-            handleWorkflowCompileResult(
+            handleCompilations(
               (message as CliEventMessage<WorkflowCompileResult>).payload.data
+                .compilations
             );
           }
         } else if (isLogMessage(message)) {
@@ -229,14 +235,22 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       dispatch({ type: "set-analytics-config", data });
     };
 
+    const cleanGanacheDb = async () => {
+      const ganacheDb = await indexedDB.databases();
+      for (const { name } of ganacheDb) {
+        if (name?.startsWith("/tmp/ganache_")) await deleteDB(name);
+      }
+    };
+
     const init = async () => {
       await initDecoder();
       await initBusClient();
       await initAnalytics();
+      await cleanGanacheDb();
     };
 
     init();
-  }, [state, handleWorkflowCompileResult]);
+  }, [state, handleCompilations]);
 
   useEffect(() => {
     const updateChainInfo = () => {
@@ -296,6 +310,46 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         body: JSON.stringify({ value })
       });
       // No need to update state afterwards
+    },
+    handleCompilations,
+    getCompilations: async (): Promise<Compilation[]> => {
+      const { dbPromise } = state;
+      const compilations = await (await dbPromise).getAll("Compilation");
+      return compilations.map(entry => entry.data);
+    },
+    setDebuggerSessionData: ({
+      unknownAddresses,
+      sources,
+      session
+    }: SetDebuggerSessionDataArgs) => {
+      dispatch({
+        type: "set-debugger-session-data",
+        data: {
+          sources,
+          unknownAddresses,
+          session
+        }
+      });
+    },
+    setTxToRun: (
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
+    ) => {
+      dispatch({
+        type: "set-tx-to-run",
+        data: lifecycle
+      });
+    },
+    toggleDebuggerBreakpoint: ({
+      line,
+      sourceId
+    }: ToggleDebuggerBreakpointArgs) => {
+      dispatch({
+        type: "toggle-debugger-breakpoint",
+        data: {
+          line,
+          sourceId
+        }
+      });
     }
   };
 

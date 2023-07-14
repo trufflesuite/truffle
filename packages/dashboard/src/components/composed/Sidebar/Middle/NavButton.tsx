@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { UnstyledButton, Group, Text, createStyles } from "@mantine/core";
+import { useLocation } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
   const { colors, colorScheme, radius, fn } = theme;
@@ -8,14 +9,6 @@ const useStyles = createStyles((theme, _params, _getRef) => {
       display: "block",
       borderRadius: radius.sm
     },
-    enabled: {
-      "&:hover": {
-        backgroundColor:
-          colorScheme === "dark"
-            ? fn.darken(colors["truffle-brown"][8], 0.08)
-            : fn.darken(colors["truffle-beige"][4], 0.08)
-      }
-    },
     disabled: {
       cursor: "default",
       pointerEvents: "none",
@@ -23,6 +16,20 @@ const useStyles = createStyles((theme, _params, _getRef) => {
         colorScheme === "dark"
           ? colors["truffle-brown"][4]
           : colors["truffle-beige"][5]
+    },
+    active: {
+      backgroundColor:
+        colorScheme === "dark"
+          ? colors["truffle-brown"][6]
+          : colors["truffle-beige"][2]
+    },
+    inactive: {
+      "&:hover": {
+        backgroundColor:
+          colorScheme === "dark"
+            ? fn.lighten(colors["truffle-brown"][8], 0.08)
+            : fn.darken(colors["truffle-beige"][4], 0.08)
+      }
     }
   };
 });
@@ -43,14 +50,15 @@ function NavButton({
   disabled
 }: NavButtonProps): JSX.Element {
   const { classes } = useStyles();
+  const location = useLocation();
 
   return (
     <UnstyledButton
       component={Link}
       to={to}
       p="xl"
-      className={`${classes.button} ${
-        disabled ? classes.disabled : classes.enabled
+      className={`${classes.button} ${disabled ? classes.disabled : ""} ${
+        location.pathname.startsWith(to) ? classes.active : classes.inactive
       }`}
     >
       <Group position="apart">

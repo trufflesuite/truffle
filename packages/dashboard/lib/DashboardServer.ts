@@ -2,9 +2,9 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import path from "path";
 import getPort from "get-port";
 import open from "open";
+import { v4 as uuid } from "uuid";
 import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import { sha1 } from "object-hash";
-import { v4 as uuid } from "uuid";
 import Config from "@truffle/config";
 import {
   dashboardProviderMessageType,

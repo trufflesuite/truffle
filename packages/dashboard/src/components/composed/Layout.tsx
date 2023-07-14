@@ -16,10 +16,14 @@ import {
 
 const ARBITRARY_ANALYTICS_NEXT_ASK_THRESHOLD_IN_DAYS = 365;
 
-const useStyles = createStyles((_theme, _params, _getRef) => ({
+const useStyles = createStyles((theme, _params, _getRef) => ({
   main: {
     maxHeight: "100vh",
-    overflow: "auto"
+    overflow: "auto",
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors["truffle-brown"][8]
+        : theme.colors["truffle-beige"][3]
   }
 }));
 

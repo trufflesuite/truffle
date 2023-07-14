@@ -7,10 +7,26 @@ import type {
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import type { Schema } from "src/contexts/DashContext";
 import type { NoticeContent } from "src/components/composed/Notice/content/types";
+import type {
+  Source,
+  Session,
+  UnknownAddress
+} from "src/components/composed/Debugger/utils";
+
+type BreakpointState = {
+  [sourceId: string]: Set<number>;
+};
 
 export interface State {
   busClient: DashboardMessageBusClient;
   dbPromise: Promise<IDBPDatabase<Schema>>;
+  debugger: {
+    sources: Source[] | null;
+    unknownAddresses: UnknownAddress[] | null;
+    session: Session | null;
+    breakpoints: BreakpointState;
+    txToRun?: ReceivedMessageLifecycle<DashboardProviderMessage>;
+  };
   decoder: ProjectDecoder | null;
   decoderCompilations: Array<Schema["Compilation"]["value"]["data"]> | null;
   decoderCompilationHashes: Set<

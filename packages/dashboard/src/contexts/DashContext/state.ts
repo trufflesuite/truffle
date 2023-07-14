@@ -36,6 +36,13 @@ export const initialState: State = {
       });
     }
   }),
+  debugger: {
+    sources: null,
+    unknownAddresses: null,
+    session: null,
+    txToRun: undefined,
+    breakpoints: {}
+  },
   decoder: null,
   decoderCompilations: null,
   decoderCompilationHashes: null,
@@ -66,6 +73,49 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, notice: { ...state.notice, ...data } };
     case "set-analytics-config":
       return { ...state, analyticsConfig: data };
+    case "toggle-debugger-breakpoint":
+      const { line, sourceId } = data;
+      // the front-end starts line numbering at 1 while the debugger
+      // starts them at 0
+      const debuggerLine = line - 1;
+      const breakpointExists = state.debugger.breakpoints![sourceId].has(line);
+      const newBreakpointStateForSource = new Set(
+        state.debugger.breakpoints![sourceId]
+      );
+      if (breakpointExists) {
+        state.debugger.session!.removeBreakpoint({
+          line: debuggerLine,
+          sourceId
+        });
+        newBreakpointStateForSource.delete(line);
+      } else {
+        state.debugger.session!.addBreakpoint({ line: debuggerLine, sourceId });
+        newBreakpointStateForSource.add(line);
+      }
+      return {
+        ...state,
+        debugger: {
+          ...state.debugger,
+          breakpoints: {
+            ...state.debugger.breakpoints,
+            [sourceId]: newBreakpointStateForSource
+          }
+        }
+      };
+    case "set-debugger-session-data":
+      const breakpointsInitialState: { [sourceId: string]: Set<number> } = {};
+      if (data.sources !== null) {
+        for (const source of data.sources) {
+          breakpointsInitialState[source.id] = new Set();
+        }
+      }
+      return {
+        ...state,
+        debugger: {
+          ...data,
+          breakpoints: breakpointsInitialState
+        }
+      };
     case "handle-message":
       // Copy state,
       // modify it depending on message type,
@@ -100,6 +150,14 @@ export const reducer = (state: State, action: Action): State => {
       }
 
       return newState;
+    case "set-tx-to-run":
+      return {
+        ...state,
+        debugger: {
+          ...state.debugger,
+          txToRun: data
+        }
+      };
     case "update-provider-message-sender":
       const newProviderMessages = new Map(state.providerMessages);
       const newSender = data;
