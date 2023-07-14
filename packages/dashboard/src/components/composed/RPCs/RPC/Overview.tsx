@@ -49,6 +49,12 @@ const useStyles = createStyles((theme, _params, getRef) => {
         "&:hover": {
           backgroundColor: colors["truffle-teal"][9]
         }
+      },
+      [`& .${getRef("debugButton")}`]: {
+        "backgroundColor": fn.rgba(colors["truffle-teal"][7], 0.6),
+        "&:hover": {
+          backgroundColor: colors["truffle-teal"][7]
+        }
       }
     },
     info: {
@@ -86,12 +92,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
     },
     rejectButton: { ref: getRef("rejectButton") },
     confirmButton: { ref: getRef("confirmButton") },
-    debugButton: {
-      backgroundColor:
-        colorScheme === "dark"
-          ? colors["truffle-teal"][6]
-          : colors["truffle-teal"][4]
-    },
+    debugButton: { ref: getRef("debugButton") },
     confirmButtonRightIcon: {
       marginLeft: 4,
       marginRight: 6
