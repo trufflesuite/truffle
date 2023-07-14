@@ -1,6 +1,7 @@
 import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAccount, useNetwork } from "wagmi";
 import { sha1 } from "object-hash";
+import { deleteDB } from "idb/with-async-ittr";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   isCliEventMessage,
@@ -234,10 +235,18 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       dispatch({ type: "set-analytics-config", data });
     };
 
+    const cleanGanacheDb = async () => {
+      const ganacheDb = await indexedDB.databases();
+      for (const { name } of ganacheDb) {
+        if (name?.startsWith("/tmp/ganache_")) await deleteDB(name);
+      }
+    };
+
     const init = async () => {
       await initDecoder();
       await initBusClient();
       await initAnalytics();
+      await cleanGanacheDb();
     };
 
     init();
