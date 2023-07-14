@@ -1,7 +1,7 @@
 {
   "name": "@truffle/codec-components",
   "description": "UI component library for @truffle/codec data",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "keywords": [
     "solidity",
     "ethereum",
@@ -42,7 +42,7 @@
     "prepare": "yarn build"
   },
   "dependencies": {
-    "@truffle/codec": "^0.17.0"
+    "@truffle/codec": "^0.17.1"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.35.1",

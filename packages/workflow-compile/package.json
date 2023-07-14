@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.66",
+  "version": "4.0.67",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -20,15 +20,15 @@
     "test": "mocha -r ts-node/register test/*.ts"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.194",
+    "@truffle/artifactor": "^4.0.195",
     "@truffle/compile-common": "^0.9.6",
-    "@truffle/compile-solidity": "^6.0.74",
-    "@truffle/compile-vyper": "^3.1.110",
-    "@truffle/config": "^1.3.58",
-    "@truffle/db-loader": "^0.2.31",
+    "@truffle/compile-solidity": "^6.0.75",
+    "@truffle/compile-vyper": "^3.1.111",
+    "@truffle/config": "^1.3.59",
+    "@truffle/db-loader": "^0.2.32",
     "@truffle/expect": "^0.1.6",
-    "@truffle/external-compile": "^2.0.79",
-    "@truffle/resolver": "^9.0.48",
+    "@truffle/external-compile": "^2.0.80",
+    "@truffle/resolver": "^9.0.49",
     "fs-extra": "^9.1.0"
   },
   "devDependencies": {
