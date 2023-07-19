@@ -58,11 +58,7 @@ const useStyles = createStyles(theme => ({
   }
 }));
 
-type VariablesArgs = {
-  currentStep: string;
-};
-
-function Variables({ currentStep }: VariablesArgs): JSX.Element | null {
+function Variables(): JSX.Element | null {
   const { classes } = useStyles();
   const {
     state: {
@@ -99,7 +95,7 @@ function Variables({ currentStep }: VariablesArgs): JSX.Element | null {
     }
 
     getVariables();
-  }, [currentStep, session, classes.variablesTypes, classes.variablesSection]);
+  }, [session!.view(session!.selectors.trace.index)]);
 
   const output = variables
     ? Object.keys(variables).map(sectionName => {
