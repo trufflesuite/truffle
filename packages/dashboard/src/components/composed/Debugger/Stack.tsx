@@ -40,11 +40,7 @@ const useStyles = createStyles(theme => ({
   }
 }));
 
-type StackArgs = {
-  currentStep: string;
-};
-
-function Stack({ currentStep }: StackArgs): JSX.Element | null {
+function Stack(): JSX.Element | null {
   const { classes } = useStyles();
   const {
     state: {
@@ -66,7 +62,7 @@ function Stack({ currentStep }: StackArgs): JSX.Element | null {
       setStackReport(report);
     }
     getStack();
-  }, [currentStep, session]);
+  }, [session!.view(session!.selectors.trace.index)]);
 
   const output = stackReport
     ? stackReport.map((reportItem: any, index: number) => {

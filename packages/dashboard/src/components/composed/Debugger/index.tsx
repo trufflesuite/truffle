@@ -113,7 +113,6 @@ function Debugger(): JSX.Element {
     traceIndex: -1
   };
 
-  let currentStep;
   // wait until the debugger has been initialized and then get source info
   if (session) {
     currentSourceRange = getCurrentSourceRange(session);
@@ -129,7 +128,6 @@ function Debugger(): JSX.Element {
         setCurrentSourceId(currentContractAddress);
       }
     }
-    currentStep = session.view(session.selectors.trace.index);
   }
 
   const scrollToLine = ({
@@ -206,7 +204,7 @@ function Debugger(): JSX.Element {
       const { source, start } = currentSourceRange!;
       scrollToLine({ sourceId: source.id, line: start.line });
     }
-  }, [currentStep, currentSourceId]);
+  }, [session!.view(session!.selectors.trace.index), currentSourceId]);
 
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
@@ -262,13 +260,13 @@ function Debugger(): JSX.Element {
             />
           </Grid.Col>
           <Grid.Col span={2} className={classes.fullHeight}>
-            <Variables currentStep={currentStep} />
+            <Variables />
             <Breakpoints
               sources={sources}
               handleBreakpointComponentClick={handleBreakpointComponentClick}
               handleBreakpointDeleteClick={handleBreakpointDeleteClick}
             />
-            <Stack currentStep={currentStep} />
+            <Stack />
           </Grid.Col>
         </Grid>
       </div>
