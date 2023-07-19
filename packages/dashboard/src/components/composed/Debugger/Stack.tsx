@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { Session } from "src/components/composed/Debugger/utils";
 import { createStyles, Flex } from "@mantine/core";
+import { useDash } from "src/hooks";
 
 const useStyles = createStyles(theme => ({
   sectionHeader: {
@@ -41,17 +41,25 @@ const useStyles = createStyles(theme => ({
 }));
 
 type StackArgs = {
-  session: Session;
   currentStep: string;
 };
 
-function Stack({ session, currentStep }: StackArgs): JSX.Element | null {
+function Stack({ currentStep }: StackArgs): JSX.Element | null {
   const { classes } = useStyles();
+  const {
+    state: {
+      debugger: { session }
+    }
+  } = useDash()!;
+
   const [stackReport, setStackReport] = useState<JSX.Element[] | null>(null);
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getStack() {
-      const report = session.view(session.selectors.stacktrace.current.report);
+      // we don't render this component until session is defined
+      const report = session!.view(
+        session!.selectors.stacktrace.current.report
+      );
       if (!report) return;
       // we need to display this information in the reverse order
       report.reverse();

@@ -262,13 +262,13 @@ function Debugger(): JSX.Element {
             />
           </Grid.Col>
           <Grid.Col span={2} className={classes.fullHeight}>
-            <Variables currentStep={currentStep} session={session} />
+            <Variables currentStep={currentStep} />
             <Breakpoints
               sources={sources}
               handleBreakpointComponentClick={handleBreakpointComponentClick}
               handleBreakpointDeleteClick={handleBreakpointDeleteClick}
             />
-            <Stack session={session} currentStep={currentStep} />
+            <Stack currentStep={currentStep} />
           </Grid.Col>
         </Grid>
       </div>
