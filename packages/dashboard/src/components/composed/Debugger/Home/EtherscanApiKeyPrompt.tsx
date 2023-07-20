@@ -84,7 +84,7 @@ function EtherScanApiKeyPrompt() {
       <Stack className={classes.promptContainer}>
         <Text size="sm">
           <b>
-            🕵️‍♀️ We found an EtherScan API key that you've previously entered via
+            🕵️‍♀️ We found an Etherscan API key that you've previously entered via
             your browser.
           </b>{" "}
           Delete it from browser storage to use another key.
