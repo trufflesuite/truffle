@@ -1,4 +1,12 @@
-import { Group, Stack, Button, Badge, Text, createStyles } from "@mantine/core";
+import {
+  Group,
+  Stack,
+  Button,
+  Badge,
+  Text,
+  Tooltip,
+  createStyles
+} from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
@@ -151,6 +159,9 @@ function Overview({
     navigate("/debugger");
   };
 
+  const debugButtonTooltipMessage =
+    `Simulate transaction in Ganache and ` + `debug the result.`;
+
   return (
     <Stack
       onClick={onBackClick}
@@ -205,15 +216,17 @@ function Overview({
             Confirm
           </Button>
         </Group>
-        <Button
-          size="md"
-          onClick={onDebugButtonClick}
-          onMouseEnter={onDebugButtonEnter}
-          onMouseLeave={onDebugButtonLeave}
-          className={`${classes.button} ${classes.debugButton}`}
-        >
-          Debug
-        </Button>
+        <Tooltip label={debugButtonTooltipMessage}>
+          <Button
+            size="md"
+            onClick={onDebugButtonClick}
+            onMouseEnter={onDebugButtonEnter}
+            onMouseLeave={onDebugButtonLeave}
+            className={`${classes.button} ${classes.debugButton}`}
+          >
+            Debug
+          </Button>
+        </Tooltip>
       </Group>
     </Stack>
   );
