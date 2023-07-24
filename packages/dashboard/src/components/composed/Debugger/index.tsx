@@ -15,11 +15,7 @@ import {
   SessionStatus
 } from "src/components/composed/Debugger/utils";
 import { useDash } from "src/hooks";
-import { getCurrentSourceRange } from "src/components/composed/Debugger/utils";
-import type {
-  BreakpointType,
-  SourceRange
-} from "src/components/composed/Debugger/utils";
+import type { BreakpointType } from "src/components/composed/Debugger/utils";
 import { etherscanApiKeyName } from "src/utils/constants";
 
 const useStyles = createStyles(theme => ({
@@ -109,29 +105,6 @@ function Debugger(): JSX.Element {
     undefined
   );
 
-  let currentSourceRange: SourceRange | Partial<SourceRange> = {
-    traceIndex: -1
-  };
-
-  let currentStep;
-  // wait until the debugger has been initialized and then get source info
-  if (session) {
-    currentSourceRange = getCurrentSourceRange(session);
-    // if the starting source is unknown, we may get `undefined` in the source
-    // range - in that case we'll initialize it manually from the stacktrace
-    if (!currentSourceRange.source?.id && !currentSourceId) {
-      const currentContractAddress = session.view(
-        session.selectors.stacktrace.current.report
-      )[0].address;
-      // when the contract is "unknown", the source id will be the address
-      // we need this if check so that no loop occurs when the value is falsy
-      if (currentContractAddress) {
-        setCurrentSourceId(currentContractAddress);
-      }
-    }
-    currentStep = session.view(session.selectors.trace.index);
-  }
-
   const scrollToLine = ({
     sourceId,
     line
@@ -201,13 +174,6 @@ function Debugger(): JSX.Element {
     }
   };
 
-  useEffect(() => {
-    if (isSourceRange(currentSourceRange) && currentSourceRange.source.id) {
-      const { source, start } = currentSourceRange!;
-      scrollToLine({ sourceId: source.id, line: start.line });
-    }
-  }, [currentStep, currentSourceId]);
-
   // check whether we need to scroll to a breakpoint
   // this is to ensure the source has fully rendered before scrolling
   useEffect(() => {
@@ -233,13 +199,8 @@ function Debugger(): JSX.Element {
     });
   };
 
-  const isSourceRange = (item: any): item is SourceRange => {
-    // when source exists, that means it should be a full SourceRange
-    return item.source !== undefined;
-  };
-
   let content;
-  if (session && sources && isSourceRange(currentSourceRange)) {
+  if (session && sources) {
     content = (
       <div className={classes.mainContent}>
         <Grid
@@ -256,19 +217,19 @@ function Debugger(): JSX.Element {
               unknownAddresses={unknownAddresses}
               session={session}
               sessionUpdated={sessionUpdated}
-              currentSourceRange={currentSourceRange}
               currentSourceId={currentSourceId}
               setCurrentSourceId={setCurrentSourceId}
+              scrollToLine={scrollToLine}
             />
           </Grid.Col>
           <Grid.Col span={2} className={classes.fullHeight}>
-            <Variables currentStep={currentStep} session={session} />
+            <Variables />
             <Breakpoints
               sources={sources}
               handleBreakpointComponentClick={handleBreakpointComponentClick}
               handleBreakpointDeleteClick={handleBreakpointDeleteClick}
             />
-            <Stack session={session} currentStep={currentStep} />
+            <Stack />
           </Grid.Col>
         </Grid>
       </div>

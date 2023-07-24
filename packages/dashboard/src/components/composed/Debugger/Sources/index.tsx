@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { basename } from "path";
 import { createStyles, Tabs } from "@mantine/core";
 import Source from "src/components/composed/Debugger/Sources/Source";
@@ -9,6 +9,7 @@ import type {
   Source as SourceType,
   UnknownAddress
 } from "src/components/composed/Debugger/utils";
+import { getCurrentSourceRange } from "src/components/composed/Debugger/utils";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({
   maxHeight: {
@@ -67,24 +68,31 @@ interface SourcesProps {
   session: Session;
   sessionUpdated: any;
   sources: SourceType[];
-  currentSourceRange: SourceRange;
   unknownAddresses: UnknownAddress[] | null;
   currentSourceId: string | undefined;
   setCurrentSourceId: (sourceId: string) => void;
+  scrollToLine: (arg: { sourceId: string; line: number }) => void;
 }
 
 function Sources({
   sources,
   session,
   sessionUpdated,
-  currentSourceRange,
   unknownAddresses,
   currentSourceId,
-  setCurrentSourceId
+  setCurrentSourceId,
+  scrollToLine
 }: SourcesProps): JSX.Element {
   const { classes } = useStyles();
   const currentSourceIdRef = useRef(currentSourceId);
   currentSourceIdRef.current = currentSourceId;
+
+  const [currentSourceRange, setCurrentSourceRange] = useState<
+    SourceRange | { traceIndex: number; source: any }
+  >({
+    traceIndex: -1,
+    source: {}
+  });
 
   // display the first source when currentSourceRange is `undefined`
   useEffect(() => {
@@ -94,7 +102,7 @@ function Sources({
   }, [sources, currentSourceId, setCurrentSourceId]);
 
   useEffect(() => {
-    const sessionSourceId = currentSourceRange.source.id;
+    const sessionSourceId = currentSourceRange.source!.id;
     if (sessionSourceId !== currentSourceIdRef.current) {
       setCurrentSourceId(sessionSourceId);
     }
@@ -105,10 +113,37 @@ function Sources({
     setCurrentSourceId
   ]);
 
+  useEffect(() => {
+    setCurrentSourceRange(getCurrentSourceRange(session));
+    // if the starting source is unknown, we may get `undefined` in the source
+    // range - in that case we'll initialize it manually from the stacktrace
+    if (!currentSourceRange.source?.id && !currentSourceId) {
+      const currentContractAddress = session.view(
+        session.selectors.stacktrace.current.report
+      )[0].address;
+      // when the contract is "unknown", the source id will be the address
+      // we need this if check so that no loop occurs when the value is falsy
+      if (currentContractAddress) {
+        setCurrentSourceId(currentContractAddress);
+      }
+    }
+  }, [session.view(session.selectors.trace.index)]);
+
+  const isSourceRange = (item: any): item is SourceRange => {
+    return item.source.id !== undefined;
+  };
+
+  useEffect(() => {
+    if (isSourceRange(currentSourceRange)) {
+      const { source, start } = currentSourceRange!;
+      scrollToLine({ sourceId: source.id, line: start.line });
+    }
+  }, [session!.view(session!.selectors.trace.index), currentSourceId]);
+
   const unknownSourcesExist = unknownAddresses && unknownAddresses.length > 0;
 
   let sourcesContent, unknownSourcesContent;
-  if (currentSourceId !== undefined) {
+  if (isSourceRange(currentSourceRange) && currentSourceId !== undefined) {
     sourcesContent = sources.map((source: SourceType) => (
       <Tabs.Panel
         key={source.id}

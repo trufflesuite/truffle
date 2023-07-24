@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import type { Session } from "src/components/composed/Debugger/utils";
 import * as CodecComponents from "@truffle/codec-components/react";
 import "@truffle/codec-components/react-styles";
 import { createStyles, Flex } from "@mantine/core";
+import { useDash } from "src/hooks";
 
 const useStyles = createStyles(theme => ({
   sectionHeader: {
@@ -58,25 +58,23 @@ const useStyles = createStyles(theme => ({
   }
 }));
 
-type VariablesArgs = {
-  session: Session;
-  currentStep: string;
-};
-
-function Variables({
-  session,
-  currentStep
-}: VariablesArgs): JSX.Element | null {
+function Variables(): JSX.Element | null {
   const { classes } = useStyles();
+  const {
+    state: {
+      debugger: { session }
+    }
+  } = useDash()!;
   const [variables, setVariables] = useState<any>(null);
 
   // when the debugger step changes, update variables
   useEffect(() => {
     async function getVariables() {
-      const sections = session.view(
-        session.selectors.data.current.identifiers.sections
+      // we don't render this component until session is defined
+      const sections = session!.view(
+        session!.selectors.data.current.identifiers.sections
       );
-      const vars = await session.variables();
+      const vars = await session!.variables();
       if (!vars || Object.keys(vars).length === 0) return;
 
       const variableValues: { [key: string]: any } = {};
@@ -97,7 +95,7 @@ function Variables({
     }
 
     getVariables();
-  }, [currentStep, session, classes.variablesTypes, classes.variablesSection]);
+  }, [session!.view(session!.selectors.trace.index)]);
 
   const output = variables
     ? Object.keys(variables).map(sectionName => {
