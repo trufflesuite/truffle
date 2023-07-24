@@ -302,9 +302,7 @@ describe("Graceful degradation when information is missing", function () {
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
 
-  //todo web3js-migration error withch schema
-  // Error: schema with key or id "5f79e70fd2b8a3a84f947e1f2376b6311f756dc26ed9ebfe148d5b0ef3350ac3f933c17a46bbf7fa08c2edb8a39381688f05ed60ff4853d4a72ea3fed8a85b58" already exists
-  it.skip("Decodes transactions sent to the instance via additionalContexts", async function () {
+  it("Decodes transactions sent to the instance via additionalContexts", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -332,7 +330,7 @@ describe("Graceful degradation when information is missing", function () {
       Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       1
     );
-  });
+  }).timeout(3000);
 
   it("Partially decodes internal functions when unreliable order", async function () {
     let mangledCompilations = clonedeep(compilations);
