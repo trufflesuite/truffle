@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.11.0",
+  "version": "5.11.1",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -46,7 +46,7 @@
     "@truffle/box": "^2.1.79",
     "@truffle/config": "^1.3.59",
     "@truffle/contract": "^4.6.27",
-    "@truffle/core": "^5.11.0",
+    "@truffle/core": "^5.11.1",
     "@truffle/interface-adapter": "^0.5.35",
     "chai": "^4.2.0",
     "clean-webpack-plugin": "^3.0.0",
