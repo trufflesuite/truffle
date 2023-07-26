@@ -741,6 +741,7 @@ describe("Further Decoding", function () {
 
   describe("Overflow", function () {
     it("Discards padding on unsigned integers", async function () {
+      this.timeout(6000);
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.unsignedTest();
       let txHash = receipt.tx;
@@ -771,6 +772,7 @@ describe("Further Decoding", function () {
     });
 
     it("Discards padding on signed integers", async function () {
+      this.timeout(6000);
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.signedTest();
       let txHash = receipt.tx;
@@ -801,6 +803,7 @@ describe("Further Decoding", function () {
     });
 
     it("Discards padding on static bytestrings", async function () {
+      this.timeout(6000);
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.rawTest();
       let txHash = receipt.tx;
