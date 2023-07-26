@@ -26,6 +26,7 @@ export const networkNamesById: { [id: number]: string } = {
   77: "sokol-poa",
   56: "binance",
   97: "testnet-binance",
+  5611: "testnet-opbnb-binance",
   42220: "celo",
   44787: "alfajores-celo",
   62320: "baklava-celo",
@@ -98,7 +99,7 @@ export const networkNamesById: { [id: number]: string } = {
   19: "songbird-flare",
   2048: "stratos", //not presently supported by either fetcher, but...
   2047: "testnet-stratos",
-  8453: "base", //not presently supported by either fetcher, but...
+  8453: "base",
   84531: "goerli-base",
   641230: "bear",
   888: "wanchain",
@@ -123,7 +124,9 @@ export const networkNamesById: { [id: number]: string } = {
   32769: "zilliqa",
   33101: "testnet-zilliqa",
   111111: "siberium", //not presently supported by either fetcher, but...
-  111000: "testnet-siberium"
+  111000: "testnet-siberium",
+  59144: "linea",
+  59140: "goerli-linea"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic for same reason
