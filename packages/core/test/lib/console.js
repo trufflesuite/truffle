@@ -9,8 +9,7 @@ const config = new Config();
 
 let truffleConsole, consoleOptions;
 
-//todo web3js-migration may need some help here
-describe.skip("Console", function () {
+describe("Console", function () {
   describe("Console.calculateTruffleAndUserGlobals", function () {
     let provider;
 
@@ -55,7 +54,7 @@ describe.skip("Console", function () {
       truffleConsole.interfaceAdapter.getAccounts.restore();
     });
 
-    it.only("sets web3, the interface adapter, and accounts variables", async function () {
+    it("sets web3, the interface adapter, and accounts variables", async function () {
       const result = await truffleConsole.calculateTruffleAndUserGlobals();
       assert(result.web3);
       assert(result.interfaceAdapter);
