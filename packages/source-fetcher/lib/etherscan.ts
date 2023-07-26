@@ -69,6 +69,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "testnet-zkevm-polygon": "api-testnet-zkevm.polygonscan.com",
       "binance": "api.bscscan.com",
       "testnet-binance": "api-testnet.bscscan.com",
+      "testnet-opbnb-binance": "api-opbnb-testnet.bscscan.com",
       "fantom": "api.ftmscan.com",
       "testnet-fantom": "api-testnet.ftmscan.com",
       "avalanche": "api.snowtrace.io",
@@ -86,8 +87,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "boba": "api.bobascan.com",
       "goerli-boba": "api-testnet.bobascan.com",
       "gnosis": "api.gnosisscan.io",
-      //etherscan does *not* support base mainnet?
-      "goerli-base": "api-goerli.basescan.org"
+      "base": "api.basescan.org",
+      "goerli-base": "api-goerli.basescan.org",
+      "linea": "api.lineascan.build",
+      "goerli-linea": "api-goerli.lineascan.build"
     };
 
   constructor(networkId: number, apiKey: string = "") {
