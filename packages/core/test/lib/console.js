@@ -9,9 +9,17 @@ const config = new Config();
 
 let truffleConsole, consoleOptions;
 
-//todo web3js-migration may need some help here
-describe.skip("Console", function () {
+describe("Console", function () {
   describe("Console.calculateTruffleAndUserGlobals", function () {
+    let provider;
+
+    before(function () {
+      provider = new Web3.providers.WebsocketProvider("ws://localhost:666");
+    });
+    after(function () {
+      provider.disconnect();
+    });
+
     beforeEach(function () {
       consoleOptions = new Config().with({
         network: "funTimeNetwork",
@@ -21,7 +29,7 @@ describe.skip("Console", function () {
           }
         },
         network_id: 666,
-        provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+        provider,
         resolver: new Resolver(config)
       });
       const pathToUserJs = path.join(
@@ -42,11 +50,11 @@ describe.skip("Console", function () {
         .stub(truffleConsole.interfaceAdapter, "getAccounts")
         .returns(new Promise(resolve => resolve(["0x0"])));
     });
-    // afterEach(function () {
-    //   truffleConsole.interfaceAdapter.getAccounts.restore();
-    // });
+    afterEach(function () {
+      truffleConsole.interfaceAdapter.getAccounts.restore();
+    });
 
-    it.only("sets web3, the interface adapter, and accounts variables", async function () {
+    it("sets web3, the interface adapter, and accounts variables", async function () {
       const result = await truffleConsole.calculateTruffleAndUserGlobals();
       assert(result.web3);
       assert(result.interfaceAdapter);
@@ -71,7 +79,7 @@ describe.skip("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherConsoleOptions.require = path.join(
@@ -105,7 +113,7 @@ describe.skip("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherConsoleOptions.console.require = path.join(
@@ -135,7 +143,7 @@ describe.skip("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(otherConsoleOptions);
