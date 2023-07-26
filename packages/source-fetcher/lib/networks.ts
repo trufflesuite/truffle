@@ -235,7 +235,6 @@ export const networkNamesById: { [id: number]: string } = {
   500: "hyperon", //NOTE: conflicts with Camino in chains.json
   9999: "agung-peaq", //NOTE: conflicts myOwn in chains.json
   88880: "scoville-chiliz", //I can't find good info on chiliz mainnet
-  59140: "goerli-linea", //does this even have a corresponding mainnet?
   1662: "yuma-horizen", //does this even have a corresponding mainnet?
   5758: "satoshichain", //does this even have a corresponding mainnet?
   7649: "testnet-lamina1", //does this even have a corresponding mainnet?
