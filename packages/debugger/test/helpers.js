@@ -34,7 +34,7 @@ export async function prepareContracts(
 
   config.compilers = {
     solc: {
-      version: "0.8.20",
+      version: "0.8.21",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "shanghai"
