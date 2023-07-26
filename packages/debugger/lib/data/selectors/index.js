@@ -6,7 +6,12 @@ import jsonpointer from "json-pointer";
 import merge from "lodash/merge";
 import semver from "semver";
 
-import { stableKeccak256, makePath } from "lib/helpers";
+import {
+  stableKeccak256,
+  makePath,
+  topLevelNodeTypes,
+  isTopLevelNode
+} from "lib/helpers";
 
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
@@ -32,7 +37,7 @@ function solidityVersionHasNoNow(compiler) {
 }
 
 function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
-  //note: you may want to include "SourceUnit" as a fallback type when using
+  //note: you may want to include "SourceUnit" and "YulObject" as fallback types when using
   //this function for convenience.
   //you only need to pass pointer and root if you want this function to work
   //from Yul.  Otherwise you can omit those and you'll get null if you happen
@@ -961,14 +966,13 @@ const data = createSelectorTree({
 
     /**
      * data.current.contract
-     * warning: may return null or similar, even though SourceUnit is included
-     * as fallback
+     * warning: may return null or similar, even though SourceUnit and YulObject are included
+     * as fallbacks
      */
     contract: createLeaf(
       ["./node", "./scopes/inlined", "./pointer", "./root"],
       (node, scopes, pointer, root) => {
-        const types = ["ContractDefinition", "SourceUnit"];
-        //SourceUnit included as fallback
+        const types = ["ContractDefinition", ...topLevelNodeTypes];
         return findAncestorOfType(node, types, scopes, pointer, root);
       }
     ),
@@ -1017,9 +1021,8 @@ const data = createSelectorTree({
           "FunctionDefinition",
           "ModifierDefinition",
           "ContractDefinition",
-          "SourceUnit"
+          ...topLevelNodeTypes
         ];
-        //SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes, pointer, root);
       }
     ),
@@ -1294,7 +1297,7 @@ const data = createSelectorTree({
         //we cannot rely on the data.next selectors, but also if it is we know
         //we're not about to call a modifier or base constructor!)
         //we also want to return false if we can't find things for whatever
-        //reason
+        //reason (including if we're in Yul)
         if (
           isContextChange ||
           !node ||
@@ -1312,7 +1315,7 @@ const data = createSelectorTree({
         //ensure: current position is in a ModifierInvocation or
         //InheritanceSpecifier (recall that SourceUnit was included as
         //fallback)
-        if (invocation.nodeType === "SourceUnit") {
+        if (isTopLevelNode(invocation)) {
           return false;
         }
 
@@ -1326,7 +1329,7 @@ const data = createSelectorTree({
 
         //ensure: next node is not in the same invocation
         if (
-          nextInvocation.nodeType !== "SourceUnit" &&
+          !isTopLevelNode(nextInvocation) &&
           nextInvocation.id === invocation.id
         ) {
           return false;
@@ -1357,9 +1360,8 @@ const data = createSelectorTree({
         const types = [
           "ModifierInvocation",
           "InheritanceSpecifier",
-          "SourceUnit"
+          ...topLevelNodeTypes
         ];
-        //again, SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes);
       }
     ),
@@ -1372,7 +1374,7 @@ const data = createSelectorTree({
     modifierArgumentIndex: createLeaf(
       ["./scopes", "./node", "./modifierInvocation"],
       (scopes, node, invocation) => {
-        if (!invocation || invocation.nodeType === "SourceUnit") {
+        if (!invocation || isTopLevelNode(invocation)) {
           return undefined;
         }
 
@@ -1400,7 +1402,7 @@ const data = createSelectorTree({
     modifierBeingInvoked: createLeaf(
       ["./modifierInvocation", "./scopes/inlined"],
       (invocation, scopes) => {
-        if (!invocation || invocation.nodeType === "SourceUnit") {
+        if (!invocation || isTopLevelNode(invocation)) {
           return undefined;
         }
 
@@ -1877,9 +1879,9 @@ const data = createSelectorTree({
         const types = [
           "ModifierInvocation",
           "InheritanceSpecifier",
-          "SourceUnit"
+          ...topLevelNodeTypes
         ];
-        //again, SourceUnit included as fallback
+        //again, SourceUnit and YulObject are included as fallbacks
         return findAncestorOfType(node, types, scopes);
       }
     ),
@@ -1894,7 +1896,7 @@ const data = createSelectorTree({
         evm.current.step.isContextChange
       ],
       (invocation, scopes, invalid) => {
-        if (invalid || !invocation || invocation.nodeType === "SourceUnit") {
+        if (invalid || !invocation || isTopLevelNode(invocation)) {
           return undefined;
         }
 
