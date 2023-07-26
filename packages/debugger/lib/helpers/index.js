@@ -12,6 +12,12 @@ export function isDeliberatelySkippedNodeType(node) {
   return skippedTypes.includes(node.nodeType);
 }
 
+export const topLevelNodeTypes = ["SourceUnit", "YulObject"];
+
+export function isTopLevelNode(node) {
+  return topLevelNodeTypes.includes(node.nodeType);
+}
+
 //HACK
 //these aren't the only types of skipped nodes, but determining all skipped
 //nodes would be too difficult
