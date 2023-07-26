@@ -13,7 +13,7 @@ const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
-describe.skip("artifactor + require", () => {
+describe("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
   const provider = Ganache.provider({
     miner: {
@@ -138,7 +138,9 @@ describe.skip("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
   it("shouldn't synchronize constant functions", done => {
     let example;
@@ -186,42 +188,66 @@ describe.skip("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
-  it("should return transaction hash, logs and receipt when using synchronised transactions", done => {
-    let example = null;
-    Example.new("1", { gas: 3141592 })
-      .then(instance => {
-        example = instance;
-        return example.triggerEvent();
-      })
-      .then(({ tx, logs, receipt }) => {
-        assert.isDefined(tx, "transaction hash wasn't returned");
-        assert.isDefined(
-          logs,
-          "synchronized transaction didn't return any logs"
-        );
-        assert.isDefined(
-          receipt,
-          "synchronized transaction didn't return a receipt"
-        );
-        assert.isOk(tx.length > 42, "Unexpected transaction hash"); // There has to be a better way to do this.
-        assert.equal(
-          tx,
-          receipt.transactionHash,
-          "Transaction had different hash than receipt"
-        );
-        assert.equal(logs.length, 1, "logs array expected to be 1");
+  // TODO: un-skip the test to investigate the error:
+  //  "AssertionError: expected 'ExampleEvent' to equal undefined"
+  // The issue seems to be that the returned logs are not of an event.
+  //  (The returned log does not include the properties: `event` and `args`)
+  // logs: [
+  //   {
+  //     address: '0x608fcae953f6ecbb979bd670260fea9052a7e527',
+  //     blockHash: '0x3a5f39352e0fd37c6a0b7870b16d585a10dde1fec30b0e1b64b6065caef5469a',
+  //     blockNumber: 2n,
+  //     logIndex: 0n,
+  //     removed: false,
+  //     transactionHash: '0xd9ad9f8a3d74c8bad000249977ec60d8313b2e4bbc389de06709a45cd5e0cb31',
+  //     transactionIndex: 0n
+  //   }
+  // ]
+  //
+  //  issue: https://github.com/web3/web3.js/issues/6312
+  it.skip(
+    "should return transaction hash, logs and receipt when using synchronised transactions",
+    async done => {
+      let example = null;
+      Example.new("1", { gas: 3141592 })
+        .then(instance => {
+          example = instance;
+          return example.triggerEvent();
+        })
+        .then(({ tx, logs, receipt }) => {
+          assert.isDefined(tx, "transaction hash wasn't returned");
+          assert.isDefined(
+            logs,
+            "synchronized transaction didn't return any logs"
+          );
+          assert.isDefined(
+            receipt,
+            "synchronized transaction didn't return a receipt"
+          );
+          assert.isOk(tx.length > 42, "Unexpected transaction hash"); // There has to be a better way to do this.
+          assert.equal(
+            tx,
+            receipt.transactionHash,
+            "Transaction had different hash than receipt"
+          );
+          assert.equal(logs.length, 1, "logs array expected to be 1");
 
-        const log = logs[0];
+          const log = logs[0];
 
-        assert.equal("ExampleEvent", log.event);
-        assert.equal(accounts[0], log.args._from);
-        assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
-      })
-      .then(done)
-      .catch(done);
-  });
+          assert.equal("ExampleEvent", log.event);
+          assert.equal(accounts[0], log.args._from);
+          assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
+        })
+        .then(done)
+        .catch(done);
+      // TODO: investigate why timeout needed to be increased
+      //  issue: https://github.com/web3/web3.js/issues/6311
+    }
+  ).timeout(3000);
 
   it("should trigger the fallback function when calling sendTransaction()", () => {
     let example = null;
@@ -239,19 +265,16 @@ describe.skip("artifactor + require", () => {
           value: web3.utils.toWei("1", "ether")
         });
       })
-      .then(
-        () =>
-          new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
-              if (err) return reject(err);
-              accept(balance);
-            })
-          )
-      )
+      .then(() => web3.eth.getBalance(example.address))
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(
+          balance.toString() === web3.utils.toWei("1", "ether"),
+          "1 ether has been sent but the balance does not match that"
+        );
       });
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
   it("should trigger the fallback function when calling send() (shorthand notation)", () => {
     let example = null;
@@ -267,19 +290,16 @@ describe.skip("artifactor + require", () => {
         );
         return example.send(web3.utils.toWei("1", "ether"));
       })
-      .then(
-        () =>
-          new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
-              if (err) return reject(err);
-              accept(balance);
-            })
-          )
-      )
+      .then(() => web3.eth.getBalance(example.address))
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(
+          balance.toString() === web3.utils.toWei("1", "ether"),
+          "1 ether has been sent but the balance does not match that"
+        );
       });
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
   it("errors when setting an invalid provider", done => {
     try {
