@@ -286,6 +286,10 @@ function sourceIndexForAst(ast: AstNode): number | undefined {
   if (!ast) {
     return undefined;
   }
+  if (ast.nodeType === "YulObject") {
+    //Yul needs some special handling...
+    ast = ast.code.block;
+  }
   return parseInt(ast.src.split(":")[2]);
   //src is given as start:length:file.
   //we want just the file.

@@ -59,6 +59,8 @@ export interface AstNode {
   isConstructor?: boolean;
   usedErrors?: number[];
   usedEvents?: number[];
+  code?: AstNode; //exists on YulObject
+  block?: AstNode; //exists on YulCode
   //Note: May need to add more in the future.
   //May also want to create a proper system of AstNode types
   //in the future, but sticking with this for now.
