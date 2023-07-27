@@ -126,7 +126,9 @@ export const networkNamesById: { [id: number]: string } = {
   111111: "siberium", //not presently supported by either fetcher, but...
   111000: "testnet-siberium",
   59144: "linea",
-  59140: "goerli-linea"
+  59140: "goerli-linea",
+  22776: "map",
+  212: "makalu-map"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic for same reason

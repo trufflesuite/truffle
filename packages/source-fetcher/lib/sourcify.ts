@@ -123,7 +123,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "songbird-flare",
     //sourcify does *not* support stratos mainnet?
     "testnet-stratos",
-    //sourcify does *not* support base mainnet?
+    "base",
     "goerli-base",
     "bear",
     "wanchain",
@@ -147,9 +147,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "filecoin",
     "zilliqa",
     "testnet-zilliqa",
-    "testnet-siberium"
+    "testnet-siberium",
+    "map",
+    "makalu-map"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
+    //excluding ethereum classic for same reason
   ]);
 
   constructor(networkId: number) {
