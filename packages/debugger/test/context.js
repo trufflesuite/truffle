@@ -189,20 +189,20 @@ describe("Contexts", function () {
 
     assert.include(
       affectedAddresses,
-      outer.address,
+      outer.address.toLowerCase(), // `outer.address` has the checksum applied
       "OuterContract should be an affected address"
     );
 
     assert.include(
       affectedAddresses,
-      inner.address,
+      inner.address, // `inner.address` has the checksum applied
       "InnerContract should be an affected address"
     );
   });
 
   it("correctly identifies context in presence of libraries and immutables", async function () {
     let ImmutableTest = await abstractions.ImmutableTest.deployed();
-    let address = ImmutableTest.address;
+    let address = ImmutableTest.address.toLowerCase(); // `ImmutableTest.address` has the checksum applied
     let TestLibrary = await abstractions.TestLibrary.deployed();
     let libraryAddress = TestLibrary.address;
 
@@ -229,7 +229,7 @@ describe("Contexts", function () {
 
   it("correctly identifies context in presence of linkersymbols and immutables (Yul)", async function () {
     let ImmutableTest = await abstractions.YulImmutableTest.deployed();
-    let address = ImmutableTest.address;
+    let address = ImmutableTest.address.toLowerCase(); // `ImmutableTest.address` has the checksum applied
 
     let result = await ImmutableTest.sendTransaction({ data: "0x" });
     let txHash = result.tx;
@@ -250,7 +250,7 @@ describe("Contexts", function () {
 
   it("determines encoded constructor arguments for creations", async function () {
     let CreationTest = await abstractions.CreationTest.deployed();
-    let address = CreationTest.address;
+    let address = CreationTest.address.toLowerCase(); // `CreationTest.address` has the checksum applied
 
     let result = await CreationTest.run();
     let txHash = result.tx;

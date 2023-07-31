@@ -433,7 +433,9 @@ describe("Source mapping (location and jumps)", function () {
       //does not presently work)
       let txHash;
       try {
-        await instance.run({ gas: testDefaultTxGasLimit }); //this will throw because of the revert
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.run({ gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
