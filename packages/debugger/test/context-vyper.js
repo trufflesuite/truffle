@@ -85,7 +85,11 @@ describe("Contexts (Vyper)", function () {
     let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
-    assert.property(affectedInstances, address);
-    assert.equal(affectedInstances[address].contractName, "ImmutableTest");
+    // address will have the checksum applied
+    assert.property(affectedInstances, address.toLowerCase());
+    assert.equal(
+      affectedInstances[address.toLowerCase()].contractName,
+      "ImmutableTest"
+    );
   });
 });

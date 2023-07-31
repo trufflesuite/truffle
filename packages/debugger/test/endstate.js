@@ -75,7 +75,9 @@ describe("End State", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run({ gas: testDefaultTxGasLimit });
+      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+      //  https://github.com/web3/web3.js/issues/6317
+      await instance.run({ gasLimit: testDefaultTxGasLimit });
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

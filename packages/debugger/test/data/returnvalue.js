@@ -301,7 +301,9 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.fail({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+      //  https://github.com/web3/web3.js/issues/6317
+      await instance.fail({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -326,7 +328,9 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.failNoisy({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+      //  https://github.com/web3/web3.js/issues/6317
+      await instance.failNoisy({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -358,7 +362,9 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.panic({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+      //  https://github.com/web3/web3.js/issues/6317
+      await instance.panic({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -393,7 +399,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.local({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.local({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -433,7 +441,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.global({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.global({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -463,7 +473,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.foreign({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.foreign({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -493,7 +505,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.inlined({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.inlined({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -523,7 +537,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.makeCall({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.makeCall({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -553,7 +569,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguous({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.ambiguous({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -588,7 +606,9 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguousCall({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
+        //  https://github.com/web3/web3.js/issues/6317
+        await instance.ambiguousCall({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
