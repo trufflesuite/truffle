@@ -156,10 +156,10 @@ const migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-// TODO: un-skip once the following issue has been resolved:
-//  When an error is thrown during a transaction the object `error.receipt` is `undefined`.
-//  https://github.com/web3/web3.js/issues/6320
-//  To test run: cd packages/debugger && yarn test test/stacktrace.js
+// TODO: un-skip once the following issues have been resolved:
+//  1) https://github.com/web3/web3.js/issues/6320 (When an error is thrown during a transaction the object `error.receipt` is `undefined`)
+//  2) https://github.com/web3/web3.js/issues/6327 (soliditySha3 behave differently on 4.x when one of the values is BN)
+// To test run: cd packages/debugger && yarn test test/stacktrace.js
 describe.skip("Stack tracing", function () {
   let provider;
   let abstractions;
