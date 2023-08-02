@@ -52,16 +52,18 @@ describe("Graceful degradation when information is missing", function () {
     ];
     compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
   });
-  //todo web3js-migration see report line 521
-  it.skip("Correctly degrades on allocation when no node", async function () {
+
+  it("Correctly degrades on allocation when no node", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
 
     await runTestBody(mangledCompilations);
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(5000);
 
-  it.skip("Correctly degrades on allocation when error", async function () {
+  it("Correctly degrades on allocation when error", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -78,10 +80,11 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a struct definition
 
     await runTestBody(mangledCompilations, true);
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
-  //todo web3js-migration see report about validation (~530 line)
-  it.skip("Correctly degrades on decoding when error", async function () {
+  it("Correctly degrades on decoding when error", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -98,12 +101,15 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a enum definition
 
     await runTestBody(mangledCompilations, true);
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(3000);
 
-  //todo web3js-migration see report about validation (~530 line)
-  it.skip("Correctly abifies after finishing", async function () {
+  it("Correctly abifies after finishing", async function () {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
-  });
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+  }).timeout(5000);
 
   it("Correctly decodes decimals", async function () {
     this.timeout(10000);
