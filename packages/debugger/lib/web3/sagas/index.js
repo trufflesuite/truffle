@@ -97,7 +97,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
     //and BN doesn't allow for hex strings as input
   };
 
-  if (tx.to != null) {
+  if (tx.to != null && tx.to != undefined) {
     yield put(
       actions.receiveCall({
         address: tx.to,

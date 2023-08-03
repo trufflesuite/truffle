@@ -437,7 +437,7 @@ export class ProjectDecoder {
   ): Promise<CalldataDecoding> {
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
-    const isConstructor = transaction.to === null;
+    const isConstructor = !transaction.to;
     const context = await this.getContextByAddress(
       transaction.to,
       blockNumber,
@@ -708,7 +708,7 @@ export class ProjectDecoder {
     additionalContexts: Contexts.Contexts = {}
   ): Promise<Contexts.Context | null> {
     let code: string;
-    if (address !== null) {
+    if (address) {
       code = Conversion.toHexString(await this.getCode(address, block));
     } else if (constructorBinary) {
       code = constructorBinary;

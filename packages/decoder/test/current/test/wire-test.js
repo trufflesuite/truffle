@@ -52,8 +52,10 @@ describe("Over-the-wire decoding", function () {
 
   //todo web3.js-migration
   //Error: reference "x" resolves to more than one schema
-  it.skip("should correctly decode transactions and events", async function () {
-    this.timeout(4000);
+  it("should correctly decode transactions and events", async function () {
+    // TODO: investigate why timeout needed to be increased
+    //  issue: https://github.com/web3/web3.js/issues/6311
+    this.timeout(20000);
     let deployedContract = await abstractions.WireTest.new(
       true,
       "0xdeadbeef",
