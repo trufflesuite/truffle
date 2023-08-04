@@ -207,6 +207,7 @@ function prepareOutputSelection({ targets = [] }: { targets: Targets }) {
     "": ["legacyAST", "ast"],
     "*": [
       "abi",
+      "ast", //necessary to get Yul ASTs
       "metadata",
       "evm.bytecode.object",
       "evm.bytecode.linkReferences",
@@ -341,7 +342,7 @@ function processAllSources({
   if (!compilerOutput.sources) {
     const entries = Object.entries(sources);
     if (entries.length === 1) {
-      //special case for handling Yul
+      //special case for handling old Yul versions
       const [sourcePath, contents] = entries[0];
       return [
         {
@@ -365,6 +366,15 @@ function processAllSources({
       legacyAST,
       language
     };
+  }
+  //HACK: special case for handling a Yul compilation bug that causes
+  //the ID to be returned as 1 rather than 0
+  if (
+    language === "Yul" &&
+    outputSources.length === 2 &&
+    outputSources[0] === undefined
+  ) {
+    return [outputSources[1]];
   }
   return outputSources;
 }
