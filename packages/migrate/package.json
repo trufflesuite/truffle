@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.3.44",
+  "version": "3.3.45",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,12 +21,12 @@
   },
   "dependencies": {
     "@truffle/config": "^1.3.59",
-    "@truffle/db-loader": "^0.2.32",
-    "@truffle/deployer": "^3.3.23",
+    "@truffle/db-loader": "^0.2.33",
+    "@truffle/deployer": "^3.3.24",
     "@truffle/expect": "^0.1.6",
     "@truffle/interface-adapter": "^0.5.35",
-    "@truffle/require": "^2.1.39",
-    "@truffle/resolver": "^9.0.49",
+    "@truffle/require": "^2.1.40",
+    "@truffle/resolver": "^9.0.50",
     "glob": "^7.1.6",
     "inquirer": "8.2.4"
   },
