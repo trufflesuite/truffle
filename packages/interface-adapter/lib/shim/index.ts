@@ -63,9 +63,9 @@ export class Web3Shim extends Web3 {
     if (options) {
       this.networkType = options.networkType || "ethereum";
 
-      // if (options.provider) {
-      //   this.setProvider(options.provider);
-      // }
+      if (options.provider) {
+        this.setProvider(options.provider);
+      }
     } else {
       this.networkType = "ethereum";
     }
