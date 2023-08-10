@@ -25,8 +25,7 @@ module.exports = function(deployer) {
 }
 `;
 
-//todo web3js.migration `output` at 73 is `false`
-describe.skip("Stack tracing", function () {
+describe("Stack tracing", function () {
   let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
 

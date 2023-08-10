@@ -149,10 +149,15 @@ export class ProviderAdapter {
     }
     let result;
     if (isEip1193Provider(this.provider)) {
-      result = await this.provider.request({
+      const response = await this.provider.request({
         method,
         params
       });
+      // checking for `response.result` for web3.js providers.
+      //  related discussion at: https://github.com/web3/web3.js/issues/6345
+      result =
+        (response as JsonRpcResponseWithResult<JsonRpcResult>).result ||
+        response;
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
