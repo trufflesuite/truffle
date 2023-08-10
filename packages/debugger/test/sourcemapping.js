@@ -424,7 +424,9 @@ describe("Source mapping (location and jumps)", function () {
 
     //NOTE: this is same as previous test except for the transaction run;
     //not bothering to factor for now
-    it("is unaffected by overly large transfers", async function () {
+    // TODO: un-skip once the following issue have been resolved:
+    // https://github.com/web3/web3.js/issues/6320
+    it.skip("is unaffected by overly large transfers", async function () {
       const numExpected = 0;
 
       let instance = await abstractions.BadTransferTest.deployed();

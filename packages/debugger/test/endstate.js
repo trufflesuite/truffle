@@ -68,7 +68,9 @@ describe("End State", function () {
     compilations = prepared.compilations;
   });
 
-  it("correctly marks a failed transaction as failed", async function () {
+  // TODO: un-skip once the following issue have been resolved:
+  // https://github.com/web3/web3.js/issues/6320
+  it.skip("correctly marks a failed transaction as failed", async function () {
     const instance = await abstractions.FailureTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it

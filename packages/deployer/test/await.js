@@ -93,9 +93,8 @@ describe("Deployer (async / await)", function () {
     assert((await usesExample.other()) === Example.address);
   });
 
-  //todo web3js-migration this fails
-  // TypeError: Cannot read properties of undefined (reading 'args')
-  // at Context.<anonymous> (test/await.js:132:22)
+  // TODO: un-skip once the following issue have been resolved:
+  //  issue: https://github.com/web3/web3.js/issues/6312
   it.skip("deployer.link", async function () {
     const UsesLibrary = utils.getContract(
       "UsesLibrary",

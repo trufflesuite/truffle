@@ -527,7 +527,9 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes inner mappings correctly and keeps path info", async function () {
+  // TODO: un-skip once the following issue have been resolved:
+  // https://github.com/web3/web3.js/issues/6327
+  it.skip("Decodes inner mappings correctly and keeps path info", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.ComplexMappingTest.deployed();
