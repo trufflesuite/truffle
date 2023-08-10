@@ -22,6 +22,9 @@ export const ZERO_ADDRESS = "0x" + "00".repeat(ADDRESS_SIZE);
 export function keccak256(...args: any[]): BN {
   // debug("args %o", args);
 
+  // TODO: Remove the next line once https://github.com/web3/web3.js/issues/6327 is fixed
+  // this hacky workaround does not work for large numbers (above 53 bit)
+  args = args.map(v => (BN.isBN(v) ? v.toNumber() : v));
   const rawSha: string | null = Web3Utils.soliditySha3(...args);
   debug("rawSha %o", rawSha);
   let sha: string;

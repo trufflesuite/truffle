@@ -498,7 +498,9 @@ describe("Transaction log (visualizer)", function () {
     });
   });
 
-  it("Correctly logs a revert", async function () {
+  // TODO: un-skip once the following issue have been resolved:
+  // https://github.com/web3/web3.js/issues/6320
+  it.skip("Correctly logs a revert", async function () {
     this.timeout(12000);
     let instance = await abstractions.VizTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
