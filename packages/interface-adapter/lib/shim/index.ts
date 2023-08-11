@@ -15,8 +15,7 @@ const initInterface = async (web3Shim: Web3Shim) => {
       "fabric-evm": FabricEvmDefinition
     })
   );
-
-  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  await networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
 };
 
 // March 13, 2019 - Mike Seese:
@@ -76,6 +75,6 @@ export class Web3Shim extends Web3 {
 
   public setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
-    initInterface(this);
+    return initInterface(this);
   }
 }

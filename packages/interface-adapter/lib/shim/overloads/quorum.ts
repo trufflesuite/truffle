@@ -1,7 +1,7 @@
-import BN from "bn.js";
-import type { Web3Shim } from "..";
+import { Web3Shim } from "..";
 import type { EvmTransaction, Mutable } from "../../adapter/types";
-import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
+import { AbiCoder as EthersAbi, ParamType } from "ethers/utils/abi-coder";
+import { ETH_DATA_FORMAT, eth } from "web3";
 
 export const QuorumDefinition = {
   async initNetworkType(web3: Web3Shim) {
@@ -18,19 +18,20 @@ const overrides = {
   // saying that web3.eth.getBlock is a function and doesn't
   // have a `method` property, which it does
   getBlock: (web3: Web3Shim) => {
-    // @ts-ignore
-    const _oldBlockFormatter = web3.eth.getBlock.method.outputFormatter;
-    // @ts-ignore
-    web3.eth.getBlock.method.outputFormatter = (block: any) => {
-      const _oldTimestamp = block.timestamp;
-      const _oldGasLimit = block.gasLimit;
-      const _oldGasUsed = block.gasUsed;
+    const _oldGetBlock = web3.eth.getBlock;
+    web3.eth.getBlock = async (blockNumberOrTag: any, hydrated = false) => {
+      let block = await _oldGetBlock.call(
+        web3,
+        blockNumberOrTag,
+        hydrated,
+        ETH_DATA_FORMAT
+      );
 
-      // Quorum uses nanoseconds instead of seconds in timestamp
-      let timestamp = new BN(block.timestamp.slice(2), 16);
-      timestamp = timestamp.div(new BN(10).pow(new BN(9)));
-
-      block.timestamp = "0x" + timestamp.toString(16);
+      // TODO: double check why the following does not apply with web3.js 4.x.
+      //  (if the following is used, then the related test will fail)
+      // // Quorum uses nanoseconds instead of seconds in timestamp
+      // let timestamp = block.timestamp / BigInt(10 ** 9);
+      // block.timestamp = "0x" + timestamp.toString(16);
 
       // Since we're overwriting the gasLimit/Used later,
       // it doesn't matter what it is before the call
@@ -40,38 +41,19 @@ const overrides = {
       // gas limits
       block.gasLimit = "0x0";
       block.gasUsed = "0x0";
-
-      // @ts-ignore
-      let result = _oldBlockFormatter.call(web3.eth.getBlock.method, block);
-
-      // Perhaps there is a better method of doing this,
-      // but the raw hexstrings work for the time being
-      result.timestamp = _oldTimestamp;
-      result.gasLimit = _oldGasLimit;
-      result.gasUsed = _oldGasUsed;
-
-      return result;
+      return block;
     };
   },
 
   getTransaction: (web3: Web3Shim) => {
-    const _oldTransactionFormatter =
-      // @ts-ignore
-      web3.eth.getTransaction.method.outputFormatter;
+    const _oldGetTransaction = web3.eth.getTransaction;
 
-    // @ts-ignore
-    web3.eth.getTransaction.method.outputFormatter = (
-      tx: Mutable<EvmTransaction>
-    ) => {
+    web3.eth.getTransaction = (tx: Mutable<EvmTransaction> | any) => {
       const _oldGas = tx.gas;
 
       tx.gas = "0x0";
 
-      let result = _oldTransactionFormatter.call(
-        // @ts-ignore
-        web3.eth.getTransaction.method,
-        tx
-      );
+      let result = _oldGetTransaction.call(web3, tx, ETH_DATA_FORMAT);
 
       // Perhaps there is a better method of doing this,
       // but the raw hexstrings work for the time being
@@ -82,20 +64,17 @@ const overrides = {
   },
 
   getTransactionReceipt: (web3: Web3Shim) => {
-    const _oldTransactionReceiptFormatter =
-      // @ts-ignore
-      web3.eth.getTransactionReceipt.method.outputFormatter;
+    const _oldGetTransactionReceipt = web3.eth.getTransactionReceipt;
 
-    // @ts-ignore
-    web3.eth.getTransactionReceipt.method.outputFormatter = (receipt: any) => {
+    web3.eth.getTransactionReceipt = (receipt: any) => {
       const _oldGasUsed = receipt.gasUsed;
 
       receipt.gasUsed = "0x0";
 
-      let result = _oldTransactionReceiptFormatter.call(
-        // @ts-ignore
-        web3.eth.getTransactionReceipt.method,
-        receipt
+      let result = _oldGetTransactionReceipt.call(
+        web3,
+        receipt,
+        ETH_DATA_FORMAT
       );
 
       // Perhaps there is a better method of doing this,
@@ -126,13 +105,12 @@ const overrides = {
     // result method
     function Result() {}
 
-    web3.eth.abi.decodeParameters = (outputs: Array<any>, bytes: String) => {
+    const decodeParameters = (outputs: Array<any>, bytes: String) => {
       // if bytes is falsy, we'll pass 64 '0' bits to the ethers.js decoder.
       // the decoder will decode the 64 '0' bits as a 0 value.
       if (!bytes) bytes = "0".repeat(64);
       const res = ethersAbiCoder.decode(
-        //@ts-ignore 'mapTypes' not existing on type 'ABI'
-        web3.eth.abi.mapTypes(outputs),
+        eth.abi.mapTypes(outputs) as (string | ParamType)[],
         `0x${bytes.replace(/0x/i, "")}`
       );
       //@ts-ignore complaint regarding Result method
@@ -156,5 +134,6 @@ const overrides = {
 
       return returnValue;
     };
+    web3.eth.abi = { ...web3.eth.abi, decodeParameters };
   }
 };
