@@ -32,8 +32,7 @@ const expectedOutput = [{ name: "retVal", type: "uint256" }];
 const emptyByte = "";
 
 describe("Quorum decodeParameters Overload", function () {
-  // web3@4.0.0-alpha does not encode/decode empty or small length bytes values
-  it.skip("decodes an empty byte to a '0' string value w/ quorum=true", async function () {
+  it("decodes an empty byte to a '0' string value w/ quorum=true", async function () {
     const preparedGanache = await prepareGanache(true);
     try {
       const result = preparedGanache.web3Shim.eth.abi.decodeParameters(
