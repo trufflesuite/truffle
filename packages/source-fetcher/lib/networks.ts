@@ -173,7 +173,6 @@ export const networkNamesById: { [id: number]: string } = {
   787: "acala",
   595: "mandala-acala",
   686: "karura",
-  2021: "edgeware",
   2109: "exosama",
   2569: "techpay",
   10687: "point",

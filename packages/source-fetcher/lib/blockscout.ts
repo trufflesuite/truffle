@@ -194,7 +194,7 @@ const BlockscoutFetcher: FetcherConstructor = class BlockscoutFetcher
       "yuma-horizen": "yuma-explorer.horizen.io",
       "satoshichain": "satoshiscan.io",
       "testnet-lamina1": "testnet-explorer.lamina1.global",
-      "alpha3-taiko": "explorer.test.taiko.xyz",
+      "grimsvotn-taiko": "explorer.test.taiko.xyz",
       "wannsee-mxc": "wannsee-explorer.mxc.com"
     };
 
