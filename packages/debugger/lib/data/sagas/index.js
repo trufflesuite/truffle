@@ -7,7 +7,8 @@ import {
   prefixName,
   stableKeccak256,
   makeAssignment,
-  makePath
+  makePath,
+  peelAwayPotentialEVMNoOp
 } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
@@ -776,6 +777,8 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   const modifierDepth = yield select(data.current.modifierDepth);
   const inModifier = yield select(data.current.inModifier);
 
+  let peeledIndexDefinition;
+
   //why the loop? see the end of the block it heads for an explanatory
   //comment
   while (true) {
@@ -864,41 +867,19 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       }
     }
     //there's still one more reason we might have failed to decode it:
-    //certain (silent) type conversions aren't sourcemapped either.
+    //certain operations aren't sourcemapped because they're no-ops on
+    //the EVM side.  This includes, for instance, certain type conversions.
     //(thankfully, any type conversion that actually *does* something seems
     //to be sourcemapped.)  So if we've failed to decode it, we try again
-    //with the argument of the type conversion, if it is one; we leave
+    //with the argument of the no-op operation; we leave
     //indexValue undefined so the loop will continue
     //(note that this case is last for a reason; if this were earlier, it
     //would catch *non*-silent type conversions, which we want to just read
     //off the stack)
     else if (
-      indexDefinition.nodeType === "FunctionCall" &&
-      indexDefinition.kind === "typeConversion"
+      (peeledIndexDefinition = peelAwayPotentialEVMNoOp(indexDefinition))
     ) {
-      debug("type conversion case");
-      indexDefinition = indexDefinition.arguments[0];
-    }
-    //...also prior to 0.5.0, unary + was legal, which needs to be accounted
-    //for for the same reason
-    else if (
-      indexDefinition.nodeType === "UnaryOperation" &&
-      indexDefinition.operator === "+"
-    ) {
-      debug("unary + case");
-      indexDefinition = indexDefinition.subExpression;
-    }
-    //...and starting in 0.8.8, we'd better handle wrap and unwrap as well for
-    //the same reason!
-    else if (
-      indexDefinition.nodeType === "FunctionCall" &&
-      indexDefinition.kind === "functionCall" &&
-      ["wrap", "unwrap"].includes(
-        Codec.Ast.Utils.functionClass(indexDefinition.expression)
-      )
-    ) {
-      debug("wrap/unwrap case");
-      indexDefinition = indexDefinition.arguments[0];
+      indexDefinition = peeledIndexDefinition;
     }
     //otherwise, we've just totally failed to decode it, so we mark
     //indexValue as null (as distinct from undefined) to indicate this.  In

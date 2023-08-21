@@ -10,7 +10,8 @@ import {
   stableKeccak256,
   makePath,
   topLevelNodeTypes,
-  isTopLevelNode
+  isTopLevelNode,
+  peelAwayPotentialEVMNoOp
 } from "lib/helpers";
 
 import trace from "lib/trace/selectors";
@@ -1336,18 +1337,17 @@ const data = createSelectorTree({
         }
 
         //now: are we on the node corresponding to an argument, or, if
-        //it's a type conversion, its nested argument?
+        //it's a potential EVM no-op, its nested argument?
         if (index === undefined) {
           return false;
         }
         let argument = invocation.arguments[index];
-        while (argument.kind === "typeConversion") {
+        do {
           if (node.id === argument.id) {
             return true;
           }
-          argument = argument.arguments[0];
-        }
-        return node.id === argument.id;
+        } while ((argument = peelAwayPotentialEVMNoOp(argument)));
+        return false;
       }
     ),
 
