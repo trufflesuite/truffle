@@ -42,9 +42,5 @@
     "*.{js,ts,jsx,tsx}": "eslint --fix",
     "*.{js,ts,jsx,tsx,css,md}": "prettier --write",
     "packages/*/package.json": "node ./scripts/check-truffle-namespace-dependency-versions.js"
-  },
-  "resolutions": {
-    "web3-core": "^4.0.3",
-    "web3-net": "^4.0.3"
   }
 }

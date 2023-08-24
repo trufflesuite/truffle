@@ -26,6 +26,6 @@
     "@truffle/spinners": "^0.2.4",
     "debug": "^4.3.1",
     "emittery": "^0.4.1",
-    "web3-utils": "^4.0.3"
+    "web3-utils": "4.0.5"
   }
 }

@@ -23,11 +23,16 @@
     "watch": "tsc -w"
   },
   "types": "dist/index.d.ts",
+  "overrides": {
+    "web3-providers-ws": {
+      "@types/ws": "8.5.4"
+    }
+  },
   "dependencies": {
     "bn.js": "^5.1.3",
     "ethers": "^4.0.32",
-    "web3": "^4.0.3",
-    "web3-utils": "^4.0.3"
+    "web3": "4.1.1",
+    "web3-utils": "4.0.5"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
