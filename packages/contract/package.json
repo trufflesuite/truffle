@@ -30,9 +30,9 @@
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",
-    "web3": "^4.0.3",
-    "web3-eth-abi": "^4.0.3",
-    "web3-utils": "^4.0.3"
+    "web3": "4.1.1",
+    "web3-eth-abi": "4.1.1",
+    "web3-utils": "4.0.5"
   },
   "devDependencies": {
     "assert": "^2.0.0",
