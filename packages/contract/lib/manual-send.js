@@ -40,7 +40,7 @@ async function sendTransactionManual(web3, params, promiEvent) {
   debug("txHash: %s", txHash);
   receipt = translateReceipt(receipt);
   promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
-  return await handleResult(receipt, transaction.to == null);
+  return await handleResult(receipt, !transaction.to);
 }
 
 function handleError(error) {

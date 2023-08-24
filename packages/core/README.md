@@ -5,19 +5,18 @@
 [![Build Status](https://travis-ci.org/trufflesuite/truffle-core.svg?branch=master)](https://travis-ci.org/trufflesuite/truffle-core)
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
------------------------
-
+---
 
 Truffle is a development environment, testing framework and asset pipeline for Ethereum, aiming to make life as an Ethereum developer easier. With Truffle, you get:
 
-* Built-in smart contract compilation, linking, deployment and binary management.
-* Automated contract testing with Mocha and Chai.
-* Configurable build pipeline with support for custom build processes.
-* Scriptable deployment & migrations framework.
-* Network management for deploying to many public & private networks.
-* Interactive console for direct contract communication.
-* Instant rebuilding of assets during development.
-* External script runner that executes scripts within a Truffle environment.
+- Built-in smart contract compilation, linking, deployment and binary management.
+- Automated contract testing with Mocha and Chai.
+- Configurable build pipeline with support for custom build processes.
+- Scriptable deployment & migrations framework.
+- Network management for deploying to many public & private networks.
+- Interactive console for direct contract communication.
+- Instant rebuilding of assets during development.
+- External script runner that executes scripts within a Truffle environment.
 
 ### Install
 
@@ -51,7 +50,7 @@ There are many ways to contribute!
 
 Please see the main projects [CONTRIBUTING.md][1] for instructions on how to setup a Development Environment to work on Truffle itself.
 
-[1]:https://github.com/trufflesuite/truffle/blob/develop/CONTRIBUTING.md#development
+[1]: https://github.com/trufflesuite/truffle/blob/develop/CONTRIBUTING.md#development
 
 ### Contributors
 

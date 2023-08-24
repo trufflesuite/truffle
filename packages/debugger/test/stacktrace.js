@@ -194,8 +194,11 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      console.log("Before run");
+      await instance.run(0); //this will throw because of the revert
+      console.log("After run");
     } catch (error) {
+      console.log(error);
       txHash = error.receipt.transactionHash;
     }
     assert.isDefined(txHash, "should have errored and set txHash");
@@ -243,8 +246,9 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      await instance.run(0); //this will throw because of the revert
     } catch (error) {
+      console.log(error);
       txHash = error.receipt.transactionHash;
     }
     assert.isDefined(txHash, "should have errored and set txHash");

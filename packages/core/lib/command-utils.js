@@ -324,9 +324,11 @@ const displayGeneralHelp = options => {
         OS.EOL +
         "Usage: truffle <command> [options]"
     )
-    .epilog("See more at https://trufflesuite.com/docs/" + 
-      OS.EOL +
-      "For Ethereum JSON-RPC documentation see https://ganache.dev")
+    .epilog(
+      "See more at https://trufflesuite.com/docs/" +
+        OS.EOL +
+        "For Ethereum JSON-RPC documentation see https://ganache.dev"
+    )
     // showHelp prints using console.error, this won't log in a
     // child process - "log" forces it to use console.log instead
     .showHelp("log");
