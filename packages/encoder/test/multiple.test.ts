@@ -10,7 +10,6 @@ import * as Codec from "@truffle/codec";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import * as Abi from "@truffle/abi-utils";
 import Ganache from "ganache";
-import type { Provider } from "web3/providers";
 
 import BN from "bn.js";
 
@@ -25,21 +24,19 @@ const addresses: { [name: string]: string } = {
 beforeAll(async () => {
   //prepare contracts and artifacts
 
-  // need to ts-ignore due to a strict-null-checks issue in Ganache
-  // (https://github.com/trufflesuite/ganache/issues/2125)
-  // remove this ts-ignore once that issue is fixed
-  // @ts-ignore
-  const provider: Provider = Ganache.provider({
-    seed: "encoder",
-    gasLimit: 7000000,
+  const provider = Ganache.provider({
     logging: {
       quiet: true
+    },
+    wallet: {
+      seed: "encoder"
     },
     miner: {
       //note: we should ideally set strict here, but that causes a test
       //failure in the ENS testing; we should figure out what's up with
       //that so we can set strict
-      instamine: "eager"
+      instamine: "eager",
+      blockGasLimit: 7000000
     }
   });
 
