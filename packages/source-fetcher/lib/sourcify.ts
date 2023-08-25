@@ -3,7 +3,7 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
-import { removeLibraries, InvalidNetworkError } from "./common";
+import { removeLibraries } from "./common";
 import { networkNamesById, networksByName } from "./networks";
 import retry from "async-retry";
 
@@ -164,12 +164,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   constructor(networkId: number) {
     this.networkId = networkId;
     this.networkName = networkNamesById[networkId];
-    if (
-      this.networkName === undefined ||
-      !SourcifyFetcher.supportedNetworks.has(this.networkName)
-    ) {
-      throw new InvalidNetworkError(networkId, "sourcify");
-    }
+    //we no longer check if the network is supported; the list is now only
+    //used for if you explicitly ask
   }
 
   static getSupportedNetworks(): Types.SupportedNetworks {
