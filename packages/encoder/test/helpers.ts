@@ -13,6 +13,7 @@ import TruffleConfig from "@truffle/config";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
 import WorkflowCompile from "@truffle/workflow-compile";
+import type { EthereumProvider } from "ganache";
 //sorry, some untyped imports here :-/
 
 const Deployer = require("@truffle/deployer");
@@ -45,9 +46,9 @@ interface Prepared {
 export async function prepareContracts(
   sources: StringMap,
   addresses: StringMap,
-  provider: Provider
+  provider: Provider | EthereumProvider
 ): Promise<Prepared> {
-  const from = (await new Web3(provider).eth.getAccounts())[0];
+  const from = (await new Web3(provider as Provider).eth.getAccounts())[0]; //sorry
 
   const config = createSandbox();
   config.compilers.solc.version = "0.8.9";

@@ -14,7 +14,7 @@ function prepareGanache(quorumEnabled: boolean): {
   interfaceAdapter: InterfaceAdapter;
 } {
   const provider = Ganache.provider({
-    time: genesisBlockTime,
+    chain: { time: genesisBlockTime },
     logging: {
       quiet: true
     },

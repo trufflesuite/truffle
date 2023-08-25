@@ -10,7 +10,7 @@ export const formatLinkReferences = (
    */
   linkReferences: {
     [sourcePath: string]: {
-      [libraryName: string]: Array<{ start: 0; length: 20 }>;
+      [libraryName: string]: Array<{ start: number; length: 20 }>;
     };
   }
 ): Common.LinkReference[] => {
