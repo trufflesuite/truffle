@@ -124,7 +124,7 @@ export interface FetchAndCompileOptions {
 
 ### `getSupportedNetworks`
 
-If you want a list of supported networks, you can call `getSupportedNetworks`:
+If you want a (potentially partial) list of supported networks, you can call `getSupportedNetworks`:
 
 ```ts
 import { getSupportedNetworks } from "@truffle/fetch-and-compile";
@@ -139,6 +139,8 @@ const networks = getSupportedNetworks();
 //   ...
 // }
 ```
+
+Note that there may be additional unlisted supported networks.
 
 You can also pass in a list of fetchers if you want to restrict the output to the networks
 supported by the fetchers you list. (You can also pass in a config and it will use the `sourceFetchers`
