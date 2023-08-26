@@ -25752,7 +25752,7 @@ web3-rpc-methods@^1.1.1:
     web3-types "^1.1.1"
     web3-validator "^2.0.1"
 
-web3-types@^1.0.2, web3-types@^1.1.1:
+web3-types@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/web3-types/-/web3-types-1.1.1.tgz#d3df5e9839bf70a19b070313fd3d9ee07fbffbf3"
   integrity sha512-bXmIPJi/NPed43JBcya71gT+euZSMvfQx6NYv8G97PSNxR1HWwANYBKbamTZvzBbq10QCwQLh0hZw3tyOXuPFA==
@@ -25781,7 +25781,7 @@ web3-utils@^1.0.0-beta.31:
     underscore "1.9.1"
     utf8 "3.0.0"
 
-web3-validator@^2.0.1:
+web3-validator@2.0.1, web3-validator@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/web3-validator/-/web3-validator-2.0.1.tgz#8da5b9f871c0aac7677f4a5eca46b4fee9b6d0ff"
   integrity sha512-RIdZCNhceBEOQpmzcEk6K3qqLHRfDIMkg2PJe7yllpuEc0fa0cmUZgGUl1FEnioc5Rx9GBEE8eTllaneIAiiQQ==
