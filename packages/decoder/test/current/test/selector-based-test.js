@@ -3,7 +3,7 @@ const assert = require("chai").assert;
 const sinon = require("sinon");
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const axios = require("axios");
 
 const Decoder = require("../../..");

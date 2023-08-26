@@ -21,7 +21,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "web3-types": "^1.0.2"
+    "web3-types": "^1.1.1"
   },
   "devDependencies": {
     "@types/assert": "^1.4.2",
