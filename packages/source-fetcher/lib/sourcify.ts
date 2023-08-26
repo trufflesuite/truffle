@@ -51,6 +51,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "goerli-optimistic",
     "goerli-bedrock-optimistic",
     "arbitrum",
+    "nova-arbitrum",
     "rinkeby-arbitrum", //can no longer verify but can still fetch existing
     "goerli-arbitrum",
     "polygon",
@@ -135,7 +136,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "dogechain",
     "cronos",
     "elysium",
-    "alpha3-taiko",
+    "grimsvotn-taiko",
+    "eldfell-taiko",
     "bitkub",
     "testnet-bitkub",
     "zora",
@@ -145,11 +147,15 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "kava",
     "testnet-kava",
     "filecoin",
+    "calibration-filecoin",
     "zilliqa",
     "testnet-zilliqa",
     "testnet-siberium",
     "map",
-    "makalu-map"
+    "makalu-map",
+    "fantom",
+    "beam",
+    "edgeware"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
     //excluding ethereum classic for same reason

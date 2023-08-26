@@ -19,7 +19,7 @@ describe("DashboardServer", () => {
   let clientOptions: DashboardMessageBusClientOptions;
 
   beforeAll(async () => {
-    ganacheProvider = Ganache.provider<"ethereum">({
+    ganacheProvider = Ganache.provider({
       logging: { quiet: true }
     });
   });

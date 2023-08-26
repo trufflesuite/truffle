@@ -110,8 +110,8 @@ export const networkNamesById: { [id: number]: string } = {
   1149: "symplexia",
   2000: "dogechain",
   1339: "elysium",
-  //taiko doesn't seem to have a mainnet yet
-  167005: "alpha3-taiko",
+  167005: "grimsvotn-taiko",
+  167006: "eldfell-taiko",
   96: "bitkub",
   25925: "testnet-bitkub",
   7777777: "zora",
@@ -121,6 +121,7 @@ export const networkNamesById: { [id: number]: string } = {
   2222: "kava",
   2221: "testnet-kava",
   314: "filecoin",
+  314159: "calibration-filecoin",
   32769: "zilliqa",
   33101: "testnet-zilliqa",
   111111: "siberium", //not presently supported by either fetcher, but...
@@ -128,7 +129,10 @@ export const networkNamesById: { [id: number]: string } = {
   59144: "linea",
   59140: "goerli-linea",
   22776: "map",
-  212: "makalu-map"
+  212: "makalu-map",
+  2021: "edgeware",
+  //beam doesn't appear to have a mainnet yet?
+  13337: "testnet-beam"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic for same reason

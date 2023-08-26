@@ -47,7 +47,7 @@
     "@types/bn.js": "^5.1.0",
     "@types/debug": "^4.1.5",
     "chai": "^4.2.0",
-    "ganache": "7.9.0",
+    "ganache": "7.9.1",
     "lodash": "^4.17.21",
     "mocha": "10.1.0",
     "sinon": "^9.0.2",

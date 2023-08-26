@@ -1,6 +1,27 @@
 import * as Codec from "@truffle/codec";
 import stringify from "json-stable-stringify";
 
+export function peelAwayPotentialEVMNoOp(node) {
+  if (node.nodeType === "FunctionCall" && node.kind === "typeConversion") {
+    //some type conversions are no-ops;
+    //not all are, but it's not worth the trouble to detect which ones,
+    //the places where this is used no it's only checking for *potential* no-ops
+    return node.arguments[0];
+  } else if (node.nodeType === "UnaryOperation" && node.operator === "+") {
+    //prior to 0.5.0, unary + was legal, which was a no-op
+    return node.subExpression;
+  } else if (
+    node.nodeType === "FunctionCall" &&
+    node.kind === "functionCall" &&
+    ["wrap", "unwrap"].includes(Codec.Ast.Utils.functionClass(node.expression))
+  ) {
+    //starting in 0.8.8, there are wrap and unwrap which are no-ops
+    return node.arguments[0];
+  } else {
+    return null;
+  }
+}
+
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {
   const skippedTypes = [
