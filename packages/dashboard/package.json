@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.2",
+  "version": "0.4.3",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -39,14 +39,14 @@
     "@mantine/prism": "^5.10.5",
     "@truffle/codec": "^0.17.2",
     "@truffle/codec-components": "^0.1.4",
-    "@truffle/config": "^1.3.59",
+    "@truffle/config": "^1.3.60",
     "@truffle/dashboard-message-bus": "^0.1.11",
     "@truffle/dashboard-message-bus-client": "^0.1.11",
     "@truffle/dashboard-message-bus-common": "^0.1.6",
     "@truffle/debug-utils": "^6.0.56",
-    "@truffle/debugger": "^12.1.2",
-    "@truffle/decoder": "^6.1.2",
-    "@truffle/fetch-and-compile": "^0.5.53",
+    "@truffle/debugger": "^12.1.3",
+    "@truffle/decoder": "^6.1.3",
+    "@truffle/fetch-and-compile": "^0.5.54",
     "cors": "^2.8.5",
     "css-loader": "^6.8.1",
     "debug": "^4.3.2",

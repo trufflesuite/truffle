@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "9.0.50",
+  "version": "9.0.51",
   "main": "dist/lib/index.js",
   "files": [
     "dist",
@@ -28,11 +28,11 @@
   "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@ganache/console.log": "0.3.0",
-    "@truffle/compile-solidity": "^6.0.76",
-    "@truffle/contract": "^4.6.28",
+    "@truffle/compile-solidity": "^6.0.77",
+    "@truffle/contract": "^4.6.29",
     "@truffle/contract-sources": "^0.2.0",
     "@truffle/expect": "^0.1.6",
-    "@truffle/provisioner": "^0.2.82",
+    "@truffle/provisioner": "^0.2.83",
     "abi-to-sol": "^0.7.0",
     "debug": "^4.3.1",
     "detect-installed": "^2.0.4",
