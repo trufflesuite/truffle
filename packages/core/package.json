@@ -78,7 +78,7 @@
     "node-emoji": "^1.8.1",
     "original-require": "^1.0.1",
     "sane": "^4.0.2",
-    "semver": "7.5.2",
+    "semver": "7.5.4",
     "source-map-support": "^0.5.19",
     "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
