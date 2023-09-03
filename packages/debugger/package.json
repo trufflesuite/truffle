@@ -34,7 +34,7 @@
     "redux": "^3.7.2",
     "redux-saga": "1.0.0",
     "reselect-tree": "^1.3.7",
-    "semver": "7.5.2",
+    "semver": "^7.5.4",
     "web3": "1.10.0",
     "web3-eth-abi": "1.10.0"
   },
