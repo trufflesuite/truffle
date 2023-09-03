@@ -36,15 +36,17 @@ export function rangeContainsAtLeast(
     semver.gte(range, comparisonVersion, {
       includePrerelease: true,
       loose: true
-    })
+    } as semver.Options)
   );
   //the following line doesn't, despite the flag, but does work with version ranges
   const rangeAtLeast = !!(
-    semver.validRange(range, { loose: true }) &&
-    !semver.gtr(comparisonVersion, range, {
-      includePrerelease: true,
-      loose: true
-    }) //intersects will throw if given undefined so must ward against
+    (
+      semver.validRange(range, { loose: true }) &&
+      !semver.gtr(comparisonVersion, range, {
+        includePrerelease: true,
+        loose: true
+      })
+    ) //intersects will throw if given undefined so must ward against
   );
   return individualAtLeast || rangeAtLeast;
 }
