@@ -40,5 +40,8 @@
     "@truffle/error": "^0.2.1",
     "@truffle/spinners": "^0.2.4",
     "chalk": "^2.4.2"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

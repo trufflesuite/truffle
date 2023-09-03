@@ -105,5 +105,8 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "namespace": "consensys"
+  "namespace": "consensys",
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
+  }
 }
