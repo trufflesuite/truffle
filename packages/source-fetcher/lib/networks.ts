@@ -37,6 +37,12 @@ export const networkNamesById: { [id: number]: string } = {
   335: "testnet-dfk-avalance",
   432204: "dexalot-avalanche",
   432201: "testnet-dexalot-avalanche",
+  4337: "beam-avalanche",
+  13337: "testnet-beam-avalanche",
+  2037: "kiwi-avalanche",
+  78430: "amplify-avalanche",
+  78431: "bulletin-avalanche",
+  78432: "conduit-avalanche",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -131,8 +137,8 @@ export const networkNamesById: { [id: number]: string } = {
   22776: "map",
   212: "makalu-map",
   2021: "edgeware",
-  //beam doesn't appear to have a mainnet yet?
-  13337: "testnet-beam"
+  333000333: "meld",
+  222000222: "kanazawa-meld"
   //I'm not including crystaleum as it has network ID different from chain ID
   //not including kekchain for the same reason
   //not including ethereum classic for same reason
