@@ -30,12 +30,12 @@ export class VersionRange {
       compilerRoots: [
         // this order of url root preference was recommended by Cameel from the
         // Solidity team here -- https://github.com/trufflesuite/truffle/pull/5008
-        "https://relay.trufflesuite.com/solc/emscripten-wasm32/",
         "https://binaries.soliditylang.org/emscripten-wasm32/",
-        "https://relay.trufflesuite.com/solc/emscripten-asmjs/",
         "https://binaries.soliditylang.org/emscripten-asmjs/",
         "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/"
+        "https://ethereum.github.io/solc-bin/bin/",
+        "https://relay.trufflesuite.com/solc/emscripten-wasm32/",
+        "https://relay.trufflesuite.com/solc/emscripten-asmjs/"
       ]
     };
     this.config = Object.assign({}, defaultConfig, options);
