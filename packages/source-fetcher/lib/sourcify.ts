@@ -73,6 +73,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-dfk-avalanche",
     "dexalot-avalanche",
     "testnet-dexalot-avalanche",
+    "beam-avalanche",
+    "testnet-beam-avalanche",
+    "kiwi-avalanche",
+    "amplify-avalanche",
+    "bulletin-avalanche",
+    "conduit-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -154,8 +160,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "map",
     "makalu-map",
     "fantom",
-    "beam",
-    "edgeware"
+    "edgeware",
+    "meld",
+    "kanazawa-meld"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
     //excluding ethereum classic for same reason
