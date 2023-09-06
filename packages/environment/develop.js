@@ -1,4 +1,4 @@
-const { IPC } = require("node-ipc");
+const { IPC } = require("@achrinza/node-ipc");
 const path = require("path");
 const { spawn } = require("child_process");
 const debug = require("debug");
