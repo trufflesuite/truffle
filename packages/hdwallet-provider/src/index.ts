@@ -7,7 +7,7 @@ import * as EthUtil from "ethereumjs-util";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
-import ProviderEngine from "web3-provider-engine";
+import ProviderEngine from "@metamask/json-rpc-engine";
 // @ts-ignore - web3-provider-engine doesn't have declaration files for these subproviders
 import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
 // @ts-ignore
@@ -99,7 +99,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-          "ws, or wss protocol.",
+            "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -119,7 +119,7 @@ class HDWalletProvider {
     if (this.#addresses.length === 0) {
       throw new Error(
         `Could not create addresses from your mnemonic or private key(s). ` +
-        `Please check that your inputs are correct.`
+          `Please check that your inputs are correct.`
       );
     }
 

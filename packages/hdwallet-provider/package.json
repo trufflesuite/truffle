@@ -23,21 +23,24 @@
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
+    "@metamask/eth-json-rpc-middleware": "^11.0.1",
+    "@metamask/eth-json-rpc-provider": "^2.0.0",
     "@metamask/eth-sig-util": "4.0.1",
+    "@metamask/json-rpc-engine": "^7.1.1",
+    "@metamask/utils": "^8.1.0",
     "@truffle/hdwallet": "^0.1.4",
     "@types/ethereum-protocol": "^1.0.0",
     "@types/web3": "1.0.20",
-    "@types/web3-provider-engine": "^14.0.0",
     "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
-    "web3": "1.10.0",
-    "web3-provider-engine": "16.0.3"
+    "nonce-tracker": "^1.1.0"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
+    "eth-json-rpc-filters": "^6.0.0",
     "ganache": "7.9.1",
     "mocha": "10.1.0",
     "ts-node": "10.7.0",
