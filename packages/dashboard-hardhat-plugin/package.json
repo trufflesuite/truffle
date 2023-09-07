@@ -60,7 +60,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a75816b8744eb4bb390866b45b4b7843c630abe3",
   "engines": {
     "node": "^16.20 || ^18.16 || >=20"
   }
