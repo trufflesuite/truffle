@@ -1,6 +1,6 @@
 {
   "name": "@truffle/contract-sources",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utility for finding all contracts within a directory",
   "main": "index.js",
   "scripts": {
