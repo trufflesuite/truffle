@@ -124,5 +124,8 @@
       "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
       "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
     ]
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }
