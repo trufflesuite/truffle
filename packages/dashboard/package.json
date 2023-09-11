@@ -32,7 +32,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@emotion/react": "^11.9.3",
+    "@emotion/react": "^11.11.1",
     "@mantine/core": "^5.10.5",
     "@mantine/hooks": "^5.10.5",
     "@mantine/notifications": "^5.10.5",
