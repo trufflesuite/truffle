@@ -62,8 +62,8 @@
     "stream-buffers": "^3.0.1",
     "tmp": "^0.2.1",
     "web3": "1.10.0",
-    "webpack": "^5.73.0",
-    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack": "^5.88.2",
+    "webpack-bundle-analyzer": "^4.9.1",
     "webpack-cli": "^4.10.0",
     "yargs": "^13.3.0"
   },
