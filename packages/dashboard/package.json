@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.4",
+  "version": "0.4.5",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -44,9 +44,9 @@
     "@truffle/dashboard-message-bus-client": "^0.1.12",
     "@truffle/dashboard-message-bus-common": "^0.1.7",
     "@truffle/debug-utils": "^6.0.57",
-    "@truffle/debugger": "^12.1.4",
-    "@truffle/decoder": "^6.1.4",
-    "@truffle/fetch-and-compile": "^0.5.55",
+    "@truffle/debugger": "^12.1.5",
+    "@truffle/decoder": "^6.1.5",
+    "@truffle/fetch-and-compile": "^0.5.56",
     "cors": "^2.8.5",
     "css-loader": "^6.8.1",
     "debug": "^4.3.2",

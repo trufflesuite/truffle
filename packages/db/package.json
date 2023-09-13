@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.35",
+  "version": "2.0.36",
   "main": "dist/src/index.js",
   "files": [
     "dist",
@@ -58,8 +58,8 @@
     "@graphql-tools/utils": "^8.5.5",
     "@truffle/compile-common": "^0.9.8",
     "@truffle/contract-schema": "^3.4.16",
-    "@truffle/environment": "^0.2.159",
-    "@truffle/resolver": "^9.0.52",
+    "@truffle/environment": "^0.2.160",
+    "@truffle/resolver": "^9.0.53",
     "@types/debug": "^4.1.5",
     "@types/express": "^4.16.0",
     "@types/graphql": "^14.5.0",
