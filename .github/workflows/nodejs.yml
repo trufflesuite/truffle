@@ -49,7 +49,7 @@ jobs:
     - run: yarn install
     - run: test -z "$(git diff)" || (echo 'Did you check in a generated file to source control?  Please remove it if so'; false)
 
-    - run: yarn depcheck
+    - run: yarn lint:dependencies
 
     - run: ${{ matrix.env }} yarn ci
       env:

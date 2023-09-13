@@ -2,19 +2,23 @@
   "private": true,
   "scripts": {
     "bootstrap": "yarn exec lerna bootstrap",
+    "check-truffle-namespace-dependency-versions": "node ./scripts/check-truffle-namespace-dependency-versions.js",
+    "ci": "./scripts/ci.sh",
+    "deduplicate": "yarn-deduplicate --strategy fewer; yarn install --ignore-scripts",
+    "deduplicate:check": "yarn deduplicate -l -f",
+    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test --ignore @truffle/codec-components -- --missing .",
+    "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "docs": "lerna run docs --stream --concurrency=1",
+    "geth": "./scripts/geth.sh",
+    "lint:dependencies": "yarn deduplicate:check && yarn depcheck",
+    "lint:dependencies:fix": "yarn deduplicate && yarn depcheck",
     "prepare": "lerna run prepare --stream --concurrency=1 && husky install && yarn docs",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
     "prepare-release": "./scripts/prepare-release.sh",
-    "test": "lerna run test --stream --concurrency=1 -- --colors",
-    "ci": "./scripts/ci.sh",
-    "geth": "./scripts/geth.sh",
-    "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "solc-bump": "node ./scripts/solc-bump.js",
-    "update": "lernaupdate",
-    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test --ignore @truffle/codec-components -- --missing .",
-    "check-truffle-namespace-dependency-versions": "node ./scripts/check-truffle-namespace-dependency-versions.js"
+    "test": "lerna run test --stream --concurrency=1 -- --colors",
+    "update": "lernaupdate"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.6.0",
@@ -31,7 +35,8 @@
     "nyc": "15.1.0",
     "prettier": "^2.8.8",
     "prs-merged-since": "^1.1.0",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "yarn-deduplicate": "^6.0.2"
   },
   "workspaces": {
     "packages": [
