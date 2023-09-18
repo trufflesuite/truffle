@@ -6,7 +6,7 @@
     "ci": "./scripts/ci.sh",
     "deduplicate": "yarn-deduplicate --strategy fewer; yarn install --ignore-scripts",
     "deduplicate:check": "yarn deduplicate -l -f",
-    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test --ignore @truffle/codec-components -- --missing .",
+    "depcheck": "lerna exec --stream --no-bail dependency-check --ignore @truffle/compile-solidity-tests --ignore @truffle/contract-tests --ignore @truffle/dashboard-message-bus-e2e-test --ignore @truffle/codec-components -- --ignore-module node:* --missing .",
     "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "docs": "lerna run docs --stream --concurrency=1",
     "geth": "./scripts/geth.sh",
