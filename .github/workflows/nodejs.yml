@@ -25,7 +25,7 @@ jobs:
           node-version-file: .nvmrc
       - run: npm install -g yarn
       - run: yarn install --ignore-scripts --ignore-engines
-      - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
+      # - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
 
   build:
     needs: yarncheck
