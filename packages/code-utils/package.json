@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.3",
+  "version": "3.0.4",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
@@ -33,5 +33,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

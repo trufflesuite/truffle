@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.35",
+  "version": "0.5.37",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -47,5 +47,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

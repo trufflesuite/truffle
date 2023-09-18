@@ -3,7 +3,7 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
-import { removeLibraries, InvalidNetworkError } from "./common";
+import { removeLibraries } from "./common";
 import { networkNamesById, networksByName } from "./networks";
 import retry from "async-retry";
 
@@ -73,6 +73,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "testnet-dfk-avalanche",
     "dexalot-avalanche",
     "testnet-dexalot-avalanche",
+    "beam-avalanche",
+    "testnet-beam-avalanche",
+    "kiwi-avalanche",
+    "amplify-avalanche",
+    "bulletin-avalanche",
+    "conduit-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -154,8 +160,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "map",
     "makalu-map",
     "fantom",
-    "beam",
-    "edgeware"
+    "edgeware",
+    "meld",
+    "kanazawa-meld"
     //I'm excluding crystaleum as it has network ID different from chain ID
     //excluding kekchain for the same reason
     //excluding ethereum classic for same reason
@@ -164,12 +171,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   constructor(networkId: number) {
     this.networkId = networkId;
     this.networkName = networkNamesById[networkId];
-    if (
-      this.networkName === undefined ||
-      !SourcifyFetcher.supportedNetworks.has(this.networkName)
-    ) {
-      throw new InvalidNetworkError(networkId, "sourcify");
-    }
+    //we no longer check if the network is supported; the list is now only
+    //used for if you explicitly ask
   }
 
   static getSupportedNetworks(): Types.SupportedNetworks {

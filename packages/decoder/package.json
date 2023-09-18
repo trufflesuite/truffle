@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.1.2",
+  "version": "6.1.5",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -26,23 +26,23 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@ensdomains/ensjs": "^2.1.0",
-    "@truffle/abi-utils": "^1.0.2",
-    "@truffle/codec": "^0.17.2",
-    "@truffle/compile-common": "^0.9.7",
-    "@truffle/encoder": "^1.0.24",
-    "@truffle/source-map-utils": "^1.3.118",
+    "@truffle/abi-utils": "^1.0.3",
+    "@truffle/codec": "^0.17.3",
+    "@truffle/compile-common": "^0.9.8",
+    "@truffle/encoder": "^1.0.27",
+    "@truffle/source-map-utils": "^1.3.119",
     "async-retry": "^1.3.1",
-    "axios": "1.2.4",
+    "axios": "1.5.0",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "web3-utils": "4.0.5"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.59",
-    "@truffle/contract-schema": "^3.4.15",
-    "@truffle/migrate": "^3.3.45",
-    "@truffle/provider": "^0.3.11",
-    "@truffle/workflow-compile": "^4.0.68",
+    "@truffle/config": "^1.3.61",
+    "@truffle/contract-schema": "^3.4.16",
+    "@truffle/migrate": "^3.3.48",
+    "@truffle/provider": "^0.3.13",
+    "@truffle/workflow-compile": "^4.0.71",
     "@types/big.js": "^6.0.2",
     "@types/bn.js": "^5.1.0",
     "@types/debug": "^4.1.5",
@@ -66,5 +66,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

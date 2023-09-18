@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version-file: .nvmrc
       - run: npm install -g yarn
       - run: yarn install --ignore-scripts --ignore-engines
       - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
@@ -32,7 +32,8 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [16.x, 18.x, 20.x]
+        # TODO: unpin to 20.x once 20.7 has ben released
+        node-version: [16.x, 18.x, 20.5]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
@@ -47,9 +48,9 @@ jobs:
 
     - run: yarn install
     - run: test -z "$(git diff)" || (echo 'Did you check in a generated file to source control?  Please remove it if so'; false)
-    
-    - run: yarn depcheck
-    
+
+    - run: yarn lint:dependencies
+
     - run: ${{ matrix.env }} yarn ci
       env:
         CI: true

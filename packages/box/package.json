@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.79",
+  "version": "2.1.81",
   "main": "dist/box.js",
   "scripts": {
     "build": "tsc",
@@ -21,8 +21,8 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/config": "^1.3.59",
-    "axios": "1.2.4",
+    "@truffle/config": "^1.3.61",
+    "axios": "1.5.0",
     "debug": "^4.3.1",
     "download-git-repo": "^3.0.2",
     "fs-extra": "^9.1.0",
@@ -48,5 +48,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

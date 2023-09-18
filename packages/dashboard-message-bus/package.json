@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.11",
+  "version": "0.1.12",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -34,11 +34,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/dashboard-message-bus-common": "^0.1.6",
+    "@truffle/dashboard-message-bus-common": "^0.1.7",
     "@types/ws": "^7.2.0",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
     "promise.any": "^2.0.2",
     "ws": "^7.2.0"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

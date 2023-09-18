@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.196",
+  "version": "4.0.199",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -22,12 +22,12 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/contract-schema": "^3.4.15",
+    "@truffle/contract-schema": "^3.4.16",
     "fs-extra": "^9.1.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@truffle/contract": "^4.6.28",
+    "@truffle/contract": "^4.6.31",
     "@types/fs-extra": "^8.1.0",
     "@types/lodash": "^4.14.179",
     "@types/node": "~12.12.0",
@@ -44,5 +44,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

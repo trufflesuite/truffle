@@ -1,6 +1,6 @@
 {
   "name": "@truffle/error",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Simple module that allows native Error objects to be extended",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -33,5 +33,8 @@
   },
   "devDependencies": {
     "typescript": "^4.9.5"
+  },
+  "engines": {
+    "node": "^16.20 || ^18.16 || >=20"
   }
 }

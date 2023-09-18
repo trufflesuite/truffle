@@ -35,7 +35,7 @@ export function rangeContainsAtLeast(
     semver.valid(range, { loose: true }) &&
     semver.gte(range, comparisonVersion, {
       loose: true
-    })
+    } as semver.Options)
   );
   //the following line doesn't, despite the flag, but does work with version ranges
   const rangeAtLeast = !!(
