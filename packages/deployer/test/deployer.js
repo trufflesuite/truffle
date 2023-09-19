@@ -202,8 +202,7 @@ describe("Deployer (sync)", function () {
       assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    //todo web3js-migration this fails investigate
-    it.skip("deployer.link", async function () {
+    it("deployer.link", async function () {
       const migrate = function () {
         deployer.deploy(IsLibrary);
         deployer.link(IsLibrary, UsesLibrary);
@@ -283,7 +282,7 @@ describe("Deployer (sync)", function () {
       this.timeout(15000);
       const startBlock = await web3.eth.getBlockNumber();
 
-      utils.startAutoMine(web3, 1500);
+      utils.startAutoMine(web3, 2000);
 
       const migrate = function () {
         deployer.deploy(IsLibrary);
@@ -300,15 +299,14 @@ describe("Deployer (sync)", function () {
       const libReceipt = await web3.eth.getTransactionReceipt(
         IsLibrary.transactionHash
       );
-      // const exampleReceipt = await web3.eth.getTransactionReceipt(
-      //   Example.transactionHash
-      // );
+      const exampleReceipt = await web3.eth.getTransactionReceipt(
+        Example.transactionHash
+      );
 
       // The first confirmation is the block that accepts the tx. Then we wait two more.
       // Then Example is deployed in the consequent block.
-      assert(libReceipt.blockNumber === startBlock + BigInt(1));
-      //todo web3js-migration this fails
-      // assert(exampleReceipt.blockNumber === libReceipt.blockNumber + BigInt(3));
+      assert(libReceipt.blockNumber === startBlock + 1n);
+      assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3n);
 
       deployer.confirmationsRequired = 0;
     });
