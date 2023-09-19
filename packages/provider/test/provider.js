@@ -82,7 +82,7 @@ describe("Provider", function () {
     }
   });
 
-  it.skip("accepts a provider instance", async () => {
+  it("accepts a provider instance", async () => {
     const provider = Provider.create({
       provider: Ganache.provider()
     });
@@ -94,7 +94,7 @@ describe("Provider", function () {
     }
   });
 
-  it.skip("accepts a function that returns a provider instance", async () => {
+  it("accepts a function that returns a provider instance", async () => {
     const provider = Provider.create({
       provider: function () {
         return Ganache.provider();
@@ -108,7 +108,7 @@ describe("Provider", function () {
     }
   });
 
-  it.skip("fails when given a bogus provider url", async () => {
+  it("fails when given a bogus provider url", async () => {
     const provider = Provider.create({
       provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
     });
