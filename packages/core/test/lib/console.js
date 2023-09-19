@@ -3,7 +3,6 @@ const path = require("path");
 const { Console } = require("../../lib/console");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const { Web3 } = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
@@ -14,12 +13,11 @@ describe("Console", function () {
     let provider;
 
     before(function () {
-      provider = new Web3.providers.WebsocketProvider("ws://localhost:666");
+      // no need to provide an actual provider for these tests
+      // we just need to make sure that the provider is not undefined
+      // we already mock the interfaceAdapter.getAccounts method
+      provider = {};
     });
-    after(function () {
-      provider.disconnect();
-    });
-
     beforeEach(function () {
       consoleOptions = new Config().with({
         network: "funTimeNetwork",
