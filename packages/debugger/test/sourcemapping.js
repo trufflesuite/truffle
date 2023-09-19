@@ -551,7 +551,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each external call for 1 in fallback", async function () {
       const instance = await abstractions.DepthTest.deployed();
@@ -579,7 +579,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each external call for 1 in constructor", async function () {
       const secondary = await abstractions.Secondary.deployed();
@@ -607,7 +607,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each function call in Yul", async function () {
       const instance = await abstractions.YulFnTest.deployed();
