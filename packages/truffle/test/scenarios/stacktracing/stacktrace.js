@@ -25,8 +25,7 @@ module.exports = function(deployer) {
 }
 `;
 
-//todo web3js.migration `output` at 73 is `false`
-describe.skip("Stack tracing", function () {
+describe("Stack tracing", function () {
   let config, cleanupSandboxDir;
   const logger = new MemoryLogger();
 
@@ -71,6 +70,15 @@ describe.skip("Stack tracing", function () {
       //tests should fail, so non-zero exit code
       const output = logger.contents();
 
+      // TODO: Use the following logging while investigating, and remove later
+      // Related issue: https://github.com/web3/web3.js/issues/6448
+      // console.log('---------starts----------');
+      // console.log(output);
+      // console.log('---------ends----------');
+
+      // An error should be thrown inside the contract
+      // ./packages/truffle/test/scenarios/stacktracing/StacktraceTest.sol
+      // here we double check the stacktrace of the expected error:
       assert(output.includes("1 failing"));
       assert(output.includes("Oops!"));
       assert(output.includes("StacktraceTest.run1"));
