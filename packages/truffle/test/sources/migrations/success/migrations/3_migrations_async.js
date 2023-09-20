@@ -14,6 +14,7 @@ module.exports = async function (deployer) {
   await deployer.link(IsLibrary, UsesLibrary);
   await deployer.deploy(UsesExample, IsLibrary.address);
   await deployer.deploy(UsesLibrary);
+
   await deployer.deploy(PayableExample, {
     value: web3.utils.toWei("1", "ether")
   });
