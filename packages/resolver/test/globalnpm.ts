@@ -2,15 +2,14 @@ import assert from "assert";
 const detectInstalled: any = require("detect-installed");
 const getInstalledPath: any = require("get-installed-path");
 import * as sinon from "sinon";
-import * as path from "path";
-import * as fs from "fs";
+import path from "path";
+import fs from "fs";
 import { describe, it } from "mocha";
 
 import { GlobalNPM } from "../lib/sources/globalnpm";
 const globalNpm = new GlobalNPM();
 
-//todo web3js this fails but doesn't seem to be related (is it?) to the migration. `.require` returns null instead of `{}`
-describe.skip("globalnpm", () => {
+describe("globalnpm", () => {
   describe("require function", () => {
     let syncStub: sinon.SinonStub;
     let getInstalledPathSyncStub: sinon.SinonStub;
