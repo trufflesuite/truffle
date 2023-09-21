@@ -50,7 +50,7 @@
     "pouchdb-adapter-memory": "^7.1.1",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
-    "web3-utils": "4.0.5"
+    "web3-utils": "dev"
   },
   "devDependencies": {
     "@fast-check/jest": "^1.0.1",
@@ -81,7 +81,7 @@
     "typedoc": "0.24.8",
     "typescript": "^4.9.5",
     "typescript-transform-paths": "3.3.1",
-    "web3": "4.1.1"
+    "web3": "dev"
   },
   "keywords": [
     "database",

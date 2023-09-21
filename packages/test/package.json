@@ -37,8 +37,8 @@
     "debug": "^4.3.1",
     "mocha": "10.1.0",
     "original-require": "^1.0.1",
-    "web3": "4.1.1",
-    "web3-utils": "4.0.5"
+    "web3": "dev",
+    "web3-utils": "dev"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

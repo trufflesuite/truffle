@@ -1,5 +1,5 @@
 import type BN from "bn.js";
-import type Web3 from "web3";
+import type { Web3 } from "web3";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type {
   Format,

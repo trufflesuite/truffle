@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import Ganache from "ganache";
 import * as EthUtil from "ethereumjs-util";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import HDWalletProvider from "..";
 import { describe, it, before, after, afterEach } from "mocha";
 import type { Web3BaseProvider as provider } from "web3-types";

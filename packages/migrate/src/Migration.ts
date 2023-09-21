@@ -7,7 +7,7 @@ import { getTruffleDb } from "@truffle/db-loader";
 import { emitEvent } from "./emitEvent";
 import type Config from "@truffle/config";
 import type { InterfaceAdapter } from "@truffle/interface-adapter";
-import type Web3 from "web3";
+import type { Web3 } from "web3";
 
 // this is kind of a hacky interface to use to make TS happy until
 // @truffle/deployer is converted to TS and has its own types

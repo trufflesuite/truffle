@@ -6,7 +6,7 @@ import { assert } from "chai";
 import BN from "bn.js";
 import fs from "fs-extra";
 import tmp from "tmp";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import type { Web3BaseProvider as Provider } from "web3-types";
 import * as Codec from "@truffle/codec";
 import TruffleConfig from "@truffle/config";

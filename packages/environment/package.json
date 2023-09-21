@@ -31,7 +31,7 @@
     "chalk": "^4.1.2",
     "ganache": "7.9.1",
     "source-map-support": "^0.5.19",
-    "web3": "4.1.1"
+    "web3": "dev"
   },
   "devDependencies": {
     "debug": "^4.3.1",

@@ -1,4 +1,4 @@
-import Web3 from "web3";
+import { Web3 } from "web3";
 import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { EthereumDefinition } from "./overloads/ethereum";

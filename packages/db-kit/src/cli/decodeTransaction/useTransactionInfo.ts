@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Transaction, TransactionReceipt } from "web3-types";
-import Web3 from "web3";
+import { Web3 } from "web3";
 
 import type TruffleConfig from "@truffle/config";
 

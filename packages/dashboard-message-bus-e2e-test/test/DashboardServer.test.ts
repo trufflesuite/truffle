@@ -1,6 +1,6 @@
 import Ganache, { EthereumProvider } from "ganache";
 import { providers, utils } from "ethers";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import MockDashboard from "./MockDashboard";
 import { DashboardServer } from "@truffle/dashboard";
 import { DashboardMessageBusClientOptions } from "@truffle/dashboard-message-bus-client";

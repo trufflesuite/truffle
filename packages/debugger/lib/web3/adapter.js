@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:web3:adapter");
 
-import Web3 from "web3";
+import { Web3 } from "web3";
 import * as Codec from "@truffle/codec";
 import ENS, { getEnsAddress } from "@ensdomains/ensjs";
 import { promisify } from "util";
