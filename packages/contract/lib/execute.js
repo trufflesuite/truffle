@@ -8,7 +8,6 @@ const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
 const { sendTransactionManual } = require("./manual-send");
-const { DEFAULT_RETURN_FORMAT } = require("web3-types");
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -569,11 +568,8 @@ const execute = {
     //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
-      const deferred = web3.eth.sendTransaction(
-        params,
-        DEFAULT_RETURN_FORMAT,
-        options
-      );
+      const returnFormat = { number: "NUMBER_BIGINT", bytes: "BYTES_HEX" }; // same as DEFAULT_RETURN_FORMAT from web3-utils
+      const deferred = web3.eth.sendTransaction(params, returnFormat, options);
       handlers.setup(deferred, context);
       return deferred;
     }
