@@ -424,9 +424,7 @@ describe("Source mapping (location and jumps)", function () {
 
     //NOTE: this is same as previous test except for the transaction run;
     //not bothering to factor for now
-    // TODO: un-skip once the following issue have been resolved:
-    // https://github.com/web3/web3.js/issues/6320
-    it.skip("is unaffected by overly large transfers", async function () {
+    it("is unaffected by overly large transfers", async function () {
       const numExpected = 0;
 
       let instance = await abstractions.BadTransferTest.deployed();
@@ -435,9 +433,11 @@ describe("Source mapping (location and jumps)", function () {
       //does not presently work)
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.run({ gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+        // this will throw because of the revert inside the contract method
+        await instance.run(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }

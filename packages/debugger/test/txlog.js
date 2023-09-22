@@ -498,9 +498,7 @@ describe("Transaction log (visualizer)", function () {
     });
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  it.skip("Correctly logs a revert", async function () {
+  it("Correctly logs a revert", async function () {
     this.timeout(12000);
     let instance = await abstractions.VizTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -508,9 +506,11 @@ describe("Transaction log (visualizer)", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.testRevert({ gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.testRevert(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

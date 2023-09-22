@@ -292,9 +292,7 @@ describe("Return value decoding", function () {
     );
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  it.skip("Decodes messageless revert", async function () {
+  it("Decodes messageless revert", async function () {
     this.timeout(9000);
 
     //HACK: because this transaction makes web3 throw, we have to extract the hash from
@@ -303,9 +301,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.fail({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.fail(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -321,9 +321,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.kind, "failure");
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  it.skip("Decodes revert string", async function () {
+  it("Decodes revert string", async function () {
     this.timeout(9000);
 
     //HACK: because this transaction makes web3 throw, we have to extract the hash from
@@ -332,9 +330,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.failNoisy({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.failNoisy(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -357,9 +357,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(message, "Noise!");
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  it.skip("Decodes panic code", async function () {
+  it("Decodes panic code", async function () {
     this.timeout(9000);
 
     //HACK: because this transaction makes web3 throw, we have to extract the hash from
@@ -368,9 +366,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.panic({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.panic(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -395,9 +395,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(panicCode, 1);
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  describe.skip("Custom errors", function () {
+  describe("Custom errors", function () {
     it("Decodes custom errors", async function () {
       this.timeout(9000);
 
@@ -407,9 +405,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.local({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.local(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -449,9 +449,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.global({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.global(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -481,9 +483,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.foreign({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.foreign(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -513,9 +517,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.inlined({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.inlined(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -545,9 +551,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.makeCall({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.makeCall(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -577,9 +585,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.ambiguous({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.ambiguous(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -614,9 +624,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-        //  https://github.com/web3/web3.js/issues/6317
-        await instance.ambiguousCall({ gasLimit: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.ambiguousCall(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }

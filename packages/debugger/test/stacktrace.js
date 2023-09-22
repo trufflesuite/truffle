@@ -3,6 +3,8 @@ const debug = debugModule("debugger:test:stacktrace");
 
 import { assert } from "chai";
 
+import * as Web3Utils from "web3-utils";
+
 import Ganache from "ganache";
 
 import {
@@ -156,11 +158,10 @@ const migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-// TODO: un-skip once the following issues have been resolved:
-//  1) https://github.com/web3/web3.js/issues/6320 (When an error is thrown during a transaction the object `error.receipt` is `undefined`)
-//  2) https://github.com/web3/web3.js/issues/6327 (soliditySha3 behave differently on 4.x when one of the values is BN)
+// TODO: un-skip once the following issue have been resolved:
+//  https://github.com/web3/web3.js/issues/6327 (soliditySha3 behave differently on 4.x when one of the values is BN)
 // To test run: cd packages/debugger && yarn test test/stacktrace.js
-describe.skip("Stack tracing", function () {
+describe("Stack tracing", function () {
   let provider;
   let abstractions;
   let compilations;
@@ -194,11 +195,13 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      console.log("Before run");
-      await instance.run(0); //this will throw because of the revert
-      console.log("After run");
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        0,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
-      console.log(error);
       txHash = error.receipt.transactionHash;
     }
     assert.isDefined(txHash, "should have errored and set txHash");
@@ -226,7 +229,9 @@ describe.skip("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -246,9 +251,13 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        0,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
-      console.log(error);
       txHash = error.receipt.transactionHash;
     }
     assert.isDefined(txHash, "should have errored and set txHash");
@@ -274,7 +283,9 @@ describe.skip("Stack tracing", function () {
     assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -297,7 +308,9 @@ describe.skip("Stack tracing", function () {
     ]);
     contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    addresses = report.map(({ address }) => address);
+    addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
@@ -315,9 +328,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(1, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        1,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -347,7 +363,9 @@ describe.skip("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -366,9 +384,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(2, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        2,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -401,7 +422,9 @@ describe.skip("Stack tracing", function () {
     assert.isUndefined(contractNames[contractNames.length - 1]);
     assert.isUndefined(contractNames[contractNames.length - 2]);
     assert(contractNames.slice(0, -2).every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -421,9 +444,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(3, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        3,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -456,7 +482,9 @@ describe.skip("Stack tracing", function () {
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.notEqual(
       //check that Boom and StacktraceTest are not same address
       addresses[addresses.length - 1],
@@ -486,9 +514,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(4, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        4,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -523,7 +554,9 @@ describe.skip("Stack tracing", function () {
     assert.strictEqual(contractNames[contractNames.length - 1], "CantCreate");
     contractNames.pop(); //second-to-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.strictEqual(
       //top two frames should both be CantCreate
       addresses[addresses.length - 1],
@@ -562,9 +595,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(5, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        5,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      ); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -595,7 +631,9 @@ describe.skip("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -624,9 +662,12 @@ describe.skip("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run(6, { gasLimit: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        6,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -664,7 +705,9 @@ describe.skip("Stack tracing", function () {
       contractNames.every(name => name === "StacktraceTest"),
       "unexpected remaining names"
     );
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.strictEqual(addresses[addresses.length - 1], library.address);
     addresses.pop(); //top frame
     assert.strictEqual(addresses[addresses.length - 1], library.address);

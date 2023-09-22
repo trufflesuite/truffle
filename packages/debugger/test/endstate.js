@@ -68,18 +68,18 @@ describe("End State", function () {
     compilations = prepared.compilations;
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  // https://github.com/web3/web3.js/issues/6320
-  it.skip("correctly marks a failed transaction as failed", async function () {
+  it("correctly marks a failed transaction as failed", async function () {
     const instance = await abstractions.FailureTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
     //does not presently work)
     let txHash;
     try {
-      // TODO: investigate why `gas` needed to be replaced with `gasLimit`:
-      //  https://github.com/web3/web3.js/issues/6317
-      await instance.run({ gasLimit: testDefaultTxGasLimit });
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
