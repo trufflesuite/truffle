@@ -8,6 +8,7 @@ const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
 const { sendTransactionManual } = require("./manual-send");
+const { DEFAULT_RETURN_FORMAT } = require("web3-types");
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -83,6 +84,7 @@ const execute = {
   prepareCall: async function (constructor, methodABI, _arguments, isCall) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args, isCall);
+    let options = utils.getTxOptions.call(constructor, methodABI, args);
 
     args = utils.convertToEthersBN(args);
 
@@ -104,7 +106,7 @@ const execute = {
       return { args, params };
     }
     const network = await constructor.detectNetwork();
-    return { args, params, network };
+    return { args, params, network, options };
   },
 
   /**
@@ -202,7 +204,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger);
       execute
         .prepareCall(constructor, methodABI, arguments)
-        .then(async ({ args, params, network }) => {
+        .then(async ({ args, params, network, options }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
             promiEvent: promiEvent,
@@ -221,15 +223,17 @@ const execute = {
             contract: constructor
           });
 
-          params.gas = await execute.getGasEstimate.call(
-            constructor,
-            params,
-            network.blockLimit,
-            promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
-          );
-
+          // estimate the gas only if it's not provided
+          if (!params || !params[0]?.gas) {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit,
+              promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
+            );
+          }
           execute
-            .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
+            .sendTransaction(web3, params, promiEvent, context, options) //the crazy things we do for stacktracing...
             .then(receipt => {
               if (promiEvent.debug) {
                 // in this case, we need to manually invoke the handler since it
@@ -561,11 +565,15 @@ const execute = {
   //input works the same as input to web3.sendTransaction
   //(well, OK, it's lacking some things there too, but again, good enough
   //for our purposes)
-  sendTransaction: async function (web3, params, promiEvent, context) {
+  sendTransaction: async function (web3, params, promiEvent, context, options) {
     //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
-      const deferred = web3.eth.sendTransaction(params);
+      const deferred = web3.eth.sendTransaction(
+        params,
+        DEFAULT_RETURN_FORMAT,
+        options
+      );
       handlers.setup(deferred, context);
       return deferred;
     }
