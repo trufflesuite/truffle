@@ -61,8 +61,13 @@ const handlers = {
    */
   error: function (context, error) {
     if (!handlers.ignoreTimeoutError(context, error)) {
-      context.promiEvent.eventEmitter.emit("error", error);
-      this.off("error", handlers.error);
+      if (context.promiEvent.eventEmitter.listenerCount("error") > 0) {
+        context.promiEvent.eventEmitter.emit("error", error);
+
+        this.off("error", handlers.error);
+      }
+      context.promiEvent.reject(error);
+      return;
     }
   },
 
