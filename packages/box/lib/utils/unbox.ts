@@ -4,7 +4,7 @@ import download from "download-git-repo";
 import axios from "axios";
 import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import inquirer from "inquirer";
 import type { Question } from "inquirer";
 import type { boxConfig, unboxOptions } from "typings";
@@ -148,7 +148,12 @@ function installBoxDependencies({ hooks }: boxConfig, destination: string) {
   const postUnpack = hooks["post-unpack"];
 
   if (postUnpack.length === 0) return;
-  execSync(postUnpack, { cwd: destination });
+
+  spawnSync(postUnpack, {
+    cwd: destination,
+    shell: true,
+    stdio: ["ignore", process.stdout, process.stderr]
+  });
 }
 
 export = {
