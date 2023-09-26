@@ -93,9 +93,7 @@ describe("Deployer (async / await)", function () {
     assert((await usesExample.other()) === Example.address);
   });
 
-  // TODO: un-skip once the following issue have been resolved:
-  //  issue: https://github.com/web3/web3.js/issues/6312
-  it.skip("deployer.link", async function () {
+  it("deployer.link", async function () {
     const UsesLibrary = utils.getContract(
       "UsesLibrary",
       provider,

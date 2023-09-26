@@ -98,10 +98,11 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: async function (context, receipt) {
+  receipt: async function (context, originalReceipt) {
     // keep around the raw (not decoded) logs in the raw logs field as a
     // stopgap until we can get the ABI for all events, not just the current
     // contract
+    const receipt = { ...originalReceipt };
     receipt.rawLogs = receipt.logs;
 
     // Decode logs, use as receipt.logs for ease of use.
