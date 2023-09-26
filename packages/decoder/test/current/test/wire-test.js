@@ -50,11 +50,7 @@ describe("Over-the-wire decoding", function () {
     ];
   });
 
-  //todo web3.js-migration
-  //Error: reference "x" resolves to more than one schema
   it("should correctly decode transactions and events", async function () {
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
     this.timeout(20000);
     let deployedContract = await abstractions.WireTest.new(
       true,
@@ -326,13 +322,7 @@ describe("Over-the-wire decoding", function () {
     let indexTestBlock = indexTest.receipt.blockNumber;
     let libraryTestBlock = libraryTest.receipt.blockNumber;
 
-    try {
-      //due to web3's having ethers's crappy decoder built in,
-      //we have to put this in a try block to catch the error
-      await deployedContract.danger();
-    } catch (_) {
-      //discard the error!
-    }
+    await deployedContract.danger();
 
     let constructorEvents = await decoder.events({
       fromBlock: constructorBlock,

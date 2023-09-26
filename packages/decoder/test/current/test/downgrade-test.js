@@ -59,8 +59,6 @@ describe("Graceful degradation when information is missing", function () {
     source.ast = undefined;
 
     await runTestBody(mangledCompilations);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(5000);
 
   it("Correctly degrades on allocation when error", async function () {
@@ -80,8 +78,6 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a struct definition
 
     await runTestBody(mangledCompilations, true);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("Correctly degrades on decoding when error", async function () {
@@ -101,14 +97,10 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a enum definition
 
     await runTestBody(mangledCompilations, true);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("Correctly abifies after finishing", async function () {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(5000);
 
   it("Correctly decodes decimals", async function () {

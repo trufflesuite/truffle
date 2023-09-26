@@ -138,8 +138,6 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("shouldn't synchronize constant functions", done => {
@@ -188,8 +186,6 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("should return transaction hash, logs and receipt when using synchronised transactions", done => {
@@ -225,8 +221,6 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("should trigger the fallback function when calling sendTransaction()", () => {
@@ -252,8 +246,6 @@ describe("artifactor + require", () => {
           "1 ether has been sent but the balance does not match that"
         );
       });
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("should trigger the fallback function when calling send() (shorthand notation)", () => {
@@ -277,8 +269,6 @@ describe("artifactor + require", () => {
           "1 ether has been sent but the balance does not match that"
         );
       });
-    // TODO: investigate why timeout needed to be increased
-    //  issue: https://github.com/web3/web3.js/issues/6311
   }).timeout(3000);
 
   it("errors when setting an invalid provider", done => {
