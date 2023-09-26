@@ -264,7 +264,7 @@ const execute = {
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
-        .then(async ({ args, params, network }) => {
+        .then(async ({ args, params, network, options: txOptions }) => {
           const { blockLimit } = network;
 
           utils.checkLibraries.apply(constructor);
@@ -300,7 +300,13 @@ const execute = {
             contract: constructor
           });
 
-          deferred = execute.sendTransaction(web3, params, promiEvent, context); //the crazy things we do for stacktracing...
+          deferred = execute.sendTransaction(
+            web3,
+            params,
+            promiEvent,
+            context,
+            txOptions
+          ); //the crazy things we do for stacktracing...
           try {
             const receipt = await deferred;
             if (receipt.status !== undefined && !receipt.status) {
