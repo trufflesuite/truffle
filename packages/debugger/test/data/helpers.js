@@ -30,9 +30,7 @@ function fileName(testName) {
 
 function generateTests(fixtures) {
   for (let { name, value: expected } of fixtures) {
-    // TODO: un-skip once the following issue have been resolved:
-    // https://github.com/web3/web3.js/issues/6327
-    it.skip(`correctly decodes ${name}`, async () => {
+    it(`correctly decodes ${name}`, async () => {
       const response = await this.decode(name);
       assert.deepEqual(response, expected);
     });

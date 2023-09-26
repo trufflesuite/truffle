@@ -158,9 +158,6 @@ const migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-// TODO: un-skip once the following issue have been resolved:
-//  https://github.com/web3/web3.js/issues/6327 (soliditySha3 behave differently on 4.x when one of the values is BN)
-// To test run: cd packages/debugger && yarn test test/stacktrace.js
 describe("Stack tracing", function () {
   let provider;
   let abstractions;

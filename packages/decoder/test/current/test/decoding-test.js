@@ -36,18 +36,7 @@ describe("State variable decoding", function () {
     abstractions = prepared.abstractions;
   });
 
-  //todo debug test
-  //should get the initial state properly:
-  //
-  //       AssertionError [ERR_ASSERTION]: '0' == '4'
-  //       + expected - actual
-  //
-  //       -0
-  //       +4
-  // TODO: un-skip once the following has been resolved
-  //  https://github.com/web3/web3.js/issues/6327 (soliditySha3 behave differently on 4.x when one of the values is BN)
-
-  it.skip("should get the initial state properly", async function () {
+  it("should get the initial state properly", async function () {
     let deployedContract = await abstractions.DecodingSample.deployed();
     let address = deployedContract.address;
     const decoder = await Decoder.forContractInstance(deployedContract);
