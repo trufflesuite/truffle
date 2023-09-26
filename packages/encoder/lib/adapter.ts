@@ -153,11 +153,12 @@ export class ProviderAdapter {
         method,
         params
       });
-      // checking for `response.result` for web3.js providers.
-      //  related discussion at: https://github.com/web3/web3.js/issues/6345
+      const jsonRpcResponse =
+        response as JsonRpcResponseWithResult<JsonRpcResult>;
       result =
-        (response as JsonRpcResponseWithResult<JsonRpcResult>).result ||
-        response;
+        jsonRpcResponse.jsonrpc && jsonRpcResponse.result
+          ? jsonRpcResponse.result
+          : response;
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
