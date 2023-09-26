@@ -47,6 +47,7 @@ describe("globalnpm", () => {
 
       const result = globalNpm.require("package/Test.sol");
 
+      console.log(result);
       assert.deepEqual(result, {});
     });
 

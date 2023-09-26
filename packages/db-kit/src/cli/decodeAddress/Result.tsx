@@ -4,7 +4,7 @@ import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
 import type { ProjectDecoder } from "@truffle/decoder";
-import Web3 from "web3";
+import { Web3 } from "web3";
 
 import { useDecodedAddress } from "./useDecodedAddress";
 

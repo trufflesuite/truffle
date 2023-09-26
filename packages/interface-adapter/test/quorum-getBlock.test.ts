@@ -2,7 +2,7 @@ import { describe, it } from "mocha";
 import { assert } from "chai";
 
 const BN = require("bn.js");
-import Ganache, { EthereumProvider } from "ganache";
+import Ganache from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
 import { InterfaceAdapter, Provider } from "../lib/adapter/types";
@@ -10,7 +10,7 @@ import { InterfaceAdapter, Provider } from "../lib/adapter/types";
 const genesisBlockTime = new Date();
 
 function prepareGanache(quorumEnabled: boolean): {
-  provider: EthereumProvider;
+  provider: Provider;
   interfaceAdapter: InterfaceAdapter;
 } {
   const provider = Ganache.provider({
@@ -21,7 +21,7 @@ function prepareGanache(quorumEnabled: boolean): {
     miner: {
       instamine: "strict"
     }
-  });
+  }) as unknown as Provider;
   const interfaceAdapter = createInterfaceAdapter({
     provider: provider as Provider,
     networkType: quorumEnabled ? "quorum" : "ethereum"

@@ -33,7 +33,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         # TODO: unpin to 20.x once 20.7 has ben released
-        node-version: [16.x, 18.x, 20.5]
+        node-version: [16.20.2, 18.16, 20.5]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 

@@ -1,8 +1,10 @@
+/* eslint-disable no-undef */
+
 // Override artifactor
 const Config = require("@truffle/config");
 const { assert } = require("chai");
 const contract = require("@truffle/contract");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const debug = require("debug")("ganache");
 const Ganache = require("ganache");
 const path = require("path");
@@ -215,7 +217,7 @@ describe(".link(name, address)", () => {
     networkId = await web3.eth.net.getId();
     ExampleContract = contract({
       contractName: "ExampleContract",
-      abi: [],
+      abi: []
     });
     LibraryExample = contract({
       contractName: "A",
@@ -251,8 +253,8 @@ describe(".link(name, address)", () => {
   });
 
   it("will error with improper input", () => {
-    const expectedMessageSnippet = "Input to the link method is in the " +
-      "incorrect format.";
+    const expectedMessageSnippet =
+      "Input to the link method is in the " + "incorrect format.";
     try {
       ExampleContract.link(1);
     } catch (error) {

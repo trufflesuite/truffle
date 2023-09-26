@@ -83,6 +83,7 @@ const execute = {
   prepareCall: async function (constructor, methodABI, _arguments, isCall) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args, isCall);
+    let options = utils.getTxOptions.call(constructor, methodABI, args);
 
     args = utils.convertToEthersBN(args);
 
@@ -104,7 +105,7 @@ const execute = {
       return { args, params };
     }
     const network = await constructor.detectNetwork();
-    return { args, params, network };
+    return { args, params, network, options };
   },
 
   /**
@@ -200,10 +201,9 @@ const execute = {
 
     return function () {
       const promiEvent = new PromiEvent(false, constructor.debugger);
-
       execute
         .prepareCall(constructor, methodABI, arguments)
-        .then(async ({ args, params, network }) => {
+        .then(async ({ args, params, network, options }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
             promiEvent: promiEvent,
@@ -222,15 +222,17 @@ const execute = {
             contract: constructor
           });
 
-          params.gas = await execute.getGasEstimate.call(
-            constructor,
-            params,
-            network.blockLimit,
-            promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
-          );
-
+          // estimate the gas only if it's not provided
+          if (!params || !params[0]?.gas) {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit,
+              promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
+            );
+          }
           execute
-            .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
+            .sendTransaction(web3, params, promiEvent, context, options) //the crazy things we do for stacktracing...
             .then(receipt => {
               if (promiEvent.debug) {
                 // in this case, we need to manually invoke the handler since it
@@ -262,7 +264,7 @@ const execute = {
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
-        .then(async ({ args, params, network }) => {
+        .then(async ({ args, params, network, options: txOptions }) => {
           const { blockLimit } = network;
 
           utils.checkLibraries.apply(constructor);
@@ -298,8 +300,13 @@ const execute = {
             contract: constructor
           });
 
-          deferred = execute.sendTransaction(web3, params, promiEvent, context); //the crazy things we do for stacktracing...
-
+          deferred = execute.sendTransaction(
+            web3,
+            params,
+            promiEvent,
+            context,
+            txOptions
+          ); //the crazy things we do for stacktracing...
           try {
             const receipt = await deferred;
             if (receipt.status !== undefined && !receipt.status) {
@@ -563,11 +570,12 @@ const execute = {
   //input works the same as input to web3.sendTransaction
   //(well, OK, it's lacking some things there too, but again, good enough
   //for our purposes)
-  sendTransaction: async function (web3, params, promiEvent, context) {
+  sendTransaction: async function (web3, params, promiEvent, context, options) {
     //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
-      const deferred = web3.eth.sendTransaction(params);
+      const returnFormat = { number: "NUMBER_BIGINT", bytes: "BYTES_HEX" }; // same as DEFAULT_RETURN_FORMAT from web3-utils
+      const deferred = web3.eth.sendTransaction(params, returnFormat, options);
       handlers.setup(deferred, context);
       return deferred;
     }

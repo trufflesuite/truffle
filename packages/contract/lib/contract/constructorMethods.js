@@ -127,13 +127,17 @@ module.exports = Contract => ({
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
       const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
-      return { id: this.network_id, blockLimit: gasLimit };
+      return { id: this.network_id, blockLimit: String(gasLimit) };
     }
     // since artifacts don't have a network_id synced with a network configuration,
     // poll chain for network_id and sync artifacts
     const chainNetworkID = await this.interfaceAdapter.getNetworkId();
     const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
-    return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
+    return await utils.setInstanceNetworkID(
+      this,
+      chainNetworkID,
+      String(gasLimit)
+    );
   },
 
   setNetwork(network_id) {

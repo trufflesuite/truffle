@@ -301,7 +301,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.fail({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.fail(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -326,7 +330,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.failNoisy({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.failNoisy(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -358,7 +366,11 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.panic({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+      // this will throw because of the revert inside the contract method
+      await instance.panic(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -393,7 +405,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.local({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.local(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -433,7 +449,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.global({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.global(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -463,7 +483,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.foreign({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.foreign(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -493,7 +517,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.inlined({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.inlined(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -523,7 +551,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.makeCall({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.makeCall(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -553,7 +585,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguous({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.ambiguous(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -588,7 +624,11 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguousCall({ gas: testDefaultTxGasLimit }); //web3 throws on failure
+        // this will throw because of the revert inside the contract method
+        await instance.ambiguousCall(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }

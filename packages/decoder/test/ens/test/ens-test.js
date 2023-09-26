@@ -40,6 +40,7 @@ describe("ENS reverse resolution", function () {
       ens: { registryAddress }
     });
     const namedAddressResult = await decoder.variable("namedAddress");
+    console.log(namedAddressResult);
     assert.property(namedAddressResult.interpretations, "ensName");
     assert.equal(namedAddressResult.interpretations.ensName.kind, "valid");
     assert.equal(

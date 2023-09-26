@@ -1,5 +1,5 @@
-import Web3 from "web3";
-import type { provider as Provider } from "web3-core/types";
+import { Web3 } from "web3";
+import type { Web3BaseProvider as Provider } from "web3-types";
 
 import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
@@ -15,8 +15,7 @@ const initInterface = async (web3Shim: Web3Shim) => {
       "fabric-evm": FabricEvmDefinition
     })
   );
-
-  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  await networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
 };
 
 // March 13, 2019 - Mike Seese:
@@ -59,7 +58,7 @@ export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
   constructor(options?: Web3ShimOptions) {
-    super();
+    super(options.provider);
 
     if (options) {
       this.networkType = options.networkType || "ethereum";
@@ -76,6 +75,6 @@ export class Web3Shim extends Web3 {
 
   public setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
-    initInterface(this);
+    return initInterface(this);
   }
 }

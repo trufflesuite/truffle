@@ -3,6 +3,8 @@ const debug = debugModule("debugger:test:stacktrace");
 
 import { assert } from "chai";
 
+import * as Web3Utils from "web3-utils";
+
 import Ganache from "ganache";
 
 import {
@@ -190,7 +192,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        0,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -219,7 +226,9 @@ describe("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -239,7 +248,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        0,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -266,7 +280,9 @@ describe("Stack tracing", function () {
     assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -289,7 +305,9 @@ describe("Stack tracing", function () {
     ]);
     contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    addresses = report.map(({ address }) => address);
+    addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
@@ -307,7 +325,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(1, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        1,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -337,7 +360,9 @@ describe("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -356,7 +381,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(2, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        2,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -389,7 +419,9 @@ describe("Stack tracing", function () {
     assert.isUndefined(contractNames[contractNames.length - 1]);
     assert.isUndefined(contractNames[contractNames.length - 2]);
     assert(contractNames.slice(0, -2).every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -409,7 +441,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(3, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        3,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -442,7 +479,9 @@ describe("Stack tracing", function () {
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.notEqual(
       //check that Boom and StacktraceTest are not same address
       addresses[addresses.length - 1],
@@ -472,7 +511,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(4, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        4,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -507,7 +551,9 @@ describe("Stack tracing", function () {
     assert.strictEqual(contractNames[contractNames.length - 1], "CantCreate");
     contractNames.pop(); //second-to-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.strictEqual(
       //top two frames should both be CantCreate
       addresses[addresses.length - 1],
@@ -546,7 +592,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(5, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        5,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      ); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -577,7 +628,9 @@ describe("Stack tracing", function () {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert(addresses.every(address => address === instance.address));
     assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
@@ -606,7 +659,12 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(6, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        6,
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -644,7 +702,9 @@ describe("Stack tracing", function () {
       contractNames.every(name => name === "StacktraceTest"),
       "unexpected remaining names"
     );
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({ address }) =>
+      Web3Utils.toChecksumAddress(address)
+    );
     assert.strictEqual(addresses[addresses.length - 1], library.address);
     addresses.pop(); //top frame
     assert.strictEqual(addresses[addresses.length - 1], library.address);

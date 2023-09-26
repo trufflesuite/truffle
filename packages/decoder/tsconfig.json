@@ -10,19 +10,10 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
+    "lib": ["es2019", "dom"],
     "rootDir": "lib",
-    "paths": {
-      "web3": [
-        "node_modules/web3/index",
-        "../../node_modules/@types/web3/index"
-      ]
-    },
+    "paths": {},
     "types": ["node", "mocha"]
   },
-  "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
-
+  "include": ["./lib/**/*.ts", "./typings/**/*.d.ts"]
 }

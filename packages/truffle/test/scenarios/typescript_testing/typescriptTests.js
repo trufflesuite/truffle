@@ -17,7 +17,9 @@ describe("Typescript Tests", () => {
     await Server.start();
   });
   after(async function () {
-    await Server.stop();
+    try {
+      await Server.stop();
+    } catch (e) {}
   });
 
   describe("testing contract behavior", () => {

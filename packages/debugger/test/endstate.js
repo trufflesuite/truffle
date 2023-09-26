@@ -75,7 +75,11 @@ describe("End State", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run({ gas: testDefaultTxGasLimit });
+      // this will throw because of the revert inside the contract method
+      await instance.run(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

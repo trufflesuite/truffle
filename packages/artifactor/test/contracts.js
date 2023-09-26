@@ -8,7 +8,7 @@ const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
 const { Compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
@@ -20,8 +20,8 @@ describe("artifactor + require", () => {
       instamine: "strict"
     }
   });
-  const web3 = new Web3();
-  web3.setProvider(provider);
+
+  const web3 = new Web3(provider);
 
   before(() => web3.eth.net.getId().then(id => (networkID = id)));
 
@@ -138,7 +138,7 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-  });
+  }).timeout(3000);
 
   it("shouldn't synchronize constant functions", done => {
     let example;
@@ -186,7 +186,7 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-  });
+  }).timeout(3000);
 
   it("should return transaction hash, logs and receipt when using synchronised transactions", done => {
     let example = null;
@@ -221,7 +221,7 @@ describe("artifactor + require", () => {
       })
       .then(done)
       .catch(done);
-  });
+  }).timeout(3000);
 
   it("should trigger the fallback function when calling sendTransaction()", () => {
     let example = null;
@@ -239,19 +239,14 @@ describe("artifactor + require", () => {
           value: web3.utils.toWei("1", "ether")
         });
       })
-      .then(
-        () =>
-          new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
-              if (err) return reject(err);
-              accept(balance);
-            })
-          )
-      )
+      .then(() => web3.eth.getBalance(example.address))
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(
+          balance.toString() === web3.utils.toWei("1", "ether"),
+          "1 ether has been sent but the balance does not match that"
+        );
       });
-  });
+  }).timeout(3000);
 
   it("should trigger the fallback function when calling send() (shorthand notation)", () => {
     let example = null;
@@ -267,19 +262,14 @@ describe("artifactor + require", () => {
         );
         return example.send(web3.utils.toWei("1", "ether"));
       })
-      .then(
-        () =>
-          new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
-              if (err) return reject(err);
-              accept(balance);
-            })
-          )
-      )
+      .then(() => web3.eth.getBalance(example.address))
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(
+          balance.toString() === web3.utils.toWei("1", "ether"),
+          "1 ether has been sent but the balance does not match that"
+        );
       });
-  });
+  }).timeout(3000);
 
   it("errors when setting an invalid provider", done => {
     try {

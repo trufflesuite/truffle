@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { sha3 } = Web3.utils;
 const assert = require("assert");
 const Ganache = require("ganache");
@@ -126,10 +126,12 @@ describe("ENS class", () => {
 
       describe("when the name is owned by the from address", async () => {
         beforeEach(async () => {
-          const registryOwnerAddress = await registry.owner("0x0");
+          const ZERO_NODE =
+            "0x0000000000000000000000000000000000000000000000000000000000000000";
+          const registryOwnerAddress = await registry.owner(ZERO_NODE);
           addressToSet = "0x1234567890123456789012345678901234567890";
           await registry.setSubnodeOwner(
-            "0x0",
+            ZERO_NODE,
             sha3("namezzz"),
             registryOwnerAddress,
             { from: registryOwnerAddress }

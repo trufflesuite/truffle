@@ -17,7 +17,7 @@ import debugModule from "debug";
 const debug = debugModule("lib:test");
 import Debugger from "@truffle/debugger";
 import type { Compilation, CompiledContract } from "@truffle/compile-common";
-import Web3 from "web3";
+import { Web3 } from "web3";
 
 let Mocha: any; // Late init with "mocha" or "mocha-parallel-tests"
 

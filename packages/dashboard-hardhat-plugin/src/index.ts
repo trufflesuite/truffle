@@ -1,6 +1,5 @@
 import { name as pluginName } from "../package.json";
 import { URL } from "url";
-import util from "util";
 import { extendConfig, task } from "hardhat/config";
 import { HardhatPluginError } from "hardhat/plugins";
 import type {
@@ -160,7 +159,7 @@ function getTruffleDashboardUserConfig(
       `Manual network config disallowed.\n\n` +
         `This plugin manages your Truffle Dashboard network config for you,\n` +
         `but your Hardhat config also contains \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
-        `You can fix this error by removing \`config.networks["${dashboardNetworkName}"]\`.\n\n`  +
+        `You can fix this error by removing \`config.networks["${dashboardNetworkName}"]\`.\n\n` +
         `Please see the README for more details about how to configure this plugin:\n` +
         `  https://www.npmjs.com/package/@truffle/dashboard-hardhat-plugin`
     );

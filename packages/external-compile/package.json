@@ -25,7 +25,7 @@
     "@truffle/expect": "^0.1.7",
     "debug": "^4.3.1",
     "glob": "^7.1.6",
-    "web3-utils": "1.10.0"
+    "web3-utils": "dev"
   },
   "devDependencies": {
     "chai": "^4.2.0",

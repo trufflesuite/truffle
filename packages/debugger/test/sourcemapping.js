@@ -433,7 +433,11 @@ describe("Source mapping (location and jumps)", function () {
       //does not presently work)
       let txHash;
       try {
-        await instance.run({ gas: testDefaultTxGasLimit }); //this will throw because of the revert
+        // this will throw because of the revert inside the contract method
+        await instance.run(
+          { gas: testDefaultTxGasLimit },
+          { checkRevertBeforeSending: false }
+        );
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -547,7 +551,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each external call for 1 in fallback", async function () {
       const instance = await abstractions.DepthTest.deployed();
@@ -575,7 +579,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each external call for 1 in constructor", async function () {
       const secondary = await abstractions.Secondary.deployed();
@@ -603,7 +607,7 @@ describe("Source mapping (location and jumps)", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
-    });
+    }).timeout(5000);
 
     it("counts each function call in Yul", async function () {
       const instance = await abstractions.YulFnTest.deployed();

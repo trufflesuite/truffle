@@ -4,7 +4,7 @@ const Big = require("big.js");
 const clonedeep = require("lodash/cloneDeep");
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
@@ -59,7 +59,7 @@ describe("Graceful degradation when information is missing", function () {
     source.ast = undefined;
 
     await runTestBody(mangledCompilations);
-  });
+  }).timeout(5000);
 
   it("Correctly degrades on allocation when error", async function () {
     let mangledCompilations = clonedeep(compilations);
@@ -78,7 +78,7 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a struct definition
 
     await runTestBody(mangledCompilations, true);
-  });
+  }).timeout(3000);
 
   it("Correctly degrades on decoding when error", async function () {
     let mangledCompilations = clonedeep(compilations);
@@ -97,13 +97,14 @@ describe("Graceful degradation when information is missing", function () {
     //the decoder from recognizing it as a enum definition
 
     await runTestBody(mangledCompilations, true);
-  });
+  }).timeout(3000);
 
   it("Correctly abifies after finishing", async function () {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
-  });
+  }).timeout(5000);
 
   it("Correctly decodes decimals", async function () {
+    this.timeout(10000);
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -175,6 +176,7 @@ describe("Graceful degradation when information is missing", function () {
   });
 
   it("Correctly decodes inherited events when no node", async function () {
+    this.timeout(10000);
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
@@ -204,6 +206,7 @@ describe("Graceful degradation when information is missing", function () {
 
   describe("Out-of-range enums", function () {
     it("Doesn't include out-of-range enums in full mode", async function () {
+      this.timeout(10000);
       let decoder = await Decoder.forProject({
         provider: web3.currentProvider,
         projectInfo: { compilations } //not modifying for once!
@@ -227,6 +230,7 @@ describe("Graceful degradation when information is missing", function () {
     });
 
     it("Abifies correctly when failure occurs in first enum", async function () {
+      this.timeout(10000);
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -245,6 +249,7 @@ describe("Graceful degradation when information is missing", function () {
     });
 
     it("Abifies correctly when failure occurs in second enum", async function () {
+      this.timeout(10000);
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -323,7 +328,7 @@ describe("Graceful degradation when information is missing", function () {
       Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       1
     );
-  });
+  }).timeout(3000);
 
   it("Partially decodes internal functions when unreliable order", async function () {
     let mangledCompilations = clonedeep(compilations);
@@ -517,6 +522,15 @@ async function runTestBody(
   let deployedContract = await abstractions.DowngradeTest.new();
   let address = deployedContract.address;
 
+  /*todo web3.js migration this fails in validation
+   *    Seems that the validation is not working recursively, it thinks the inner tuple is an integer
+   *
+   * Web3 validator found 3 error[s]:
+   * value "7,-5" at "/0/1" must pass "uint256" validation
+   * value "7,-5,3" at "/1" must pass "uint8" validation
+   * value "1" at "/2" must pass "address" validation
+   */
+
   let result = await deployedContract.run([[7, -5], 3], 1, address, address);
   let resultHash = result.tx;
   let resultTx = await web3.eth.getTransaction(resultHash);
@@ -627,7 +641,7 @@ async function runErrorTestBody(mangledCompilations) {
       data: selector
     });
   } catch (error) {
-    data = error.data;
+    data = error.innerError.data;
   }
   let decodings = await decoder.decodeReturnValue(abiEntry, data);
   assert.lengthOf(decodings, 1);

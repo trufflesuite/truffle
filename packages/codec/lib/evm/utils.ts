@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:evm:utils");
 
 import BN from "bn.js";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import * as Conversion from "@truffle/codec/conversion";
 import { ShortSelectorSize } from "@truffle/abi-utils";
 
@@ -22,6 +22,7 @@ export const ZERO_ADDRESS = "0x" + "00".repeat(ADDRESS_SIZE);
 export function keccak256(...args: any[]): BN {
   // debug("args %o", args);
 
+  args = args.map(v => (BN.isBN(v) ? BigInt(v.toString()) : v));
   const rawSha: string | null = Web3Utils.soliditySha3(...args);
   debug("rawSha %o", rawSha);
   let sha: string;

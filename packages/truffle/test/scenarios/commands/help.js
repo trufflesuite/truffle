@@ -21,7 +21,11 @@ describe("truffle help [ @standalone ]", function () {
       this.timeout(10000);
       await CommandRunner.run("help", config);
       const output = logger.contents();
-      assert(output.includes("For Ethereum JSON-RPC documentation see https://ganache.dev"));
+      assert(
+        output.includes(
+          "For Ethereum JSON-RPC documentation see https://ganache.dev"
+        )
+      );
     });
   });
 

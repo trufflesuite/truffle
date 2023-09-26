@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs-extra";
 import WorkflowCompile from "@truffle/workflow-compile";
 import Artifactor from "@truffle/artifactor";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import Migrate from "@truffle/migrate";
 import { Resolver } from "@truffle/resolver";
 import * as Codec from "@truffle/codec";

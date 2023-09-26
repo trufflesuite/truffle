@@ -38,7 +38,7 @@ describe("ABIEncoderV2", function () {
     it("should allow structs as transaction arguments", async function () {
       assert.strictEqual(
         addUserReceipt.status,
-        true,
+        BigInt(1),
         "addUser transaction should have succeeded."
       );
     });
@@ -66,6 +66,7 @@ describe("ABIEncoderV2", function () {
 
     it("should be capable of returning structs from calls", async function () {
       const returnedUser = await userDirectory.user(user.addr);
+      console.log(returnedUser);
 
       // can't just do assert.deepStrictEqual(returnedUser, user) because
       // the decoded struct is actually a tuple, and to emulate that it's

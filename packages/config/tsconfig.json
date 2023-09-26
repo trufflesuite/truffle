@@ -15,12 +15,11 @@
     "types": ["node", "mocha"],
     "typeRoots": [
       "./typings",
+      "node_modules/@types/node",
+      "../../node_modules/@types/mocha",
       "node_modules/@types",
       "../../node_modules/@types"
     ]
   },
-  "include": [
-    "./src/**/*.ts",
-    "./typings/**/*.d.ts"
-  ]
+  "include": ["./src/**/*.ts", "./typings/**/*.d.ts"]
 }

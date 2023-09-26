@@ -12,7 +12,7 @@ import {
 } from "./helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
-import Web3 from "web3";
+import { utils as Web3Utils } from "web3";
 
 import txlog from "lib/txlog/selectors";
 import trace from "lib/trace/selectors";
@@ -227,15 +227,16 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "function");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.functionName, "testCall");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
     assert.equal(call.beginStep, -1); //initial call considered to begin on step -1
     assert.equal(call.endStep, steps - 1);
-    const expectedSelector = Web3.utils
-      .soliditySha3("testCall(uint256)")
-      .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE);
+    const expectedSelector = Web3Utils.soliditySha3("testCall(uint256)").slice(
+      0,
+      2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE
+    );
     const expectedArgument = Codec.Conversion.toHexString(
       108,
       Codec.Evm.Utils.WORD_SIZE
@@ -297,7 +298,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "constructor");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.isUndefined(call.functionName);
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
@@ -364,7 +365,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "function");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.functionName, "testLibrary");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
@@ -422,7 +423,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "function");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.functionName, "testTransfer");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
@@ -434,7 +435,7 @@ describe("Transaction log (visualizer)", function () {
     call = call.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "message");
-    assert.equal(call.address, origin);
+    assert.equal(call.address, Web3Utils.toChecksumAddress(origin));
     assert.equal(call.value.toNumber(), 1);
     assert.equal(call.returnKind, "return");
     assert.equal(
@@ -467,7 +468,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "message");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.data, "0xdeadbeef");
     assert.equal(call.returnKind, "return");
@@ -505,7 +506,11 @@ describe("Transaction log (visualizer)", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.testRevert({ gas: testDefaultTxGasLimit }); //this will throw because of the revert
+      // this will throw because of the revert inside the contract method
+      await instance.testRevert(
+        { gas: testDefaultTxGasLimit },
+        { checkRevertBeforeSending: false }
+      );
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -528,7 +533,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "function");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.functionName, "testRevert");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "unwind");
@@ -572,7 +577,7 @@ describe("Transaction log (visualizer)", function () {
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
     assert.equal(call.kind, "function");
-    assert.equal(call.address, instance.address);
+    assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
     assert.equal(call.functionName, "testCall");
     assert.equal(call.contractName, "VizTest");
     assert.notProperty(call, "returnKind");
@@ -612,7 +617,8 @@ describe("Transaction log (visualizer)", function () {
       //basic checks about the call itself
       assert.equal(call.type, "callexternal");
       assert.equal(call.kind, "function");
-      assert.equal(call.address, instance.address);
+
+      assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
       assert.equal(call.functionName, "testEvent");
       assert.equal(call.contractName, "VizTest");
       assert.lengthOf(call.actions, 2);
@@ -684,7 +690,8 @@ describe("Transaction log (visualizer)", function () {
       //basic checks about the call itself
       assert.equal(call.type, "callexternal");
       assert.equal(call.kind, "constructor");
-      assert.equal(call.address, instance.address);
+
+      assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
       assert.isUndefined(call.functionName);
       assert.equal(call.contractName, "Secondary");
       assert.lengthOf(call.actions, 2); //call to another, then log of Set
@@ -734,8 +741,15 @@ describe("Transaction log (visualizer)", function () {
       //event #0: Dummy()
       let event = flattedEvents[0];
       assert.strictEqual(event.decoding.abi.name, "Dummy");
-      assert.strictEqual(event.address, instance.address);
-      assert.strictEqual(event.codeAddress, instance.address);
+
+      assert.strictEqual(
+        Web3Utils.toChecksumAddress(event.address),
+        instance.address
+      );
+      assert.strictEqual(
+        Web3Utils.toChecksumAddress(event.codeAddress),
+        instance.address
+      );
       assert.isTrue(event.status);
       //event #1: Tert()
       event = flattedEvents[1];
@@ -752,8 +766,15 @@ describe("Transaction log (visualizer)", function () {
       //event #3: Dummy()
       event = flattedEvents[3];
       assert.strictEqual(event.decoding.abi.name, "Dummy");
-      assert.strictEqual(event.address, instance.address);
-      assert.strictEqual(event.codeAddress, instance.address);
+
+      assert.strictEqual(
+        Web3Utils.toChecksumAddress(event.address),
+        instance.address
+      );
+      assert.strictEqual(
+        Web3Utils.toChecksumAddress(event.codeAddress),
+        instance.address
+      );
       assert.isTrue(event.status);
 
       //now: check that they all have steps and are in increasing order
@@ -793,7 +814,8 @@ describe("Transaction log (visualizer)", function () {
       //basic checks about the outer call
       assert.equal(call.type, "callexternal");
       assert.equal(call.kind, "function");
-      assert.equal(call.address, instance.address);
+
+      assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
       assert.equal(call.functionName, "testLibrary");
       assert.equal(call.contractName, "VizTest");
       assert.lengthOf(call.actions, 1);
@@ -845,7 +867,8 @@ describe("Transaction log (visualizer)", function () {
       //basic checks about the outer call
       assert.equal(call.type, "callexternal");
       assert.equal(call.kind, "function");
-      assert.equal(call.address, instance.address);
+
+      assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
       assert.equal(call.functionName, "testConfusing");
       assert.equal(call.contractName, "VizTest");
       assert.lengthOf(call.actions, 2);
@@ -920,7 +943,8 @@ describe("Transaction log (visualizer)", function () {
       const call = root.actions[0];
       assert.equal(call.type, "callexternal");
       assert.equal(call.kind, "constructor");
-      assert.equal(call.address, instance.address);
+
+      assert.equal(Web3Utils.toChecksumAddress(call.address), instance.address);
       assert.lengthOf(call.actions, 1);
       const write = call.actions[0];
       assert.equal(write.type, "write");

@@ -1,5 +1,5 @@
 const debug = require("debug")("provider");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
@@ -46,6 +46,10 @@ module.exports = {
     const provider = this.getProvider(options);
     const { host } = provider;
     const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
+
+    //todo web3js-migration remove
+    // console.log(interfaceAdapter);
+
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         let errorMessage =

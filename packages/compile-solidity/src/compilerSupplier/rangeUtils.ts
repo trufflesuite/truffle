@@ -34,7 +34,6 @@ export function rangeContainsAtLeast(
   const individualAtLeast = !!(
     semver.valid(range, { loose: true }) &&
     semver.gte(range, comparisonVersion, {
-      includePrerelease: true,
       loose: true
     } as semver.Options)
   );

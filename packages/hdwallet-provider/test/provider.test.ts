@@ -1,13 +1,13 @@
 import { assert } from "chai";
 import Ganache from "ganache";
 import * as EthUtil from "ethereumjs-util";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import HDWalletProvider from "..";
 import { describe, it, before, after, afterEach } from "mocha";
-import type { provider } from "web3-core";
+import type { Web3BaseProvider as provider } from "web3-types";
 
 describe("HD Wallet Provider", function () {
-  const web3 = new Web3();
+  let web3: Web3;
   let ganacheProvider: any;
   let hdWalletProvider: HDWalletProvider;
 
@@ -20,6 +20,7 @@ describe("HD Wallet Provider", function () {
         quiet: true
       }
     });
+    web3 = new Web3(ganacheProvider);
   });
 
   after(async () => {
@@ -27,7 +28,7 @@ describe("HD Wallet Provider", function () {
   });
 
   afterEach(() => {
-    web3.setProvider(null);
+    web3.setProvider(undefined);
     if (hdWalletProvider) {
       hdWalletProvider.engine.stop();
     }
@@ -53,10 +54,10 @@ describe("HD Wallet Provider", function () {
       hdWalletProvider = new HDWalletProvider(mnemonic, ganacheProvider);
 
       assert.deepEqual(hdWalletProvider.getAddresses(), truffleDevAccounts);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("throws on invalid mnemonic", () => {
@@ -85,7 +86,7 @@ describe("HD Wallet Provider", function () {
       };
 
       hdWalletProvider = new HDWalletProvider(privateKeys, ganacheProvider);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const addresses = hdWalletProvider.getAddresses();
       assert.equal(
@@ -107,14 +108,14 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a private key", async () => {
       const privateKey =
         "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580"; //random valid private key generated with ethkey
       hdWalletProvider = new HDWalletProvider(privateKey, ganacheProvider);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const addresses = hdWalletProvider.getAddresses();
       assert.equal(addresses[0], "0xc515db5834d8f110eee96c3036854dbf1d87de2b");
@@ -123,7 +124,7 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
   });
 
@@ -152,10 +153,10 @@ describe("HD Wallet Provider", function () {
       });
 
       assert.deepEqual(hdWalletProvider.getAddresses(), truffleDevAccounts);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a mnemonic passed as a string", async () => {
@@ -180,10 +181,10 @@ describe("HD Wallet Provider", function () {
       });
 
       assert.deepEqual(hdWalletProvider.getAddresses(), truffleDevAccounts);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a mnemonic with a password", async () => {
@@ -210,10 +211,10 @@ describe("HD Wallet Provider", function () {
       });
 
       assert.deepEqual(hdWalletProvider.getAddresses(), accounts);
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     it("provides for a default polling interval", () => {
@@ -278,7 +279,7 @@ describe("HD Wallet Provider", function () {
         privateKeys,
         provider: ganacheProvider
       });
-      web3.setProvider(hdWalletProvider as provider);
+      web3.setProvider(hdWalletProvider as unknown as provider);
 
       const addresses = hdWalletProvider.getAddresses();
       assert.equal(
@@ -300,7 +301,7 @@ describe("HD Wallet Provider", function () {
       });
 
       const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
+      assert(number === BigInt(0));
     });
 
     describe("instantiation errors", () => {

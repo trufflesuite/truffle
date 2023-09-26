@@ -3,7 +3,7 @@ import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type { Compilations, Format, Evm } from "@truffle/codec";
 import type * as Codec from "@truffle/codec";
 import type * as Abi from "@truffle/abi-utils";
-import type Web3 from "web3";
+import type { Web3 } from "web3";
 
 /**
  * This type contains options to be used when preparing transactions

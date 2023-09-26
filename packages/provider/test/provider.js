@@ -1,7 +1,7 @@
 const assert = require("assert");
 const Ganache = require("ganache");
 const Provider = require("../index");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const promisify = require("util").promisify;
 const ProviderError = require("../error");
 
@@ -73,7 +73,7 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
-      const snippet = `Couldn't connect to node`;
+      const snippet = `reason: connect ECONNREFUSED`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -119,7 +119,7 @@ describe("Provider", function () {
         "The provider was instantiated correctly. That shouldn't have happened"
       );
     } catch (error) {
-      const snippet = `Couldn't connect to node`;
+      const snippet = `reason: connect ECONNREFUSED`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {

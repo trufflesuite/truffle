@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Text } from "ink";
 import { UncontrolledTextInput } from "ink-text-input";
 import Spinner from "ink-spinner";
-import type { Transaction, TransactionReceipt } from "web3-core";
+import type { Transaction, TransactionReceipt } from "web3-types";
 import type TruffleConfig from "@truffle/config";
 
 import { useTransactionInfo } from "./useTransactionInfo";

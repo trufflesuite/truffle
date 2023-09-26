@@ -3,7 +3,6 @@ const path = require("path");
 const { Console } = require("../../lib/console");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const Web3 = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
@@ -11,6 +10,14 @@ let truffleConsole, consoleOptions;
 
 describe("Console", function () {
   describe("Console.calculateTruffleAndUserGlobals", function () {
+    let provider;
+
+    before(function () {
+      // no need to provide an actual provider for these tests
+      // we just need to make sure that the provider is not undefined
+      // we already mock the interfaceAdapter.getAccounts method
+      provider = {};
+    });
     beforeEach(function () {
       consoleOptions = new Config().with({
         network: "funTimeNetwork",
@@ -20,7 +27,7 @@ describe("Console", function () {
           }
         },
         network_id: 666,
-        provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+        provider,
         resolver: new Resolver(config)
       });
       const pathToUserJs = path.join(
@@ -39,7 +46,7 @@ describe("Console", function () {
       truffleConsole = new Console(consoleOptions);
       sinon
         .stub(truffleConsole.interfaceAdapter, "getAccounts")
-        .returns(["0x0"]);
+        .returns(new Promise(resolve => resolve(["0x0"])));
     });
     afterEach(function () {
       truffleConsole.interfaceAdapter.getAccounts.restore();
@@ -70,7 +77,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherConsoleOptions.require = path.join(
@@ -104,7 +111,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherConsoleOptions.console.require = path.join(
@@ -134,7 +141,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
+          provider,
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(otherConsoleOptions);

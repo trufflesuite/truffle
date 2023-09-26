@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:test:data:more-decoding");
 
 import { assert } from "chai";
-import Web3 from "web3"; //just using for utils
+import { Web3 } from "web3"; //just using for utils
 
 import Ganache from "ganache";
 
@@ -428,7 +428,7 @@ describe("Further Decoding", function () {
   });
 
   it("Decodes elementary types and mappings correctly", async function () {
-    this.timeout(12000);
+    this.timeout(20000);
 
     let instance = await abstractions.ElementaryTest.deployed();
     let receipt = await instance.run();

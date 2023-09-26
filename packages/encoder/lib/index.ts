@@ -139,6 +139,7 @@
  * @packageDocumentation
  */
 
+import { Web3BaseProvider } from "web3-types";
 import {
   ProjectEncoder,
   ContractEncoder,
@@ -261,7 +262,7 @@ export async function forContract(
   settings: EncoderSettings = {}
 ): Promise<ContractEncoder> {
   return await forArtifact(contract, {
-    provider: contract.web3.currentProvider,
+    provider: contract.web3.currentProvider as Web3BaseProvider | undefined,
     networkId: parseInt(contract.network_id) || undefined, //NaN is falsy :)
     ...settings
   });

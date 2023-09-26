@@ -26,12 +26,11 @@
     "@metamask/eth-sig-util": "4.0.1",
     "@truffle/hdwallet": "^0.1.4",
     "@types/ethereum-protocol": "^1.0.0",
-    "@types/web3": "1.0.20",
     "@types/web3-provider-engine": "^14.0.0",
     "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
-    "web3": "1.10.0",
+    "web3": "dev",
     "web3-provider-engine": "16.0.3"
   },
   "devDependencies": {

@@ -3,10 +3,12 @@ const debug = debugModule("decoder:adapter");
 import type { BlockSpecifier } from "@truffle/codec";
 import type BN from "bn.js";
 import type {
-  Provider as LegacyProvider,
-  Callback,
-  JsonRPCResponse
-} from "web3/providers";
+  Web3BaseProvider,
+  JsonRpcResponseWithResult,
+  JsonRpcResult
+} from "web3-types";
+
+import { isNumber } from "web3-validator";
 
 // lifted from @types/web3
 type Log = {
@@ -96,7 +98,7 @@ export const formatBlockSpecifier = (block: BlockSpecifier): string => {
     if (block.startsWith("0x")) return block;
     // convert to hex and add '0x' prefix in case block is decimal
     return `0x${parseInt(block).toString(16)}`;
-  } else if (typeof block === "number") {
+  } else if (isNumber(block)) {
     return `0x${block.toString(16)}`;
   } else {
     throw new Error(
@@ -119,7 +121,7 @@ const formatBlock = (block: Block): FormattedBlock => {
 /**
  * @hidden
  */
-export type Provider = LegacyProvider | Eip1193Provider;
+export type Provider = Web3BaseProvider | Eip1193Provider;
 
 // EIP-1193 providers use `request()` instead of `send()`
 // NOTE this provider returns `response.result` already unwrapped
@@ -147,18 +149,24 @@ export class ProviderAdapter {
     }
     let result;
     if (isEip1193Provider(this.provider)) {
-      result = await this.provider.request({
+      const response = await this.provider.request({
         method,
         params
       });
+      const jsonRpcResponse =
+        response as JsonRpcResponseWithResult<JsonRpcResult>;
+      result =
+        jsonRpcResponse.jsonrpc && jsonRpcResponse.result
+          ? jsonRpcResponse.result
+          : response;
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
-      const send: LegacyProvider["send"] = (
+      const send: Web3BaseProvider["send"] = (
         "sendAsync" in this.provider
           ? // uses `any` because LegacyProvider type doesn't define sendAsync
             (this.provider as any).sendAsync
-          : (this.provider as LegacyProvider).send
+          : (this.provider as Web3BaseProvider).send
       ).bind(this.provider);
 
       // HACK this uses a manual `new Promise` instead of promisify because
@@ -168,18 +176,19 @@ export class ProviderAdapter {
           {
             jsonrpc: "2.0",
             id: new Date().getTime(),
-            method,
-            params
+            method: method as any,
+            params: params as any
           },
-          ((error: Error, response: JsonRPCResponse) => {
+          (error, response) => {
             if (error) {
               return reject(error);
             }
-            if (response.error) {
-              return reject(response.error);
+            if (response) {
+              const { result: res } =
+                response as JsonRpcResponseWithResult<JsonRpcResult>;
+              accept(res);
             }
-            return accept(response.result);
-          }) as Callback<JsonRPCResponse>
+          }
         )
       );
     }

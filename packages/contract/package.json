@@ -28,13 +28,13 @@
     "@truffle/error": "^0.2.2",
     "@truffle/interface-adapter": "^0.5.37",
     "bignumber.js": "^7.2.1",
+    "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",
-    "web3": "1.10.0",
-    "web3-core-helpers": "1.10.0",
-    "web3-core-promievent": "1.10.0",
-    "web3-eth-abi": "1.10.0",
-    "web3-utils": "1.10.0"
+    "web3": "dev",
+    "web3-core": "dev",
+    "web3-eth-abi": "dev",
+    "web3-utils": "dev"
   },
   "devDependencies": {
     "assert": "^2.0.0",

@@ -1,5 +1,5 @@
 const debug = require("debug")("contract:utils");
-const web3Utils = require("web3-utils");
+const BN = require("bn.js");
 const { bigNumberify } = require("ethers/utils/bignumber");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
@@ -22,6 +22,15 @@ const allowedTxParams = new Set([
   "overwrite"
 ]);
 
+const allowedTxOptions = new Set([
+  "checkRevertBeforeSending",
+  "ignoreGasPricing",
+  "transactionResolver",
+  "contractAbi",
+  "checkRevertBeforeSending",
+  "ignoreFillingGasLimit"
+]);
+
 const Utils = {
   is_object(val) {
     return typeof val === "object" && !Array.isArray(val);
@@ -30,17 +39,19 @@ const Utils = {
   is_big_number(val) {
     if (typeof val !== "object") return false;
 
-    //NOTE: For some reason, contrary to the docs,
-    //web3Utils.isBigNumber returns true not only for
-    //bignumber.js BigNumbers, but also for ethers BigNumbers,
-    //even though these are totally different things.
-    return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
+    return BN.isBN(val);
   },
 
   isTxParams(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
     return Object.keys(val).some(fieldName => allowedTxParams.has(fieldName));
+  },
+
+  isTxOptions(val) {
+    if (!Utils.is_object(val)) return false;
+    if (Utils.is_big_number(val)) return false;
+    return Object.keys(val).some(fieldName => allowedTxOptions.has(fieldName));
   },
 
   decodeLogs(_logs, isSingle) {
@@ -132,6 +143,20 @@ const Utils = {
     return bytecode;
   },
 
+  // Extracts optional tx options from a list of fn arguments
+  getTxOptions(methodABI, args) {
+    const expectedArgCount = methodABI ? methodABI.inputs.length : 0;
+
+    let txOptions = {};
+    const lastArg = args[args.length - 1];
+
+    if (args.length === expectedArgCount + 1 && Utils.isTxOptions(lastArg)) {
+      txOptions = args.pop();
+    }
+
+    return txOptions;
+  },
+
   // Extracts optional tx params from a list of fn arguments
   getTxParams(methodABI, args, ignoreDefaultGasPriceParams = false) {
     const constructor = this;
@@ -140,9 +165,17 @@ const Utils = {
 
     let txParams = {};
     const lastArg = args[args.length - 1];
+    const beforeLastArg = args.length >= 2 ? args[args.length - 2] : {};
 
     if (args.length === expectedArgCount + 1 && Utils.isTxParams(lastArg)) {
       txParams = args.pop();
+    } else if (
+      args.length === expectedArgCount + 2 &&
+      Utils.isTxParams(beforeLastArg)
+    ) {
+      // remove the item at index - 2 (beforeLastArg) from args
+      args.splice(args.length - 2, 1);
+      txParams = beforeLastArg;
     }
 
     let defaultParams = constructor.class_defaults;
@@ -208,10 +241,13 @@ const Utils = {
           : item.toString();
         const ethersBN = bigNumberify(stringValue);
         converted.push(ethersBN);
+      } else if (typeof item === "bigint") {
+        converted.push(bigNumberify(item.toString()));
       } else {
         converted.push(item);
       }
     });
+
     return converted;
   },
 

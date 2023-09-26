@@ -1,5 +1,5 @@
 const ganache = require("ganache");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
 
@@ -282,7 +282,7 @@ describe("Deployer (sync)", function () {
       this.timeout(15000);
       const startBlock = await web3.eth.getBlockNumber();
 
-      utils.startAutoMine(web3, 1500);
+      utils.startAutoMine(web3, 2000);
 
       const migrate = function () {
         deployer.deploy(IsLibrary);
@@ -305,8 +305,8 @@ describe("Deployer (sync)", function () {
 
       // The first confirmation is the block that accepts the tx. Then we wait two more.
       // Then Example is deployed in the consequent block.
-      assert(libReceipt.blockNumber === startBlock + 1);
-      assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3);
+      assert(libReceipt.blockNumber === startBlock + 1n);
+      assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3n);
 
       deployer.confirmationsRequired = 0;
     });

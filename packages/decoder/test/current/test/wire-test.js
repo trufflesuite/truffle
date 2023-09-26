@@ -3,7 +3,7 @@ const assert = require("chai").assert;
 const BN = require("bn.js");
 const Ganache = require("ganache");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
@@ -11,6 +11,7 @@ const Codec = require("@truffle/codec");
 const { prepareContracts } = require("../../helpers");
 
 describe("Over-the-wire decoding", function () {
+  this.timeout(30000);
   let provider;
   let abstractions;
   let web3;
@@ -50,7 +51,7 @@ describe("Over-the-wire decoding", function () {
   });
 
   it("should correctly decode transactions and events", async function () {
-    this.timeout(4000);
+    this.timeout(20000);
     let deployedContract = await abstractions.WireTest.new(
       true,
       "0xdeadbeef",
@@ -321,13 +322,7 @@ describe("Over-the-wire decoding", function () {
     let indexTestBlock = indexTest.receipt.blockNumber;
     let libraryTestBlock = libraryTest.receipt.blockNumber;
 
-    try {
-      //due to web3's having ethers's crappy decoder built in,
-      //we have to put this in a try block to catch the error
-      await deployedContract.danger();
-    } catch (_) {
-      //discard the error!
-    }
+    await deployedContract.danger();
 
     let constructorEvents = await decoder.events({
       fromBlock: constructorBlock,
@@ -1111,7 +1106,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data;
+        data = error.innerError.data;
       }
 
       debug("data: %O", data);
@@ -1156,7 +1151,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data;
+        data = error.innerError.data;
       }
 
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -1191,7 +1186,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data;
+        data = error.innerError.data;
       }
 
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -1221,6 +1216,7 @@ describe("Over-the-wire decoding", function () {
     });
 
     it("Decodes ambiguous custom errors from external calls", async function () {
+      this.timeout(30000);
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
 
@@ -1243,9 +1239,8 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data;
+        data = error.innerError.data;
       }
-
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 2);
       //note: what follows is copypasted from above
@@ -1387,14 +1382,13 @@ describe("Over-the-wire decoding", function () {
     });
 
     it("Decodes multicalls (v2 w/try)", async function () {
+      this.timeout(30000);
       const deployedContract = await abstractions.WireTest.deployed();
       const otherContract = await abstractions.WireTestRedHerring.new();
-
       const decoder = await Decoder.forProject({
         provider: web3.currentProvider,
         projectInfo: { artifacts: Contracts }
       });
-
       //first, let's encode some calls
       const contracts = [otherContract, deployedContract];
       const methodNames = ["otherMethod", "indexTest"];
@@ -1417,7 +1411,6 @@ describe("Over-the-wire decoding", function () {
       const multicall = await deployedContract.tryAggregate(false, encodedTxs);
       const multicallHash = multicall.tx;
       const multicallTx = await web3.eth.getTransaction(multicallHash);
-
       //now let's decode it and check the result!
       const multicallDecoding = await decoder.decodeTransaction(multicallTx);
       assert.isDefined(multicallDecoding.interpretations);

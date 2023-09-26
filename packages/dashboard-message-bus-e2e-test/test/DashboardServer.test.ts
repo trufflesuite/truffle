@@ -1,6 +1,6 @@
 import Ganache, { EthereumProvider } from "ganache";
 import { providers, utils } from "ethers";
-import Web3 from "web3";
+import { Web3 } from "web3";
 import MockDashboard from "./MockDashboard";
 import { DashboardServer } from "@truffle/dashboard";
 import { DashboardMessageBusClientOptions } from "@truffle/dashboard-message-bus-client";
@@ -95,7 +95,7 @@ describe("DashboardServer", () => {
       const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: utils.parseEther("0.1")
+        value: utils.parseEther("0.1").toHexString()
       });
 
       expect(response).toHaveProperty("hash");
@@ -111,11 +111,7 @@ describe("DashboardServer", () => {
     });
 
     afterEach(() => {
-      if ((web3.currentProvider as any).reset) {
-        (web3.currentProvider as any).reset();
-      }
-
-      web3.setProvider(null);
+      web3.setProvider(undefined);
     });
 
     it("should retrieve unlocked accounts", async () => {
@@ -148,7 +144,7 @@ describe("DashboardServer", () => {
       const response = await web3.eth.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: web3.utils.toWei("0.1")
+        value: web3.utils.toWei("0.1", "ether")
       });
 
       expect(response).toHaveProperty("transactionHash");
