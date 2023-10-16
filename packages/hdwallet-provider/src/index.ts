@@ -7,16 +7,20 @@ import * as EthUtil from "ethereumjs-util";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
-import { PollingBlockTracker } from 'eth-block-tracker';
+import { PollingBlockTracker } from "eth-block-tracker";
 import { JsonRpcEngine } from "@metamask/json-rpc-engine";
 //import type { JsonRpcMiddleware } from "@metamask/json-rpc-engine";
-import { SafeEventEmitterProvider, providerFromEngine } from "@metamask/eth-json-rpc-provider";
+import {
+  SafeEventEmitterProvider,
+  providerFromEngine
+} from "@metamask/eth-json-rpc-provider";
 
 // @ts-ignore
 import createFilterMiddleware from "eth-json-rpc-filters";
 // @ts-ignore
 import NonceSubProvider from "nonce-tracker";
-//import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
+// @ts-ignore
+import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
 // @ts-ignore
 import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 // @ts-ignore
@@ -34,7 +38,12 @@ import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
-import type { ChainId, ChainSettings, Hardfork, ProviderOrUrl } from "./constructor/types";
+import type {
+  ChainId,
+  ChainSettings,
+  Hardfork,
+  ProviderOrUrl
+} from "./constructor/types";
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import {
   createAccountGeneratorFromSeedAndPath,
@@ -53,18 +62,21 @@ let singletonNonceSubProvider: null | NonceSubProvider;
 // TODO: Constrain type
 type JsonRpcProvider = Record<string, unknown>;
 
-const getSingletonNonceSubProvider = (opts: {rpcProvider: JsonRpcProvider, blockTracker: any}): NonceSubProvider => {
+const getSingletonNonceSubProvider = (opts: {
+  rpcProvider: JsonRpcProvider;
+  blockTracker: any;
+}): NonceSubProvider => {
   if (singletonNonceSubProvider) {
   } else {
     singletonNonceSubProvider = new NonceSubProvider({
-        provider: opts.rpcProvider,
-        blockTracker: opts.blockTracker,
-        getPendingTransactions: (_address: string) => [],
-        getConfirmedTransactions: (_address: string) => [],
+      provider: opts.rpcProvider,
+      blockTracker: opts.blockTracker,
+      getPendingTransactions: (_address: string) => [],
+      getConfirmedTransactions: (_address: string) => []
     });
   }
   return singletonNonceSubProvider;
-}
+};
 
 class HDWalletProvider {
   private walletHdpath: string;
@@ -106,12 +118,18 @@ class HDWalletProvider {
     });
 
     let providerToUse: ProviderOrUrl;
-    if (typeof provider !== 'undefined' && HDWalletProvider.isValidProvider(provider)) {
+    if (
+      typeof provider !== "undefined" &&
+      HDWalletProvider.isValidProvider(provider)
+    ) {
       providerToUse = provider;
-    } else if (typeof url !== 'undefined' && HDWalletProvider.isValidProvider(url)) {
+    } else if (
+      typeof url !== "undefined" &&
+      HDWalletProvider.isValidProvider(url)
+    ) {
       providerToUse = url;
     } else {
-      if (typeof providerOrUrl === 'undefined') {
+      if (typeof providerOrUrl === "undefined") {
         throw new Error(
           [
             `No provider or an invalid provider was specified.`,
@@ -297,11 +315,11 @@ class HDWalletProvider {
       } else {
         return new ProviderSubprovider(providerToUse);
       }
-    }
+    };
     const rpcProvider = createProvider();
 
     const blockTracker = new PollingBlockTracker({
-      provider: rpcProvider,
+      provider: rpcProvider
       // pollingInterval?: number;
       // retryTimeout?: number;
       // keepEventLoopActive?: boolean;
@@ -312,19 +330,19 @@ class HDWalletProvider {
 
     const nonceSubProvider = shareNonce
       ? getSingletonNonceSubProvider({
-        blockTracker,
-        rpcProvider,
-      })
+          blockTracker,
+          rpcProvider
+        })
       : new NonceSubProvider({
-        blockTracker,
-        provider: rpcProvider,
-        getPendingTransactions: (_address: string) => [],
-        getConfirmedTransactions: (_address: string) => [],
-      });
+          blockTracker,
+          provider: rpcProvider,
+          getPendingTransactions: (_address: string) => [],
+          getConfirmedTransactions: (_address: string) => []
+        });
 
     const filtersSubProvider = createFilterMiddleware({
       blockTracker,
-      provider: rpcProvider,
+      provider: rpcProvider
     });
     engine.push(nonceSubProvider as any);
     engine.push(filtersSubProvider);
@@ -346,11 +364,11 @@ class HDWalletProvider {
           if (error) {
             reject(error);
             return;
-          } else if ('error' in response) {
+          } else if ("error" in response) {
             reject(response.error);
             return;
           }
-          if ('result' in response && isNaN(parseInt(response.result, 16))) {
+          if ("result" in response && isNaN(parseInt(response.result, 16))) {
             const message =
               "When requesting the chain id from the node, it" +
               `returned the malformed result ${response.result}.`;
@@ -417,7 +435,10 @@ class HDWalletProvider {
 
   public send(
     payload: JsonRpcRequest,
-    callback: (error: null | Error, response: JsonRpcResponse<JsonRpcParams>) => void
+    callback: (
+      error: null | Error,
+      response: JsonRpcResponse<JsonRpcParams>
+    ) => void
   ): void {
     this.initialized.then(() => {
       // @ts-ignore we patch callback method so it doesn't conform to type
@@ -427,7 +448,10 @@ class HDWalletProvider {
 
   public sendAsync(
     payload: JsonRpcRequest,
-    callback: (error: null | Error, response?: JsonRpcResponse<JsonRpcParams>) => void
+    callback: (
+      error: null | Error,
+      response?: JsonRpcResponse<JsonRpcParams>
+    ) => void
   ): void {
     this.initialized.then(() => {
       // @ts-ignore we patch callback method so it doesn't conform to type
