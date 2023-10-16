@@ -7,13 +7,15 @@ import * as EthUtil from "ethereumjs-util";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
+import { PollingBlockTracker } from 'eth-block-tracker';
 import { JsonRpcEngine } from "@metamask/json-rpc-engine";
-import { providerFromEngine, providerFromMiddleware } from "@metamask/eth-json-rpc-provider";
+//import type { JsonRpcMiddleware } from "@metamask/json-rpc-engine";
+import { SafeEventEmitterProvider, providerFromEngine } from "@metamask/eth-json-rpc-provider";
 
-import { createFilterMiddleware } from "eth-json-rpc-filters";
-const filterMiddleware = createFilterMiddleware(
 // @ts-ignore
-import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
+import createFilterMiddleware from "eth-json-rpc-filters";
+// @ts-ignore
+import NonceSubProvider from "nonce-tracker";
 //import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
 // @ts-ignore
 import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
@@ -32,7 +34,7 @@ import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
-import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
+import type { ChainId, ChainSettings, Hardfork, ProviderOrUrl } from "./constructor/types";
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import {
   createAccountGeneratorFromSeedAndPath,
@@ -46,18 +48,33 @@ import {
 // function, resetting nonce from tx to tx. An instance can opt out
 // of this behavior by passing `shareNonce=false` to the constructor.
 // See issue #65 for more
-const singletonNonceSubProvider = new NonceSubProvider();
+let singletonNonceSubProvider: null | NonceSubProvider;
+
+// TODO: Constrain type
+type JsonRpcProvider = Record<string, unknown>;
+
+const getSingletonNonceSubProvider = (opts: {rpcProvider: JsonRpcProvider, blockTracker: any}): NonceSubProvider => {
+  if (singletonNonceSubProvider) {
+  } else {
+    singletonNonceSubProvider = new NonceSubProvider({
+        provider: opts.rpcProvider,
+        blockTracker: opts.blockTracker,
+        getPendingTransactions: (_address: string) => [],
+        getConfirmedTransactions: (_address: string) => [],
+    });
+  }
+  return singletonNonceSubProvider;
+}
 
 class HDWalletProvider {
   private walletHdpath: string;
   #wallets: { [address: string]: Buffer };
   #addresses: string[];
+  #provider: SafeEventEmitterProvider;
   private chainId?: ChainId;
   private chainSettings: ChainSettings;
   private hardfork: Hardfork;
   private initialized: Promise<void>;
-
-  public engine: JsonRpcEngine;
 
   constructor(...args: ConstructorArguments) {
     const {
@@ -84,16 +101,26 @@ class HDWalletProvider {
     this.#wallets = {};
     this.#addresses = [];
     this.chainSettings = chainSettings;
-    this.engine = new JsonRpcEngine({
+    const engine = new JsonRpcEngine({
       // pollingInterval
     });
 
-    let providerToUse;
-    if (HDWalletProvider.isValidProvider(provider)) {
+    let providerToUse: ProviderOrUrl;
+    if (typeof provider !== 'undefined' && HDWalletProvider.isValidProvider(provider)) {
       providerToUse = provider;
-    } else if (HDWalletProvider.isValidProvider(url)) {
+    } else if (typeof url !== 'undefined' && HDWalletProvider.isValidProvider(url)) {
       providerToUse = url;
     } else {
+      if (typeof providerOrUrl === 'undefined') {
+        throw new Error(
+          [
+            `No provider or an invalid provider was specified.`,
+            "Please specify a valid provider or URL, using the http, https, " +
+              "ws, or wss protocol.",
+            ""
+          ].join("\n")
+        );
+      }
       providerToUse = providerOrUrl;
     }
 
@@ -149,7 +176,7 @@ class HDWalletProvider {
 
     const self = this;
 
-    this.engine.addProvider(
+    engine.push(
       new HookedSubprovider({
         getAccounts(cb: any) {
           cb(null, tmpAccounts);
@@ -252,54 +279,78 @@ class HDWalletProvider {
       })
     );
 
-    !shareNonce
-      ? this.engine.addProvider(new NonceSubProvider())
-      : this.engine.addProvider(singletonNonceSubProvider);
+    const createProvider = () => {
+      if (typeof providerToUse === "string") {
+        const url = providerToUse;
 
-    this.engine.addProvider(new FiltersSubprovider());
-    if (typeof providerToUse === "string") {
-      const url = providerToUse;
+        const providerProtocol = (
+          Url.parse(url).protocol || "http:"
+        ).toLowerCase();
 
-      const providerProtocol = (
-        Url.parse(url).protocol || "http:"
-      ).toLowerCase();
-
-      switch (providerProtocol) {
-        case "ws:":
-        case "wss:":
-          this.engine.addProvider(new WebsocketProvider({ rpcUrl: url }));
-          break;
-        default:
-          this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
+        switch (providerProtocol) {
+          case "ws:":
+          case "wss:":
+            return new WebsocketProvider({ rpcUrl: url });
+          default:
+            return new RpcProvider({ rpcUrl: url });
+        }
+      } else {
+        return new ProviderSubprovider(providerToUse);
       }
-    } else {
-      this.engine.addProvider(new ProviderSubprovider(providerToUse));
     }
+    const rpcProvider = createProvider();
 
-    // Required by the provider engine.
-    this.engine.start();
+    const blockTracker = new PollingBlockTracker({
+      provider: rpcProvider,
+      // pollingInterval?: number;
+      // retryTimeout?: number;
+      // keepEventLoopActive?: boolean;
+      // setSkipCacheFlag?: boolean;
+      // blockResetDuration?: number;
+      // usePastBlocks?: boolean;
+    });
+
+    const nonceSubProvider = shareNonce
+      ? getSingletonNonceSubProvider({
+        blockTracker,
+        rpcProvider,
+      })
+      : new NonceSubProvider({
+        blockTracker,
+        provider: rpcProvider,
+        getPendingTransactions: (_address: string) => [],
+        getConfirmedTransactions: (_address: string) => [],
+      });
+
+    const filtersSubProvider = createFilterMiddleware({
+      blockTracker,
+      provider: rpcProvider,
+    });
+    engine.push(nonceSubProvider as any);
+    engine.push(filtersSubProvider);
+    engine.push(rpcProvider);
+
+    this.#provider = providerFromEngine(engine);
   }
 
   private initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.engine.sendAsync(
+      this.#provider.sendAsync(
         {
           jsonrpc: "2.0",
           id: Date.now(),
           method: "eth_chainId",
           params: []
         },
-        // @ts-ignore - the type doesn't take into account the possibility
-        // that response.error could be a thing
-        (error: any, response: JsonRpcResponse<JsonRpcParams> & { error?: any }) => {
+        (error: any, response: JsonRpcResponse<string>) => {
           if (error) {
             reject(error);
             return;
-          } else if (response.error) {
+          } else if ('error' in response) {
             reject(response.error);
             return;
           }
-          if (isNaN(parseInt(response.result, 16))) {
+          if ('result' in response && isNaN(parseInt(response.result, 16))) {
             const message =
               "When requesting the chain id from the node, it" +
               `returned the malformed result ${response.result}.`;
@@ -365,21 +416,22 @@ class HDWalletProvider {
   }
 
   public send(
-    payload: JSONRPCRequestPayload,
-    // @ts-ignore we patch this method so it doesn't conform to type
+    payload: JsonRpcRequest,
     callback: (error: null | Error, response: JsonRpcResponse<JsonRpcParams>) => void
   ): void {
     this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
+      // @ts-ignore we patch callback method so it doesn't conform to type
+      this.#provider.sendAsync(payload, callback);
     });
   }
 
   public sendAsync(
-    payload: JSONRPCRequestPayload,
-    callback: (error: null | Error, response: JsonRpcResponse<JsonRpcParams>) => void
+    payload: JsonRpcRequest,
+    callback: (error: null | Error, response?: JsonRpcResponse<JsonRpcParams>) => void
   ): void {
     this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
+      // @ts-ignore we patch callback method so it doesn't conform to type
+      this.#provider.sendAsync(payload, callback);
     });
   }
 

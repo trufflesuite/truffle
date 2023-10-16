@@ -3352,7 +3352,7 @@
     "@metamask/safe-event-emitter" "^3.0.0"
     "@metamask/utils" "^5.0.1"
 
-"@metamask/eth-json-rpc-provider@^2.0.0":
+"@metamask/eth-json-rpc-provider@^2.0.0", "@metamask/eth-json-rpc-provider@^2.1.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-2.2.0.tgz#7d7551ff075a42992cd7fd4054868f6a5f9ee541"
   integrity sha512-pJk533YEEH/GbZMHoV4CEDQhH2/HeG/2M3JhNnhblcAMIYKaLDkl/+01hc0mDAgYs4vxf8FBkniBUlX5o7FLSQ==
@@ -10912,6 +10912,17 @@ eth-block-tracker@^7.0.1:
     json-rpc-random-id "^1.0.1"
     pify "^3.0.0"
 
+eth-block-tracker@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/eth-block-tracker/-/eth-block-tracker-8.1.0.tgz#6ca4f6b955ff3e114f5aa0e8d36b11196ad1ea92"
+  integrity sha512-cdP9GMtJV87d4yuj4A3WX7gHIoJP4T4eeGgVW1jLjC/H7xuJsjs9vtwy9DJZvcd2cpRYZNQ7eWsdoJriHfi67Q==
+  dependencies:
+    "@metamask/eth-json-rpc-provider" "^2.1.0"
+    "@metamask/safe-event-emitter" "^3.0.0"
+    "@metamask/utils" "^8.1.0"
+    json-rpc-random-id "^1.0.1"
+    pify "^5.0.0"
+
 eth-ens-namehash@2.0.8, eth-ens-namehash@^2.0.8:
   version "2.0.8"
   resolved "https://registry.yarnpkg.com/eth-ens-namehash/-/eth-ens-namehash-2.0.8.tgz#229ac46eca86d52e0c991e7cb2aef83ff0f68bcf"
@@ -11169,40 +11180,6 @@ ethers@^5.0.13, ethers@^5.6.2, ethers@^5.6.9, ethers@^5.7.1:
     "@ethersproject/web" "5.7.1"
     "@ethersproject/wordlists" "5.7.0"
 
-ethjs-format@0.2.7:
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/ethjs-format/-/ethjs-format-0.2.7.tgz#20c92f31c259a381588d069830d838b489774b86"
-  integrity sha512-uNYAi+r3/mvR3xYu2AfSXx5teP4ovy9z2FrRsblU+h2logsaIKZPi9V3bn3V7wuRcnG0HZ3QydgZuVaRo06C4Q==
-  dependencies:
-    bn.js "4.11.6"
-    ethjs-schema "0.2.1"
-    ethjs-util "0.1.3"
-    is-hex-prefixed "1.0.0"
-    number-to-bn "1.7.0"
-    strip-hex-prefix "1.0.0"
-
-ethjs-query@^0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/ethjs-query/-/ethjs-query-0.3.8.tgz#aa5af02887bdd5f3c78b3256d0f22ffd5d357490"
-  integrity sha512-/J5JydqrOzU8O7VBOwZKUWXxHDGr46VqNjBCJgBVNNda+tv7Xc8Y2uJc6aMHHVbeN3YOQ7YRElgIc0q1CI02lQ==
-  dependencies:
-    babel-runtime "^6.26.0"
-    ethjs-format "0.2.7"
-    ethjs-rpc "0.2.0"
-    promise-to-callback "^1.0.0"
-
-ethjs-rpc@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ethjs-rpc/-/ethjs-rpc-0.2.0.tgz#3d0011e32cfff156ed6147818c6fb8f801701b4c"
-  integrity sha512-RINulkNZTKnj4R/cjYYtYMnFFaBcVALzbtEJEONrrka8IeoarNB9Jbzn+2rT00Cv8y/CxAI+GgY1d0/i2iQeOg==
-  dependencies:
-    promise-to-callback "^1.0.0"
-
-ethjs-schema@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/ethjs-schema/-/ethjs-schema-0.2.1.tgz#47e138920421453617069034684642e26bb310f4"
-  integrity sha512-DXd8lwNrhT9sjsh/Vd2Z+4pfyGxhc0POVnLBUfwk5udtdoBzADyq+sK39dcb48+ZU+2VgtwHxtGWnLnCfmfW5g==
-
 ethjs-unit@0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ethjs-unit/-/ethjs-unit-0.1.6.tgz#c665921e476e87bce2a9d588a6fe0405b2c41699"
@@ -11210,14 +11187,6 @@ ethjs-unit@0.1.6:
   dependencies:
     bn.js "4.11.6"
     number-to-bn "1.7.0"
-
-ethjs-util@0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/ethjs-util/-/ethjs-util-0.1.3.tgz#dfd5ea4a400dc5e421a889caf47e081ada78bb55"
-  integrity sha512-QqpX2dsEG2geSMG9dTMJVhfP1kGRdGMNjiHPiTjkju+X5cB0PQIwUzRr5k21pFkgF5zuLccqe83p7Gh5fFM5tQ==
-  dependencies:
-    is-hex-prefixed "1.0.0"
-    strip-hex-prefix "1.0.0"
 
 ethjs-util@0.1.6, ethjs-util@^0.1.3, ethjs-util@^0.1.6:
   version "0.1.6"
@@ -13679,11 +13648,6 @@ is-finite@^1.0.0:
   integrity sha1-zGZ3aVYCvlUO8R6LSqYwU0K20Ko=
   dependencies:
     number-is-nan "^1.0.0"
-
-is-fn@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/is-fn/-/is-fn-1.0.0.tgz#9543d5de7bcf5b08a22ec8a20bae6e286d510d8c"
-  integrity sha1-lUPV3nvPWwiiLsiiC65uKG1RDYw=
 
 is-fullwidth-code-point@^1.0.0:
   version "1.0.0"
@@ -16809,13 +16773,13 @@ noms@0.0.0:
     inherits "^2.0.1"
     readable-stream "~1.0.31"
 
-nonce-tracker@^1.1.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/nonce-tracker/-/nonce-tracker-1.2.0.tgz#3e859da481ed824dbe3f7d74fd114264d8804023"
-  integrity sha512-K7YxuoVVoAYDn0TYDe3AXqndAC6rxXS4sBDajfDP+GcXH5ZHDRCgVoVKJCK8r3a3qcnE0XLqiMhBRC4iz1kVIQ==
+nonce-tracker@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/nonce-tracker/-/nonce-tracker-2.0.0.tgz#bc8ea185f9a5fcb3c96d7560d27378d3c779ffb8"
+  integrity sha512-0JlFAI22XKNOfqTBlNB/nxHl8md/j7ozZMlpiadyrcyN0a5lzkDiS6u0dML2gTDiDX/HCuC1+nr2od3RnlNVdA==
   dependencies:
+    "@ethersproject/providers" "^5.7.2"
     async-mutex "^0.3.1"
-    ethjs-query "^0.3.8"
 
 nopt@^5.0.0:
   version "5.0.0"
@@ -18533,14 +18497,6 @@ promise-retry@^2.0.1:
     err-code "^2.0.2"
     retry "^0.12.0"
 
-promise-to-callback@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/promise-to-callback/-/promise-to-callback-1.0.0.tgz#5d2a749010bfb67d963598fcd3960746a68feef7"
-  integrity sha1-XSp0kBC/tn2WNZj805YHRqaP7vc=
-  dependencies:
-    is-fn "^1.0.0"
-    set-immediate-shim "^1.0.1"
-
 promise.any@^2.0.2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/promise.any/-/promise.any-2.0.3.tgz#04153d59391b57307299718e5098177fba6f56b7"
@@ -19875,11 +19831,6 @@ set-blocking@^2.0.0, set-blocking@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
   integrity sha1-BF+XgtARrppoA93TgrJDkrPYkPc=
-
-set-immediate-shim@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/set-immediate-shim/-/set-immediate-shim-1.0.1.tgz#4b2b1b27eb808a9f8dcc481a58e5e56f599f3f61"
-  integrity sha1-SysbJ+uAip+NzEgaWOXlb1mfP2E=
 
 set-value@^2.0.0, set-value@^2.0.1:
   version "2.0.1"

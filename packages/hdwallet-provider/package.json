@@ -29,10 +29,11 @@
     "@metamask/json-rpc-engine": "^7.1.1",
     "@metamask/utils": "^8.1.0",
     "@truffle/hdwallet": "^0.1.4",
+    "eth-block-tracker": "^8.1.0",
     "eth-json-rpc-filters": "^6.0.1",
     "ethereum-cryptography": "1.1.2",
     "ethereumjs-util": "^7.1.5",
-    "nonce-tracker": "^1.1.0"
+    "nonce-tracker": "^2.0.0"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
