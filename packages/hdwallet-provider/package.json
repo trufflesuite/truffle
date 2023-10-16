@@ -23,7 +23,7 @@
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
-    "@metamask/eth-json-rpc-middleware": "^11.0.1",
+    "@metamask/eth-json-rpc-middleware": "^12.0.0",
     "@metamask/eth-json-rpc-provider": "^2.0.0",
     "@metamask/eth-sig-util": "4.0.1",
     "@metamask/json-rpc-engine": "^7.1.1",

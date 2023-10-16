@@ -9,6 +9,7 @@ import Common from "@ethereumjs/common";
 
 import { PollingBlockTracker } from "eth-block-tracker";
 import { JsonRpcEngine } from "@metamask/json-rpc-engine";
+import { providerAsMiddleware } from "@metamask/eth-json-rpc-middleware";
 //import type { JsonRpcMiddleware } from "@metamask/json-rpc-engine";
 import {
   SafeEventEmitterProvider,
@@ -23,7 +24,7 @@ import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
 // @ts-ignore
 import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
 // @ts-ignore
-import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+//import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 // @ts-ignore
 import RpcProvider from "web3-provider-engine/subproviders/rpc";
 // @ts-ignore
@@ -306,10 +307,11 @@ class HDWalletProvider {
             return new RpcProvider({ rpcUrl: url });
         }
       } else {
-        return new ProviderSubprovider(providerToUse);
+        return providerToUse;
       }
     };
     const rpcProvider = createProvider();
+    const rpcProviderMiddleware = providerAsMiddleware(rpcProvider);
     console.log('HDP.CONSTRUCTOR', {rpcProvider});
 
     const blockTracker = new PollingBlockTracker({
@@ -351,7 +353,7 @@ class HDWalletProvider {
     });
     engine.push(filtersSubProvider);
     // engine.push(filtersSubProvider.handleRequest);
-    //engine.push(rpcProvider);
+    engine.push(rpcProviderMiddleware);
 
     this.#provider = providerFromEngine(engine);
 
