@@ -64,7 +64,7 @@ let singletonNonceSubProvider: null | NonceSubProvider;
 // TODO: Constrain type
 type JsonRpcProvider = Record<string, unknown>;
 
-const getSingletonNonceSubProvider = (opts: {
+const getSingletonNonceSubProvider = (_opts: {
   rpcProvider: JsonRpcProvider;
   blockTracker: any;
 }): NonceSubProvider => {
@@ -73,7 +73,7 @@ const getSingletonNonceSubProvider = (opts: {
   } else {
     singletonNonceSubProvider = new NonceSubProvider({
       // provider: opts.rpcProvider,
-        /*
+      /*
       provider: opts.rpcProvider.provider as any,
       blockTracker: opts.blockTracker,
       getPendingTransactions: (_address: string) => [],
@@ -189,107 +189,106 @@ class HDWalletProvider {
 
     const self = this;
 
-    const hookedSubprovider = 
-      new HookedSubprovider({
-        getAccounts(cb: any) {
-          cb(null, tmpAccounts);
-        },
-        getPrivateKey(address: string, cb: any) {
-          if (!tmpWallets[address]) {
-            cb("Account not found");
-            return;
-          } else {
-            cb(null, tmpWallets[address].toString("hex"));
-          }
-        },
-        async signTransaction(txParams: any, cb: any) {
-          await self.initialized;
-          // we need to rename the 'gas' field
-          txParams.gasLimit = txParams.gas;
-          delete txParams.gas;
-
-          let pkey;
-          const from = txParams.from.toLowerCase();
-          if (tmpWallets[from]) {
-            pkey = tmpWallets[from];
-          } else {
-            cb("Account not found");
-            return;
-          }
-          const chain = self.chainId;
-          const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
-          let txOptions;
-          if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
-            txOptions = {
-              common: new Common({ chain, hardfork: self.hardfork })
-            };
-          } else if (typeof chain !== "undefined") {
-            txOptions = {
-              common: Common.forCustomChain(
-                1,
-                {
-                  name: "custom chain",
-                  chainId: chain
-                },
-                self.hardfork
-              )
-            };
-          }
-
-          // Taken from https://github.com/ethers-io/ethers.js/blob/2a7ce0e72a1e0c9469e10392b0329e75e341cf18/packages/abstract-signer/src.ts/index.ts#L215
-          const hasEip1559 =
-            txParams.maxFeePerGas !== undefined ||
-            txParams.maxPriorityFeePerGas !== undefined;
-          const tx = hasEip1559
-            ? FeeMarketEIP1559Transaction.fromTxData(txParams, txOptions)
-            : Transaction.fromTxData(txParams, txOptions);
-
-          const signedTx = tx.sign(pkey as Buffer);
-          const rawTx = `0x${signedTx.serialize().toString("hex")}`;
-          cb(null, rawTx);
-        },
-        signMessage({ data, from }: any, cb: any) {
-          const dataIfExists = data;
-          if (!dataIfExists) {
-            cb("No data to sign");
-            return;
-          }
-          if (!tmpWallets[from]) {
-            cb("Account not found");
-            return;
-          }
-          let pkey = tmpWallets[from];
-          const dataBuff = EthUtil.toBuffer(dataIfExists);
-          const msgHashBuff = EthUtil.hashPersonalMessage(dataBuff);
-          const sig = EthUtil.ecsign(msgHashBuff, pkey);
-          const rpcSig = EthUtil.toRpcSig(sig.v, sig.r, sig.s);
-          cb(null, rpcSig);
-        },
-        signPersonalMessage(...args: any[]) {
-          this.signMessage(...args);
-        },
-        signTypedMessage(
-          { data, from }: { data: string; from: string },
-          cb: any
-        ) {
-          if (!data) {
-            cb("No data to sign");
-            return;
-          }
-          // convert address to lowercase in case it is in checksum format
-          const fromAddress = from.toLowerCase();
-          if (!tmpWallets[fromAddress]) {
-            cb("Account not found");
-            return;
-          }
-          const signature = signTypedData({
-            data: JSON.parse(data),
-            privateKey: tmpWallets[fromAddress],
-            version: SignTypedDataVersion.V4
-          });
-          cb(null, signature);
+    const hookedSubprovider = new HookedSubprovider({
+      getAccounts(cb: any) {
+        cb(null, tmpAccounts);
+      },
+      getPrivateKey(address: string, cb: any) {
+        if (!tmpWallets[address]) {
+          cb("Account not found");
+          return;
+        } else {
+          cb(null, tmpWallets[address].toString("hex"));
         }
-      })
+      },
+      async signTransaction(txParams: any, cb: any) {
+        await self.initialized;
+        // we need to rename the 'gas' field
+        txParams.gasLimit = txParams.gas;
+        delete txParams.gas;
+
+        let pkey;
+        const from = txParams.from.toLowerCase();
+        if (tmpWallets[from]) {
+          pkey = tmpWallets[from];
+        } else {
+          cb("Account not found");
+          return;
+        }
+        const chain = self.chainId;
+        const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
+        let txOptions;
+        if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
+          txOptions = {
+            common: new Common({ chain, hardfork: self.hardfork })
+          };
+        } else if (typeof chain !== "undefined") {
+          txOptions = {
+            common: Common.forCustomChain(
+              1,
+              {
+                name: "custom chain",
+                chainId: chain
+              },
+              self.hardfork
+            )
+          };
+        }
+
+        // Taken from https://github.com/ethers-io/ethers.js/blob/2a7ce0e72a1e0c9469e10392b0329e75e341cf18/packages/abstract-signer/src.ts/index.ts#L215
+        const hasEip1559 =
+          txParams.maxFeePerGas !== undefined ||
+          txParams.maxPriorityFeePerGas !== undefined;
+        const tx = hasEip1559
+          ? FeeMarketEIP1559Transaction.fromTxData(txParams, txOptions)
+          : Transaction.fromTxData(txParams, txOptions);
+
+        const signedTx = tx.sign(pkey as Buffer);
+        const rawTx = `0x${signedTx.serialize().toString("hex")}`;
+        cb(null, rawTx);
+      },
+      signMessage({ data, from }: any, cb: any) {
+        const dataIfExists = data;
+        if (!dataIfExists) {
+          cb("No data to sign");
+          return;
+        }
+        if (!tmpWallets[from]) {
+          cb("Account not found");
+          return;
+        }
+        let pkey = tmpWallets[from];
+        const dataBuff = EthUtil.toBuffer(dataIfExists);
+        const msgHashBuff = EthUtil.hashPersonalMessage(dataBuff);
+        const sig = EthUtil.ecsign(msgHashBuff, pkey);
+        const rpcSig = EthUtil.toRpcSig(sig.v, sig.r, sig.s);
+        cb(null, rpcSig);
+      },
+      signPersonalMessage(...args: any[]) {
+        this.signMessage(...args);
+      },
+      signTypedMessage(
+        { data, from }: { data: string; from: string },
+        cb: any
+      ) {
+        if (!data) {
+          cb("No data to sign");
+          return;
+        }
+        // convert address to lowercase in case it is in checksum format
+        const fromAddress = from.toLowerCase();
+        if (!tmpWallets[fromAddress]) {
+          cb("Account not found");
+          return;
+        }
+        const signature = signTypedData({
+          data: JSON.parse(data),
+          privateKey: tmpWallets[fromAddress],
+          version: SignTypedDataVersion.V4
+        });
+        cb(null, signature);
+      }
+    });
 
     const createProvider = () => {
       if (typeof providerToUse === "string") {
@@ -312,11 +311,11 @@ class HDWalletProvider {
     };
     const rpcProvider = createProvider();
     const rpcProviderMiddleware = providerAsMiddleware(rpcProvider);
-    console.log('HDP.CONSTRUCTOR', {rpcProvider});
+    console.log("HDP.CONSTRUCTOR", { rpcProvider });
 
     const blockTracker = new PollingBlockTracker({
       provider: rpcProvider,
-      pollingInterval,
+      pollingInterval
       // retryTimeout?: number;
       // keepEventLoopActive?: boolean;
       // setSkipCacheFlag?: boolean;
@@ -331,7 +330,7 @@ class HDWalletProvider {
           rpcProvider
         })
       : new NonceSubProvider({
-        /*
+          /*
           blockTracker,
           provider: rpcProvider,
           getPendingTransactions: (_address: string) => [],
@@ -344,11 +343,11 @@ class HDWalletProvider {
       provider: rpcProvider
     });
     engine.push((req, _res, next, end) => {
-      console.log('EN1', {req, _res, next, end});
+      console.log("EN1", { req, _res, next, end });
       return hookedSubprovider.handleRequest(req, next, end);
     });
     engine.push((req, _res, next, end) => {
-      console.log('EN2', {req, _res, next, end});
+      console.log("EN2", { req, _res, next, end });
       return nonceSubProvider.handleRequest(req, next, end);
     });
     engine.push(filtersSubProvider);
@@ -367,12 +366,11 @@ class HDWalletProvider {
     } else {
       this.initialized = this.initialize();
     }
-
   }
 
   private initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log('INITIALIZE', {provider: this.#provider});
+      console.log("INITIALIZE", { provider: this.#provider });
       this.#provider.sendAsync(
         {
           jsonrpc: "2.0",
@@ -381,7 +379,7 @@ class HDWalletProvider {
           params: []
         },
         (error: any, response: JsonRpcResponse<string>) => {
-          console.log('INITIALIZE.HANDLE', {error, response});
+          console.log("INITIALIZE.HANDLE", { error, response });
           if (error) {
             reject(error);
             return;
@@ -461,9 +459,9 @@ class HDWalletProvider {
       response: JsonRpcResponse<JsonRpcParams>
     ) => void
   ): void {
-    console.trace('SEND');
+    console.trace("SEND");
     this.initialized.then(() => {
-      console.log('SEND.INITIALIZED');
+      console.log("SEND.INITIALIZED");
       // @ts-ignore we patch callback method so it doesn't conform to type
       this.#provider.sendAsync(payload, callback);
     });
@@ -476,9 +474,9 @@ class HDWalletProvider {
       response?: JsonRpcResponse<JsonRpcParams>
     ) => void
   ): void {
-    console.trace('HDP.SENDASYNC');
+    console.trace("HDP.SENDASYNC");
     this.initialized.then(() => {
-      console.log('HDP.SENDASYNC.INITIALIZED');
+      console.log("HDP.SENDASYNC.INITIALIZED");
       // @ts-ignore we patch callback method so it doesn't conform to type
       this.#provider.sendAsync(payload, callback);
     });
