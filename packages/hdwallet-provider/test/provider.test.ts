@@ -28,9 +28,11 @@ describe("HD Wallet Provider", function () {
 
   afterEach(() => {
     web3.setProvider(null);
+    /*
     if (hdWalletProvider) {
       hdWalletProvider.engine.stop();
     }
+    */
   });
 
   describe("instantiating with positional arguments", () => {
@@ -55,7 +57,11 @@ describe("HD Wallet Provider", function () {
       assert.deepEqual(hdWalletProvider.getAddresses(), truffleDevAccounts);
       web3.setProvider(hdWalletProvider as provider);
 
-      const number = await web3.eth.getBlockNumber();
+      console.log('FOOO', {hdWalletProvider});
+      const number = await web3.eth.getBlockNumber((x,y) => {
+        console.log('XYZ', x, y);
+      });
+      console.log('BAR', {number});
       assert(number === 0);
     });
 
@@ -226,13 +232,13 @@ describe("HD Wallet Provider", function () {
         provider: ganacheProvider
         // polling interval is unspecified
       });
-      assert.ok(hdWalletProvider.engine, "Web3ProviderEngine instantiated");
       assert.ok(
-        (hdWalletProvider.engine as any)._blockTracker,
+        hdWalletProvider._blockTracker,
         "PollingBlockTracker instantiated"
       );
       assert.deepEqual(
-        (hdWalletProvider.engine as any)._blockTracker._pollingInterval,
+        // @ts-ignore
+        hdWalletProvider._blockTracker._pollingInterval,
         4000,
         "PollingBlockTracker with expected pollingInterval"
       );
@@ -249,13 +255,13 @@ describe("HD Wallet Provider", function () {
         // double the default value, for less chatty JSON-RPC
         pollingInterval: 8000
       });
-      assert.ok(hdWalletProvider.engine, "Web3ProviderEngine instantiated");
       assert.ok(
-        (hdWalletProvider.engine as any)._blockTracker,
+        hdWalletProvider._blockTracker,
         "PollingBlockTracker instantiated"
       );
       assert.deepEqual(
-        (hdWalletProvider.engine as any)._blockTracker._pollingInterval,
+        // @ts-ignore
+        hdWalletProvider._blockTracker._pollingInterval,
         8000,
         "PollingBlockTracker with expected pollingInterval"
       );

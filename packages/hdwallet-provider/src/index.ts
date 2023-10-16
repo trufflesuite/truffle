@@ -18,7 +18,8 @@ import {
 // @ts-ignore
 import createFilterMiddleware from "eth-json-rpc-filters";
 // @ts-ignore
-import NonceSubProvider from "nonce-tracker";
+import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
+// import NonceSubProvider from "nonce-tracker";
 // @ts-ignore
 import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
 // @ts-ignore
@@ -67,12 +68,16 @@ const getSingletonNonceSubProvider = (opts: {
   blockTracker: any;
 }): NonceSubProvider => {
   if (singletonNonceSubProvider) {
+    // TODO: throw if opts mismatch existing?
   } else {
     singletonNonceSubProvider = new NonceSubProvider({
-      provider: opts.rpcProvider,
+      // provider: opts.rpcProvider,
+        /*
+      provider: opts.rpcProvider.provider as any,
       blockTracker: opts.blockTracker,
       getPendingTransactions: (_address: string) => [],
       getConfirmedTransactions: (_address: string) => []
+      */
     });
   }
   return singletonNonceSubProvider;
@@ -87,6 +92,7 @@ class HDWalletProvider {
   private chainSettings: ChainSettings;
   private hardfork: Hardfork;
   private initialized: Promise<void>;
+  public _blockTracker: PollingBlockTracker;
 
   constructor(...args: ConstructorArguments) {
     const {
@@ -97,8 +103,7 @@ class HDWalletProvider {
       numberOfAddresses = 10,
       shareNonce = true,
       derivationPath = `m/44'/60'/0'/0/`,
-      // TODO: Unused/ deprecated...?
-      // pollingInterval = 4000,
+      pollingInterval = 4000,
       chainId,
       chainSettings = {},
 
@@ -174,17 +179,6 @@ class HDWalletProvider {
     const tmpAccounts = this.#addresses;
     const tmpWallets = this.#wallets;
 
-    // if user supplied the chain id, use that - otherwise fetch it
-    if (
-      typeof chainId !== "undefined" ||
-      (chainSettings && typeof chainSettings.chainId !== "undefined")
-    ) {
-      this.chainId = chainId || chainSettings.chainId;
-      this.initialized = Promise.resolve();
-    } else {
-      this.initialized = this.initialize();
-    }
-
     // EIP155 compliant transactions are enabled for hardforks later
     // than or equal to "spurious dragon"
     this.hardfork =
@@ -194,7 +188,7 @@ class HDWalletProvider {
 
     const self = this;
 
-    engine.push(
+    const hookedSubprovider = 
       new HookedSubprovider({
         getAccounts(cb: any) {
           cb(null, tmpAccounts);
@@ -295,7 +289,6 @@ class HDWalletProvider {
           cb(null, signature);
         }
       })
-    );
 
     const createProvider = () => {
       if (typeof providerToUse === "string") {
@@ -317,16 +310,18 @@ class HDWalletProvider {
       }
     };
     const rpcProvider = createProvider();
+    console.log('HDP.CONSTRUCTOR', {rpcProvider});
 
     const blockTracker = new PollingBlockTracker({
-      provider: rpcProvider
-      // pollingInterval?: number;
+      provider: rpcProvider,
+      pollingInterval,
       // retryTimeout?: number;
       // keepEventLoopActive?: boolean;
       // setSkipCacheFlag?: boolean;
       // blockResetDuration?: number;
       // usePastBlocks?: boolean;
     });
+    this._blockTracker = blockTracker;
 
     const nonceSubProvider = shareNonce
       ? getSingletonNonceSubProvider({
@@ -334,25 +329,48 @@ class HDWalletProvider {
           rpcProvider
         })
       : new NonceSubProvider({
+        /*
           blockTracker,
           provider: rpcProvider,
           getPendingTransactions: (_address: string) => [],
           getConfirmedTransactions: (_address: string) => []
+      */
         });
 
     const filtersSubProvider = createFilterMiddleware({
       blockTracker,
       provider: rpcProvider
     });
-    engine.push(nonceSubProvider as any);
+    engine.push((req, _res, next, end) => {
+      console.log('EN1', {req, _res, next, end});
+      return hookedSubprovider.handleRequest(req, next, end);
+    });
+    engine.push((req, _res, next, end) => {
+      console.log('EN2', {req, _res, next, end});
+      return nonceSubProvider.handleRequest(req, next, end);
+    });
     engine.push(filtersSubProvider);
-    engine.push(rpcProvider);
+    // engine.push(filtersSubProvider.handleRequest);
+    //engine.push(rpcProvider);
 
     this.#provider = providerFromEngine(engine);
+
+    // if user supplied the chain id, use that - otherwise fetch it
+    if (
+      typeof chainId !== "undefined" ||
+      (chainSettings && typeof chainSettings.chainId !== "undefined")
+    ) {
+      this.chainId = chainId || chainSettings.chainId;
+      this.initialized = Promise.resolve();
+    } else {
+      this.initialized = this.initialize();
+    }
+
   }
 
   private initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log('INITIALIZE', {provider: this.#provider});
       this.#provider.sendAsync(
         {
           jsonrpc: "2.0",
@@ -361,6 +379,7 @@ class HDWalletProvider {
           params: []
         },
         (error: any, response: JsonRpcResponse<string>) => {
+          console.log('INITIALIZE.HANDLE', {error, response});
           if (error) {
             reject(error);
             return;
@@ -440,7 +459,9 @@ class HDWalletProvider {
       response: JsonRpcResponse<JsonRpcParams>
     ) => void
   ): void {
+    console.trace('SEND');
     this.initialized.then(() => {
+      console.log('SEND.INITIALIZED');
       // @ts-ignore we patch callback method so it doesn't conform to type
       this.#provider.sendAsync(payload, callback);
     });
@@ -453,7 +474,9 @@ class HDWalletProvider {
       response?: JsonRpcResponse<JsonRpcParams>
     ) => void
   ): void {
+    console.trace('HDP.SENDASYNC');
     this.initialized.then(() => {
+      console.log('HDP.SENDASYNC.INITIALIZED');
       // @ts-ignore we patch callback method so it doesn't conform to type
       this.#provider.sendAsync(payload, callback);
     });
