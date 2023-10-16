@@ -7,13 +7,14 @@ import * as EthUtil from "ethereumjs-util";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
-import ProviderEngine from "@metamask/json-rpc-engine";
-// @ts-ignore - web3-provider-engine doesn't have declaration files for these subproviders
-import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
+import { JsonRpcEngine } from "@metamask/json-rpc-engine";
+import { providerFromEngine, providerFromMiddleware } from "@metamask/eth-json-rpc-provider";
+
+import { createFilterMiddleware } from "eth-json-rpc-filters";
+const filterMiddleware = createFilterMiddleware(
 // @ts-ignore
 import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
-// @ts-ignore
-import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
+//import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
 // @ts-ignore
 import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 // @ts-ignore
@@ -23,9 +24,10 @@ import WebsocketProvider from "web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
 import type {
-  JSONRPCRequestPayload,
-  JSONRPCResponsePayload
-} from "ethereum-protocol";
+  JsonRpcParams,
+  JsonRpcRequest,
+  JsonRpcResponse
+} from "@metamask/utils";
 import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
@@ -55,7 +57,7 @@ class HDWalletProvider {
   private hardfork: Hardfork;
   private initialized: Promise<void>;
 
-  public engine: ProviderEngine;
+  public engine: JsonRpcEngine;
 
   constructor(...args: ConstructorArguments) {
     const {
@@ -66,7 +68,8 @@ class HDWalletProvider {
       numberOfAddresses = 10,
       shareNonce = true,
       derivationPath = `m/44'/60'/0'/0/`,
-      pollingInterval = 4000,
+      // TODO: Unused/ deprecated...?
+      // pollingInterval = 4000,
       chainId,
       chainSettings = {},
 
@@ -81,8 +84,8 @@ class HDWalletProvider {
     this.#wallets = {};
     this.#addresses = [];
     this.chainSettings = chainSettings;
-    this.engine = new ProviderEngine({
-      pollingInterval
+    this.engine = new JsonRpcEngine({
+      // pollingInterval
     });
 
     let providerToUse;
@@ -288,7 +291,7 @@ class HDWalletProvider {
         },
         // @ts-ignore - the type doesn't take into account the possibility
         // that response.error could be a thing
-        (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
+        (error: any, response: JsonRpcResponse<JsonRpcParams> & { error?: any }) => {
           if (error) {
             reject(error);
             return;
@@ -364,7 +367,7 @@ class HDWalletProvider {
   public send(
     payload: JSONRPCRequestPayload,
     // @ts-ignore we patch this method so it doesn't conform to type
-    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+    callback: (error: null | Error, response: JsonRpcResponse<JsonRpcParams>) => void
   ): void {
     this.initialized.then(() => {
       this.engine.sendAsync(payload, callback);
@@ -373,7 +376,7 @@ class HDWalletProvider {
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+    callback: (error: null | Error, response: JsonRpcResponse<JsonRpcParams>) => void
   ): void {
     this.initialized.then(() => {
       this.engine.sendAsync(payload, callback);
