@@ -3,9 +3,15 @@ const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const { NoVersionError } = require("../errors");
 
 export class Native {
+  private solcPath: string;
+
+  constructor(solcPath: string) {
+    this.solcPath = solcPath;
+  }
+
   load() {
     const versionString = this.validateAndGetSolcVersion();
-    const command = "solc --standard-json";
+    const command = `${this.solcPath} --standard-json`;
     const maxBuffer = 1024 * 1024 * 50;
 
     try {
@@ -25,7 +31,7 @@ export class Native {
   validateAndGetSolcVersion() {
     let version;
     try {
-      version = execSync("solc --version");
+      version = execSync(`${this.solcPath} --version`);
     } catch (error) {
       throw new NoNativeError(error);
     }

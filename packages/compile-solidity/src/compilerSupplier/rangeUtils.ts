@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import semver from "semver";
 import { Native, Local } from "./loadingStrategies";
 import { CompilerSupplier } from "./index";
+import TruffleConfig from "@truffle/config";
 
 /**
  * takes a version string which may be native or local, and resolves
@@ -16,7 +17,8 @@ export function resolveToRange(version?: string): string {
   //if version was native or local, must determine what version that
   //actually corresponds to
   if (version === "native") {
-    return new Native().load().version();
+    const nativePath = TruffleConfig.default().compilers.solc.nativePath;
+    return new Native(nativePath).load().version();
   } else if (fs.existsSync(version) && path.isAbsolute(version)) {
     return new Local().load(version).version();
   }
