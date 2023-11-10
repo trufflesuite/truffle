@@ -32,7 +32,7 @@
     "@truffle/encoder": "^1.0.27",
     "@truffle/source-map-utils": "^1.3.119",
     "async-retry": "^1.3.1",
-    "axios": "1.5.0",
+    "axios": "1.6.0",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "web3-utils": "1.10.0"
