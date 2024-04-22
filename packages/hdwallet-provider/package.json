@@ -32,7 +32,7 @@
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
     "web3": "1.10.0",
-    "web3-provider-engine": "16.0.3"
+    "web3-provider-engine": "16.0.8"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
